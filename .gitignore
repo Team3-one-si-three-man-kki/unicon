@@ -65,9 +65,3 @@ test-output/
 .settings/
 .springBeans
 
-
-# WebSquare 추가 예시
-/WebSquare Configure/
-/app_resource/
-/install/output/
-/matrix_mobile_home/
