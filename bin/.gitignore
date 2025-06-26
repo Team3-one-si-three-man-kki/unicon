@@ -1,0 +1,73 @@
+# node
+node_modules/
+npm-debug.log*
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 환경설정
+.env*
+
+#project
+/target/
+/src/main/webapp/_wpack_/
+
+# WebSquare 전용
+/WebContent/resource/build/
+/WebContent/resource/deploy/
+/WebContent/resource/compile/
+/_webpack_/    # WebSquare webpack 빌드 결과
+
+# ProWorks
+/proworks/build/
+/proworks/deploy/
+/proworks/tmp/
+
+# Matrix Mobile
+/matrixmobile/bin/
+/matrixmobile/gen/
+/matrixmobile/obj/
+
+# 기타 빌드/캐시
+.cache/
+.temporary/
+output/
+dist/
+build/
+webpack-dist/
+webpack-temp/
+*.map
+
+# 코드 커버리지
+coverage/
+
+# 실행 파일
+*.exe
+*.apk
+*.ipa
+
+# 환경설정 백업
+*.bak
+*.old
+*.orig
+
+# 테스트 결과
+test-output/
+
+
+# Eclipse / STS
+.classpath
+.project
+.factorypath
+.settings/
+.springBeans
+
+
+# WebSquare 추가 예시
+/WebSquare Configure/
+/app_resource/
+/install/output/
+/matrix_mobile_home/

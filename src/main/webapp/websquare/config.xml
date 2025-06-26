@@ -1,7 +1,7 @@
 <WebSquare>
     <dataPrefix value="true"/>
     <wpack use="true">
-        <contextRoot value="/InsWebApp"/>
+        <contextRoot value="/"/>
         <srcExtension value="xml"/>
         <destExtension value="js"/>
         <destRoot value="_wpack_"/>
@@ -43,7 +43,7 @@
         <removeDefaultClass value="true"/>
     </style>
     <engine>
-        <module src="/InsWebApp/cm/js/swiper.min.js" />
+        <module src="/InsWebApp/cm/js/swiper.min.js"/>
     </engine>
     <ModelUtil>
         <copyChildrenNodes refresh="false"/>

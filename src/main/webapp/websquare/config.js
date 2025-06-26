@@ -1,4 +1,4 @@
-export default {
+癤울뼁癤울뼁export default {
   "WebSquare": {
     "dataPrefix": {
       "@value": "true"
@@ -6,7 +6,7 @@ export default {
     "wpack": {
       "@use": "true",
       "contextRoot": {
-        "@value": "/InsWebApp"
+        "@value": "/"
       },
       "srcExtension": {
         "@value": "xml"
