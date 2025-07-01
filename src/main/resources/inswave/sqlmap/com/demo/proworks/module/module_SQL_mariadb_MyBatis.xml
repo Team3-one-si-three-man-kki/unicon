@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject     : 모듈정보 관련 처리를 담당하는 Sql Mapper
+	@description : 모듈정보 관련 처리를 담당하는 Sql Mapper
+	@author      : 여경원
+	@since       : 2025/07/01
+	@modification
+	===========================================================
+	DATE              AUTHOR             DESC
+	===========================================================
+	2025/07/01              여경원             최초 생성
+ -->
+<mapper namespace="com.demo.proworks.module">
+    <insert id="insertModule" parameterType="com.demo.proworks.module.vo.ModuleVo">
+    	<!-- 모듈정보를 등록한다. -->	
+    		
+        INSERT INTO MODULE   /* QueryID : com.demo.proworks.module.insertModule */
+        ( 
+            MODULE_ID
+            <if test="code       != null"> , CODE        </if>
+            <if test="name       != null"> , NAME        </if>
+            <if test="description!= null"> , DESCRIPTION </if>
+            <if test="price      != null"> , PRICE       </if>
+            <if test="icon       != null"> , ICON        </if>
+        )
+        VALUES  
+        ( 
+            #{moduleId}
+            <if test="code       != null"> , #{code}        </if>
+            <if test="name       != null"> , #{name}        </if>
+            <if test="description!= null"> , #{description} </if>
+            <if test="price      != null"> , #{price}       </if>
+            <if test="icon       != null"> , #{icon}        </if> 
+        )          
+    </insert>	
+	
+    <update id="updateModule" parameterType="com.demo.proworks.module.vo.ModuleVo">
+    	<!-- 모듈정보를 갱신한다. -->
+    	
+        UPDATE MODULE    /* QueryID : com.demo.proworks.module.updateModule */      
+      	  SET  
+                MODULE_ID   = #{moduleId}          	                       
+            <if test="code       != null"> , CODE        = #{code}        </if>
+            <if test="name       != null"> , NAME        = #{name}        </if>
+            <if test="description!= null"> , DESCRIPTION = #{description} </if>
+            <if test="price      != null"> , PRICE       = #{price}       </if>
+            <if test="icon       != null"> , ICON        = #{icon}        </if>                 
+        WHERE   
+                MODULE_ID   = #{moduleId}  
+    </update>
+	
+    <delete id="deleteModule" parameterType="com.demo.proworks.module.vo.ModuleVo">
+    	<!-- 모듈정보를 삭제한다. -->
+    	
+        DELETE FROM MODULE   /* QueryID : com.demo.proworks.module.deleteModule */ 
+        WHERE   
+                MODULE_ID   = #{moduleId}          
+    </delete>
+	
+    <select id="selectModule" parameterType="com.demo.proworks.module.vo.ModuleVo" resultType="com.demo.proworks.module.vo.ModuleVo">
+    	<!-- 모듈정보를 상세 조회한다. -->	
+        SELECT     /* QueryID : com.demo.proworks.module.selectModule */
+            MODULE_ID as moduleId, CODE as code, NAME as name, DESCRIPTION as description, PRICE as price, ICON as icon
+        FROM MODULE 
+        WHERE 
+                MODULE_ID   = #{moduleId}  			
+    </select>
+	
+    <select id="selectListModule" parameterType="com.demo.proworks.module.vo.ModuleVo" resultType="com.demo.proworks.module.vo.ModuleVo">
+    	<!-- 모듈정보 목록을 조회한다. -->
+           SELECT    /* QueryID : com.demo.proworks.module.selectListModule */
+               MODULE_ID as moduleId, CODE as code, NAME as name, DESCRIPTION as description, PRICE as price, ICON as icon		       
+           FROM (
+               SELECT  S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+               FROM (				
+                   SELECT 
+                       *  		                  
+                   FROM MODULE
+                   WHERE  1=1    		
+                        <if test="scModuleId != null and scModuleId != ''">
+                             AND MODULE_ID like '%${scModuleId}%'
+                        </if>
+                        <if test="scCode != null and scCode != ''">
+                             AND CODE like '%${scCode}%'
+                        </if>
+                        <if test="scName != null and scName != ''">
+                             AND NAME like '%${scName}%'
+                        </if>
+                        <if test="scDescription != null and scDescription != ''">
+                             AND DESCRIPTION like '%${scDescription}%'
+                        </if>
+                        <if test="scPrice != null and scPrice != ''">
+                             AND PRICE like '%${scPrice}%'
+                        </if>
+                        <if test="scIcon != null and scIcon != ''">
+                             AND ICON like '%${scIcon}%'
+                        </if>	     																														
+               ) S, (SELECT @ROWNUM := 0) TMP
+           ) A
+            WHERE PAGE = #{pageIndex}
+    </select>
+	
+    <select id="selectListCountModule" parameterType="com.demo.proworks.module.vo.ModuleVo" resultType="long">
+    <!-- 모듈정보 목록의 카운트를 조회한다. -->
+    
+         SELECT    /* QueryID : com.demo.proworks.module.selectListCountModule */
+             COUNT(*) totcnt  		                  
+         FROM MODULE
+         WHERE  1=1    		
+            <if test="scModuleId != null and scModuleId != ''">
+                 AND MODULE_ID like '%${scModuleId}%'
+            </if>
+            <if test="scCode != null and scCode != ''">
+                 AND CODE like '%${scCode}%'
+            </if>
+            <if test="scName != null and scName != ''">
+                 AND NAME like '%${scName}%'
+            </if>
+            <if test="scDescription != null and scDescription != ''">
+                 AND DESCRIPTION like '%${scDescription}%'
+            </if>
+            <if test="scPrice != null and scPrice != ''">
+                 AND PRICE like '%${scPrice}%'
+            </if>
+            <if test="scIcon != null and scIcon != ''">
+                 AND ICON like '%${scIcon}%'
+            </if>
+    </select>
+
+</mapper>

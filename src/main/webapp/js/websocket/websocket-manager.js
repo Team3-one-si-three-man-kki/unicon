@@ -40,20 +40,20 @@ window.UniconWS = {
 		}
 
 		var wsUrl = 'ws://localhost:9093/InsWebApp/chat/' + this.roomId;
-		console.log("ModuLink WebSocket 연결 시도:", wsUrl);
+		console.log("WebSocket 연결 시도:", wsUrl);
 
 		this.socket = new WebSocket(wsUrl);
 
 		// 연결 성공
 		this.socket.onopen = () => {
 			this.isConnected = true;
-			console.log("ModuLink WebSocket 연결 성공!");
+			console.log("WebSocket 연결 성공");
 			// this.notifyAll('connected', { roomId: this.roomId }); -> 연결 성공시 전체에게 알림 전송. 나중에 처리
 		};
 
 		// 메시지 수신
 		this.socket.onmessage = (event) => {
-			console.log("WebSocket 메시지 수신:", event.data);
+			console.log("WebSocket 메시지(타입별) 수신:", event.data);
 			try {
 				var data = JSON.parse(event.data);
 				this.routeMessage(data);
@@ -150,7 +150,7 @@ window.UniconWS = {
 			this.listeners[module] = [];
 		}
 		this.listeners[module].push(callback);
-		console.log(`${module} 모듈 리스너 등록됨`);
+		console.log(`${module} 모듈 리스너 등록`);
 	},
 
 	/**
