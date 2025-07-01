@@ -144,6 +144,13 @@
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
+	
+	<!-- WebSocket 지원을 위한 servlet-mapping 추가 -->
+	<servlet-mapping>
+	    <servlet-name>action</servlet-name>
+	    <url-pattern>/chat</url-pattern>
+	</servlet-mapping>
+	
 	<login-config>
 		<auth-method>BASIC</auth-method>
 	</login-config>

@@ -12,83 +12,86 @@
         </xf:model>
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
-        <script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function() {
+        <script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
 
 };
 
+// tenantId 임시 지정 -> 나중에 동적으로 변경..
+scwin.tenantId = 1;
+
 // 드래그 상태 변수들
-var isDragging = false;
-var draggedModuleId = null;
+scwin.isDragging = false;
+scwin.draggedModuleId = null;
 
 // 마우스 다운 - 드래그 시작
-scwin.module_mouseDown = function(e, comp) {
-    isDragging = true;
-    draggedModuleId = this.id || "mf_grp_chatModule";
-    
-    console.log("드래그 시작:", draggedModuleId);
-    
+scwin.module_mouseDown = function (e, comp) {
+    scwin.isDragging = true;
+    scwin.draggedModuleId = this.id || "mf_grp_chatModule";
+
+    console.log("드래그 시작:", scwin.draggedModuleId);
+
     // 기본 선택 동작 방지 (영역 드래그 잡히는거 방지)
     if (e.preventDefault) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
-    
+
     // 전체 문서에서 텍스트 선택 방지
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
     document.body.style.mozUserSelect = 'none';
     document.body.style.msUserSelect = 'none';
-    
+
     // 드래그 중 커서 변경
     document.body.style.cursor = 'grabbing';
-    
+
     // 전체 문서에 마우스 이벤트 추가
     document.addEventListener('mousemove', scwin.global_mouseMove);
     document.addEventListener('mouseup', scwin.global_mouseUp);
-    
+
     return false; // 기본 동작 차단
 };
 
 // 전체 화면에서 마우스 무브
-scwin.global_mouseMove = function(e) {
-    if (!isDragging) return;
-    
+scwin.global_mouseMove = function (e) {
+    if (!scwin.isDragging) return;
+
     console.log("전체 드래그 중.. -> 위치:", e.clientX, e.clientY);
-    
+
     // **************여기에 드래그 중인 시각적 요소 추가 해야함********
     // 마우스 커서 따라다니는 모듈 미리보기
 };
 
 // 전체 화면에서 마우스 업
-scwin.global_mouseUp = function(e) {
-    if (!isDragging) return;
-    
+scwin.global_mouseUp = function (e) {
+    if (!scwin.isDragging) return;
+
     console.log("전체 드래그 종료:", e.clientX, e.clientY);
-    
+
     // 드롭 영역 체크
     scwin.checkDropZone(e.clientX, e.clientY);
-    
+
     // 드래그 상태 초기화
-    isDragging = false;
-    draggedModuleId = null;
-    
+    scwin.isDragging = false;
+    scwin.draggedModuleId = null;
+
     // 텍스트 선택 제한 해제
     document.body.style.userSelect = '';
     //document.body.style.webkitUserSelect = '';
     document.body.style.mozUserSelect = '';
     document.body.style.msUserSelect = '';
-    
+
     // 원래 기본 커서로 복원
     document.body.style.cursor = 'default';
-    
+
     // 전체 문서 이벤트 제거
     document.removeEventListener('mousemove', scwin.global_mouseMove);
     document.removeEventListener('mouseup', scwin.global_mouseUp);
 };
 
 // 영역에 모듈 정보 표시하는 함수
-scwin.displayModuleInArea = function(zoneId, moduleId){
+scwin.displayModuleInArea = function (zoneId, moduleId) {
     // 영역 정보 가져오기
     var areaComponent = $p.getComponentById(zoneId);
-    if(!areaComponent){
+    if (!areaComponent) {
         console.log("영역을 찾을 수 없습니다: ", zoneId);
         return;
     }
@@ -99,26 +102,26 @@ scwin.displayModuleInArea = function(zoneId, moduleId){
 
     // 드롭한 영역을 모듈의 내용으로 변경
     var areaElement = document.getElementById(zoneId);
-    if(areaElement){
+    if (areaElement) {
         // 스타일 변경
         areaElement.style.border = "2px solid #4CAF50";
         areaElement.style.background = "#f0f8f0";
 
         // 라벨 값 변경
         var labelElement = areaElement.querySelector('span');
-        if(labelElement){
-            labelElement.innerHTML = moduleInfo.icon + " " +moduleInfo.name;
+        if (labelElement) {
+            labelElement.innerHTML = moduleInfo.icon + " " + moduleInfo.name;
         }
     }
 };
 
 // 모듈 데이터 가져오기 함수 -> 나중에 동적으로 모듈 데이터 받아오기
 // 아이콘을 직접 넣지말고 유니코드로 넣기!
-scwin.getModuleData = function(moduleId) {
+scwin.getModuleData = function (moduleId) {
     var moduleData = {
         "mf_grp_chatModule": {
             icon: "\uD83D\uDCAC",
-            name: "채팅", 
+            name: "채팅",
             desc: "실시간 메시징"
         },
         "mf_grp_videoModule": {
@@ -127,61 +130,67 @@ scwin.getModuleData = function(moduleId) {
             desc: "WebRTC 영상통화"
         }
     };
-    
-    return moduleData[moduleId] || {icon: "", name: "알 수 없음", desc: "모듈 정보 없음"};
+
+    return moduleData[moduleId] || { icon: "", name: "알 수 없음", desc: "모듈 정보 없음" };
 };
 
 // 드롭 처리 함수
-scwin.handleDrop = function(zoneId) {
-    console.log("드롭 처리 시작 - 영역:", zoneId, "모듈:", draggedModuleId);
-    
+scwin.handleDrop = function (zoneId) {
+    console.log("드롭 처리 시작 - 영역:", zoneId, "모듈:", scwin.draggedModuleId);
+
     // 영역별로 처리 - mf_ 접두사 추가  ---> 디버그 로그이므로 나중에 빼거나 모달같은걸로 변경.
     switch (zoneId) {
         case "mf_grp_area1":
-            alert("영역 1에 " + draggedModuleId + " 모듈이 배치되었습니다!");
+            alert("영역 1에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
             break;
         case "mf_grp_area2":
-            alert("영역 2에 " + draggedModuleId + " 모듈이 배치되었습니다!");
+            alert("영역 2에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
             break;
         case "mf_grp_area3":
-            alert("영역 3에 " + draggedModuleId + " 모듈이 배치되었습니다!");
+            alert("영역 3에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
             break;
         case "mf_grp_area4":
-            alert("영역 4에 " + draggedModuleId + " 모듈이 배치되었습니다!");
+            alert("영역 4에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area5":
+            alert("영역 5에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area6":
+            alert("영역 6에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
             break;
         default:
             console.log("알 수 없는 영역:", zoneId);
     }
 
     // 드롭하면 해당영역에 모듈 정보 표시
-    scwin.displayModuleInArea(zoneId, draggedModuleId);
+    scwin.displayModuleInArea(zoneId, scwin.draggedModuleId);
 };
 
 // 드롭 영역 체크 함수
-scwin.checkDropZone = function(x, y) {
-    console.log("드롭 위치 체크:", x, y, "모듈:", draggedModuleId);
-    
+scwin.checkDropZone = function (x, y) {
+    console.log("드롭 위치 체크:", x, y, "모듈:", scwin.draggedModuleId);
+
     // 마우스 위치에서 실제 요소 찾기
     var elementAtPosition = document.elementFromPoint(x, y);
-    
+
     if (!elementAtPosition) {
         console.log("드롭 실패: 요소를 찾을 수 없음");
         return;
     }
-    
+
     // 디버깅: 첫 번째 요소 정보 출력
     // console.log("첫 번째 감지된 요소:", {
     //     tagName: elementAtPosition.tagName,
     //     id: elementAtPosition.id,
     //     className: elementAtPosition.className
-    
+
     // 드롭 영역 찾기 (상위로 올라가면서 grp_area로 시작하는 요소 찾기)
     var dropZoneElement = scwin.findDropZoneElement(elementAtPosition);
-    
+
     if (dropZoneElement) {
         var zoneId = dropZoneElement.id;
         console.log("드롭 성공! 영역:", zoneId);
-        
+
         // 영역별 처리
         scwin.handleDrop(zoneId);
     } else {
@@ -190,25 +199,25 @@ scwin.checkDropZone = function(x, y) {
 };
 
 // 드롭 영역 요소 찾기 함수
-scwin.findDropZoneElement = function(element) {
+scwin.findDropZoneElement = function (element) {
     // 영역1~4의 ID 목록 - mf_ 접두사 추가
-    var validDropZones = ["mf_grp_area1", "mf_grp_area2", "mf_grp_area3", "mf_grp_area4"];
-    
+    var validDropZones = ["mf_grp_area1", "mf_grp_area2", "mf_grp_area3", "mf_grp_area4", "mf_grp_area5", "mf_grp_area6"];
+
     // 현재 요소부터 상위로 올라가면서 체크
     var currentElement = element;
     var stepCount = 0;
-    
+
     //console.log("=== 드롭 영역 찾기 시작 ===");
-    
+
     while (currentElement && currentElement !== document.body && stepCount < 10) {
         stepCount++;
-        
+
         // console.log("단계 " + stepCount + ":", {
         //     tagName: currentElement.tagName,
         //     id: currentElement.id,
         //     className: currentElement.className
         // });
-        
+
         // 현재 드롭한 영역 요소의 ID가 유효한 드롭 영역인지 체크
         for (var i = 0; i < validDropZones.length; i++) {
             if (currentElement.id === validDropZones[i]) {
@@ -216,23 +225,23 @@ scwin.findDropZoneElement = function(element) {
                 return currentElement;
             }
         }
-        
+
         // 상위 요소로 이동
         currentElement = currentElement.parentElement;
     }
-    
+
     console.log("=== 드롭 영역 찾기 실패 ===");
     return null; // -> 유효한 드롭 영역을 찾지 못한 경우
 };
 
 ]]></script>
     </head>
-    <body ev:onpageload="scwin.onpageload">
+    <body ev:onpageload="scwin.onpageload" style="">
     	<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
-    		style="">
+    		style="height: 90%;">
     		<xf:group class="pgtbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_01 페이지타이틀"
-    			style="width:100%;height:60px;background:#667eea;color:white;font-size:18px;text-align:center;">
-    			<w2:textbox class="pgt_tit" id="tb_title" label="UI 배치 설정" style="" tagname=""></w2:textbox>
+    			style="width:100%;height:80px;background: linear-gradient(135deg, #6B46C1 0%, #3B82F6 100%);color:white;font-size:18px;text-align:center;">
+    			<w2:textbox class="pgt_tit" id="tb_title" label="UI 배치 설정" style="color: white;margin-left: 20px;" tagname=""></w2:textbox>
     			<xf:group class="breadcrumb" id="" style="">
     				<xf:group id="" style="" tagname="ul">
     					<xf:group class="home" id="" style="" tagname="li">
@@ -255,78 +264,135 @@ scwin.findDropZoneElement = function(element) {
     					</xf:group>
     				</xf:group>
     			</xf:group>
-    			<xf:trigger class="btn_fav" id="" style="" type="button">
+    			<xf:trigger class="btn_fav" id="" style="margin-right: 20px;" type="button">
     				<xf:label></xf:label>
     			</xf:trigger>
     		</xf:group>
-    		<xf:group style="width:100%;height:171.20%;border:1px solid #ddd;" id="grp_main">
-    			<xf:group style="width:350px;height:500px;background:#f8f9fa;padding:5px;float:left;" id="grp_sidebar">
-    				<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
-    					meta_snippetName="2_03 서브타이틀(h4)" style="width:100%;font-weight:bold;margin-bottom:10px;">
-    					<w2:textbox class="" id="" label="사용 가능한 모듈" style="font-size: 20px" tagname="h4"></w2:textbox>
-    				</xf:group>
-    				<xf:group
-    					style="width:90%;background:white;border:2px solid #4CAF50;border-radius:8px;padding:10px;margin:5px auto;cursor:pointer;"
-    					id="grp_chatModule" ev:onmousedown="scwin.module_mouseDown" ev:onmousemove="scwin.global_mouseMove" ev:onmouseup="scwin.global_mouseUp">
-    					<w2:span id="tb_chatIcon" label="💬" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:24px;margin-bottom:8px;display:block;">
-    					</w2:span>
-    					<w2:span id="tb_chatName" label="채팅" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-weight:bold;margin-bottom:4px;display:block;">
-    					</w2:span>
-    					<w2:span id="tb_chatDesc" label="실시간 메시징" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:12px;color:#666;display:block;">
-    					</w2:span>
-    				</xf:group>
-    				<xf:group
-    					style="width:90%;background:white;border:2px solid #4CAF50;border-radius:8px;padding:10px;margin:5px auto;cursor:pointer;"
-    					id="grp_videoModule" ev:onmousedown="scwin.module_mouseDown" ev:onmousemove="scwin.global_mouseMove" ev:onmouseup="scwin.global_mouseUp">
-    					<w2:span id="tb_videoIcon" label="📹" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:24px;margin-bottom:8px;display:block;">
-    					</w2:span>
-    					<w2:span id="tb_videoName" label="화상회의" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-weight:bold;margin-bottom:4px;display:block;">
-    					</w2:span>
-    					<w2:span id="tb_videoDesc" label="WebRTC 영상통화" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:12px;color:#666;display:block;">
-    					</w2:span>
-    				</xf:group>
-    			</xf:group>
-    			<xf:group style="width:NaN%;height:261.60%;background:#f0f2f5;padding:20px;margin-left:350px;" id="grp_canvasContainer">
-    				<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
-    					meta_snippetName="2_03 서브타이틀(h4)" style="">
-    					<w2:textbox class="" id="" label="UI 배치화면" style="" tagname="h4"></w2:textbox>
-    				</xf:group>
-    				<xf:group
-    					style="width:100%;height:100%;padding:20px;display:flex;flex-wrap:wrap;justify-content:space-around;align-content:flex-start;"
-    					id="">
-    					<xf:group
-    						style="width:45%;height:150px;background:white;border:2px dashed #ddd;border-radius:8px;margin:2%;display:flex;align-items:center;justify-content:center;cursor:pointer;"
-    						id="grp_area1">
-    						<w2:span id="tb_area1Label" label="영역 1" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    							meta_snippetName="10_16 출력텍스트" style="color:#999;text-align:center;font-size:14px;">
-    						</w2:span>
+    		<xf:group style='width:100%;height:90%;border:1px solid #ddd;' id="grp_main">
+    			<xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true"
+    				meta_snippetName="1_05 좌측 고정 2단 분할_width값 200px" style="height: 90%;">
+    				<xf:group adaptiveThreshold="" class="col_fix" id="" style="width:400px;">
+    					<xf:group id="grp_sidebar" style="width:100%;height:100%;background:#f8f9fa;float:left;">
+    						<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
+    							meta_snippetName="2_03 서브타이틀(h4)" style="display: block;font-size: 20px;font-weight: bold;text-align: center;width: 100%;margin-top: 7px">
+    							<w2:span id="" label="🧩 사용가능 모듈" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="font-size: 20px;font-weight: bold;">
+    							</w2:span>
+    						</xf:group>
+    						<xf:group ev:onmousedown="scwin.module_mouseDown" ev:onmousemove="scwin.global_mouseMove"
+    							ev:onmouseup="scwin.global_mouseUp" id="grp_chatModule"
+    							style="width:83%;background:white;border:2px solid #4CAF50;border-radius:8px;padding:10px;margin:5px auto;cursor:pointer;">
+    							<w2:span id="span1" label='💬' meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:24px;margin-bottom:8px;display:block;">
+    							</w2:span>
+    							<w2:span id="span2" label="채팅" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-weight:bold;margin-bottom:4px;display:block;">
+    							</w2:span>
+    							<w2:span id="span3" label="실시간 메시징" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:12px;color:#666;display:block;">
+    							</w2:span>
+    						</xf:group>
+    						<xf:group ev:onmousedown="scwin.module_mouseDown" ev:onmousemove="scwin.global_mouseMove"
+    							ev:onmouseup="scwin.global_mouseUp" id="grp_videoModule"
+    							style="width:83%;background:white;border:2px solid #4CAF50;border-radius:8px;padding:10px;margin:5px auto;cursor:pointer;">
+    							<w2:span id="span4" label="📹" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:24px;margin-bottom:8px;display:block;">
+    							</w2:span>
+    							<w2:span id="span5" label="화상회의" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-weight:bold;margin-bottom:4px;display:block;">
+    							</w2:span>
+    							<w2:span id="span6" label="WebRTC 영상통화" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="width:100%;text-align:center;font-size:12px;color:#666;display:block;">
+    							</w2:span>
+    						</xf:group>
     					</xf:group>
-    					<xf:group
-    						style="width:45%;height:150px;background:white;border:2px dashed #ddd;border-radius:8px;margin:2%;display:flex;align-items:center;justify-content:center;cursor:pointer;"
-    						id="grp_area2">
-    						<w2:span id="tb_area2Label" label="영역 2" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    							meta_snippetName="10_16 출력텍스트" style="color:#999;text-align:center;font-size:14px;">
-    						</w2:span>
-    					</xf:group>
-    					<xf:group
-    						style="width:45%;height:150px;background:white;border:2px dashed #ddd;border-radius:8px;margin:2%;display:flex;align-items:center;justify-content:center;cursor:pointer;"
-    						id="grp_area3">
-    						<w2:span id="tb_area3Label" label="영역 3" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    							meta_snippetName="10_16 출력텍스트" style="color:#999;text-align:center;font-size:14px;">
-    						</w2:span>
-    					</xf:group>
-    					<xf:group
-    						style="width:45%;height:150px;background:white;border:2px dashed #ddd;border-radius:8px;margin:2%;display:flex;align-items:center;justify-content:center;cursor:pointer;"
-    						id="grp_area4">
-    						<w2:span id="tb_area4Label" label="영역 4" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    							meta_snippetName="10_16 출력텍스트" style="color:#999;text-align:center;font-size:14px;">
-    						</w2:span>
+    				</xf:group>
+    				<xf:group class="" id="" style="background-color: #f0f2f5">
+    					<xf:group id="grp_editWindow" style="display:flex;align-items:center;justify-content:center;flex-direction:column;height: 100%;">
+    						<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
+    							meta_snippetName="2_03 서브타이틀(h4)" style="">
+    							<w2:span id="" label="🖥️ 배치 화면" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    								meta_snippetName="10_16 출력텍스트" style="display: block;font-size: 20px;font-weight: bold;text-align: center;width: 100%;">
+    							</w2:span>
+    						</xf:group>
+    						<xf:group id="grp_canvasContainer"
+    							style="width:96%;height:90%;display:flex;flex-direction:column;border:1px solid #e1e5e9;border-radius:12px;background:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+    							<xf:group
+    								style="width:100%;height:40px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px 8px 0 0;display:flex;align-items:center;padding:0;margin:0;box-sizing:border-box;"
+    								id="grp_browserHeader">
+    								<xf:group style="display:flex;gap:8px;margin-right:auto;margin-left: 10px;" id="">
+
+    									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+    										meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#ff5f57;display:block;" id=""
+    										label="●">
+    									</w2:span>
+    									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+    										meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#ffbd2e;display:block;" id=""
+    										label="●">
+    									</w2:span>
+    									<w2:span id="" label="●" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    										meta_snippetName="10_16 출력텍스트" style="width:12px;height:12px;border-radius:50%;color:#28ca42;display:block;">
+    									</w2:span>
+    								</xf:group>
+    								<w2:span id="" label="localhost:3000/unicon" meta_snippetCategory="10_입력폼"
+    									meta_snippetKeyComponent="true" meta_snippetName="10_16 출력텍스트" style="font-size:12px;color:#666;flex:1;text-align:center;">
+    								</w2:span>
+    								<xf:group style="display:flex;gap:8px;margin-right: 10px;" id="">
+    									<w2:span id="" label="⟲" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    										meta_snippetName="10_16 출력텍스트" style="font-size:14px;color:#666;">
+    									</w2:span>
+    									<w2:span id="" label="✕" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    										meta_snippetName="10_16 출력텍스트" style="font-size:14px;color:#666;">
+    									</w2:span>
+    								</xf:group>
+    							</xf:group>
+    							<xf:group style="display:flex;height:61.80%;gap:5px;margin:5px;" id="row1">
+    								<xf:group
+    									style="width:64.74%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+    									id="grp_area1">
+    									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+    										meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span7" label="영역 1">
+    									</w2:span>
+    								</xf:group>
+    								<xf:group
+    									style="width:30%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+    									id="grp_area2">
+    									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+    										meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span8" label="영역 2">
+    									</w2:span>
+    								</xf:group>
+    								<xf:group
+    									style="width:64.75%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+    									id="grp_area3">
+    									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+    										meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span9" label="영역 3">
+    									</w2:span>
+    								</xf:group>
+    								<xf:group
+    									style="width:30%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+    									id="grp_area4">
+    									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+    										meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span10" label="영역 4">
+    									</w2:span>
+    								</xf:group>
+    							</xf:group>
+    							<xf:group style="display:flex;height:47.59%;gap:5px;margin:5px;" id="row2">
+    								<xf:group
+    									style="width:64.74%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+    									id="grp_area5">
+    									<w2:span id="" label="영역 5" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    										meta_snippetName="10_16 출력텍스트" style="color:#999;text-align:center;font-size:14px;">
+    									</w2:span>
+    								</xf:group>
+    								<xf:group
+    									style="width:50%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+    									id="grp_area6">
+    									<w2:span id="" label="영역 6" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    										meta_snippetName="10_16 출력텍스트" style="color:#999;text-align:center;font-size:14px;">
+    									</w2:span>
+    								</xf:group>
+    							</xf:group>
+    						</xf:group>
     					</xf:group>
     				</xf:group>
     			</xf:group>
