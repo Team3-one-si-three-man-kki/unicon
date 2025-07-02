@@ -76,6 +76,7 @@ public class ProworksSystemHandleAdapter extends ElSystemHandleAdapter {
 			AppLog.debug(" - svcId:[" + svcId + "]");         // 서비스 ID
 			AppLog.debug(" - ext:[" + ext + "]");             // 요청 확장자 : pwkjson, fld
 			AppLog.debug(" - inputData:[" + inputData + "]"); // 요청 전문 
+			AppLog.debug("request: "+request);
 			
 			/////////////// 업무 요건 처리 (권한 처리 등 ... )  ////////////////////// 
 			/// ElBeanUtils.getBean 으로 획득한 서비스를 통해 처리

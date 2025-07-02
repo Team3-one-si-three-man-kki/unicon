@@ -16,14 +16,16 @@ public class ProworksAuthProcess {
 	}
 	
 	public void checkAuth(HttpServletRequest request, String svcId, String inputData) throws Exception{
-		 // 1단계: 공개 URL 체크
-    if (isPublicService(svcId)) {
-        AppLog.debug("공개 서비스 - 권한 체크 제외: " + svcId);
+	 	String requiredRole = getRequiredRoleForProWorksService(svcId);
+	 	System.out.println(requiredRole);
+	 	
+	 	if(requiredRole.equals("GUEST")){
+	 		AppLog.debug("게스트서비스 서비스 - 권한 체크 제외: " + svcId+ ", "+requiredRole);
         return; // 권한 체크 없이 통과
-    }
-	
-	
+	 	}
+	 	System.out.println("유저헤더 터지는 것같은데");
 		UserHeader userHeader = ControllerContextUtil.getUserHeader();
+		System.out.println(userHeader);
 		
 //		try{
 //			if( userHeader != null ) {  // 세션이 존재함 
@@ -54,6 +56,7 @@ public class ProworksAuthProcess {
 //		}
 
   if (!(userHeader instanceof ProworksUserHeader)) {
+	  		System.out.println(userHeader);
             throw new UserException("ERR.USER.0002");
         }
         
@@ -68,7 +71,6 @@ public class ProworksAuthProcess {
             throw new UserException("ERR.USER.0004"); // 비활성 계정
         }
         
-        String requiredRole = getRequiredRoleForProWorksService(svcId);
         
         if (!authService.hasRole(proWorksUserHeader, requiredRole)) {
             AppLog.debug("권한 부족 - 사용자: " + proWorksUserHeader.getRole() 
@@ -92,11 +94,6 @@ public class ProworksAuthProcess {
     // 기본값: GUEST
     return "GUEST";
 }
-    
-    private boolean isPublicService(String svcId) {
-    return svcId.startsWith("TNU0001Login") || 
-           svcId.startsWith("TNU0002Register") ||
-           svcId.startsWith("api/public");
-}
+
 
 }
