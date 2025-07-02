@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:aliasDataMap studioSrc="/InsWebApp/main/login_custom.xml" scope="../dm_loginCustomInfo" id="aliasDataMap1"></w2:aliasDataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    scwin.addSlider();
+    scwin.addColor();
+    scwin.addUpload();
+    scwin.loginCustomInfo = aliasDataMap1.getObj();
+
+};
+
+scwin.addUpload = function () {
+    // 1. input 요소 생성
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';      // 허용할 파일 타입 (옵션)
+    // fileInput.multiple = true;         // 다중 선택 허용 (옵션)
+    fileInput.style.display = 'none'; // input 자체는 숨기기 (label 클릭으로 대체)
+    bgImgGroup.appendChild(fileInput);
+
+
+    // 2. 업로드 아이콘(w2:anchor) 클릭 이벤트 연결
+    fileNameDisplay.bind("onclick", function () {
+        fileInput.click();
+    });
+
+    // 2. change 이벤트 핸들러 등록
+    fileInput.addEventListener('change', function (event) {
+        var file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        // 3-1. WebSquare 인풋에 파일 이름 표시
+        fileNameDisplay.setValue(file.name);
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            // 파일 내용을 Data URL로 변환하여 데이터맵에 저장
+            scwin.loginCustomInfo.set("backgroundImage", e.target.result);
+        };
+
+        reader.readAsDataURL(file);
+
+        // 예: 선택 직후 서버로 전송하려면 FormData 사용
+        // var formData = new FormData();
+        // Array.from(files).forEach(f => formData.append('files', f));
+        // fetch('/upload/api', { method: 'POST', body: formData })
+        //   .then(res => res.json())
+        //   .then(json => console.log('업로드 결과:', json))
+        //   .catch(err => console.error(err));
+    });
+}
+
+scwin.addSlider = function () {
+    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
+
+    // input 엘리먼트 생성
+    var slider = document.createElement("input");
+    slider.type = "range";
+    slider.id = "customSlider";
+    slider.min = "0";
+    slider.max = "100";
+    slider.value = "50";
+    slider.step = "1";
+    slider.style.width = "100%";
+
+    // 이벤트 바인딩 예시
+    slider.addEventListener("input", function () {
+        scwin.loginCustomInfo.set("overlayOpacity", slider.value);
+        opacity_text.setValue("오버레이 투명도 : " + slider.value + "%");
+    });
+
+    // DOM에 추가
+    sliderGroup.appendChild(slider);
+    opacity_text.setValue("오버레이 투명도 : " + slider.value + "%");
+}
+
+scwin.addColor = function () {
+    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
+
+    // input 엘리먼트 생성
+    var color = document.createElement("input");
+    color.type = "color";
+    color.style.width = "100%";
+    color.style.height = "35px";
+    color.id = "customColor";
+
+    // 이벤트 바인딩 예시
+    color.addEventListener("input", function () {
+        scwin.loginCustomInfo.set("overlayColor", color.value);
+        console.log("123",color.value);
+    });
+
+    // DOM에 추가
+    colorGroup.appendChild(color);
+}
+
+]]>
+		</script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="start" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+			style="">
+
+			<xf:group id="bgImgGroup" style="margin-bottom:10px;">
+				<w2:textbox style="margin-bottom: 10px;" id="" label="배경이미지"></w2:textbox>
+				<xf:group style="position: relative; display: flex; align-items: center; width: 100%;">
+					<xf:input id="fileNameDisplay"
+						style="width: 100%; padding: 8px 40px 8px 12px; border: 1px solid #ced4da; border-radius: 4px; background-color: #f8f9fa;"
+						placeholder="이미지 파일을 선택하세요" readonly="true" readOnly="true" initValue="이미지 업로드"></xf:input>
+				</xf:group>
+			</xf:group>
+
+			<xf:group id="sliderGroup" style="margin-bottom:10px;">
+				<w2:textbox style="margin-bottom: 5px;" id="opacity_text" label="오버레이 투명도"></w2:textbox>
+			</xf:group>
+
+			<xf:group id="colorGroup" style="margin-bottom:10px;">
+				<w2:textbox style="margin-bottom: 10px;" id="" label="오버레이 색상"></w2:textbox>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
