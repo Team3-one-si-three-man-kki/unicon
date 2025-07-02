@@ -7,14 +7,115 @@
         <w2:buildDate/>
         <w2:MSA/>
         <xf:model>
-            <w2:dataCollection baseNode="map"/>
-            <w2:workflowCollection/>
+        	<w2:dataCollection baseNode="map">
+        		
+				<w2:dataMap id="dm_loginCustomInfo" ev:onmodelchange="scwin.dm_loginCustomInfo_onmodelchange">
+					<w2:keyInfo>
+						<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
+						<w2:key id="logo" name="logo" dataType="text"></w2:key>
+						<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
+						<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
+						<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
+						<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
+						<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
+						<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
+						<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
+						<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
+						<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
+						<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
+						<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
+						<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
+						<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
+						<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
+						<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
+						<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
+						<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+					</w2:keyInfo>
+					<w2:data xmlns="" use="true">
+						<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
+						<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
+						<logoSize><![CDATA[80]]></logoSize>
+						<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
+						<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
+						<mainTitleSize><![CDATA[32]]></mainTitleSize>
+						<mainTitleFont><![CDATA[700]]></mainTitleFont>
+						<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
+						<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
+						<subTitleSize><![CDATA[18]]></subTitleSize>
+						<subTitleFont><![CDATA[400]]></subTitleFont>
+						<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
+						<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
+						<extraTitleSize><![CDATA[16]]></extraTitleSize>
+						<extraTitleFont><![CDATA[300]]></extraTitleFont>
+						<overlayOpacity><![CDATA[50]]></overlayOpacity>
+						<overlayColor><![CDATA[black]]></overlayColor>
+						<primaryColor><![CDATA[#667eea]]></primaryColor>
+						<accentColor><![CDATA[#ffffff]]></accentColor>
+					</w2:data>
+				</w2:dataMap>
+			</w2:dataCollection>
+        	<w2:workflowCollection />
+        	<xf:submission id="loadPreview" action="/InsWebApp/data/config.json" method="post" mediatype="application/json" ref="" target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}'
+        		encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+        		ev:submitdone="scwin.loadPreview_submitdone" ev:submiterror="" abortTrigger="">
+        	</xf:submission>
         </xf:model>
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
         <script lazy="false" type="text/javascript"><![CDATA[
-scwin.onpageload = function() {
-	
+scwin.onpageload = function () {
+};
+scwin.dm_loginCustomInfo = dm_loginCustomInfo;
+
+// 데이터 업데이트 함수
+scwin.updateCustomData = function (key, value) {
+    // 1. 메인 페이지의 DataMap 데이터 변경
+    dm_customData.set(key, value);
+
+    // 2. PageFrame에 로드된 페이지의 DataMap을 직접 제어
+    var previewFrame = $p.getFrame("loginPage");
+    console.log(previewFrame)
+    if (previewFrame) {
+        // 자식 페이지의 DataMap(예: dm_loginInfo)에 직접 값을 설정
+        previewFrame.loginCustomInfo.set(key, value);
+    }
+};
+
+scwin.loginPage_onpageframeload = function () {
+    // 이 함수는 loginPage의 로딩이 '완료'되었을 때 확실하게 호출됩니다.
+    console.log("자식 페이지(loginPage) 로딩 완료.");
+
+    $c.sbm.execute(loadPreview)
+};
+
+scwin.loadPreview_submitdone = function (e) {
+    var elData = e.responseJSON.loginCustomInfo;
+    /*
+    var elHeader  = e.responseJSON.elHeader;
+    if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
+        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        return false;
+    }
+    */
+    var dataToPass = {
+        mode: "preview",
+        tenantId: "inswave",
+        loginCustomInfo: elData
+    };
+
+    // 로딩이 완료된 자식 페이지의 setInitData 함수를 직접 호출하여 데이터를 전달합니다.
+
+    loginPage.getWindow().scwin.setInitData(dataToPass);
+};
+
+scwin.dm_loginCustomInfo_onmodelchange = function (info) {
+    console.log("123123",info);
+    // 변경된 전체 데이터를 미리보기 페이지에 전달(Push)
+    var previewWindow = loginPage.getWindow();
+    if (previewWindow && typeof previewWindow.scwin.applyCustomization === "function") {
+        previewWindow.scwin.applyCustomization(dm_loginCustomInfo.getJSON());
+        console.log("요기조기",dm_loginCustomInfo.getJSON());
+    }
 };
 ]]></script>
     </head>
@@ -23,24 +124,32 @@ scwin.onpageload = function() {
     		style="">
     		<xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true"
     			meta_snippetName="1_06 좌측 고정 2단 분할_width값 300px" style="">
-    			<xf:group adaptiveThreshold="" class="col_fix" id="" style="width:600px;">
+    			<xf:group adaptiveThreshold="" class="col_fix" id="" style="width: 370px;">
     				<xf:group class="tbcbox" id="" meta_snippetCategory="04_탭" meta_snippetKeyComponent="true" meta_snippetName="4_01 탭">
-    					<w2:tabControl alwaysDraw="false" class="tbc" id="" style="">
-    						<w2:tabs disabled="false" id="tabs6" label="TAB1" style=""></w2:tabs>
-    						<w2:tabs disabled="false" id="tabs7" label="TAB2" style=""></w2:tabs>
-    						<w2:tabs disabled="false" id="tabs8" label="TAB3" style=""></w2:tabs>
-    						<w2:content alwaysDraw="false" id="content6" style="">
-    						</w2:content>
-    						<w2:content alwaysDraw="false" id="content7" style=""></w2:content>
-    						<w2:content alwaysDraw="false" id="content8" style=""></w2:content>
-    					</w2:tabControl>
     				</xf:group>
-    				<xf:group class="tbcbox" id="" meta_snippetCategory="04_탭" meta_snippetKeyComponent="true" meta_snippetName="4_02 서브탭"
-    					style="">
+    				<w2:textbox id="" label="로그인 페이지 커스터마이징" style="font-size: 20px;margin-bottom: 5px;" tagname="h2"></w2:textbox>
+    				<w2:textbox style="font-size: 12px;margin-bottom: 20px;" id="" label="테넌트별 로그인 페이지를 디자인하세요"></w2:textbox>
+    				<xf:group class="tbcbox" id="" meta_snippetCategory="04_탭" meta_snippetKeyComponent="true" meta_snippetName="4_01 탭">
+    					<xf:group class="tbcbox" id="" meta_snippetCategory="04_탭" meta_snippetKeyComponent="true"
+    						meta_snippetName="4_01 탭">
+    						<w2:tabControl alwaysDraw="false" class="tbc" id="" style="">
+    							<w2:tabs disabled="false" id="tabs19" label="배경" style=""></w2:tabs>
+    							<w2:tabs disabled="false" id="tabs20" label="텍스트" style=""></w2:tabs>
+    							<w2:tabs disabled="false" id="tabs21" label="색" style=""></w2:tabs>
+    							<w2:tabs disabled="false" style="" id="tabs22" label="로고"></w2:tabs>
+    							<w2:content alwaysDraw="false" id="content19" style="" src="/InsWebApp/ui/login_custom_tab/background_custom.xml"></w2:content>
+    							<w2:content alwaysDraw="false" id="content20" style="" src="/InsWebApp/ui/login_custom_tab/title_custom.xml"></w2:content>
+    							<w2:content alwaysDraw="false" id="content21" style="" src="/InsWebApp/ui/login_custom_tab/color_custom.xml"></w2:content>
+    							<w2:content alwaysDraw="false" style="" id="content22" src="/InsWebApp/ui/login_custom_tab/logo_custom.xml"></w2:content>
+    						</w2:tabControl>
+    					</xf:group>
+    					<xf:trigger style="width: 100%;padding: 10px;color:white;background:#66aaab;" id="" type="button">
+    						<xf:label><![CDATA[변경사항 저장]]></xf:label>
+    					</xf:trigger>
     				</xf:group>
     			</xf:group>
     			<xf:group class="" id="" style="" localeRef="main/unicon_login_page.xml">
-    				<w2:pageFrame style="" id="" src="/InsWebApp/main/unicon_login_page.xml"></w2:pageFrame>
+    				<w2:pageFrame style="" id="loginPage" src="/InsWebApp/main/unicon_login_page.xml" ev:onpageframeload="scwin.loginPage_onpageframeload"></w2:pageFrame>
     			</xf:group>
     		</xf:group>
     	</xf:group>

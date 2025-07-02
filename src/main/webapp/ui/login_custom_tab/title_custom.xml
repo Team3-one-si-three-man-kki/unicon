@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:aliasDataMap studioSrc="/InsWebApp/main/login_custom.xml" scope="../dm_loginCustomInfo" id="aliasDataMap1"></w2:aliasDataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function() {
+    scwin.loginCustomInfo = aliasDataMap1.getObj();
+	scwin.addColor();
+    // mainTitleSize.setValue(scwinlloginCustomInfo.get("mainTitleSize"));
+
+    console.log(scwin.loginCustomInfo)
+};
+
+scwin.addColor = function(){
+    const arrid = ["main","sub","extra"]
+    const arrObj = [main_color_group, sub_color_group, extra_color_group]
+
+    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
+    // input 엘리먼트 생성
+    
+    for (let i = 0; i < arrid.length; i++){
+        var color = document.createElement("input");
+        color.type = "color";
+        color.style.width = "100%";
+        color.id = arrid[i];
+        color.value = scwin.loginCustomInfo.get(arrid[i]+"TitleColor");
+
+        // 이벤트 바인딩 예시
+        color.addEventListener("input", function() {
+            scwin.loginCustomInfo.set(this.id+"TitleColor", this.value);
+            console.log("현재 값:", this.id);
+            console.log("color",this.value);
+        });
+
+        // DOM에 추가
+        arrObj[i].appendChild(color);
+    }
+}
+
+scwin.mainTitle_onkeyup = function (e) {
+    console.log(mainTitle.getValue());
+    scwin.loginCustomInfo.set("mainTitle", mainTitle.getValue());
+};
+
+scwin.subTitle_onkeyup = function (e) {
+    scwin.loginCustomInfo.set("subTitle", subTitle.getValue());
+};
+
+scwin.extraTitle_onkeyup = function (e) {
+    scwin.loginCustomInfo.set("extraTitle", extraTitle.getValue());
+};
+
+scwin.mainTitleSize_onviewchange = function (info) {
+    scwin.loginCustomInfo.set("mainTitleSize", info.newValue);
+};
+
+scwin.subTitleSize_onviewchange = function (info) {
+    scwin.loginCustomInfo.set("subTitleSize", info.newValue);
+};
+
+scwin.extraTitleSize_onviewchange = function (info) {   
+    scwin.loginCustomInfo.set("extraTitleSize", info.newValue);
+};
+
+scwin.mainTitleFont_onchange = function (info) {
+    console.log(info)
+    scwin.loginCustomInfo.set("mainTitleFont", info.newValue);
+};
+
+scwin.subTitleFont_onchange = function (info) {
+    scwin.loginCustomInfo.set("subTitleFont", info.newValue);
+};
+
+scwin.extraTitleFont_onchange = function (info) {
+    scwin.loginCustomInfo.set("extraTitleFont", info.newValue);
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="start" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+			style="">
+			<xf:group id="main_group" style="margin-bottom: 40px;">
+				<xf:group id="" style="margin-bottom:10px;">
+					<w2:textbox style="width:100%;margin-bottom: 10px" id="" label="메인 제목"></w2:textbox>
+					<xf:input meta_snippetCategory="10_입력폼" meta_snippetName="10_01 InputBox" meta_snippetKeyComponent="true" style="width:100%;"
+						id="mainTitle" placeholder="" class="" ev:onkeyup="scwin.mainTitle_onkeyup" ref="data:aliasDataMap1.mainTitle">
+					</xf:input>
+				</xf:group>
+				<xf:group id="main_size_and_color_group"
+					style="display: flex;justify-content: space-between;align-items: center;margin-bottom:10px;gap: 10px;">
+					<xf:group id="" style="flex:1;">
+						<w2:textbox style="font-size: 12px;margin-bottom: 5px;" id="" label="크기"></w2:textbox>
+						<w2:spinner skin="type1" inputReadOnly="false" style="position: relative;width: 100%;" id="mainTitleSize" buttonSize="30"
+							ref="data:aliasDataMap1.mainTitleSize" ev:onviewchange="scwin.mainTitleSize_onviewchange">
+						</w2:spinner>
+					</xf:group>
+					<xf:group id="main_color_group" style="flex:1;">
+						<w2:textbox style="font-size: 12px;margin-bottom: 5px;" id="" label="색상"></w2:textbox>
+					</xf:group>
+				</xf:group>
+				<xf:group id="" style="margin-bottom:10px;">
+					<xf:select1 ref="data:aliasDataMap1.mainTitleFont" submenuSize="auto" appearance="minimal"
+						disabledClass="w2selectbox_disabled" chooseOption="" disabled="false" style="" allOption="" id="mainTitleFont" direction="auto"
+						textAlign="left" ev:onchange="scwin.mainTitleFont_onchange">
+						<xf:choices>
+							<xf:item>
+								<xf:label><![CDATA[Thin]]></xf:label>
+								<xf:value><![CDATA[100]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Light]]></xf:label>
+								<xf:value><![CDATA[300]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Normal]]></xf:label>
+								<xf:value><![CDATA[400]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Medium]]></xf:label>
+								<xf:value><![CDATA[500]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Semi Bold]]></xf:label>
+								<xf:value><![CDATA[600]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Bold]]></xf:label>
+								<xf:value><![CDATA[700]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Black]]></xf:label>
+								<xf:value><![CDATA[900]]></xf:value>
+							</xf:item>
+						</xf:choices>
+
+					</xf:select1>
+				</xf:group>
+			</xf:group>
+			<xf:group style="margin-bottom: 40px;" id="sub_group">
+				<xf:group id="" style="margin-bottom:10px;">
+					<w2:textbox style="width: 100%;margin-bottom: 10px;" id="" label="서브 제목"></w2:textbox>
+					<xf:input meta_snippetCategory="10_입력폼" meta_snippetName="10_01 InputBox" meta_snippetKeyComponent="true" style="width:100%;"
+						id="subTitle" placeholder="" class="" ev:onkeyup="scwin.subTitle_onkeyup" ref="data:aliasDataMap1.subTitle">
+					</xf:input>
+				</xf:group>
+				<xf:group id="sub_size_and_color_group"
+					style="display: flex;  justify-content: space-between;align-items: center;margin-bottom:10px;gap: 10px;">
+					<xf:group id="" style="flex:1;">
+						<w2:textbox style="font-size: 12px;margin-bottom: 5px;" id="" label="크기"></w2:textbox>
+						<w2:spinner skin="type1" inputReadOnly="false" style="position: relative;position: relative;width: 100%;" id="subTitleSize"
+							buttonSize="30" ref="data:aliasDataMap1.subTitleSize" ev:onviewchange="scwin.subTitleSize_onviewchange">
+						</w2:spinner>
+					</xf:group>
+					<xf:group id="sub_color_group" style="flex:1;">
+						<w2:textbox style="font-size: 12px;margin-bottom: 5px;" id="" label="색상"></w2:textbox>
+					</xf:group>
+				</xf:group>
+				<xf:group id="" style="margin-bottom:10px;">
+					<xf:select1 ref="data:aliasDataMap1.subTitleFont" submenuSize="auto" appearance="minimal"
+						disabledClass="w2selectbox_disabled" chooseOption="" disabled="false" style="" allOption="" id="subTitleFont" direction="auto"
+						textAlign="left" ev:onchange="scwin.subTitleFont_onchange">
+						<xf:choices>
+							<xf:item>
+								<xf:label><![CDATA[Thin]]></xf:label>
+								<xf:value><![CDATA[100]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Light]]></xf:label>
+								<xf:value><![CDATA[300]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Normal]]></xf:label>
+								<xf:value><![CDATA[400]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Medium]]></xf:label>
+								<xf:value><![CDATA[500]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Semi Bold]]></xf:label>
+								<xf:value><![CDATA[600]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Bold]]></xf:label>
+								<xf:value><![CDATA[700]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Black]]></xf:label>
+								<xf:value><![CDATA[900]]></xf:value>
+							</xf:item>
+						</xf:choices>
+
+					</xf:select1>
+				</xf:group>
+				<w2:textbox id="" label="" style="width: 90%;height: 1px; margin: auto;"></w2:textbox>
+			</xf:group>
+			<xf:group style="margin-bottom: 20px;" id="extra_group">
+				<xf:group id="" style="margin-bottom:10px;">
+					<w2:textbox style="width: 100%;margin-bottom: 10px;" id="" label="추가 텍스트"></w2:textbox>
+					<xf:input meta_snippetCategory="10_입력폼" meta_snippetName="10_01 InputBox" meta_snippetKeyComponent="true" style="width:100%"
+						id="extraTitle" placeholder="" class="" ev:onkeyup="scwin.extraTitle_onkeyup" ref="data:aliasDataMap1.extraTitle">
+					</xf:input>
+				</xf:group>
+				<xf:group id="extra_size_and_color_group"
+					style="display: flex;justify-content: space-between;align-items: center;margin-bottom:10px;gap: 10px;">
+					<xf:group id="" style="flex:1">
+						<w2:textbox style="font-size: 12px;margin-bottom: 5px;" id="" label="크기"></w2:textbox>
+						<w2:spinner skin="type1" inputReadOnly="false" style="position: relative;position: relative;width: 100%;"
+							id="extraTitleSize" buttonSize="30" ref="data:aliasDataMap1.extraTitleSize" ev:onviewchange="scwin.extraTitleSize_onviewchange" editType="focus">
+						</w2:spinner>
+					</xf:group>
+					<xf:group id="extra_color_group" style="flex:1">
+						<w2:textbox style="font-size: 12px;margin-bottom: 5px;" id="" label="색상"></w2:textbox>
+					</xf:group>
+				</xf:group>
+				<xf:group id="" style="margin-bottom:10px;">
+					<xf:select1 ref="data:aliasDataMap1.extraTitleFont" submenuSize="auto" appearance="minimal"
+						disabledClass="w2selectbox_disabled" chooseOption="" disabled="false" style="" allOption="" id="extraTitleFont" direction="auto"
+						textAlign="left" ev:onchange="scwin.extraTitleFont_onchange">
+						<xf:choices>
+							<xf:item>
+								<xf:label><![CDATA[Thin]]></xf:label>
+								<xf:value><![CDATA[100]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Light]]></xf:label>
+								<xf:value><![CDATA[300]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Normal]]></xf:label>
+								<xf:value><![CDATA[400]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Medium]]></xf:label>
+								<xf:value><![CDATA[500]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Semi Bold]]></xf:label>
+								<xf:value><![CDATA[600]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Bold]]></xf:label>
+								<xf:value><![CDATA[700]]></xf:value>
+							</xf:item>
+							<xf:item>
+								<xf:label><![CDATA[Black]]></xf:label>
+								<xf:value><![CDATA[900]]></xf:value>
+							</xf:item>
+						</xf:choices>
+					</xf:select1>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
