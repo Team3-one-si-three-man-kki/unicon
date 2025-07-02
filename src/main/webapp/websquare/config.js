@@ -95,7 +95,7 @@ export default {
       "@value": "false"
     },
     "stylesheet": {
-      "@earlyImportList": "/InsWebApp/cm/css/base.css,/InsWebApp/cm/css/common.css,/InsWebApp/cm/css/m_content.css,/InsWebApp/cm/css/swiper.css",
+      "@earlyImportList": "/InsWebApp/cm/css/base.css,/InsWebApp/cm/css/common.css,/InsWebApp/cm/css/m_content.css,/InsWebApp/cm/css/swiper.css,/InsWebApp/cm/css/main.css",
       "@enable": "true",
       "@import": "link",
       "@value": "stylesheet_ext.css"

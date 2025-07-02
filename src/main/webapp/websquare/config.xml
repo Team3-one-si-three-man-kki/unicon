@@ -33,7 +33,7 @@
     <byteCheckEncoding value="euc-kr"/>
     <initScript value="false"/>
     <clearMemory value="false"/>
-    <stylesheet earlyImportList="/InsWebApp/cm/css/base.css,/InsWebApp/cm/css/common.css,/InsWebApp/cm/css/m_content.css,/InsWebApp/cm/css/swiper.css" enable="true" import="link" value="stylesheet_ext.css"/>
+    <stylesheet earlyImportList="/InsWebApp/cm/css/base.css,/InsWebApp/cm/css/common.css,/InsWebApp/cm/css/m_content.css,/InsWebApp/cm/css/swiper.css,/InsWebApp/cm/css/main.css" enable="true" import="link" value="stylesheet_ext.css"/>
     <mediaInfo>
         <media maxWidth="" minWidth="1025" name="desktop"/>
         <media maxWidth="1024" minWidth="768" name="tablet"/>
@@ -43,7 +43,7 @@
         <removeDefaultClass value="true"/>
     </style>
     <engine>
-        <module src="/InsWebApp/cm/js/swiper.min.js" />
+        <module src="/InsWebApp/cm/js/swiper.min.js"/>
     </engine>
     <ModelUtil>
         <copyChildrenNodes refresh="false"/>

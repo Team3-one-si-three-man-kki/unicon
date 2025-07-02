@@ -18,7 +18,7 @@
 		    <mvc:mapping path="/**" />
 		    <bean class="com.inswave.elfw.intercept.ElHandlerInterceptorAdapter" />
 	    </mvc:interceptor>
-	</mvc:interceptors> 	      	
+	</mvc:interceptors>
     		    	   
 	<bean id="jdbcInterceptor" class="com.inswave.elfw.db.sql.ElJdbcInterceptor">
 	    <property name="sqlInjectionPatternInterceptor" ref="sqlInjectionPatternInterceptor" />
@@ -123,5 +123,3 @@
 
  		        	   
 </beans>
-
-
