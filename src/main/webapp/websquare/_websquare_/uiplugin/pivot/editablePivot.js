@@ -1920,7 +1920,11 @@
                                         var thStr = "<th " + headerTextAlignStr + "class='type3 pvtTotalLabel' rowspan='";
                                         thStr += colAttrs.length + (rowAttrs.length === 0 ? 0 : 1)
                                         thStr += "' >";
-                                        thStr += (opts.attributeLabels[pivotData.valAttrs[k]] || pivotData.valAttrs[k]);
+                                        if (opts.grandTotalRowLabel && opts.grandTotalRowLabel[pivotData.valAttrs[k]]) {
+                                            thStr += (opts.grandTotalRowLabel[pivotData.valAttrs[k]] || (opts.attributeLabels[pivotData.valAttrs[k]] || pivotData.valAttrs[k]));
+                                        } else {
+                                            thStr += (opts.attributeLabels[pivotData.valAttrs[k]] || pivotData.valAttrs[k]);
+                                        }
                                         thStr += "</th>";
                                         result.push(thStr);
                                     }
@@ -2487,7 +2491,11 @@
                                 thStr += (rowAttrs.length + (colAttrs.length === 0 ? 0 : 1));
                             }
                             thStr += "' >";
-                            thStr += (opts.attributeLabels[pivotData.valAttrs[i]] || pivotData.valAttrs[i]);
+                            if (opts.grandTotalRowLabel && opts.grandTotalRowLabel[pivotData.valAttrs[i]]) {
+                                thStr += (opts.grandTotalRowLabel[pivotData.valAttrs[i]] || (opts.attributeLabels[pivotData.valAttrs[i]] || pivotData.valAttrs[i]));
+                            } else {
+                                thStr += (opts.attributeLabels[pivotData.valAttrs[i]] || pivotData.valAttrs[i]);
+                            }
                             thStr += "</th>";
                             result.push(thStr);
                             var isBroken = false;
@@ -3538,6 +3546,9 @@
                             rows: [],
                             vals: []
                         };
+                        if (opts.grandTotalRowLabel) {
+                            subopts.rendererOptions["grandTotalRowLabel"] = opts.grandTotalRowLabel;
+                        }
                         _this.find(".pvtRows li span.pvtAttr").each(function() {
                             return subopts.rows.push($(this).data("attrName"));
                         });

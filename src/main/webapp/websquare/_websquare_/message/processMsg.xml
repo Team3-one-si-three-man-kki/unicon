@@ -72,7 +72,7 @@
         <script type="text/javascript" lazy="false"><![CDATA[
         
     scwin.onpageload = function() {
-        image_bar.setSrc(WebSquare.baseURI + "/_websquare_/message/images/progressingbar.gif");
+        image_bar.setSrc(WebSquare.baseURI + "_websquare_/message/images/progressingbar.gif");
         btn_hide.dom.input.value = WebSquare.language.getMessage("Window_close");
         btn_cancel.dom.input.value = WebSquare.language.getMessage("Window_cancel");
     };
