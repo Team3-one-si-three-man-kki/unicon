@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_moduleList">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="module_id" id="moduleId"></w2:key>
+						<w2:key dataType="text" name="code" id="code"></w2:key>
+						<w2:key dataType="text" name="name" id="name"></w2:key>
+						<w2:key dataType="text" name="description" id="description"></w2:key>
+						<w2:key dataType="text" name="icon" id="icon"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+			<xf:submission id="sbm_moduleList" action="/InsWebApp/ModuleList.pwkjson " method="post" mediatype="application/json"
+				ref='data:json,{"id":"dma_moduleList","key":"moduleVo"}' target='' encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_moduleList_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
+    // 페이지 로드시 바로 모듈 리스트 불러오는 함수 실행
+    scwin.loadModuleList();
+};
+
+//--------------------------모듈 불러오기--------------------------
+
+// 모듈 목록 조회 함수
+scwin.loadModuleList = function () {
+    $p.executeSubmission("sbm_moduleList");
+};
+
+// 서브미션 성공 콜백 함수
+scwin.sbm_moduleList_submitdone = function (e) {
+    // 응답 데이터를 직접 가져오기
+    if (e && e.responseJSON) {
+        //console.log("응답 데이터:", e.responseJSON);
+
+        // 직접 응답 데이터를 받아서 처리... -> 이게 맞는 방식?!
+        scwin.moduleResponseData = e.responseJSON;
+        scwin.createModuleElements();
+    } else {
+        console.log("응답 데이터가 없습니다.");
+    }
+};
+
+// 모듈을 동적으로 불러오는 함수
+scwin.createModuleElements = function () {
+    // 기존의 정적 모듈 제거
+    //scwin.removeStaticModules
+
+    // 서브미션 응답에서 직접 데이터 사용
+    var moduleData = scwin.moduleResponseData.elData.moduleVoList;
+
+    console.log("모듈 데이터:", moduleData);
+
+    if (!moduleData || moduleData.length === 0) {
+        console.log("모듈 데이터가 없습니다.");
+        return;
+    }
+
+    var sidebarGroup = $p.getComponentById("grp_sidebar");
+
+    for (var i = 0; i < moduleData.length; i++) {
+        var module = moduleData[i];
+        scwin.createSingleModule(sidebarGroup, module, i);
+    }
+};
+
+// 모듈 개별 요소 동적 생성 함수
+scwin.createSingleModule = function (parentGroup, moduleData, index) {
+    var moduleId = "grp_module_" + moduleData.moduleId;
+
+    // 모듈 그룹 생성
+    // HTML 요소를 직접 생성
+    var moduleGroup = document.createElement("div");
+    moduleGroup.id = moduleId;
+    moduleGroup.className = "w2group";
+    moduleGroup.style.cssText = "width:83%;background:white;border:2px solid #4CAF50;border-radius:8px;padding:10px;margin:5px auto;cursor:pointer;";
+
+    // 이벤트 핸들러 설정
+    moduleGroup.addEventListener("mousedown", scwin.module_mouseDown);
+    moduleGroup.addEventListener("mousemove", scwin.global_mouseMove);
+    moduleGroup.addEventListener("mouseup", scwin.global_mouseUp);
+
+    // 부모에 추가
+    document.getElementById("mf_grp_sidebar").appendChild(moduleGroup);
+
+    // 내부 요소들 생성 (아이콘, 이름, 설명)
+    scwin.createModuleContent(moduleGroup, moduleData);
+}
+
+// 모듈 내부 콘텐츠 생성 함수(아이콘, 이름, 설명)
+scwin.createModuleContent = function (moduleGroup, moduleData) {
+    // 기존 내용 지우기
+    moduleGroup.innerHTML = '';
+
+    // 아이콘 span 생성
+    var iconSpan = document.createElement("span");
+    iconSpan.id = "span_icon_" + moduleData.moduleId;
+    iconSpan.textContent = moduleData.icon;
+    iconSpan.style.cssText = "width:100%;text-align:center;font-size:24px;margin-bottom:8px;display:block;";
+    moduleGroup.appendChild(iconSpan);
+
+    // 이름 span 생성
+    var nameSpan = document.createElement("span");
+    nameSpan.id = "span_name_" + moduleData.moduleId;
+    nameSpan.textContent = moduleData.name;
+    nameSpan.style.cssText = "width:100%;text-align:center;font-weight:bold;margin-bottom:4px;display:block;";
+    moduleGroup.appendChild(nameSpan);
+
+    // 설명 span 생성
+    var descSpan = document.createElement("span");
+    descSpan.id = "span_desc_" + moduleData.moduleId;
+    descSpan.textContent = moduleData.description;
+    descSpan.style.cssText = "width:100%;text-align:center;font-size:12px;color:#666;display:block;";
+    moduleGroup.appendChild(descSpan);
+};
+
+
+//----------------------드래그앤드롭 이벤트--------------------------
+
+// 드래그 상태 변수들
+scwin.isDragging = false;
+scwin.draggedModuleId = null;
+
+// 마우스 다운 - 드래그 시작
+scwin.module_mouseDown = function (e, comp) {
+    scwin.isDragging = true;
+    // 모듈 ID 동적으로 처리
+    scwin.draggedModuleId = "mf_" + this.id;
+
+    console.log("드래그 시작:", scwin.draggedModuleId);
+
+    // 기본 선택 동작 방지 (영역 드래그 잡히는거 방지)
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+
+    // 전체 문서에서 텍스트 선택 방지
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+    document.body.style.mozUserSelect = 'none';
+    document.body.style.msUserSelect = 'none';
+
+    // 드래그 중 커서 변경
+    document.body.style.cursor = 'grabbing';
+
+    // 전체 문서에 마우스 이벤트 추가
+    document.addEventListener('mousemove', scwin.global_mouseMove);
+    document.addEventListener('mouseup', scwin.global_mouseUp);
+
+    return false; // 기본 동작 차단
+};
+
+// 전체 화면에서 마우스 무브
+scwin.global_mouseMove = function (e) {
+    if (!scwin.isDragging) return;
+
+    console.log("전체 드래그 중.. -> 위치:", e.clientX, e.clientY);
+
+    // **************여기에 드래그 중인 시각적 요소 추가 해야함********
+    // 마우스 커서 따라다니는 모듈 미리보기
+};
+
+// 전체 화면에서 마우스 업
+scwin.global_mouseUp = function (e) {
+    if (!scwin.isDragging) return;
+
+    console.log("전체 드래그 종료:", e.clientX, e.clientY);
+
+    // 드롭 영역 체크
+    scwin.checkDropZone(e.clientX, e.clientY);
+
+    // 드래그 상태 초기화
+    scwin.isDragging = false;
+    scwin.draggedModuleId = null;
+
+    // 텍스트 선택 제한 해제
+    document.body.style.userSelect = '';
+    //document.body.style.webkitUserSelect = '';
+    document.body.style.mozUserSelect = '';
+    document.body.style.msUserSelect = '';
+
+    // 원래 기본 커서로 복원
+    document.body.style.cursor = 'default';
+
+    // 전체 문서 이벤트 제거
+    document.removeEventListener('mousemove', scwin.global_mouseMove);
+    document.removeEventListener('mouseup', scwin.global_mouseUp);
+};
+
+// 영역에 모듈 정보 표시하는 함수
+scwin.displayModuleInArea = function (zoneId, moduleId) {
+    // 영역 정보 가져오기
+    var areaComponent = $p.getComponentById(zoneId);
+    if (!areaComponent) {
+        console.log("영역을 찾을 수 없습니다: ", zoneId);
+        return;
+    }
+
+    // 모듈 정보 가져오기
+    var moduleInfo = scwin.getModuleData(moduleId);
+    console.log("배치하는 모듈 정보:", moduleInfo);
+
+    // 드롭한 영역을 모듈의 내용으로 변경
+    var areaElement = document.getElementById(zoneId);
+    if (areaElement) {
+        // 스타일 변경
+        areaElement.style.border = "2px solid #4CAF50";
+        areaElement.style.background = "#f0f8f0";
+
+        // 라벨 값 변경
+        var labelElement = areaElement.querySelector('span');
+        if (labelElement) {
+            labelElement.innerHTML = moduleInfo.icon + " " + moduleInfo.name;
+        }
+
+        // 드롭된 영역에 data-module-id 속성으로 어떤 모듈인지 저장 - id값만 뽑아내기
+        areaElement.dataset.moduleId = moduleId.replace("mf_grp_module_", "");
+        areaElement.dataset.hasModule = "true";
+
+        console.log(zoneId, "에 모듈 ", areaElement.dataset.moduleId, " 저장");
+    }
+};
+
+// 모듈 데이터 가져오기 함수 - 동적으로 받아옴
+scwin.getModuleData = function (moduleId) {
+    var moduleData = scwin.moduleResponseData.elData.moduleVoList;
+
+    // 동적 모듈 ID에서 실제 moduleId 추출 (grp_module_CHAT -> CHAT)
+    var realModuleId = moduleId.replace("mf_grp_module_", "");
+
+    // 배열에서 해당 모듈 찾기
+    for (var i = 0; i < moduleData.length; i++) {
+        if (moduleData[i].moduleId === realModuleId) {
+            return {
+                icon: moduleData[i].icon,
+                name: moduleData[i].name,
+                desc: moduleData[i].description
+            };
+        }
+    }
+
+    return { icon: "", name: "알 수 없음", desc: "모듈 정보 없음" };
+};
+
+// 드롭 처리 함수
+scwin.handleDrop = function (zoneId) {
+
+    // 영역별로 처리 - mf_ 접두사 추가  ---> 디버그 로그이므로 나중에 빼거나 모달같은걸로 변경.
+    switch (zoneId) {
+        case "mf_grp_area1":
+            alert("영역 1에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area2":
+            alert("영역 2에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area3":
+            alert("영역 3에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area4":
+            alert("영역 4에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area5":
+            alert("영역 5에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        case "mf_grp_area6":
+            alert("영역 6에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+            break;
+        default:
+            console.log("알 수 없는 영역:", zoneId);
+    }
+
+    // 드롭하면 해당영역에 모듈 정보 표시
+    scwin.displayModuleInArea(zoneId, scwin.draggedModuleId);
+};
+
+// 드롭 영역 체크 함수
+scwin.checkDropZone = function (x, y) {
+    console.log("드롭 위치 체크:", x, y, "모듈:", scwin.draggedModuleId);
+
+    // 마우스 위치에서 실제 요소 찾기
+    var elementAtPosition = document.elementFromPoint(x, y);
+
+    if (!elementAtPosition) {
+        console.log("드롭 실패: 요소를 찾을 수 없음");
+        return;
+    }
+
+    // 디버깅: 첫 번째 요소 정보 출력
+    // console.log("첫 번째 감지된 요소:", {
+    //     tagName: elementAtPosition.tagName,
+    //     id: elementAtPosition.id,
+    //     className: elementAtPosition.className
+
+    // 드롭 영역 찾기 (상위로 올라가면서 grp_area로 시작하는 요소 찾기)
+    var dropZoneElement = scwin.findDropZoneElement(elementAtPosition);
+
+    if (dropZoneElement) {
+        var zoneId = dropZoneElement.id;
+        console.log("드롭 성공! 영역:", zoneId);
+
+        // 영역별 처리
+        scwin.handleDrop(zoneId);
+    } else {
+        console.log("드롭 실패: 유효한 영역이 아님");
+    }
+};
+
+// 드롭 영역 요소 찾기 함수
+scwin.findDropZoneElement = function (element) {
+    // 영역1~4의 ID 목록 - mf_ 접두사 추가
+    var validDropZones = ["mf_grp_area1", "mf_grp_area2", "mf_grp_area3", "mf_grp_area4", "mf_grp_area5", "mf_grp_area6"];
+
+    // 현재 요소부터 상위로 올라가면서 체크
+    var currentElement = element;
+    var stepCount = 0;
+
+    //console.log("=== 드롭 영역 찾기 시작 ===");
+
+    while (currentElement && currentElement !== document.body && stepCount < 10) {
+        stepCount++;
+
+        // console.log("단계 " + stepCount + ":", {
+        //     tagName: currentElement.tagName,
+        //     id: currentElement.id,
+        //     className: currentElement.className
+        // });
+
+        // 현재 드롭한 영역 요소의 ID가 유효한 드롭 영역인지 체크
+        for (var i = 0; i < validDropZones.length; i++) {
+            if (currentElement.id === validDropZones[i]) {
+                console.log("유효 드롭 영역 발견:", currentElement.id);
+                return currentElement;
+            }
+        }
+
+        // 상위 요소로 이동
+        currentElement = currentElement.parentElement;
+    }
+
+    console.log("=== 드롭 영역 찾기 실패 ===");
+    return null; // -> 유효한 드롭 영역을 찾지 못한 경우
+};
+
+// save 버튼 onclick 이벤트 - 배치 정보 저장 함수
+scwin.saveLayoutConfiguration = function (e) {
+    // tenantId 임시 지정 -> 나중에 동적으로 변경..
+    var sessionId = 1;
+    // 배치 정보 저장 배열
+    var layoutData = [];
+
+    // 배치하는 영역(area 1~6 돌면서 배치정보 수집)
+    // 현재는 영역이 6개로 고정되어있지만, 나중에는 영역의 개수도 동적으로 로드해줘야함
+    for (var i = 0; i <= 6; i++) {
+        var areaId = "mf_grp_area" + i;
+        var areaElement = document.getElementById(areaId);
+
+        // 배치된 모듈이 있는 경우, 배치 데이터 배열에 저장 
+        if (areaElement && areaElement.dataset.moduleId) {
+            // ******데이터 저장 형식은 나중에 맞춰봐야함
+            layoutData.push({
+                sessionId: sessionId,
+                moduleId: parseInt(areaElement.dataset.moduleId),
+                sessionModuleConfig: {  // 세션 모듈 설정
+                    area: areaId,
+                    position: i
+                }
+            });
+        }
+    }
+    // 배치정보 디버그
+    console.log(">>> 배치 데이터: ", layoutData);
+
+    // 나중에 모달로 몇개 모듈 배치했고, 배치한 모듈이 없으면 배치하고 저장하는 예외처리 필요
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload" style="">
+		<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+			style="height: 90%;">
+			<xf:group class="pgtbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_01 페이지타이틀"
+				style="width:100%;height:80px;background: linear-gradient(135deg, #6B46C1 0%, #3B82F6 100%);color:white;font-size:18px;text-align:center;">
+				<w2:textbox class="pgt_tit" id="tb_title" label="UI 배치 설정" style="color: white;margin-left: 20px;" tagname=""></w2:textbox>
+				<xf:group class="breadcrumb" id="" style="">
+					<xf:group id="" style="" tagname="ul">
+						<xf:group class="home" id="" style="" tagname="li">
+							<w2:anchor id="" outerDiv="false" style="">
+								<xf:label><![CDATA[Home]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+						<xf:group id="" style="" tagname="li">
+							<w2:anchor id="" outerDiv="false" style="">
+								<xf:label><![CDATA[1Depth Menu]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+						<xf:group id="" style="" tagname="li">
+							<w2:anchor id="" outerDiv="false" style="">
+								<xf:label><![CDATA[2Depth Menu]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+						<xf:group id="" style="" tagname="li">
+							<w2:span id="" label="3Depth Menu" style=""></w2:span>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+				<xf:trigger class="btn_fav" id="" style="margin-right: 20px;" type="button">
+					<xf:label></xf:label>
+				</xf:trigger>
+			</xf:group>
+			<xf:group style='width:100%;height:90%;border:1px solid #ddd;' id="grp_main">
+				<xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true"
+					meta_snippetName="1_05 좌측 고정 2단 분할_width값 200px" style="height: 100%;">
+					<xf:group adaptiveThreshold="" style="width:400px;" id="" class="col_fix">
+						<xf:group style="width:100%;height:100%;background:#f8f9fa;float:left;" id="grp_sidebar">
+							<xf:group meta_snippetCategory="02_타이틀" meta_snippetName="2_03 서브타이틀(h4)" meta_snippetKeyComponent="true"
+								style="display: block;font-size: 20px;font-weight: bold;text-align: center;width: 100%;margin-top: 10px;" id="" class="titbox">
+								<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+									style="font-size: 20px;font-weight: bold;" id="" label="🧩 사용가능 모듈">
+								</w2:span>
+							</xf:group>
+							<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+								style="font-size: 17px; color: #6c757d; text-align: center; padding: 10px 15px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 10px auto; display: block; width: fit-content;"
+								id="ui_guide" label="모듈을 드래그해서 영역에 배치하세요">
+							</w2:span>
+						</xf:group>
+					</xf:group>
+					<xf:group style="background-color: #f0f2f5" id="" class="">
+						<xf:group style="display:flex;align-items:center;justify-content:center;flex-direction:column;height: 100%;"
+							id="grp_editWindow">
+							<xf:group style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 0;"
+								id="grp_eWHeader">
+								<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+									style="font-size: 20px;font-weight: bold;margin-left: 20px;" id="" label="🖥️ 배치 화면">
+								</w2:span>
+								<xf:group style="display:flex;gap:10px;" id="grp_buttons">
+									<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼" meta_snippetKeyComponent="true"
+										style="background:#6c757d;color:white;border:none;padding:1px 12px;border-radius:4px;" id="btn_reset" type="button"
+										class="btn_cm">
+										<xf:label><![CDATA[초기화]]></xf:label>
+									</xf:trigger>
+									<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼" meta_snippetKeyComponent="true"
+										style="background:#2196F3;color:white;border:none;padding:1px 12px;border-radius:4px;" id="btn_load" type="button"
+										class="btn_cm">
+										<xf:label><![CDATA[불러오기]]></xf:label>
+									</xf:trigger>
+									<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼"
+										ev:onclick="scwin.saveLayoutConfiguration" meta_snippetKeyComponent="true"
+										style="background:#4CAF50;color:white;border:none;padding:1px 12px;border-radius:4px;margin-right: 20px" id="btn_save"
+										type="button" class="btn_cm">
+										<xf:label><![CDATA[저장]]></xf:label>
+									</xf:trigger>
+								</xf:group>
+							</xf:group>
+							<xf:group
+								style="width:96%;height:90%;display:flex;flex-direction:column;border:1px solid #e1e5e9;border-radius:12px;background:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-top: 5px;"
+								id="grp_canvasContainer">
+								<xf:group
+									style="width:100%;height:40px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px 8px 0 0;display:flex;align-items:center;padding:0;margin:0;box-sizing:border-box;"
+									id="grp_browserHeader">
+									<xf:group style="display:flex;gap:8px;margin-right:auto;margin-left: 10px;" id="">
+
+										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+											meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#ff5f57;display:block;" id="" label="●">
+										</w2:span>
+										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+											meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#ffbd2e;display:block;" id="" label="●">
+										</w2:span>
+										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+											meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#28ca42;display:block;" id="" label="●">
+										</w2:span>
+									</xf:group>
+									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+										style="font-size:12px;color:#666;flex:1;text-align:center;" id="" label="localhost:3000/unicon">
+									</w2:span>
+									<xf:group style="display:flex;gap:8px;margin-right: 10px;" id="">
+										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+											meta_snippetKeyComponent="true" style="font-size:14px;color:#666;" id="" label="⟲">
+										</w2:span>
+										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+											meta_snippetKeyComponent="true" style="font-size:14px;color:#666;" id="" label="✕">
+										</w2:span>
+									</xf:group>
+								</xf:group>
+								<xf:group style="flex: 1; display: flex; flex-direction: column; padding: 5px;" id="grp_screen">
+									<xf:group style="display:flex;height:61.80%;gap:5px;margin:5px;" id="row1">
+										<xf:group
+											style="width:64.74%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+											id="grp_area1">
+											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span7" label="영역 1">
+											</w2:span>
+										</xf:group>
+										<xf:group
+											style="width:30%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+											id="grp_area2">
+											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span8" label="영역 2">
+											</w2:span>
+										</xf:group>
+										<xf:group
+											style="width:64.75%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+											id="grp_area3">
+											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span9" label="영역 3">
+											</w2:span>
+										</xf:group>
+										<xf:group
+											style="width:30%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+											id="grp_area4">
+											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span10" label="영역 4">
+											</w2:span>
+										</xf:group>
+									</xf:group>
+									<xf:group style="display:flex;height:47.59%;gap:5px;margin:5px;" id="row2">
+										<xf:group
+											style="width:64.74%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+											id="grp_area5">
+											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="" label="영역 5">
+											</w2:span>
+										</xf:group>
+										<xf:group
+											style="width:50%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
+											id="grp_area6">
+											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
+												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="" label="영역 6">
+											</w2:span>
+										</xf:group>
+									</xf:group>
+								</xf:group>
+							</xf:group>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
