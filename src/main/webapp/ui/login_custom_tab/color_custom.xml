@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+            	<w2:aliasDataMap studioSrc="/InsWebApp/main/login_custom.xml" scope="../dm_loginCustomInfo" id="aliasDataMap1"></w2:aliasDataMap>
+            </w2:dataCollection>
+            <w2:workflowCollection/>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        <script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
+    scwin.loginCustomInfo = aliasDataMap1.getObj();
+    console.log(scwin.loginCustomInfo)
+    scwin.addColor("primaryColor", main_brand_color_group, scwin.loginCustomInfo.get("primaryColor"));
+    scwin.addColor("accentColor", accent_color_group, scwin.loginCustomInfo.get("accentColor"));
+};
+
+scwin.addColor = function (id, obj, color1) {
+    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
+    console.log(id,color1);
+
+    // input 엘리먼트 생성
+    var color = document.createElement("input");
+    color.style.width="100%";
+    color.style.height="43px";
+    color.type = "color";
+    color.id = id;
+    color.value = color1;
+
+    // 이벤트 바인딩 예시
+    color.addEventListener("input", function () {
+        console.log("현재 값:", color.value);
+        scwin.loginCustomInfo.set(color.id, color.value);
+    });
+
+    // DOM에 추가
+    obj.appendChild(color);
+}]]></script>
+    </head>
+    <body ev:onpageload="scwin.onpageload">
+    	<xf:group style="" id="grp_colorsTab">
+
+    		<xf:group style="margin-bottom: 20px;" id="main_brand_color_group">
+    			<w2:textbox style="margin-bottom: 10px" label="메인 브랜드 색상"></w2:textbox>
+    		</xf:group>
+    		<xf:group style="margin-bottom: 20px;" id="accent_color_group">
+    			<w2:textbox style="margin-bottom: 10px;" label="액센트 색상"></w2:textbox>
+    		</xf:group>
+    	</xf:group>
+    </body>
+</html>
