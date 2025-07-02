@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head meta_templateCategory="01_Single" meta_templateName="1_05 messenger">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+
+		<!--websocket-manager import -->
+		<script type="text/javascript" src="/InsWebApp/js/websocket/websocket-manager.js"></script>
+
+
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dc_joinRoom">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="roomId" id="roomId"></w2:key>
+						<w2:key dataType="text" name="userId" id="userId"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dc_sendMessage">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="type" id="type"></w2:key>
+						<w2:key dataType="text" name="message" id="message"></w2:key>
+						<w2:key dataType="text" name="sender" id="sender"></w2:key>
+						<w2:key dataType="text" name="roomId" id="roomId"></w2:key>
+						<w2:key dataType="text" name="timestamp" id="timestamp"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+			<xf:submission id="sbm_joinRoom" action="/InsWebApp/ChatJoinRoom.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dc_joinRoom","key":"joinRoomVo"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.joinRoomSuccess"
+				ev:submiterror="scwin.joinRoomError" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_sendMessage" action="/InsWebApp/ChatSendMessage.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dc_sendMessage","key":"chatMessageVo"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sendMessageSuccess"
+				ev:submiterror="scwin.sendMessageError" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[// 채팅 데이터 메모리에 저장
+scwin.chatMessages = [];
+scwin.currentUser = "사용자";       // 나중에 로그인 유저와 연동 예정
+scwin.roomId = "test_room_123";     // 방 ID -> 테스트를 하나의 방으로 위해서 고정. 나중에 동적으로...
+scwin.newMessageCount = 0;          // 새로운 메시지 개수
+scwin.isUserScrolledUp = false;     // 스크롤 상태변수
+
+// websocket 변수 - chatting.xml의 websocket 변수
+// scwin.socket = null;        // 소켓 변수
+// scwin.isConnected = false;  // 연결 상태
+
+scwin.onpageload = function () {
+    // UniconWS 웹소켓 매니저 초기화
+    UniconWS.init(scwin.roomId, scwin.currentUser);
+
+    // 채팅 메시지 리스너 등록
+    UniconWS.addListener('chat', function(data) {
+        console.log('채팅 메시지 수신:', data);
+        //if (data.sender !== scwin.currentUser) { -> 현재는 테스트를 위해서 강제로 사용자 분리 -> 나중에 if 주석 풀어주어야함
+            scwin.addMessage("other", data.message, data.sender);
+        //}
+    });
+
+    scwin.initializeChat();
+};
+
+// 초기화
+scwin.initializeChat = function () {
+    scwin.joinRoomAPI(); // ProWorks API로 채팅방 입장
+    var chatList = document.querySelector('.chat_list');
+    if (chatList) {
+        chatList.addEventListener('scroll', scwin.onChatScroll);
+    }
+};
+
+// 메시지 전송 함수 (ProWorks API만 사용)
+scwin.sendMessage = function (e) {
+    //console.log(">>> sendMessage 함수 시작"); // 메시지 전송 함수 실행 디버그
+    
+    var input = $p.getComponentById("input_chat");
+    var message = input.getValue().trim();
+
+    if (message === "") {
+        alert("메시지를 입력해주세요.");
+        return;
+    }
+
+    // 화면에 메시지 표시
+    scwin.addMessage("user", message, scwin.currentUser);
+
+    // ProWorks API 호출
+    scwin.sendMessageAPI(message);
+
+    input.setValue("");
+    input.focus();
+};
+
+// 엔터키 처리
+scwin.onInputKeyPress = function (e) {
+    if (e.keyCode === 13 && !e.shiftKey) {
+        e.preventDefault();
+        scwin.sendMessage();
+    }
+};
+
+// 메시지 표시
+scwin.addMessage = function (type, message, sender) {
+
+    var timestamp = scwin.getCurrentTime();
+
+    var msgObj = {
+        type: type,
+        message: message,
+        sender: sender,
+        time: timestamp
+    };
+
+    scwin.chatMessages.push(msgObj);
+    scwin.displayMessage(msgObj);
+
+    if (type === "user" || !scwin.isUserScrolledUp) {
+        scwin.scrollToBottom();
+    } else {
+        scwin.newMessageCount++;
+        scwin.showNewMessageAlert();
+    }
+};
+
+// 메시지 DOM에 출력
+scwin.displayMessage = function (msgObj) {
+    var messageHtml = scwin.createMessageHtml(msgObj);
+    var chatListElement = document.querySelector('.chat_list');
+
+    if (chatListElement) {
+        chatListElement.innerHTML += messageHtml;
+        console.log("메시지 화면에 추가 성공:", msgObj.message);
+    }
+};
+
+// 메시지 HTML 생성
+scwin.createMessageHtml = function (msgObj) {
+    if (msgObj.type === "user") {
+        return `<div class="grp_message user">
+                    <div class="bubble">${msgObj.message}</div>
+                    <div class="time">${msgObj.time}</div>
+                </div>`;
+    } else if (msgObj.type === "bot" || msgObj.type === "other") {
+        return `<div class="grp_message bot">
+                    <div class="title">${msgObj.sender}</div>
+                    <div class="bubble">${msgObj.message}</div>
+                    <div class="time">${msgObj.time}</div>
+                </div>`;
+    } else if (msgObj.type === "system") {
+        return `<div class="grp_message system">
+                    <div class="bubble system">${msgObj.message}</div>
+                    <div class="time">${msgObj.time}</div>
+                </div>`;
+    }
+    return "";
+};
+
+// 현재 시간
+scwin.getCurrentTime = function () {
+    var now = new Date();
+    var hours = now.getHours();
+    var minutes = now.getMinutes();
+    var ampm = hours >= 12 ? "오후" : "오전";
+
+    hours = hours % 12 || 12;
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+
+    return `${ampm} ${hours}:${minutes}`;
+};
+
+// 스크롤 제어
+scwin.scrollToBottom = function () {
+    setTimeout(() => {
+        var chatList = document.querySelector('.chat_list');
+        if (chatList) {
+            chatList.scrollTop = chatList.scrollHeight - chatList.clientHeight;
+            scwin.isUserScrolledUp = false;
+        }
+    }, 200);
+};
+
+// 스크롤 감지
+scwin.onChatScroll = function () {
+    var chatList = document.querySelector('.chat_list');
+    if (chatList) {
+        var isAtBottom = (chatList.scrollTop + chatList.clientHeight) >= (chatList.scrollHeight - 50);
+        scwin.isUserScrolledUp = !isAtBottom;
+        if (isAtBottom) scwin.hideNewMessageAlert();
+    }
+};
+
+// 새 메시지 알림
+scwin.showNewMessageAlert = function () {
+    var alertElement = document.querySelector('.new_message_alert');
+    var textElement = document.querySelector('.alert_text');
+
+    if (alertElement) {
+        alertElement.style.display = "flex";
+        if (textElement) {
+            var msg = scwin.newMessageCount > 1 ?
+                `새로운 메시지 ${scwin.newMessageCount}개` :
+                "새로운 메시지가 있습니다";
+            textElement.textContent = msg;
+        }
+    }
+};
+
+scwin.hideNewMessageAlert = function () {
+    var alertElement = document.querySelector('.new_message_alert');
+    if (alertElement) {
+        alertElement.style.display = "none";
+        scwin.newMessageCount = 0;
+    }
+};
+
+scwin.scrollToBottomAndHide = function () {
+    scwin.scrollToBottom();
+    scwin.hideNewMessageAlert();
+    scwin.isUserScrolledUp = false;
+};
+
+scwin.onbeforepageunload = function () {
+    console.log("페이지 종료");
+};
+
+
+//--------- ProWorks API호출 ---------
+
+// 채팅방 입장
+scwin.joinRoomAPI = function () {
+    dc_joinRoom.set("roomId", scwin.roomId);
+    dc_joinRoom.set("userId", scwin.currentUser);
+    $p.executeSubmission("sbm_joinRoom");
+};
+
+// ProWorks 채팅방 입장 성공 시 WebSocket 연결
+scwin.joinRoomSuccess = function (e) {
+    console.log(">>> 방 입장 확인:", e.responseJSON);
+
+    var result = e.responseJSON;
+    if (result && result.result === "SUCCESS") {
+        console.log("채팅방 입장 성공");
+        scwin.addMessage("system", "채팅방에 입장했습니다.", "시스템");
+        
+    } else {
+        console.log("ProWorks API: 채팅방 입장 실패");
+    }
+};
+
+scwin.joinRoomError = function (e) {
+    console.log("API 호출 실패:", e.responseText);
+    scwin.addMessage("system", "서버 연결에 실패했습니다.", "시스템");
+};
+
+// 메시지 전송
+scwin.sendMessageAPI = function (message) {
+    //console.log(">>> sendMessageAPI 함수 시작:", message); // sendmessage api 함수 실행 디버그
+
+    dc_sendMessage.set("type", "chat");
+    dc_sendMessage.set("message", message);
+    dc_sendMessage.set("sender", scwin.currentUser);
+    dc_sendMessage.set("roomId", scwin.roomId);
+    dc_sendMessage.set("timestamp", scwin.getCurrentTime());
+    $p.executeSubmission("sbm_sendMessage");   // -> 나중에 이거 풀어줘야함
+
+    // 서브미션 실행 디버그
+    // try {
+    //     $p.executeSubmission("sbm_sendMessage");
+    //     console.log(">>> submission ok. ", dc_sendMessage.getJSON());
+    // } catch (error) {
+    //     console.log(">>> Submission 실행 에러:", error);
+    // }
+    
+    // UniconWS로 메시지 전송
+    UniconWS.send('chat', {
+        message: message
+    });
+
+};
+
+scwin.sendMessageSuccess = function (e) {
+    var result = e.responseJSON;
+    if (result && result.result === "SUCCESS") {
+        console.log("메시지 전송 완료");
+    } else {
+        console.log("메시지 전송 실패 - " + result.message);
+    }
+};
+
+scwin.sendMessageError = function (e) {
+    console.log("메시지 전송 API 호출 실패:", e.responseText);
+    scwin.addMessage("system", "메시지 전송에 실패했습니다.", "시스템");
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload" ev:onbeforepageunload="scwin.onbeforepageunload">
+		<xf:group class="chat_wrap" id="" style="margin-top : 70px;">
+
+			<xf:group class="chat_close" id="">
+				<xf:trigger class="btn_close" id="" style="" type="button">
+					<xf:label />
+				</xf:trigger>
+			</xf:group>
+			<xf:group class="chat_contents" id="" style="height: 300px;position: relative;overflow: hidden;">
+				<xf:group class="chat_list" id="" style="height: 450px;overflow-y: auto;margin-top: 13px;"></xf:group>
+				<xf:group
+					style="display: none;position: absolute;bottom: 10px;left: 50%;transform: translateX(-50%);z-index: 100;align-items: center;gap: 8px;background: rgba(0, 123, 255, 0.9);color: white;padding: 8px 12px;border-radius: 20px;box-shadow: 0 2px 10px rgba(0,0,0,0.2);font-size: 12px;animation: slideUp 0.3s ease;"
+					id="newMessageAlert" class="new_message_alert">
+					<w2:span id="alertText" label="새로운 메시지가 있습니다" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+						meta_snippetName="10_16 출력텍스트" style="color: white;font-size: 12px;font-weight: 500;margin: 0;" class="alert_text">
+					</w2:span>
+					<xf:trigger class="btn_scroll_down" id="btnScrollDown" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
+						meta_snippetName="8_01 기본버튼"
+						style="background: rgba(255,255,255,0.2);border: none;border-radius: 50%;width: 24px;height: 24px;color: white;font-size: 14px;cursor: pointer;display: ;align-items: center;justify-content: center;transition: background 0.2s;:hover {    background: rgba(255,255,255,0.3);};"
+						type="button" ev:onclick="scwin.scrollToBottomAndHide">
+						<xf:label><![CDATA[↓]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+			<xf:group class="chat_footer" id="">
+				<xf:group class="chat_input_group" id="">
+					<xf:group class="chat_input" id="">
+						<xf:textarea id="input_chat" placeholder="내용을 입력하세요." style="" title="내용을 입력하세요." ev:onkeypress="scwin.onInputKeyPress" />
+						<xf:trigger class="btn_file" id="" style="" type="button">
+							<xf:label />
+						</xf:trigger>
+					</xf:group>
+					<xf:trigger class="btn_send" id="btn_send" style="" title="전송" type="button" ev:onclick="scwin.sendMessage">
+						<xf:label />
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
