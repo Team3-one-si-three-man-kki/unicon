@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<xf:model>
+			<w2:dataCollection baseNode="map" />
+		</xf:model>
+
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fabric@5.4.0/dist/fabric.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+
+		<!-- 스타일 -->
+		<style type="text/css"><![CDATA[
+      body, html { margin:0; padding:0; font-family:sans-serif; background:#f0f0f0; }
+      .toolbar {
+        display:flex; flex-wrap:wrap; gap:8px; padding:8px;
+        background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);
+        position:fixed; top:0; width:100%; z-index:1000;
+      }
+      .toolbar button.active { background:#007bff; color:#fff; }
+      #container { position:relative; top:48px; width:100vw; height:calc(100vh - 48px); overflow:hidden; }
+      video, canvas {
+        position:absolute; top:0; left:0;
+        width:100%; height:100%; object-fit:cover;
+      }
+      video { pointer-events:none; }
+      canvas { pointer-events:auto; }
+    ]]></style>
+
+		<script type="text/javascript"><![CDATA[
+      var scwin = scwin || {};
+      scwin.onpageload = init;
+
+      async function init() {
+        const senderId = uuid.v4();
+        const container   = document.getElementById('container');
+        const canvasEl    = document.getElementById('canvas');
+        const colorPicker = document.getElementById('colorPicker');
+        const widthPicker = document.getElementById('widthPicker');
+        const bgPicker    = document.getElementById('bgPicker');
+        const bgToggle    = document.getElementById('bgToggle');
+        
+        const ws = new WebSocket('ws://' + location.host + '/InsWebApp/signal.do');
+        ws.onopen = () => { console.log("웹소켓 연결 성공!"); };
+
+        function signal(data) {
+          if (ws.readyState === WebSocket.OPEN) {
+            data.sender = senderId;
+            ws.send(JSON.stringify(data));
+          }
+        }
+
+        const canvas = new fabric.Canvas('canvas', {
+          isDrawingMode: false,
+          selection:     true,
+          preserveObjectStacking: true
+        });
+
+        // 색상과 굵기 실시간 적용 이벤트 리스너
+        if (colorPicker) {
+            colorPicker.oninput = () => {
+                if (canvas.freeDrawingBrush && mode === 'pen') {
+                    canvas.freeDrawingBrush.color = colorPicker.value;
+                }
+            };
+        }
+        if (widthPicker) {
+            widthPicker.oninput = () => {
+                if (canvas.freeDrawingBrush) {
+                    canvas.freeDrawingBrush.width = parseInt(widthPicker.value, 10);
+                }
+            };
+        }
+
+        function resize() {
+          const w = container.clientWidth, h = container.clientHeight;
+          canvasEl.width = w; canvasEl.height = h;
+          canvas.setWidth(w); canvas.setHeight(h);
+          canvas.calcOffset(); canvas.renderAll();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let bgOn = false;
+
+        bgToggle.onclick = () => {
+          bgOn = !bgOn;
+          bgToggle.classList.toggle('active', bgOn);
+          if (bgOn) {
+            bgPicker.style.display = 'inline-block';
+            const c = bgPicker.value;
+            canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
+            signal({ type:'bg-change', color:c });
+          } else {
+            bgPicker.style.display = 'none';
+            canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
+            signal({ type:'bg-change', color:null });
+          }
+        };
+        bgPicker.oninput = e => {
+          if (!bgOn) return;
+          const c = e.target.value;
+          canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
+          signal({ type:'bg-change', color:c });
+        };
+
+       let mode = 'select';
+        const tools = ['select','pen','eraser','rect','circle','line','text'];
+        
+        tools.forEach(t => {
+          document.getElementById(t).onclick = () => {
+            mode = t;
+            // 펜과 지우개일 때만 isDrawingMode를 true로 설정
+            canvas.isDrawingMode = (t==='pen' || t==='eraser');
+            canvas.selection     = (t==='select');
+            
+            // 펜/지우개 브러시 설정
+            if (t === 'pen' || t === 'eraser') {
+                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                canvas.freeDrawingBrush.width = parseInt(widthPicker.value, 10);
+
+                if (t === 'pen') {
+                    // 펜: 색상 선택 및 그리기 모드 설정
+                    canvas.freeDrawingBrush.color = colorPicker.value;
+                    canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
+                } else { // 지우개
+                    // 지우개: 지우기 모드 설정 (색상 설정 필요 없음)
+                    canvas.freeDrawingBrush.globalCompositeOperation = 'destination-out';
+                }
+            }
+            
+            // 활성화된 버튼 스타일 변경
+            tools.forEach(k=>document.getElementById(k).classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+          };
+        });
+
+        document.getElementById('clear').onclick = () => {
+          canvas.clear();
+          if (bgOn) {
+            const bgEl = document.getElementById('bgPicker');
+            if (bgEl) canvas.setBackgroundColor(bgEl.value, canvas.renderAll.bind(canvas));
+          }
+          signal({ type:'clear' });
+        };
+
+        document.getElementById('remove').onclick = () => {
+          const activeObjects = canvas.getActiveObjects();
+          if (!activeObjects || activeObjects.length === 0) return;
+          const ids = activeObjects.map(obj => obj.id);
+          canvas.remove(...activeObjects);
+          canvas.discardActiveObject();
+          canvas.renderAll();
+          signal({ type: 'object-removed', ids: ids });
+        };
+
+        fabric.Object.prototype.toObject = (function(toObject) {
+          return function(properties) {
+            return fabric.util.object.extend(toObject.call(this, properties), {
+              id: this.id
+            });
+          };
+        })(fabric.Object.prototype.toObject);
+
+        canvas.on('path:created', e => {
+          if (canvas.freeDrawingBrush.globalCompositeOperation === 'destination-out') {
+              
+              e.path.globalCompositeOperation = 'destination-out';
+
+              e.path.selectable = false;
+              e.path.evented = false;
+
+              return;
+          }
+          e.path.id = uuid.v4();
+          const d = e.path.toObject(['id','path','stroke','strokeWidth','globalCompositeOperation']);
+          signal({ type:'fabric-path', path:d });
+        });
+
+        let shape, sx, sy;
+        canvas.on('mouse:down', opt => {
+          if (opt.target || mode === 'select' || mode === 'pen' || mode === 'eraser') return;
+          const p = canvas.getPointer(opt.e); sx = p.x; sy = p.y;
+          const id = uuid.v4();
+          const strokeColor = colorPicker.value;
+          const strokeWidth = parseInt(widthPicker.value, 10);
+          const o = { id: id, left:sx, top:sy, fill:'transparent', stroke: strokeColor, strokeWidth: strokeWidth };
+          
+               if (mode==='rect')   shape = new fabric.Rect({ ...o, width:0, height:0 });
+          else if (mode==='circle') shape = new fabric.Circle({ ...o, radius:0 });
+          else if (mode==='line')   shape = new fabric.Line([sx,sy,sx,sy], o);
+          else if (mode==='text')   shape = new fabric.IText('Text', { ...o, fill:o.stroke, fontSize:o.strokeWidth*5 });
+          
+          if (shape) canvas.add(shape);
+        });
+        canvas.on('mouse:move', opt => {
+          if (!shape) return;
+          const p = canvas.getPointer(opt.e);
+          if (shape.type==='rect')   shape.set({ width:p.x-sx, height:p.y-sy });
+          else if (shape.type==='circle') {
+            const r = Math.hypot(p.x-sx, p.y-sy)/2;
+            shape.set({ radius:r, left:sx-r, top:sy-r });
+          }
+          else if (shape.type==='line') shape.set({ x2:p.x, y2:p.y });
+          canvas.renderAll();
+        });
+        canvas.on('mouse:up', () => {
+          if (shape) {
+            shape.setCoords();
+            const obj = shape.toObject();
+            signal({ type:'shape-create', shape:obj });
+            shape = null;
+          }
+        });
+
+        canvas.on('object:modified', e => {
+          if (!e.target) return;
+          const obj = e.target.toObject();
+          signal({ type: 'object-modified', object: obj });
+        });
+        
+        ws.onmessage = async ({ data }) => {
+          const m = JSON.parse(data);
+
+          if (m.sender === senderId) return;
+
+          switch(m.type) {
+            case 'bg-change':
+              bgOn = !!m.color;
+              bgToggle.classList.toggle('active', bgOn);
+              if (bgPicker) {
+                bgPicker.style.display = bgOn ? 'inline-block' : 'none';
+                if (m.color) bgPicker.value = m.color;
+              }
+              canvas.setBackgroundColor(m.color || null, canvas.renderAll.bind(canvas));
+              break;
+            case 'fabric-path':
+              fabric.Path.fromObject(m.path, (obj) => {
+                canvas.add(obj);
+              });
+              break;
+            case 'shape-create':
+              fabric.util.enlivenObjects([m.shape], ([obj]) => {
+                if (obj) canvas.add(obj);
+              });
+              break;
+            case 'object-modified':
+              const objToModify = canvas.getObjects().find(o => o.id === m.object.id);
+              if (objToModify) {
+                objToModify.set(m.object);
+                objToModify.setCoords();
+                canvas.renderAll();
+              }
+              break;
+            case 'object-removed':
+              const objectsToRemove = canvas.getObjects().filter(o => m.ids.includes(o.id));
+              if (objectsToRemove.length > 0) {
+                canvas.remove(...objectsToRemove);
+                canvas.renderAll();
+              }
+              break;
+            case 'clear':
+              canvas.clear();
+              if (bgOn) {
+                 const bgEl = document.getElementById('bgPicker');
+                 if(bgEl) canvas.setBackgroundColor(bgEl.value, canvas.renderAll.bind(canvas));
+              }
+              break;
+          }
+        };
+      }
+    ]]>
+		</script>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload">
+		<div class="toolbar">
+			<button id="select" class="active">
+				<i class="fa fa-mouse-pointer"></i>
+			</button>
+			<button id="pen">
+				<i class="fa fa-pencil"></i>
+			</button>
+			<button id="eraser">
+				<i class="fa fa-eraser"></i>
+			</button>
+			<button id="rect">
+				<i class="fa fa-square"></i>
+			</button>
+			<button id="circle">
+				<i class="fa fa-circle"></i>
+			</button>
+			<button id="line">
+				<i class="fa fa-slash"></i>
+			</button>
+			<button id="text">
+				<i class="fa fa-font"></i>
+			</button>
+			<button id="remove">
+				<i class="fa fa-trash"></i>
+			</button>
+			<button id="clear">
+				<i class="fa fa-ban"></i>
+			</button>
+
+
+			<input type="color" id="colorPicker" value="#000000" />
+			<input type="range" id="widthPicker" min="1" max="50" value="5" />
+
+
+
+			<button id="bgToggle">
+				<i class="fa fa-fill-drip"></i>
+				Background
+			</button>
+			<input type="color" id="bgPicker" value="#ffffff" style="display:none;" />
+		</div>
+
+		<div id="container" w2:type="w2group">
+			<canvas id="canvas" w2:type="w2canvas" />
+		</div>
+	</body>
+</html>
