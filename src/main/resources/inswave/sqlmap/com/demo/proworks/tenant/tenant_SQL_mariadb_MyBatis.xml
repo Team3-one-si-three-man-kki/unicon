@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject     : 테넌트 관련 처리를 담당하는 Sql Mapper
+	@description : 테넌트 관련 처리를 담당하는 Sql Mapper
+	@author      : LEEBYUNGWOOK
+	@since       : 2025/07/01
+	@modification
+	===========================================================
+	DATE              AUTHOR             DESC
+	===========================================================
+	2025/07/01              LEEBYUNGWOOK             최초 생성
+ -->
+<mapper namespace="com.demo.proworks.tenant">
+    <insert id="insertTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo">
+    	<!-- 테넌트를 등록한다. -->	
+    		
+        INSERT INTO TENANT   /* QueryID : com.demo.proworks.tenant.insertTenant */
+        ( 
+            TENANT_ID
+            <if test="createdAt!= null"> , CREATED_AT </if>
+            <if test="name      != null"> , NAME       </if>
+            <if test="subDomain!= null"> , SUB_DOMAIN </if>
+            <if test="isActive != null"> , IS_ACTIVE  </if>
+        )
+        VALUES  
+        ( 
+            #{tenantId}
+            <if test="createdAt!= null"> , #{createdAt} </if>
+            <if test="name      != null"> , #{name}       </if>
+            <if test="subDomain!= null"> , #{subDomain} </if>
+            <if test="isActive != null"> , #{isActive}  </if> 
+        )          
+    </insert>	
+	
+    <update id="updateTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo">
+    	<!-- 테넌트를 갱신한다. -->
+    	
+        UPDATE TENANT    /* QueryID : com.demo.proworks.tenant.updateTenant */      
+      	  SET  
+                TENANT_ID  = #{tenantId}         	                       
+            <if test="createdAt!= null"> , CREATED_AT = #{createdAt} </if>
+            <if test="name      != null"> , NAME       = #{name}       </if>
+            <if test="subDomain!= null"> , SUB_DOMAIN = #{subDomain} </if>
+            <if test="isActive != null"> , IS_ACTIVE  = #{isActive}  </if>                 
+        WHERE   
+                TENANT_ID  = #{tenantId} 
+    </update>
+	
+    <delete id="deleteTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo">
+    	<!-- 테넌트를 삭제한다. -->
+    	
+        DELETE FROM TENANT   /* QueryID : com.demo.proworks.tenant.deleteTenant */ 
+        WHERE   
+                TENANT_ID  = #{tenantId}         
+    </delete>
+	
+    <select id="selectTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo" resultType="com.demo.proworks.tenant.vo.TenantVo">
+    	<!-- 테넌트를 상세 조회한다. -->	
+        SELECT     /* QueryID : com.demo.proworks.tenant.selectTenant */
+            TENANT_ID as tenantId, CREATED_AT as createdAt, NAME as name, SUB_DOMAIN as subDomain, IS_ACTIVE as isActive
+        FROM TENANT 
+        WHERE 
+                TENANT_ID  = #{tenantId} 			
+    </select>
+	
+    <select id="selectListTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo" resultType="com.demo.proworks.tenant.vo.TenantVo">
+    	<!-- 테넌트 목록을 조회한다. -->
+           SELECT    /* QueryID : com.demo.proworks.tenant.selectListTenant */
+               TENANT_ID as tenantId, CREATED_AT as createdAt, NAME as name, SUB_DOMAIN as subDomain, IS_ACTIVE as isActive		       
+           FROM (
+               SELECT  S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+               FROM (				
+                   SELECT 
+                       *  		                  
+                   FROM TENANT
+                   WHERE  1=1    		
+                        <if test="scTenantId != null and scTenantId != ''">
+                             AND TENANT_ID like '%${scTenantId}%'
+                        </if>
+                        <if test="scCreatedAt != null and scCreatedAt != ''">
+                             AND CREATED_AT like '%${scCreatedAt}%'
+                        </if>
+                        <if test="scName != null and scName != ''">
+                             AND NAME like '%${scName}%'
+                        </if>
+                        <if test="scSubDomain != null and scSubDomain != ''">
+                             AND SUB_DOMAIN like '%${scSubDomain}%'
+                        </if>	     																														
+               ) S, (SELECT @ROWNUM := 0) TMP
+           ) A
+            WHERE PAGE = #{pageIndex}
+    </select>
+	
+    <select id="selectListCountTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo" resultType="long">
+    <!-- 테넌트 목록의 카운트를 조회한다. -->
+    
+         SELECT    /* QueryID : com.demo.proworks.tenant.selectListCountTenant */
+             COUNT(*) totcnt  		                  
+         FROM TENANT
+         WHERE  1=1    		
+            <if test="scTenantId != null and scTenantId != ''">
+                 AND TENANT_ID like '%${scTenantId}%'
+            </if>
+            <if test="scCreatedAt != null and scCreatedAt != ''">
+                 AND CREATED_AT like '%${scCreatedAt}%'
+            </if>
+            <if test="scName != null and scName != ''">
+                 AND NAME like '%${scName}%'
+            </if>
+            <if test="scSubDomain != null and scSubDomain != ''">
+                 AND SUB_DOMAIN like '%${scSubDomain}%'
+            </if>
+    </select>
+
+</mapper>

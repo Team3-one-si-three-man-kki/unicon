@@ -43,7 +43,7 @@
                 elem.textContent = str;
             }
         } catch (e) {
-            console.error(e);
+            parent.WebSquare && parent.WebSquare.exception && parent.WebSquare.exception.printStackTrace(e, null , this);
         }
     }
         function init(){

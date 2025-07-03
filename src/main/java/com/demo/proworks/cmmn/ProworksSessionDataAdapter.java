@@ -12,6 +12,8 @@ import com.inswave.elfw.util.ElBeanUtils;
 
 import com.demo.proworks.emp.service.EmpService;
 import com.demo.proworks.emp.vo.EmpVo;
+import com.demo.proworks.user.service.UserService;
+import com.demo.proworks.user.vo.UserVo;
 
 /**  
  * @Class Name : ProworksSessionDataAdapter.java
@@ -56,23 +58,52 @@ public class ProworksSessionDataAdapter extends SessionDataAdapter {
 		
 		// 로그인 후에 id 기반으로 세션 정보를 세팅하여 반환한다.		
 		ProworksUserHeader userHeader = new ProworksUserHeader();
-		userHeader.setUserId( id );
+		userHeader.setUserId(id);
+		userHeader.setEmail(id);
 
 		// 사용자 세션을 UserHeader 에 설정 (샘플 예제)
-		try{
-			EmpService empService = (EmpService)ElBeanUtils.getBean("empServiceImpl");
-			EmpVo empVo = new EmpVo();
+//		try{
+//			EmpService empService = (EmpService)ElBeanUtils.getBean("empServiceImpl");
+//			EmpVo empVo = new EmpVo();
+//
+//			empVo.setEmpno(Integer.parseInt(id));
+//			EmpVo resEmpVo = empService.selectEmp(empVo);
+//
+//			if( resEmpVo == null ) {
+//				throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
+//			}
+//			
+//			// 사용자 세션 설정
+//			userHeader.setTestDeptNo(resEmpVo.getDeptno());
+//			userHeader.setTestDeptName(resEmpVo.getDname());
+//		}catch(ElException e){
+//			AppLog.error("setSessionData Error1",e);
+//			throw e;
+//		}catch(Exception e){
+//			AppLog.error("setSessionData Error2",e);
+//			throw new AdapterException("EL.ERROR.LOGIN.0005");
+//		}
 
-			empVo.setEmpno(Integer.parseInt(id));
-			EmpVo resEmpVo = empService.selectEmp(empVo);
+try{
+			UserService userService = (UserService)ElBeanUtils.getBean("userServiceImpl");
+			UserVo userVo = new UserVo();
+			System.out.println("아이디야~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~세션어뎁터``"+id);
+			userVo.setEmail(id);
+			UserVo resuserVo = userService.loginUser(userVo);
 
-			if( resEmpVo == null ) {
+			if( resuserVo == null ) {
 				throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
 			}
+			userHeader.setTenantId(resuserVo.getTenantId());
+			userHeader.setIsActive(resuserVo.isIsActive());
+			userHeader.setRole(resuserVo.getRole());
+			System.out.println("유저헤더 값이야 설정해놓은거"+userHeader);
+			
+			
 			
 			// 사용자 세션 설정
-			userHeader.setTestDeptNo(resEmpVo.getDeptno());
-			userHeader.setTestDeptName(resEmpVo.getDname());
+			//userHeader.setTestDeptNo(resEmpVo.getDeptno());
+			//userHeader.setTestDeptName(resEmpVo.getDname());
 		}catch(ElException e){
 			AppLog.error("setSessionData Error1",e);
 			throw e;

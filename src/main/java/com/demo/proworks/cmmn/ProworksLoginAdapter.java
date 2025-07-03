@@ -13,6 +13,8 @@ import com.inswave.elfw.util.ElBeanUtils;
 
 import com.demo.proworks.emp.service.EmpService;
 import com.demo.proworks.emp.vo.EmpVo;
+import com.demo.proworks.user.service.UserService;
+import com.demo.proworks.user.vo.UserVo;
 
 /**
  * @subject		: ProworksLoginAdapter.java 
@@ -50,32 +52,68 @@ public class ProworksLoginAdapter extends LoginAdapter {
 	public LoginInfo login(HttpServletRequest request, String id, Object... params) throws LoginException {
 
 		// 로그인 체크를 수행  (샘플 예제)
-		try{
+//		try{
+//			String pw = (String)params[0];
+//			EmpService empService = (EmpService)ElBeanUtils.getBean("empServiceImpl");
+//			EmpVo empVo = new EmpVo();
+//
+//			empVo.setEmpno(Integer.parseInt(id) );
+//			EmpVo resEmpVo = empService.selectEmp(empVo);
+//
+//			if( resEmpVo == null ) {
+//				throw new LoginException("EL.ERROR.LOGIN.0001");
+//			}
+//			
+//			String resPw = String.valueOf(resEmpVo.getMgr());
+//			if(pw == null || !pw.equals(resPw)){
+//				throw new LoginException("EL.ERROR.LOGIN.0002");
+//			}
+//		}catch(NumberFormatException e){
+//			AppLog.error("login Error1",e);
+//			throw new LoginException("EL.ERROR.LOGIN.0001");
+//		}catch(ElException e){
+//			AppLog.error("login Error2",e);
+//			throw e;		
+//		}catch(Exception e){
+//			AppLog.error("login Error3",e);
+//			throw new LoginException("EL.ERROR.LOGIN.0003");
+//		}
+
+try{
 			String pw = (String)params[0];
-			EmpService empService = (EmpService)ElBeanUtils.getBean("empServiceImpl");
-			EmpVo empVo = new EmpVo();
+			
+			
+			UserService userService =
+                (UserService) ElBeanUtils.getBean("userServiceImpl");
 
-			empVo.setEmpno(Integer.parseInt(id) );
-			EmpVo resEmpVo = empService.selectEmp(empVo);
+			
+			UserVo UserVo = new UserVo();
+           // TenantVo.setUserId(id);
+            UserVo.setEmail(id);
+            System.out.println("이거로그인어뎁터에 테넌트 vo야 아이디 잘담겻나?+++++++"+UserVo);
 
-			if( resEmpVo == null ) {
+			UserVo LoginUser = userService.loginUser(UserVo);
+			System.out.println("===="+id+"====이거 아이디야, 로그인어뎁터여기에서는 불러와야해 ---------------------------------------------------------------------------.>>>>>>>>>"+LoginUser);
+			if( LoginUser == null ) {
 				throw new LoginException("EL.ERROR.LOGIN.0001");
 			}
-			
-			String resPw = String.valueOf(resEmpVo.getMgr());
-			if(pw == null || !pw.equals(resPw)){
-				throw new LoginException("EL.ERROR.LOGIN.0002");
-			}
-		}catch(NumberFormatException e){
-			AppLog.error("login Error1",e);
-			throw new LoginException("EL.ERROR.LOGIN.0001");
-		}catch(ElException e){
-			AppLog.error("login Error2",e);
-			throw e;		
-		}catch(Exception e){
-			AppLog.error("login Error3",e);
-			throw new LoginException("EL.ERROR.LOGIN.0003");
-		}
+
+			 String dbPw = LoginUser.getPassword();
+            if (pw == null || !pw.equals(dbPw)) {
+                throw new LoginException("EL.ERROR.LOGIN.0002");
+            }
+
+        } catch (NumberFormatException e) {
+            AppLog.error("login Error1", e);
+            throw new LoginException("EL.ERROR.LOGIN.0001");
+        } catch (ElException e) {
+            AppLog.error("login Error2", e);
+            throw e;
+        } catch (Exception e) {
+            AppLog.error("login Error3", e);
+            throw new LoginException("EL.ERROR.LOGIN.0003");
+        }
+
 
 		
 		// 3. 로그인 성공 설정 

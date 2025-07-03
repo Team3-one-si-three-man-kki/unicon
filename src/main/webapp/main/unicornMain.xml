@@ -63,7 +63,7 @@ scwin.startBtn_onmouseout = function (e) {
 
 /* 회원가입 페이지 이동 */
 scwin.register_onclick = function (e) {
-    window.location.href = '/websquare/websquare.html?w2xPath=/main/unicon_join.xml';
+    window.location.href = '/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_join.xml';
 };
 
 scwin.animateCounters = function () {

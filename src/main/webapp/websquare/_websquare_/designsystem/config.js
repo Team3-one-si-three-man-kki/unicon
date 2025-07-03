@@ -1,10 +1,9 @@
 export default {
     "WebSquare": {
-        "convertPageXML": {
+        "dataPrefix": {
             "@value": "true"
         },
         "wpack": {
-            "@use": "true",
             "contextRoot": {
                 "@value": "/"
             },
@@ -16,6 +15,9 @@ export default {
             },
             "destRoot": {
                 "@value": "_wpack_"
+            },
+            "excludePrefix": {
+                "@value": "__"
             }
         },
         "allValue": {
