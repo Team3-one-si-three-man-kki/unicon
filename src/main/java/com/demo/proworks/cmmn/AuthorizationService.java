@@ -9,17 +9,14 @@ public class AuthorizationService {
      * 사용자 권한 체크
      */
     public boolean hasRole(ProworksUserHeader userHeader, String requiredRole) {
-        if (userHeader == null || userHeader.getRole() == null) {
-            return false;
-        }
+      
+        String roleString = (userHeader != null) ? userHeader.getRole() : null;
         
-        try {
-            UserRole currentRole = UserRole.valueOf(userHeader.getRole().toUpperCase());
-            UserRole required = UserRole.valueOf(requiredRole.toUpperCase());
-            return currentRole.hasPermission(required);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+        UserRole currentRole = UserRole.valueOfOrDefault(roleString);
+        UserRole required = UserRole.valueOfOrDefault(requiredRole);
+        System.out.println("지금 내 권한은?: "+ currentRole+", 지금 요청한 서비스가 필요한 권한은?: "+required);
+        return currentRole.hasPermission(required);
+        
     }
     
     /**

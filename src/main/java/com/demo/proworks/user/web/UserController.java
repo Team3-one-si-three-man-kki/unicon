@@ -44,8 +44,8 @@ public class UserController {
     
     
     
-    @ElService(key = "TNU0001Login")
-	@RequestMapping(value = "TNU0001Login")
+    @ElService(key = "TNU0000Login")
+	@RequestMapping(value = "TNU0000Login")
 	@ElDescription(sub = "로그인처리", desc = "이메일 로그인처리")
 	public void login(com.demo.proworks.user.vo.UserLoginVo loginVo, HttpServletRequest request) throws Exception {
     	String email = loginVo.getEmail();

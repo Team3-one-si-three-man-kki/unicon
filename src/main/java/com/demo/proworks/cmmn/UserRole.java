@@ -12,4 +12,16 @@ public enum UserRole {
     public boolean hasPermission(UserRole required) {
         return this.level >= required.level;
     }
+    
+    public static UserRole valueOfOrDefault(String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return GUEST;
+        }
+        
+        try {
+            return valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return GUEST;
+        }
+    }
 }
