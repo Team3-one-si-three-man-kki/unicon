@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject     : 테넌트유저 관련 처리를 담당하는 Sql Mapper
+	@description : 테넌트유저 관련 처리를 담당하는 Sql Mapper
+	@author      : LEEBYUNGWOOK
+	@since       : 2025/07/01
+	@modification
+	===========================================================
+	DATE              AUTHOR             DESC
+	===========================================================
+	2025/07/01              LEEBYUNGWOOK             최초 생성
+ -->
+<mapper namespace="com.demo.proworks.user">
+    <insert id="insertUser" parameterType="com.demo.proworks.user.vo.UserVo">
+    	<!-- 테넌트유저를 등록한다. -->	
+    		
+        INSERT INTO USER   /* QueryID : com.demo.proworks.user.insertUser */
+        ( 
+            USER_ID
+            <if test="tenantId != null"> , TENANT_ID  </if>
+            <if test="name      != null"> , NAME       </if>
+            <if test="email     != null"> , EMAIL      </if>
+            <if test="password  != null"> , PASSWORD   </if>
+            <if test="role      != null"> , ROLE       </if>
+            <if test="createdAt!= null"> , CREATED_AT </if>
+        )
+        VALUES  
+        ( 
+            #{userId}
+            <if test="tenantId != null"> , #{tenantId}  </if>
+            <if test="name      != null"> , #{name}       </if>
+            <if test="email     != null"> , #{email}      </if>
+            <if test="password  != null"> , #{password}   </if>
+            <if test="role      != null"> , #{role}       </if>
+            <if test="createdAt!= null"> , #{createdAt} </if> 
+        )          
+    </insert>	
+	
+    <update id="updateUser" parameterType="com.demo.proworks.user.vo.UserVo">
+    	<!-- 테넌트유저를 갱신한다. -->
+    	
+        UPDATE USER    /* QueryID : com.demo.proworks.user.updateUser */      
+      	  SET  
+                USER_ID    = #{userId}           	                       
+            <if test="tenantId != null"> , TENANT_ID  = #{tenantId}  </if>
+            <if test="name      != null"> , NAME       = #{name}       </if>
+            <if test="email     != null"> , EMAIL      = #{email}      </if>
+            <if test="password  != null"> , PASSWORD   = #{password}   </if>
+            <if test="role      != null"> , ROLE       = #{role}       </if>
+            <if test="createdAt!= null"> , CREATED_AT = #{createdAt} </if>                 
+        WHERE   
+                USER_ID    = #{userId}   
+    </update>
+	
+    <delete id="deleteUser" parameterType="com.demo.proworks.user.vo.UserVo">
+    	<!-- 테넌트유저를 삭제한다. -->
+    	
+        DELETE FROM USER   /* QueryID : com.demo.proworks.user.deleteUser */ 
+        WHERE   
+                USER_ID    = #{userId}           
+    </delete>
+	
+    <select id="selectUser" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
+    	<!-- 테넌트유저를 상세 조회한다. -->	
+        SELECT     /* QueryID : com.demo.proworks.user.selectUser */
+            USER_ID as userId, TENANT_ID as tenantId, NAME as name, EMAIL as email, PASSWORD as password, ROLE as role, CREATED_AT as createdAt
+        FROM USER 
+        WHERE 
+                USER_ID    = #{userId}   			
+    </select>
+    
+    <select id="loginUser" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
+<!-- 테넌트유저를 상세 조회한다. -->
+SELECT     /* QueryID : com.demo.proworks.user.selectUser */
+            u.USER_ID as userId, 
+            u.TENANT_ID as tenantId, 
+            u.NAME as name, 
+            u.EMAIL as email, 
+            u.PASSWORD as password, 
+            u.ROLE as role, 
+            u.CREATED_AT as createdAt,
+            t.is_active as isActive   -- tenant 테이블에서 is_active를 가져옴
+FROM USER u
+INNER JOIN tenant t  -- tenant 테이블과 USER 테이블을 tenant_id를 기준으로 조인
+    ON u.TENANT_ID = t.tenant_id
+WHERE 
+    u.EMAIL = #{email}
+
+</select>
+	
+    <select id="selectListUser" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
+    	<!-- 테넌트유저 목록을 조회한다. -->
+           SELECT    /* QueryID : com.demo.proworks.user.selectListUser */
+               USER_ID as userId, TENANT_ID as tenantId, NAME as name, EMAIL as email, PASSWORD as password, ROLE as role, CREATED_AT as createdAt		       
+           FROM (
+               SELECT  S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+               FROM (				
+                   SELECT 
+                       *  		                  
+                   FROM USER
+                   WHERE  1=1    		
+                        <if test="scTenantId != null and scTenantId != ''">
+                             AND TENANT_ID like '%${scTenantId}%'
+                        </if>
+                        <if test="scName != null and scName != ''">
+                             AND NAME like '%${scName}%'
+                        </if>
+                        <if test="scEmail != null and scEmail != ''">
+                             AND EMAIL like '%${scEmail}%'
+                        </if>
+                        <if test="scRole != null and scRole != ''">
+                             AND ROLE like '%${scRole}%'
+                        </if>
+                        <if test="scCreatedAt != null and scCreatedAt != ''">
+                             AND CREATED_AT like '%${scCreatedAt}%'
+                        </if>	     																														
+               ) S, (SELECT @ROWNUM := 0) TMP
+           ) A
+            WHERE PAGE = #{pageIndex}
+    </select>
+	
+    <select id="selectListCountUser" parameterType="com.demo.proworks.user.vo.UserVo" resultType="long">
+    <!-- 테넌트유저 목록의 카운트를 조회한다. -->
+    
+         SELECT    /* QueryID : com.demo.proworks.user.selectListCountUser */
+             COUNT(*) totcnt  		                  
+         FROM USER
+         WHERE  1=1    		
+            <if test="scTenantId != null and scTenantId != ''">
+                 AND TENANT_ID like '%${scTenantId}%'
+            </if>
+            <if test="scName != null and scName != ''">
+                 AND NAME like '%${scName}%'
+            </if>
+            <if test="scEmail != null and scEmail != ''">
+                 AND EMAIL like '%${scEmail}%'
+            </if>
+            <if test="scRole != null and scRole != ''">
+                 AND ROLE like '%${scRole}%'
+            </if>
+            <if test="scCreatedAt != null and scCreatedAt != ''">
+                 AND CREATED_AT like '%${scCreatedAt}%'
+            </if>
+    </select>
+
+</mapper>
