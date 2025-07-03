@@ -14,57 +14,69 @@
         			mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="scwin.loginSubmitHandler">
         		</w2:submission>
         	</w2:workflowCollection>
-        	<xf:submission id="loadCustom" action="/InsWebApp/data/config.json" method="post" mediatype="application/json" ref="" target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8"
-        		instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.loadCustom_submitdone"
-        		ev:submiterror="" abortTrigger="">
+        	<xf:submission id="loadCustom" action="/InsWebApp/data/config.json" method="post" mediatype="application/json" ref=""
+        		target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+        		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
+        		abortTrigger="">
         	</xf:submission>
         	<w2:dataCollection baseNode="map">
-        		
-				<w2:dataMap id="dm_loginCustomInfo">
-					<w2:keyInfo>
-						<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
-						<w2:key id="logo" name="logo" dataType="text"></w2:key>
-						<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
-						<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
-						<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
-						<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
-						<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
-						<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
-						<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
-						<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
-						<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
-						<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
-						<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
-						<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
-						<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
-						<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
-						<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
-						<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
-						<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
-					</w2:keyInfo>
-					<w2:data xmlns="" use="true">
-						<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
-						<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
-						<logoSize><![CDATA[80]]></logoSize>
-						<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
-						<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
-						<mainTitleSize><![CDATA[32]]></mainTitleSize>
-						<mainTitleFont><![CDATA[700]]></mainTitleFont>
-						<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
-						<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
-						<subTitleSize><![CDATA[18]]></subTitleSize>
-						<subTitleFont><![CDATA[400]]></subTitleFont>
-						<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
-						<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
-						<extraTitleSize><![CDATA[16]]></extraTitleSize>
-						<extraTitleFont><![CDATA[300]]></extraTitleFont>
-						<overlayOpacity><![CDATA[50]]></overlayOpacity>
-						<overlayColor><![CDATA[black]]></overlayColor>
-						<primaryColor><![CDATA[#667eea]]></primaryColor>
-						<accentColor><![CDATA[#ffffff]]></accentColor>
-					</w2:data>
-				</w2:dataMap>
-			</w2:dataCollection>
+
+        		<w2:dataMap id="dm_loginCustomInfo">
+        			<w2:keyInfo>
+        				<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
+        				<w2:key id="logo" name="logo" dataType="text"></w2:key>
+        				<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
+        				<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
+        				<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
+        				<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
+        				<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
+        				<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
+        				<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
+        				<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
+        				<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
+        				<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
+        				<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
+        				<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
+        				<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
+        				<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
+        				<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
+        				<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
+        				<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+        			</w2:keyInfo>
+        			<w2:data xmlns="" use="true">
+        				<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
+        				<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
+        				<logoSize><![CDATA[80]]></logoSize>
+        				<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
+        				<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
+        				<mainTitleSize><![CDATA[32]]></mainTitleSize>
+        				<mainTitleFont><![CDATA[700]]></mainTitleFont>
+        				<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
+        				<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
+        				<subTitleSize><![CDATA[18]]></subTitleSize>
+        				<subTitleFont><![CDATA[400]]></subTitleFont>
+        				<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
+        				<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
+        				<extraTitleSize><![CDATA[16]]></extraTitleSize>
+        				<extraTitleFont><![CDATA[300]]></extraTitleFont>
+        				<overlayOpacity><![CDATA[50]]></overlayOpacity>
+        				<overlayColor><![CDATA[black]]></overlayColor>
+        				<primaryColor><![CDATA[#667eea]]></primaryColor>
+        				<accentColor><![CDATA[#ffffff]]></accentColor>
+        			</w2:data>
+        		</w2:dataMap>
+        		<w2:dataMap baseNode="map" id="dma_login">
+        			<w2:keyInfo>
+        				<w2:key dataType="text" name="email" id="email"></w2:key>
+        				<w2:key dataType="text" name="password" id="password"></w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        	</w2:dataCollection>
+        	<xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
+        		ref='data:json,{"id":"dma_login","key":"elData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+        		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
+        		abortTrigger="">
+        	</xf:submission>
         </xf:model>
 
         <w2:layoutInfo/>
@@ -354,7 +366,34 @@ scwin.setInitData = function (receivedData) {
         // ... 미리보기 관련 처리
         console.log(123123, "여기다")
     }
-}]]></script>
+}
+scwin.login = function (e) {
+    $c.sbm.execute(login);
+};
+
+scwin.login_submitdone = function (e) {
+     var elHeader = e.responseJSON.elHeader; // 응답 전문 elHeader
+
+		if(elHeader != "" && elHeader != null && elHeader != "undefined") {
+			
+			if(elHeader.resSuc == true) {
+				// setCookie("userId", elHeader.userId);
+				// moveLocation("html/emp/empList.html");
+                
+                //$p.url("/ui/dept/Dept.xml");
+               // $c.win.moveUrl("/InsWebApp/ui/dept/Dept.xml");
+               
+               //location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/dept/Dept.xml";
+                location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
+                
+
+			} else {
+				alert(elHeader.resMsg)
+			}
+			
+		}
+};
+]]></script>
         
         <style><![CDATA[
             .login_wrapper {
@@ -446,7 +485,7 @@ scwin.setInitData = function (receivedData) {
     						<xf:group id="" tagname="li" style="margin-bottom: 24px;">
     							<w2:textbox class="tit" for="inp_userId" id="" label="ID"
     								style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
-    							<xf:input adjustMaxLength="false" id="inp_userId" ref="data:loginInfo.userId" placeholder="아이디를 입력해주세요."
+    							<xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" placeholder="아이디를 입력해주세요."
     								style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;" />
     						</xf:group>
 
@@ -457,7 +496,7 @@ scwin.setInitData = function (receivedData) {
 
     							<!-- 비밀번호 입력 필드와 토글 버튼 -->
     							<xf:group class="login_form" id="" style="position: relative;">
-    								<xf:input adjustMaxLength="false" id="inp_password" ref="data:loginInfo.password"
+    								<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password"
     									placeholder="비밀번호를 입력해주세요."
     									style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
     									type="password" />
