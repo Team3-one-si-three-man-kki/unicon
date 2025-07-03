@@ -11,8 +11,8 @@
 		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fabric@5.4.0/dist/fabric.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
-		<!-- 스타일 -->
 		<style type="text/css"><![CDATA[
       body, html { margin:0; padding:0; font-family:sans-serif; background:#f0f0f0; }
       .toolbar {
@@ -46,20 +46,28 @@
         const ws = new WebSocket('ws://' + location.host + '/InsWebApp/signal.do');
         ws.onopen = () => { console.log("웹소켓 연결 성공!"); };
 
+        setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000); 
+
         function signal(data) {
-          if (ws.readyState === WebSocket.OPEN) {
-            data.sender = senderId;
-            ws.send(JSON.stringify(data));
-          }
+            if (ws.readyState === WebSocket.OPEN) {
+                data.sender = senderId;
+                const jsonString = JSON.stringify(data);
+                const compressedData = pako.deflate(jsonString);
+                const base64String = btoa(String.fromCharCode.apply(null, compressedData));
+                ws.send(base64String);
+            }
         }
 
         const canvas = new fabric.Canvas('canvas', {
-          isDrawingMode: false,
-          selection:     true,
-          preserveObjectStacking: true
+            isDrawingMode: false,
+            selection:     true,
+            preserveObjectStacking: true
         });
 
-        // 색상과 굵기 실시간 적용 이벤트 리스너
         if (colorPicker) {
             colorPicker.oninput = () => {
                 if (canvas.freeDrawingBrush && mode === 'pen') {
@@ -76,10 +84,10 @@
         }
 
         function resize() {
-          const w = container.clientWidth, h = container.clientHeight;
-          canvasEl.width = w; canvasEl.height = h;
-          canvas.setWidth(w); canvas.setHeight(h);
-          canvas.calcOffset(); canvas.renderAll();
+            const w = container.clientWidth, h = container.clientHeight;
+            canvasEl.width = w; canvasEl.height = h;
+            canvas.setWidth(w); canvas.setHeight(h);
+            canvas.calcOffset(); canvas.renderAll();
         }
         window.addEventListener('resize', resize);
         resize();
@@ -87,56 +95,130 @@
         let bgOn = false;
 
         bgToggle.onclick = () => {
-          bgOn = !bgOn;
-          bgToggle.classList.toggle('active', bgOn);
-          if (bgOn) {
-            bgPicker.style.display = 'inline-block';
-            const c = bgPicker.value;
-            canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
-            signal({ type:'bg-change', color:c });
-          } else {
-            bgPicker.style.display = 'none';
-            canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
-            signal({ type:'bg-change', color:null });
-          }
-        };
-        bgPicker.oninput = e => {
-          if (!bgOn) return;
-          const c = e.target.value;
-          canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
-          signal({ type:'bg-change', color:c });
-        };
+            bgOn = !bgOn;
+            bgToggle.classList.toggle('active', bgOn);
 
-       let mode = 'select';
-        const tools = ['select','pen','eraser','rect','circle','line','text'];
-        
-        tools.forEach(t => {
-          document.getElementById(t).onclick = () => {
-            mode = t;
-            // 펜과 지우개일 때만 isDrawingMode를 true로 설정
-            canvas.isDrawingMode = (t==='pen' || t==='eraser');
-            canvas.selection     = (t==='select');
-            
-            // 펜/지우개 브러시 설정
-            if (t === 'pen' || t === 'eraser') {
-                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-                canvas.freeDrawingBrush.width = parseInt(widthPicker.value, 10);
+            const updates = [];
 
-                if (t === 'pen') {
-                    // 펜: 색상 선택 및 그리기 모드 설정
-                    canvas.freeDrawingBrush.color = colorPicker.value;
+            if (bgOn) {
+                bgPicker.style.display = 'inline-block';
+                const c = bgPicker.value;
+                canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
+                signal({ type: 'bg-change', color: c });
+
+                canvas.getObjects().forEach(obj => {
+                    if (obj.globalCompositeOperation === 'destination-out') {
+                        const newProps = {
+                            isEraser: true,
+                            stroke: c,
+                            globalCompositeOperation: 'source-over'
+                        };
+                        obj.set(newProps);
+                        updates.push({ id: obj.id, props: newProps });
+                    }
+                });
+
+            } else {
+                bgPicker.style.display = 'none';
+                canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
+                signal({ type: 'bg-change', color: null });
+
+                canvas.getObjects().forEach(obj => {
+                    if (obj.isEraser) {
+                        const newProps = {
+                            globalCompositeOperation: 'destination-out'
+                        };
+                        obj.set(newProps);
+                        updates.push({ id: obj.id, props: newProps });
+                    }
+                });
+            }
+
+            if (updates.length > 0) {
+                signal({ type: 'eraser-mode-change', updates: updates });
+            }
+
+            if (mode === 'eraser') {
+                if (bgOn) {
                     canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
-                } else { // 지우개
-                    // 지우개: 지우기 모드 설정 (색상 설정 필요 없음)
+                    canvas.freeDrawingBrush.color = canvas.backgroundColor;
+                } else {
                     canvas.freeDrawingBrush.globalCompositeOperation = 'destination-out';
                 }
             }
-            
-            // 활성화된 버튼 스타일 변경
-            tools.forEach(k=>document.getElementById(k).classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-          };
+            canvas.renderAll();
+        };
+
+        bgPicker.oninput = e => {
+            if (!bgOn) return;
+            const c = e.target.value;
+            canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
+            signal({ type: 'bg-change', color: c });
+
+            const updates = [];
+            canvas.getObjects().forEach(obj => {
+                if (obj.isEraser) {
+                    const newProps = { stroke: c };
+                    obj.set(newProps);
+                    updates.push({ id: obj.id, props: newProps });
+                }
+            });
+
+            if (updates.length > 0) {
+                signal({ type: 'eraser-mode-change', updates: updates });
+            }
+
+            if (mode === 'eraser') {
+                canvas.freeDrawingBrush.color = c;
+            }
+            canvas.renderAll();
+        };
+       
+        let mode = 'select';
+        let shape, sx, sy;
+        const tools = ['select','pen','eraser','rect','circle','line','text'];
+        
+        tools.forEach(t => {
+            const button = document.getElementById(t);
+            if (button) {
+                button.onclick = () => {
+                    mode = t;
+                    
+                    if (t === 'pen' || t === 'eraser') {
+                        canvas.isDrawingMode = true;
+                        canvas.selection = false;
+                    } else {
+                        canvas.isDrawingMode = false;
+                        canvas.selection = true;
+                        shape = null;
+                    }
+
+                    if (t === 'pen') {
+                        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                        canvas.freeDrawingBrush.width = parseInt(widthPicker.value, 10);
+                        canvas.freeDrawingBrush.color = colorPicker.value;
+                        canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
+                    } else if (t === 'eraser') {
+                        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                        canvas.freeDrawingBrush.width = parseInt(widthPicker.value, 10);
+                        if (bgOn) {
+                            canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
+                            canvas.freeDrawingBrush.color = canvas.backgroundColor || '#ffffff';
+                        } else {
+                            canvas.freeDrawingBrush.globalCompositeOperation = 'destination-out';
+                        }
+                    }
+
+                    tools.forEach(toolId => {
+                        const el = document.getElementById(toolId);
+                        if (el) el.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                };
+            }
         });
+        
+        document.getElementById('select').click();
 
         document.getElementById('clear').onclick = () => {
           canvas.clear();
@@ -156,120 +238,257 @@
           canvas.renderAll();
           signal({ type: 'object-removed', ids: ids });
         };
+  
+        canvas.on('path:created', e => {
+            e.path.id = uuid.v4();
 
-        fabric.Object.prototype.toObject = (function(toObject) {
-          return function(properties) {
-            return fabric.util.object.extend(toObject.call(this, properties), {
-              id: this.id
-            });
-          };
+            if (e.path.path) { 
+                const pathArray = e.path.path;
+                for (let i = 0; i < pathArray.length; i++) {
+                    for (let j = 1; j < pathArray[i].length; j++) {
+                        pathArray[i][j] = parseFloat(pathArray[i][j].toFixed(2));
+                    }
+                }
+                e.path.set('path', pathArray);
+            }
+
+            if (mode === 'eraser') {
+                if (bgOn) {
+                    e.path.isEraser = true;
+                    e.path.stroke = canvas.backgroundColor || '#ffffff';
+                    e.path.globalCompositeOperation = 'source-over';
+                } else {
+                    e.path.globalCompositeOperation = 'destination-out';
+                }
+            }
+
+            const d = e.path.toObject(['id', 'path', 'stroke', 'strokeWidth', 'globalCompositeOperation', 'isEraser']);
+            signal({ type: 'fabric-path', path: d });
+        });
+
+        fabric.Object.prototype.toObject = (function (originalToObject) {
+            return function (propertiesToInclude) {
+                return fabric.util.object.extend(originalToObject.call(this, propertiesToInclude), {
+                    id: this.id,
+                    isEraser: this.isEraser
+                });
+            };
         })(fabric.Object.prototype.toObject);
 
-        canvas.on('path:created', e => {
-          if (canvas.freeDrawingBrush.globalCompositeOperation === 'destination-out') {
-              
-              e.path.globalCompositeOperation = 'destination-out';
-
-              e.path.selectable = false;
-              e.path.evented = false;
-
-              return;
-          }
-          e.path.id = uuid.v4();
-          const d = e.path.toObject(['id','path','stroke','strokeWidth','globalCompositeOperation']);
-          signal({ type:'fabric-path', path:d });
-        });
-
-        let shape, sx, sy;
         canvas.on('mouse:down', opt => {
-          if (opt.target || mode === 'select' || mode === 'pen' || mode === 'eraser') return;
-          const p = canvas.getPointer(opt.e); sx = p.x; sy = p.y;
-          const id = uuid.v4();
-          const strokeColor = colorPicker.value;
-          const strokeWidth = parseInt(widthPicker.value, 10);
-          const o = { id: id, left:sx, top:sy, fill:'transparent', stroke: strokeColor, strokeWidth: strokeWidth };
-          
-               if (mode==='rect')   shape = new fabric.Rect({ ...o, width:0, height:0 });
-          else if (mode==='circle') shape = new fabric.Circle({ ...o, radius:0 });
-          else if (mode==='line')   shape = new fabric.Line([sx,sy,sx,sy], o);
-          else if (mode==='text')   shape = new fabric.IText('Text', { ...o, fill:o.stroke, fontSize:o.strokeWidth*5 });
-          
-          if (shape) canvas.add(shape);
-        });
-        canvas.on('mouse:move', opt => {
-          if (!shape) return;
-          const p = canvas.getPointer(opt.e);
-          if (shape.type==='rect')   shape.set({ width:p.x-sx, height:p.y-sy });
-          else if (shape.type==='circle') {
-            const r = Math.hypot(p.x-sx, p.y-sy)/2;
-            shape.set({ radius:r, left:sx-r, top:sy-r });
-          }
-          else if (shape.type==='line') shape.set({ x2:p.x, y2:p.y });
-          canvas.renderAll();
-        });
-        canvas.on('mouse:up', () => {
-          if (shape) {
-            shape.setCoords();
-            const obj = shape.toObject();
-            signal({ type:'shape-create', shape:obj });
-            shape = null;
-          }
+            if (opt.target || mode === 'select' || mode === 'pen' || mode === 'eraser') return;
+
+            const p = canvas.getPointer(opt.e);
+            sx = p.x;
+            sy = p.y;
+            
+            const id = uuid.v4();
+            const strokeColor = colorPicker.value;
+            const strokeWidth = parseInt(widthPicker.value, 10);
+            const styleOptions = {
+                id: id,
+                stroke: strokeColor,
+                strokeWidth: strokeWidth,
+                fill: 'transparent'
+            };
+
+            if (mode === 'rect') {
+                shape = new fabric.Rect({ ...styleOptions, left: sx, top: sy, width: 0, height: 0, originX: 'left', originY: 'top' });
+            } else if (mode === 'circle') {
+                shape = new fabric.Circle({ ...styleOptions, left: sx, top: sy, radius: 0, originX: 'center', originY: 'center' });
+            } else if (mode === 'line') {
+                shape = new fabric.Line([sx, sy, sx, sy], styleOptions);
+            } else if (mode === 'text') {
+                shape = new fabric.IText('Text', { ...styleOptions, left: sx, top: sy, fill: strokeColor, fontSize: strokeWidth * 5, originX: 'left', originY: 'top' });
+            }
+            
+            if (shape) {
+                canvas.add(shape);
+            }
         });
 
+        canvas.on('mouse:move', opt => {
+            if (!shape) return;
+
+            let p = canvas.getPointer(opt.e);
+            const canvasWidth = canvas.getWidth();
+            const canvasHeight = canvas.getHeight();
+
+            p.x = Math.max(0, Math.min(p.x, canvasWidth));
+            p.y = Math.max(0, Math.min(p.y, canvasHeight));
+
+            if (shape.type === 'rect') {
+                const left = Math.min(p.x, sx);
+                const top = Math.min(p.y, sy);
+                const width = Math.abs(p.x - sx);
+                const height = Math.abs(p.y - sy);
+                shape.set({ left: left, top: top, width: width, height: height });
+
+            } else if (shape.type === 'circle') {
+                const radius = Math.hypot(p.x - sx, p.y - sy);
+                shape.set({ radius: radius });
+
+            } else if (shape.type === 'line') {
+                shape.set({ x2: p.x, y2: p.y });
+            }
+            
+            canvas.renderAll();
+        });
+
+        canvas.on('mouse:up', () => {
+            if (!shape) return;
+            shape.setCoords(); 
+            
+            const canvasWidth = canvas.getWidth();
+            const canvasHeight = canvas.getHeight();
+            
+            const shapeData = {
+                id: shape.id,
+                type: shape.type,
+                stroke: shape.stroke,
+                strokeWidth: shape.strokeWidth,
+                fill: shape.fill,
+                originX: shape.originX,
+                originY: shape.originY
+            };
+
+            if (shape.type === 'line') {
+                shapeData.x1 = shape.x1 / canvasWidth;
+                shapeData.y1 = shape.y1 / canvasHeight;
+                shapeData.x2 = shape.x2 / canvasWidth;
+                shapeData.y2 = shape.y2 / canvasHeight;
+            } else {
+                shapeData.left = shape.left / canvasWidth;
+                shapeData.top = shape.top / canvasHeight;
+
+                if (shape.type === 'rect') {
+                    shapeData.width = shape.width / canvasWidth;
+                    shapeData.height = shape.height / canvasHeight;
+                } else if (shape.type === 'circle') {
+                    shapeData.radius = shape.radius / Math.max(canvasWidth, canvasHeight);
+                } else if (shape.type === 'i-text') {
+                    shapeData.text = shape.text;
+                    shapeData.fontSize = shape.fontSize;
+                }
+            }
+
+            signal({ type: 'shape-create', shape: shapeData });
+            shape = null;
+        });
+        
         canvas.on('object:modified', e => {
-          if (!e.target) return;
-          const obj = e.target.toObject();
-          signal({ type: 'object-modified', object: obj });
+            if (!e.target) return;
+            const obj = e.target.toObject();
+            signal({ type: 'object-modified', object: obj });
         });
         
         ws.onmessage = async ({ data }) => {
-          const m = JSON.parse(data);
+            let m;
+            try {
+                m = JSON.parse(data);
+            } catch (e) {
+                try {
+                    const binaryString = atob(data);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const decompressedData = pako.inflate(bytes, { to: 'string' });
+                    m = JSON.parse(decompressedData);
+                } catch (err) {
+                    console.error("Base64 디코드 또는 압축 해제 오류:", err);
+                    return;
+                }
+            }
 
-          if (m.sender === senderId) return;
+            if (m.sender === senderId) return;
+          
+            switch(m.type) {
+                case 'bg-change':
+                    bgOn = !!m.color;
+                    bgToggle.classList.toggle('active', bgOn);
+                    if (bgPicker) {
+                        bgPicker.style.display = bgOn ? 'inline-block' : 'none';
+                        if (m.color) bgPicker.value = m.color;
+                    }
+                    canvas.setBackgroundColor(m.color || null, canvas.renderAll.bind(canvas));
+                    break;
 
-          switch(m.type) {
-            case 'bg-change':
-              bgOn = !!m.color;
-              bgToggle.classList.toggle('active', bgOn);
-              if (bgPicker) {
-                bgPicker.style.display = bgOn ? 'inline-block' : 'none';
-                if (m.color) bgPicker.value = m.color;
-              }
-              canvas.setBackgroundColor(m.color || null, canvas.renderAll.bind(canvas));
-              break;
-            case 'fabric-path':
-              fabric.Path.fromObject(m.path, (obj) => {
-                canvas.add(obj);
-              });
-              break;
-            case 'shape-create':
-              fabric.util.enlivenObjects([m.shape], ([obj]) => {
-                if (obj) canvas.add(obj);
-              });
-              break;
-            case 'object-modified':
-              const objToModify = canvas.getObjects().find(o => o.id === m.object.id);
-              if (objToModify) {
-                objToModify.set(m.object);
-                objToModify.setCoords();
-                canvas.renderAll();
-              }
-              break;
-            case 'object-removed':
-              const objectsToRemove = canvas.getObjects().filter(o => m.ids.includes(o.id));
-              if (objectsToRemove.length > 0) {
-                canvas.remove(...objectsToRemove);
-                canvas.renderAll();
-              }
-              break;
-            case 'clear':
-              canvas.clear();
-              if (bgOn) {
-                 const bgEl = document.getElementById('bgPicker');
-                 if(bgEl) canvas.setBackgroundColor(bgEl.value, canvas.renderAll.bind(canvas));
-              }
-              break;
-          }
+                case 'eraser-mode-change':
+                    m.updates.forEach(update => {
+                        const objToUpdate = canvas.getObjects().find(o => o.id === update.id);
+                        if (objToUpdate) {
+                            objToUpdate.set(update.props);
+                        }
+                    });
+                    canvas.renderAll();
+                    break;
+
+                case 'fabric-path':
+                    fabric.Path.fromObject(m.path, (obj) => {
+                        canvas.add(obj);
+                    });
+                    break;
+                    
+                case 'shape-create': {
+                    const receivedShape = m.shape;
+                    const canvasWidth = canvas.getWidth();
+                    const canvasHeight = canvas.getHeight();
+                    
+                    if (receivedShape.type === 'line') {
+                        receivedShape.x1 = receivedShape.x1 * canvasWidth;
+                        receivedShape.y1 = receivedShape.y1 * canvasHeight;
+                        receivedShape.x2 = receivedShape.x2 * canvasWidth;
+                        receivedShape.y2 = receivedShape.y2 * canvasHeight;
+                    } else {
+                        receivedShape.left = receivedShape.left * canvasWidth;
+                        receivedShape.top = receivedShape.top * canvasHeight;
+
+                        if (receivedShape.type === 'rect') {
+                            receivedShape.width = receivedShape.width * canvasWidth;
+                            receivedShape.height = receivedShape.height * canvasHeight;
+                        } else if (receivedShape.type === 'circle') {
+                            receivedShape.radius = receivedShape.radius * Math.max(canvasWidth, canvasHeight);
+                        }
+                    }
+
+                    fabric.util.enlivenObjects([receivedShape], ([obj]) => {
+                        if (obj) {
+                            canvas.add(obj);
+                            canvas.renderAll();
+                        }
+                    });
+                    break;
+                }
+                
+                case 'object-modified': {
+                    const objToModify = canvas.getObjects().find(o => o.id === m.object.id);
+                    if (objToModify) {
+                        objToModify.set(m.object);
+                        objToModify.setCoords();
+                        canvas.renderAll();
+                    }
+                    break;
+                }
+                
+                case 'object-removed': {
+                    const objectsToRemove = canvas.getObjects().filter(o => m.ids.includes(o.id));
+                    if (objectsToRemove.length > 0) {
+                        canvas.remove(...objectsToRemove);
+                        canvas.renderAll();
+                    }
+                    break;
+                }
+
+                case 'clear':
+                    canvas.clear();
+                    if (bgOn) {
+                        const bgEl = document.getElementById('bgPicker');
+                        if(bgEl) canvas.setBackgroundColor(bgEl.value, canvas.renderAll.bind(canvas));
+                    }
+                    break;
+            }
         };
       }
     ]]>
@@ -305,13 +524,8 @@
 			<button id="clear">
 				<i class="fa fa-ban"></i>
 			</button>
-
-
 			<input type="color" id="colorPicker" value="#000000" />
 			<input type="range" id="widthPicker" min="1" max="50" value="5" />
-
-
-
 			<button id="bgToggle">
 				<i class="fa fa-fill-drip"></i>
 				Background

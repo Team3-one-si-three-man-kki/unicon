@@ -34,8 +34,11 @@ public class SignalHandler {
 	}
 
 	@OnClose
-	public void onClose(Session session) {
-		System.out.println("웹소켓 연결 종료: " + session.getId());
+	public void onClose(Session session, CloseReason closeReason) {
+	
+		System.out.println("웹소켓 연결 종료: " + session.getId() + 
+						   ", 종료 코드: " + closeReason.getCloseCode() + 
+						   ", 종료 사유: " + closeReason.getReasonPhrase());
 		sessions.remove(session);
 	}
 
