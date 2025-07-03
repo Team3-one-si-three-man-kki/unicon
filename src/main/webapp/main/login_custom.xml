@@ -148,7 +148,7 @@ scwin.dm_loginCustomInfo_onmodelchange = function (info) {
     					</xf:trigger>
     				</xf:group>
     			</xf:group>
-    			<xf:group class="" id="" style="" localeRef="main/unicon_login_page.xml">
+    			<xf:group class="" id="" style="" localeRef="">
     				<w2:pageFrame style="" id="loginPage" src="/InsWebApp/main/unicon_login_page.xml" ev:onpageframeload="scwin.loginPage_onpageframeload"></w2:pageFrame>
     			</xf:group>
     		</xf:group>
