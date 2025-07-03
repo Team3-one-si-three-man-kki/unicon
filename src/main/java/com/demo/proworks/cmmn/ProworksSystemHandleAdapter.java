@@ -31,28 +31,6 @@ public class ProworksSystemHandleAdapter extends ElSystemHandleAdapter {
 		super(adapterInfoMap);
 	}
 	
-	 // 권한 체크를 하지 않을 공개 URL 목록
-    private static final String[] PUBLIC_URLS = {
-        "TNU0001Login",        // 로그인
-        "TNU0002Register",     // 회원가입  
-        "TNU0003FindPassword", // 비밀번호 찾기
-        "api/public",          // 공개 API
-        "error",               // 오류 페이지
-        "health"               // 헬스체크
-    };
-    
-    /**
-     * 공개 URL인지 확인
-     */
-    private boolean isPublicUrl(String svcId) {
-        for (String publicUrl : PUBLIC_URLS) {
-            if (svcId.startsWith(publicUrl)) {
-                return true;
-            }
-        }
-        return false;
-    }
-	
 
 	@Override
 	public void preHandle(HttpServletRequest request, String inputData) throws UserException {
@@ -84,14 +62,10 @@ public class ProworksSystemHandleAdapter extends ElSystemHandleAdapter {
 			
 			// 업무 공통쪽에 권한 체크 로직 전달 -> 해당 구현체에 throw 를 통한 권한 체크 
 			//new ProworksAuthProcess().checkAuth(request, svcId, inputData);
-			
-			// 공개 URL은 권한 체크 제외
-			 if (!isPublicUrl(svcId)) {
+		
             AppLog.debug("권한 체크 수행 - svcId: " + svcId);
             new ProworksAuthProcess().checkAuth(request, svcId, inputData);
-        } else {
-            AppLog.debug("공개 URL 권한 체크 제외 - svcId: " + svcId);
-        }			
+        	
 			
 		}catch(ElException e){
 			AppLog.error("preHandle error", e);
