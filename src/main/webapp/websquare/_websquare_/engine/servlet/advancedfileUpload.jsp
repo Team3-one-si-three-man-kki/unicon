@@ -25,6 +25,8 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
     var gridID = "";
     var maxFileSize = -1;
     var useModalDisable = "";
+    var frameModal = "";
+    var frameId = "";
     var useMaxByteLength = "";
     var dateFormat = "";
     var byteCheckEncoding = "";
@@ -111,7 +113,7 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
                 elem.textContent = str;
             }
         } catch (e) {
-            console.error(e);
+            opener.WebSquare.exception.printStackTrace(e)
         }
     }
     
@@ -164,8 +166,24 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
                     }
                 }
             }
-
-            if(uploadInfo.useModalDisable == "true") {
+            if (uploadInfo.frameModal == "true" && uploadInfo.frameId) {
+                frameId = uploadInfo.frameId;
+                var modalFrame = opener.WebSquare.util.getComponentById(uploadInfo.frameId);
+                if (modalFrame) {
+                    var info = {
+                        className : "w2modal_excelUploadPopup",
+                        popupModal : true,
+                        stackComponents : {
+                            popup : {
+                                id:frameId
+                            }
+                        }
+                    };
+                    modalFrame.showFrameModal(info);
+                    frameModal = "true"
+                }
+            }
+            if (uploadInfo.useModalDisable == "true" && frameModal != "true") {
                 opener.WebSquare.layer.showModal();
                 useModalDisable = "true";
             }
@@ -430,7 +448,9 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
     }
 
     function doFinish() {
-    	if(useModalDisable == "true") {
+        if (frameModal == "true") {
+            opener.WebSquare.layer._hideFrameModal(frameId);
+        } else if (useModalDisable == "true") {
         	opener.WebSquare.layer.hideModal();
     	}
     }

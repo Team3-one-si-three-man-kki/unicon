@@ -107,7 +107,7 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
                 elem.textContent = str;
             }
         } catch (e) {
-            console.error(e);
+            opener.WebSquare.exception.printStackTrace(e);
         }
     }
     
@@ -603,7 +603,7 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
                 node2.style.width = processMsgWidth + "px";
 
                 document.body.appendChild( node2 );
-                _safeInnerHTML(node2, "<iframe frameborder='0' scrolling='no'ß name='__processbarIFrame' style='position:absolute; width:"+processMsgWidth+"px; height:"+ processMsgHeight +"px; top:0px; left:0px' src='" + processMsgURL + "'></iframe>");
+                _safeInnerHTML(node2, "<iframe frameborder='0' scrolling='no' name='__processbarIFrame' style='position:absolute; width:"+processMsgWidth+"px; height:"+ processMsgHeight +"px; top:0px; left:0px' src='" + processMsgURL + "'></iframe>");
                 
             } else {
                 var nTop = document.documentElement.scrollTop + document.documentElement.clientHeight/2 - parseInt(processMsgHeight)/2;
