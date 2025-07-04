@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.demo.proworks.tenant">
+    
+    <select id="selectLoginPageBySubDomain" parameterType="String" resultType="com.demo.proworks.tenant.vo.LoginPageVo">
+        SELECT
+            lp.tenant_id   AS tenantId,
+            lp.config_json AS configJson
+        FROM
+            login_page lp
+        INNER JOIN
+            tenant t ON lp.tenant_id = t.tenant_id
+        WHERE
+            t.sub_domain = #{subDomain}
+    </select>
+</mapper>
