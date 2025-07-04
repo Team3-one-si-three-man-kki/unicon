@@ -111,9 +111,7 @@ scwin.applyCustomization = function (data) {
 scwin.overlayElement = null;
 
 scwin.loadCustomization = function (c) {
-
     if (!c) return;
-    console.log("해위", c);
 
     // 배경 이미지 적용
     // var bgGroup = $p.getComponentById("leftPreview");
