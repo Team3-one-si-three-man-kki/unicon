@@ -15,7 +15,8 @@
 	2025/07/01              LEEBYUNGWOOK             최초 생성
  -->
 <mapper namespace="com.demo.proworks.tenant">
-    <insert id="insertTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo">
+    <insert id="insertTenant" parameterType="com.demo.proworks.tenant.vo.TenantVo"
+    			useGeneratedKeys="true" keyProperty="tenantId">
     	<!-- 테넌트를 등록한다. -->	
     		
         INSERT INTO TENANT   /* QueryID : com.demo.proworks.tenant.insertTenant */
@@ -114,6 +115,36 @@
             <if test="scSubDomain != null and scSubDomain != ''">
                  AND SUB_DOMAIN like '%${scSubDomain}%'
             </if>
+    </select>
+    
+    <!-- 테넌트 목록 조회 (조건부 검색) -->
+    <select id="selectTenantList" parameterType="com.demo.proworks.tenant.vo.TenantVo" 
+            resultType="com.demo.proworks.tenant.vo.TenantVo">
+        SELECT 
+            tenant_id as tenantId,
+            created_at as createdAt,
+            name,
+            sub_domain as subDomain,
+            is_active as isActive
+        FROM tenant
+        <where>
+            <if test="scTenantId != null and scTenantId != ''">
+                AND tenant_id = #{scTenantId}
+            </if>
+            <if test="scName != null and scName != ''">
+                AND name LIKE CONCAT('%', #{scName}, '%')
+            </if>
+            <if test="scSubDomain != null and scSubDomain != ''">
+                AND sub_domain = #{scSubDomain}
+            </if>
+            <if test="scCreatedAt != null and scCreatedAt != ''">
+                AND DATE(created_at) = #{scCreatedAt}
+            </if>
+            <if test="isActive != null and isActive != ''">
+                AND is_active = #{isActive}
+            </if>
+        </where>
+        ORDER BY created_at DESC
     </select>
 
 </mapper>
