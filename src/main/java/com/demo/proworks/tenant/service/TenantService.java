@@ -72,4 +72,7 @@ public interface TenantService {
      */
 	public int deleteTenant(TenantVo tenantVo) throws Exception;
 	
+	public List<TenantVo> selectTenantList(TenantVo searchVo) throws Exception;
+	
+	
 }

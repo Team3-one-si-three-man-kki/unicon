@@ -6,12 +6,14 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.demo.proworks.user.service.SignupService;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
 import com.demo.proworks.user.vo.UserListVo;
-
+import com.demo.proworks.user.vo.UserSignupVo;
 import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
@@ -38,6 +40,9 @@ public class UserController {
     /** UserService */
     @Resource(name = "userServiceImpl")
     private UserService userService;
+    
+     @Resource(name = "signupServiceImpl")
+    private SignupService signupService;
 	
 	@Resource(name= "loginProcess")
 	protected LoginProcessor loginProcess;
@@ -52,12 +57,75 @@ public class UserController {
     	String password = loginVo.getPassword();
     	System.out.println("겟야이디 패스워드 "+email+",,,,,,,,"+password+"=========================");
     	System.out.println("컨트롤러는잘타는중~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    	
     	LoginInfo info = loginProcess.processLogin(request, email, password);
     	System.out.println("로그인 인포에 정보 잘담기는거야?"+info+"======================================");
     	AppLog.debug("- Login 정보 : " + info.toString());
     	System.out.println("로그인 성공 여부: " + info.isSuc());
     }
+    
+    /**
+ * 이메일 중복 검사 API
+ */
+@ElService(key = "TNU0000CheckEmail")
+@RequestMapping(value = "TNU0000CheckEmail")
+@ElDescription(sub = "이메일중복검사", desc = "이메일 사용 가능 여부 확인")
+public void checkEmailAvailability(UserSignupVo signupVo, HttpServletRequest request) throws Exception {
+    String email = signupVo.getEmail();
+    
+    System.out.println("이메일 중복 검사 요청: " + email);
+    
+    try {
+        boolean available = signupService.isEmailAvailable(email);
+        
+        request.setAttribute("emailCheckResult", available ? "available" : "unavailable");
+        request.setAttribute("email", email);
+        
+        System.out.println("이메일 중복 검사 결과: " + (available ? "사용가능" : "사용불가"));
+        
+    } catch (Exception e) {
+        System.err.println("이메일 중복 검사 실패: " + e.getMessage());
+        request.setAttribute("emailCheckResult", "error");
+        request.setAttribute("errorMessage", e.getMessage());
+        
+        throw e;
+    }
+}
+
+@ElService(key = "TNU0000Signup")
+@RequestMapping(value = "TNU0000Signup")
+@ElDescription(sub = "회원가입처리", desc = "사용자 회원가입 처리")
+public void signup(UserSignupVo signupVo, HttpServletRequest request) throws Exception {
+
+    System.out.println("회원가입 요청 정보: " + signupVo.toString());
+    System.out.println("회원가입 컨트롤러 진입~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    
+    try {
+        // SignupService 인터페이스를 통한 회원가입 처리
+        UserVo result = signupService.processSignup(signupVo);
+        
+        System.out.println("회원가입 성공 - 사용자ID: " + result.getUserId() + 
+                         ", 테넌트ID: " + result.getTenantId() + "======================================");
+                         
+        AppLog.debug("- 회원가입 결과 : " + result.toString());
+        
+        // 성공 응답 처리
+        request.setAttribute("signupResult", "success");
+        request.setAttribute("userId", result.getUserId());
+        request.setAttribute("tenantId", result.getTenantId());
+        
+    } catch (Exception e) {
+        System.err.println("회원가입 실패: " + e.getMessage());
+        AppLog.error("- 회원가입 오류 : " + e.getMessage(), e);
+        
+        // 실패 응답 처리
+        request.setAttribute("signupResult", "fail");
+        request.setAttribute("errorMessage", e.getMessage());
+        
+        throw e;
+    }
+}
+    
+    
     
     
     
