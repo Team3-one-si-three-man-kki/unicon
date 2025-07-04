@@ -6,40 +6,47 @@ import com.inswave.elfw.annotation.ElVoField;
 import com.fasterxml.jackson.annotation.JsonFilter;
 
 @JsonFilter("elExcludeFilter")
-@ElDto(FldYn = "", logicalName = "테넌트")
+@ElDto(FldYn = "", delimeterYn = "", logicalName = "테넌트")
 public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
     private static final long serialVersionUID = 1L;
 
-    @ElDtoField(logicalName = "tenant_id", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    public TenantVo(){
+    }
+
+    @ElDtoField(logicalName = "tenant_id", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String tenantId;
 
-    @ElDtoField(logicalName = "created_at", physicalName = "createdAt", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "created_at", physicalName = "createdAt", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String createdAt;
 
-    @ElDtoField(logicalName = "name", physicalName = "name", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "name", physicalName = "name", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String name;
 
-    @ElDtoField(logicalName = "sub_domain", physicalName = "subDomain", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "sub_domain", physicalName = "subDomain", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String subDomain;
 
-    @ElDtoField(logicalName = "is_active", physicalName = "isActive", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "is_active", physicalName = "isActive", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String isActive;
 
-    @ElDtoField(logicalName = "search_tenant_id", physicalName = "scTenantId", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "search_tenant_id", physicalName = "scTenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String scTenantId;
 
-    @ElDtoField(logicalName = "search_created_at", physicalName = "scCreatedAt", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "search_created_at", physicalName = "scCreatedAt", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String scCreatedAt;
 
-    @ElDtoField(logicalName = "search_name", physicalName = "scName", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "search_name", physicalName = "scName", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String scName;
 
-    @ElDtoField(logicalName = "search_sub_domain", physicalName = "scSubDomain", type = "String", typeKind = "", fldYn = "", length = 0, dotLen = 0, baseValue = "", desc = "")
+    @ElDtoField(logicalName = "search_sub_domain", physicalName = "scSubDomain", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String scSubDomain;
+
+    @ElDtoField(logicalName = "config_json", physicalName = "configJson", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String configJson;
 
     @ElVoField(physicalName = "tenantId")
     public String getTenantId(){
-        return tenantId;
+        String ret = this.tenantId;
+        return ret;
     }
 
     @ElVoField(physicalName = "tenantId")
@@ -49,7 +56,8 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
 
     @ElVoField(physicalName = "createdAt")
     public String getCreatedAt(){
-        return createdAt;
+        String ret = this.createdAt;
+        return ret;
     }
 
     @ElVoField(physicalName = "createdAt")
@@ -59,7 +67,8 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
 
     @ElVoField(physicalName = "name")
     public String getName(){
-        return name;
+        String ret = this.name;
+        return ret;
     }
 
     @ElVoField(physicalName = "name")
@@ -69,7 +78,8 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
 
     @ElVoField(physicalName = "subDomain")
     public String getSubDomain(){
-        return subDomain;
+        String ret = this.subDomain;
+        return ret;
     }
 
     @ElVoField(physicalName = "subDomain")
@@ -79,7 +89,8 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
 
     @ElVoField(physicalName = "isActive")
     public String getIsActive(){
-        return isActive;
+        String ret = this.isActive;
+        return ret;
     }
 
     @ElVoField(physicalName = "isActive")
@@ -89,51 +100,90 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
 
     @ElVoField(physicalName = "scTenantId")
     public String getScTenantId(){
-        return scTenantId;
+        String ret = this.scTenantId;
+        return ret;
     }
 
     @ElVoField(physicalName = "scTenantId")
-    public void setScTenantId(String scTenantId) {
+    public void setScTenantId(String scTenantId){
         this.scTenantId = scTenantId;
     }
 
     @ElVoField(physicalName = "scCreatedAt")
     public String getScCreatedAt(){
-        return scCreatedAt;
+        String ret = this.scCreatedAt;
+        return ret;
     }
 
     @ElVoField(physicalName = "scCreatedAt")
-    public void setScCreatedAt(String scCreatedAt) {
+    public void setScCreatedAt(String scCreatedAt){
         this.scCreatedAt = scCreatedAt;
     }
 
     @ElVoField(physicalName = "scName")
     public String getScName(){
-        return scName;
+        String ret = this.scName;
+        return ret;
     }
 
     @ElVoField(physicalName = "scName")
-    public void setScName(String scName) {
+    public void setScName(String scName){
         this.scName = scName;
     }
 
     @ElVoField(physicalName = "scSubDomain")
     public String getScSubDomain(){
-        return scSubDomain;
+        String ret = this.scSubDomain;
+        return ret;
     }
 
     @ElVoField(physicalName = "scSubDomain")
-    public void setScSubDomain(String scSubDomain) {
+    public void setScSubDomain(String scSubDomain){
         this.scSubDomain = scSubDomain;
+    }
+
+    @ElVoField(physicalName = "configJson")
+    public String getConfigJson(){
+        String ret = this.configJson;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "configJson")
+    public void setConfigJson(String configJson){
+        this.configJson = configJson;
     }
 
     @Override
     public String toString() {
-        return "TenantVo [tenantId=" + tenantId + ",createdAt=" + createdAt + ",name=" + name + ",subDomain=" + subDomain + ",isActive=" + isActive + ",scTenantId=" + scTenantId + ",scCreatedAt=" + scCreatedAt + ",scName=" + scName + ",scSubDomain=" + scSubDomain + "]";
+        StringBuilder sb = new StringBuilder();
+        sb.append("TenantVo [");
+        sb.append("tenantId").append("=").append(tenantId).append(",");
+        sb.append("createdAt").append("=").append(createdAt).append(",");
+        sb.append("name").append("=").append(name).append(",");
+        sb.append("subDomain").append("=").append(subDomain).append(",");
+        sb.append("isActive").append("=").append(isActive).append(",");
+        sb.append("scTenantId").append("=").append(scTenantId).append(",");
+        sb.append("scCreatedAt").append("=").append(scCreatedAt).append(",");
+        sb.append("scName").append("=").append(scName).append(",");
+        sb.append("scSubDomain").append("=").append(scSubDomain).append(",");
+        sb.append("configJson").append("=").append(configJson);
+        sb.append("]");
+        return sb.toString();
+
     }
 
     public boolean isFixedLengthVo() {
         return false;
     }
+
+    @Override
+    public void _xStreamEnc() {
+    }
+
+
+    @Override
+    public void _xStreamDec() {
+    }
+
 
 }
