@@ -7,14 +7,43 @@
         <w2:buildDate/>
         <w2:MSA/>
         <xf:model>
-            <w2:dataCollection baseNode="map"/>
-            <w2:workflowCollection/>
+        	<w2:dataCollection baseNode="map">
+        		<w2:dataMap baseNode="map" id="signup_dma">
+        			<w2:keyInfo>
+        				<w2:key dataType="text" name="사용자명" id="userName"></w2:key>
+        				<w2:key dataType="text" name="회사명" id="tenantName"></w2:key>
+        				<w2:key dataType="text" name="이메일" id="email"></w2:key>
+        				<w2:key dataType="text" name="비밀번호" id="password"></w2:key>
+        				<w2:key dataType="text" name="비밀번호확인" id="passwordConfirm"></w2:key>
+        				<w2:key dataType="text" name="서브도메인" id="subDomain"></w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        	</w2:dataCollection>
+        	<w2:workflowCollection />
+        	<xf:submission id="signupProcess" action="/InsWebApp/TNU0000Signup.pwkjson" method="post" mediatype="application/json"
+        		ref='data:json,{"id":"signup_dma","key":"elData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+        		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="" ev:submiterror="" abortTrigger="">
+        	</xf:submission>
+        	<xf:submission id="emailCheck" action="/InsWebApp/TNU0000CheckEmail.pwkjson" method="post" mediatype="application/json" ref='data:json,{"id":"signup_dma","key":"elData"}' target="" encoding="UTF-8"
+        		instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone=""
+        		ev:submiterror="" abortTrigger="">
+        	</xf:submission>
         </xf:model>
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function() {
 	
+};
+
+
+
+scwin.trigger1_onclick = function (e) {
+    $c.sbm.execute(signupProcess);
+};
+
+scwin.btn_check_onclick = function (e) {
+    $c.sbm.execute(emailCheck);
 };
 ]]></script>
     </head>
@@ -40,7 +69,7 @@ scwin.onpageload = function() {
     				</w2:span>
     				<xf:input class="" id="name_input" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     					meta_snippetName="10_01 InputBox" placeholder="이름을 입력해주세요"
-    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" ref="data:signup_dma.userName">
     				</xf:input>
     			</xf:group>
     			<xf:group style="margin-bottom: 20px;" id="grp_company">
@@ -49,7 +78,7 @@ scwin.onpageload = function() {
     				</w2:span>
     				<xf:input class="" id="company_input" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     					meta_snippetName="10_01 InputBox" placeholder="회사명을 입력해주세요"
-    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" ref="data:signup_dma.tenantName">
     				</xf:input>
     			</xf:group>
     			<xf:group style="margin-bottom: 20px;" id="grp_email">
@@ -58,10 +87,10 @@ scwin.onpageload = function() {
     				</w2:span>
     				<xf:input class="" id="email_input" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     					meta_snippetName="10_01 InputBox" placeholder="이메일을 입력해주세요"
-    					style="width:82.5%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" type="email">
+    					style="width:82.5%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" type="email" ref="data:signup_dma.email">
     				</xf:input>
     				<xf:trigger class="btn_cm" id="btn_check" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
-    					meta_snippetName="8_01 기본버튼" style="width: 15%;background-color:#667eea;color: white;margin-left: 10px;" type="button">
+    					meta_snippetName="8_01 기본버튼" style="width: 15%;background-color:#667eea;color: white;margin-left: 10px;" type="button" ev:onclick="scwin.btn_check_onclick">
     					<xf:label><![CDATA[중복검사]]></xf:label>
     				</xf:trigger>
     			</xf:group>
@@ -71,7 +100,7 @@ scwin.onpageload = function() {
     				</w2:span>
     				<xf:input class="" id="password_input" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     					meta_snippetName="10_01 InputBox" placeholder="8자 이상의 비밀번호를 입력해주세요"
-    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" type="password">
+    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" type="password" ref="data:signup_dma.password">
     				</xf:input>
     				<w2:span id="" label="[비밀번호 규칙]에 맞게 입력해주세요" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     					meta_snippetName="10_16 출력텍스트" style="font-size: 12px;margin-left: 5px;color: gray;display: block;">
@@ -83,7 +112,7 @@ scwin.onpageload = function() {
     				</w2:span>
     				<xf:input class="" id="password_chk_input" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     					meta_snippetName="10_01 InputBox" placeholder="비밀번호를 다시 입력해주세요"
-    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" type="password">
+    					style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:14px;" type="password" ref="data:signup_dma.passwordConfirm">
     				</xf:input>
     			</xf:group>
     			<xf:group style="margin-bottom: 20px;" id="grp_tenant">
@@ -95,7 +124,7 @@ scwin.onpageload = function() {
     						meta_snippetName="10_16 출력텍스트" style="font-size: 13px;">
     					</w2:span>
     					<xf:input class="" id="tenant_input" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    						meta_snippetName="10_01 InputBox" placeholder="테넌트ID를 입력해주세요" style="width:177px;margin-left:5px;margin-right:5px;">
+    						meta_snippetName="10_01 InputBox" placeholder="테넌트ID를 입력해주세요" style="width:177px;margin-left:5px;margin-right:5px;" ref="data:signup_dma.subDomain">
     					</xf:input>
     					<w2:span id="" label=".unicon.com" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
     						meta_snippetName="10_16 출력텍스트" style="font-size: 13px;">
@@ -127,7 +156,7 @@ scwin.onpageload = function() {
     				<xf:trigger class="btn_cm" id="trigger1" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
     					meta_snippetName="8_01 기본버튼"
     					style="width: 30%;height: 35px;background: #667eea;color: white;border: none;border-radius: 8px;font-size: 16px;font-weight: bold;text-align: center;    vertical-align: middle;"
-    					type="button">
+    					type="button" ev:onclick="scwin.trigger1_onclick">
     					<xf:label><![CDATA[회원가입]]></xf:label>
     				</xf:trigger>
     			</xf:group>

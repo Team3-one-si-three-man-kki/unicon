@@ -55,6 +55,10 @@ public class TenantDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstrac
     public long selectListCountTenant(TenantVo vo)  throws ElException{               
         return (Long)selectByPk("com.demo.proworks.tenant.selectListCountTenant", vo);
     }
+    
+    public List<TenantVo> selectTenantList(TenantVo searchVo) throws Exception {
+         return (List<TenantVo>)list("com.demo.proworks.tenant.selectTenantList", searchVo);
+    }
         
     /**
      * 테넌트를 등록한다.
