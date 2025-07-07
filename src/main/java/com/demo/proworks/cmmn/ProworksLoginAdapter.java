@@ -4,6 +4,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.inswave.elfw.exception.ElException;
 import com.inswave.elfw.log.AppLog;
 import com.inswave.elfw.login.LoginAdapter;
@@ -15,6 +17,7 @@ import com.demo.proworks.emp.service.EmpService;
 import com.demo.proworks.emp.vo.EmpVo;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
+import com.demo.proworks.util.PasswordEncryptUtil;
 
 /**
  * @subject		: ProworksLoginAdapter.java 
@@ -35,6 +38,9 @@ public class ProworksLoginAdapter extends LoginAdapter {
 	 * 데모용 로그인 어댑터의 생성자
 	 * @param adapterInfoMap Adapter 정보
 	 */
+	 
+
+    
 	public ProworksLoginAdapter(Map<String, Object> adapterInfoMap){
 		super(adapterInfoMap);
 	}
@@ -48,8 +54,10 @@ public class ProworksLoginAdapter extends LoginAdapter {
 	 * @return LoginInfo
 	 * @throws LoginException
 	 */
+	 
 	@Override
 	public LoginInfo login(HttpServletRequest request, String id, Object... params) throws LoginException {
+
 
 		// 로그인 체크를 수행  (샘플 예제)
 //		try{
@@ -81,15 +89,20 @@ public class ProworksLoginAdapter extends LoginAdapter {
 
 try{
 			String pw = (String)params[0];
+			String tenantId = (String)params[1];
+			System.out.println(tenantId+"로그인어뎁터 테넌트아이이디~~~");
 			
 			
 			UserService userService =
                 (UserService) ElBeanUtils.getBean("userServiceImpl");
+                
+           PasswordEncryptUtil passwordEncryptUtil =
+        		   (PasswordEncryptUtil) ElBeanUtils.getBean("passwordEncryptUtil");
 
 			
 			UserVo UserVo = new UserVo();
-           // TenantVo.setUserId(id);
             UserVo.setEmail(id);
+            UserVo.setTenantId(tenantId);
             System.out.println("이거로그인어뎁터에 테넌트 vo야 아이디 잘담겻나?+++++++"+UserVo);
 
 			UserVo LoginUser = userService.loginUser(UserVo);
@@ -98,8 +111,20 @@ try{
 				throw new LoginException("EL.ERROR.LOGIN.0001");
 			}
 
+  System.out.println("=== 로그인 어댑터 디버깅 시작 ===");
+    
+    if (passwordEncryptUtil == null) {
+        System.out.println("ERROR: passwordEncoder가 null입니다!");
+    }
+    
+    if (userService == null) {
+        System.out.println("ERROR: userService가 null입니다!");
+    }
+    
+    // 111라인 직전에 추가
+    System.out.println("111라인 실행 직전 - 모든 객체 상태 확인 완료");
 			 String dbPw = LoginUser.getPassword();
-            if (pw == null || !pw.equals(dbPw)) {
+            if (pw == null || !passwordEncryptUtil.verifyPassword(pw, dbPw)) {
                 throw new LoginException("EL.ERROR.LOGIN.0002");
             }
 
@@ -120,7 +145,7 @@ try{
 		LoginInfo info = new LoginInfo();		
 		info.setSuc(true);
 		AppLog.debug("[Login] Proworks Login 성공.....");
-			
+		System.out.println(info.toString());
 		return info;
 	}
 
