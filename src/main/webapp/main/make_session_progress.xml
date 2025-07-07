@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head meta_templateCategory="01_Single" meta_templateName="1_07 process">
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_sessionData">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="name" id="name"></w2:key>
+						<w2:key dataType="text" name="usingDept" id="usingDept"></w2:key>
+						<w2:key dataType="text" name="startTime" id="startTime"></w2:key>
+						<w2:key dataType="text" name="inviteLink" id="inviteLink"></w2:key>
+						<w2:key dataType="text" name="linkExpiry" id="linkExpiry"></w2:key>
+						<w2:key dataType="text" name="createdBy" id="createdBy"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+				<w2:dataList baseNode="list" repeatNode="map" id="dlt_sessionModules" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="sessionId" id="sessionId"></w2:column>
+						<w2:column dataType="text" name="moduleId" id="moduleId"></w2:column>
+						<w2:column dataType="text" name="sessionModuleConfig" id="sessionModuleConfig"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+			<xf:submission id="sbm_createSession" action="/InsWebApp/TNU0002SessionIns.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"dma_sessionData","key":"sessionVo"}' target="" encoding="UTF-8" instance=""
+				replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				ev:submitdone="scwin.sbm_createSession_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/SessionModuleListIns.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"dlt_sessionModules","key":"sessionModuleVoList.sessionModuleVoList"}' target=""
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone=""
+				ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    // 세션 정보 담을 공간
+    scwin.sessionData = {};
+
+    scwin.step1_onclick();
+};
+
+scwin.setScreen = function (idx) {
+
+    if (idx == 1) {
+        step1.addClass("on");
+        step2.removeClass("on");
+        step3.removeClass("on");
+        step4.removeClass("on");
+        fr_session_making_process.setSrc("/InsWebApp/main/session_info_input.xml");
+    } else if (idx == 2) {
+        step1.removeClass("on");
+        step2.addClass("on");
+        step3.removeClass("on");
+        step4.removeClass("on");
+        fr_session_making_process.setSrc("/InsWebApp/main/layout-designer.xml");
+    } else if (idx == 3) {
+        step1.removeClass("on");
+        step2.removeClass("on");
+        step3.addClass("on");
+        step4.removeClass("on");
+        fr_session_making_process.setSrc("/InsWebApp/main/session_invitation.xml");
+    } else if (idx == 4) {
+        step1.removeClass("on");
+        step2.removeClass("on");
+        step3.removeClass("on");
+        step4.addClass("on");
+        fr_session_making_process.setSrc("/InsWebApp/main/make_session_complete.xml");
+    }
+};
+
+// progress 클릭
+scwin.step1_onclick = function (e) {
+    scwin.setScreen(1);
+};
+
+scwin.step2_onclick = function (e) {
+    scwin.setScreen(2);
+};
+
+scwin.step3_onclick = function (e) {
+    scwin.setScreen(3);
+};
+
+scwin.step4_onclick = function (e) {
+    scwin.setScreen(4);
+};
+
+// 1단계에서 넘겨받은 데이터 저장 함수
+scwin.setSessionInfo = function (data) {
+    scwin.sessionData.sessionInfo = data;
+    console.log("step1 데이터", data);
+}
+
+// 2단계에서 넘겨받은 데이터 저장 함수
+scwin.setLayoutConfig = function (layoutData) {
+    scwin.sessionData.layoutConfig = layoutData;
+    console.log("2단계 데이터 저장:", layoutData);
+}
+
+// 3단계에서 넘겨받은 데이터 저장 함수
+scwin.setInviteInfo = function (inviteData) {
+    scwin.sessionData.inviteInfo = inviteData;
+    console.log("3단계 데이터 저장:", inviteData);
+};
+
+// 최종 세션 생성 함수
+scwin.saveAllSessionData = function () {
+    console.log("=== 최종 저장 시작 ===");
+    console.log("원본 세션 데이터:", scwin.sessionData);
+
+    try {
+        // 날짜 형식 변환
+        var startTime = scwin.sessionData.sessionInfo.start_time;
+        var linkExpiry = scwin.sessionData.sessionInfo.link_expiry;
+
+        // 날짜가 없으면 기본값 설정
+        if (!startTime) {
+            startTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        }
+        if (!linkExpiry) {
+            linkExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+        }
+
+        // 날짜 형식 변환 (202507080000 → 2025-07-08 00:00:00)
+        if (startTime && startTime.length === 12) {
+            startTime = startTime.substring(0, 4) + '-' +
+                startTime.substring(4, 6) + '-' +
+                startTime.substring(6, 8) + ' ' +
+                startTime.substring(8, 10) + ':' +
+                startTime.substring(10, 12) + ':00';
+        }
+
+        var inviteLink = "https://modulink.com/join/" + scwin.generateRandomId();
+
+        // VO 필드명에 정확히 맞춰서 설정 (camelCase)
+        dma_sessionData.set("name", scwin.sessionData.sessionInfo.name);
+        dma_sessionData.set("usingDept", scwin.sessionData.sessionInfo.using_dept);
+        dma_sessionData.set("startTime", startTime);
+        dma_sessionData.set("inviteLink", inviteLink);
+        dma_sessionData.set("linkExpiry", linkExpiry);  // 이게 중요! invite_link_expiry가 아님
+        dma_sessionData.set("createdBy", "1");
+
+        console.log("DataMap에 설정된 값들:");
+        console.log("- name:", dma_sessionData.get("name"));
+        console.log("- usingDept:", dma_sessionData.get("usingDept"));
+        console.log("- startTime:", dma_sessionData.get("startTime"));
+        console.log("- inviteLink:", dma_sessionData.get("inviteLink"));
+        console.log("- linkExpiry:", dma_sessionData.get("linkExpiry"));
+        console.log("- createdBy:", dma_sessionData.get("createdBy"));
+
+        // 디버깅 코드 추가
+        console.log("sessionInfo 체크:", scwin.sessionData.sessionInfo);
+        console.log("name 값:", scwin.sessionData.sessionInfo?.name);
+        console.log("using_dept 값:", scwin.sessionData.sessionInfo?.using_dept);
+
+        $p.executeSubmission("sbm_createSession");
+
+    } catch (error) {
+        console.error("저장 중 오류:", error);
+        alert("저장 중 오류가 발생했습니다: " + error.message);
+    }
+};
+
+
+// 랜덤 ID 생성 함수
+scwin.generateRandomId = function () {
+    return Math.random().toString(36).substr(2, 9);
+};
+
+// 세션 생성 성공 → session_id 받아서 모듈 저장
+scwin.sbm_createSession_submitdone = function (e) {
+    console.log("세션 생성 성공:", e);
+
+    // 응답에서 session_id 추출 (여러 방법 시도)
+    var sessionId = null;
+
+    try {
+        // 방법 1: responseJSON 직접 확인
+        if (e.responseJSON && e.responseJSON.sessionId) {
+            sessionId = e.responseJSON.sessionId;
+        }
+        // 방법 2: responseText 파싱
+        else if (e.responseText) {
+            var responseData = JSON.parse(e.responseText);
+            sessionId = responseData.sessionId;
+        }
+
+        console.log("추출된 sessionId:", sessionId);
+
+        if (!sessionId) {
+            alert("세션 ID를 받지 못했습니다. 서버 응답을 확인해주세요.");
+            return;
+        }
+
+    } catch (error) {
+        console.error("sessionId 추출 오류:", error);
+        alert("세션 ID 추출 중 오류가 발생했습니다.");
+        return;
+    }
+
+    // 모듈 데이터에 session_id 설정
+    scwin.saveSessionModules(sessionId);
+};
+
+// 모듈 저장 함수
+scwin.saveSessionModules = function (sessionId) {
+    console.log("모듈 저장 시작, sessionId:", sessionId);
+
+    dlt_sessionModules.removeAll();
+    var layoutConfig = scwin.sessionData.layoutConfig;
+
+    if (!layoutConfig || layoutConfig.length === 0) {
+        console.log("저장할 모듈이 없습니다.");
+        alert("세션이 생성되었지만 배치된 모듈이 없습니다.");
+        return;
+    }
+
+    layoutConfig.forEach(function (item, index) {
+        var rowIndex = dlt_sessionModules.insertRow();
+        dlt_sessionModules.setCellData(rowIndex, "sessionId", sessionId.toString());
+        dlt_sessionModules.setCellData(rowIndex, "moduleId", item.moduleId.toString());
+        dlt_sessionModules.setCellData(rowIndex, "sessionModuleConfig", item.sessionModuleConfig);
+
+        console.log("모듈 데이터 추가:", {
+            sessionId: sessionId,
+            moduleId: item.moduleId,
+            config: item.sessionModuleConfig
+        });
+    });
+
+    // 서브미션 데이터 구조 확인
+    console.log("DataList 내용:", dlt_sessionModules.getAllJSON());
+
+    $p.executeSubmission("sbm_createSessionModules");
+};]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="sub_contents"
+			style="display: flex !important;          flex-direction: column !important;          height: 100vh !important;          margin: 0 !important;          padding: 0 !important;          align-items: center !important;          justify-content: center !important;">
+
+			<!-- 프로그레스바 - 고정 높이 -->
+			<xf:group class="processbar"
+				style="flex: 0 0 auto !important; height: 60px !important; padding: 20px 0 !important; background: white !important;" tagname="ul">
+				<xf:group class="on" ev:onclick="scwin.step1_onclick" id="step1" tagname="li">
+					<w2:span class="num" id="" label="1" style="" />
+					<xf:group class="dot_wrap" id="" style="">
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot" id="" label="" style="" />
+						<w2:span class="dot" id="" label="" style="" />
+						<w2:span class="dot" id="" label="" style="" />
+					</xf:group>
+					<w2:textbox id="" label="세션 정보 입력" style="" />
+				</xf:group>
+				<xf:group ev:onclick="scwin.step2_onclick" id="step2" style="" tagname="li">
+					<w2:span class="num" id="" label="2" style="" />
+					<xf:group class="dot_wrap" id="" style="">
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot" id="" label="" style="" />
+						<w2:span class="dot" id="" label="" style="" />
+					</xf:group>
+					<w2:textbox id="" label="모듈 배치" style="" />
+				</xf:group>
+				<xf:group ev:onclick="scwin.step3_onclick" id="step3" style="" tagname="li">
+					<w2:span class="num" id="" label="3" style="" />
+					<xf:group class="dot_wrap" id="" style="">
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot" id="" label="" style="" />
+					</xf:group>
+					<w2:textbox id="" label="초대 정보 확인" style="" />
+				</xf:group>
+				<xf:group ev:onclick="scwin.step4_onclick" id="step4" style="" tagname="li">
+					<w2:span class="num" id="" label="4" style="" />
+					<xf:group class="dot_wrap" id="" style="">
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot on" id="" label="" style="" />
+						<w2:span class="dot on" id="" label="" style="" />
+					</xf:group>
+					<w2:textbox id="" label="생성 완료" style="" />
+				</xf:group>
+			</xf:group>
+
+			<!-- wframe 컨테이너 - 나머지 공간 -->
+			<xf:group style="flex: 1 !important; width: 83.3% !important; overflow: hidden !important;">
+				<w2:wframe
+					style="width: 100% !important; height: 100% !important; transform: scale(0.8345) !important; transform-origin: top left !important;"
+					scrolling="no" id="fr_session_making_process">
+				</w2:wframe>
+			</xf:group>
+
+		</xf:group>
+	</body>
+</html>

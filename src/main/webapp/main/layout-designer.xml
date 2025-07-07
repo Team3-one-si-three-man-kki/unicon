@@ -5,6 +5,454 @@
 		<w2:type>COMPONENT</w2:type>
 		<w2:buildDate />
 		<w2:MSA />
+		<style>
+			/* WebSquare용 ModuLink 스타일 - 고급스러운 기업용 디자인 */
+
+			/* 기본 레이아웃 */
+			.sub_contents {
+			<!-- font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important; -->
+			<!-- background: linear-gradient(135deg, #f0f4ff 0%, #e0ecff 100%) !important; -->
+			background : white !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			min-height: 100vh !important;
+			color: #2d3748 !important;
+			width:
+			100vw !important;
+			height: 100vh !important;
+			}
+
+			/* 헤더 영역
+			*/
+			.header-container {
+			<!-- background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important; -->
+			padding: 12px 32px !important;
+			border-bottom: 2px solid #e8ecf4 !important;
+			<!-- box-shadow: 0 4px 20px rgba(54, 116, 181, 0.25) !important; -->
+			margin-bottom: 0 !important;
+			}
+
+			.header-title {
+			<!-- color: #ffffff !important; -->
+			color: #4a8bc2;
+			font-size: 24px !important;
+			font-weight: 700 !important;
+			margin: 0 !important;
+			text-align: left !important;
+			display: block
+			!important;
+			letter-spacing: -0.025em !important;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+			}
+
+			/* 메인 컨테이너 */
+			#grp_main {
+			width: 100%
+			!important;
+			height: 100% !important;
+			max-width: none !important;
+			max-height: none !important;
+			}
+
+			/* 사이드바 스타일 */
+			.sidebar-container {
+			<!-- background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%) !important; -->
+			border-right: 2px solid #e8ecf4 !important;
+			width: 20% !important; /* 고정 px 대신 % 사용 */
+			min-width: 180px !important;
+			<!-- box-shadow: 2px 0 10px rgba(54, 116, 181, 0.08) !important; -->
+			}
+
+			.sidebar-header {
+			padding: 17px 24px !important;
+			<!-- background: linear-gradient(135deg, #F5F0CD 0%, #faf6d6 100%) !important; -->
+			<!-- border-bottom: 2px solid #e8e0b8 !important; -->
+			}
+
+			.sidebar-title {
+			color: #2d3748 !important;
+			font-size: 22px !important;
+			font-weight: 1000 !important;
+			margin-bottom: 12px !important;
+			display: block !important;
+			}
+
+			@keyframes fadeBackground {
+			0% {
+			background-color: #fef3c0; /* 연한 색 */
+			}
+			50% {
+			background-color: #FADA7A; /* 진한 색
+			*/
+			}
+			100% {
+			background-color: #fef3c0;
+			}
+			}
+
+			.sidebar-subtitle {
+			color: #4a5568 !important;
+			font-size: 15px !important;
+			font-weight: 800 !important;
+			padding: 8px 18px !important;
+			border-radius: 6px !important;
+			<!-- border: 2px solid #FADA7A !important; -->
+			text-align: center !important;
+			display: block !important;
+			box-shadow: 0 2px 4px rgba(250, 218, 122, 0.2) !important;
+
+			/*배경색 애니메이션 */
+			background-color: #fef3c0 important;
+			animation: fadeBackground 2s infinite alternate !important;
+			}
+
+			/* 모듈 카드 스타일 */
+			.module-card {
+			background:
+			linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+			border: 1.5px solid #becfe1 !important;
+			border-radius: 8px !important;
+			padding: 1vh 1vw !important;
+			margin: 0.5vh 1vw !important;
+			cursor: grab !important;
+			transition:
+			all 0.3s ease !important;
+			position: relative
+			!important;
+			overflow: hidden
+			!important;
+			display: block !important;
+			text-align: center
+			!important;
+			box-shadow: 0 3px 10px rgba(54, 116, 181,
+			0.08) !important;
+			}
+
+			.module-card:hover {
+			transform: translateY(-3px) !important;
+			box-shadow: 0 8px 25px rgba(54, 116, 181, 0.15) !important;
+			border-color:
+			#0052ac !important;
+			background: linear-gradient(135deg, #ffffff
+			0%, #f0f7ff 100%) !important;
+			}
+
+			.module-card:active {
+			cursor:
+			grabbing
+			!important;
+			transform: translateY(-1px) !important;
+			}
+
+			.module-icon {
+			font-size: 28px !important;
+			margin-bottom: 12px !important;
+			display: block
+			!important;
+			text-align: center !important;
+			opacity: 0.85
+			!important;
+			}
+
+			.module-name {
+			color: #2d3748 !important;
+			font-size: 14px
+			!important;
+			font-weight: 600 !important;
+			text-align: center !important;
+			margin-bottom: 6px !important;
+			display: block !important;
+			line-height: 1.4
+			!important;
+			}
+
+			.module-desc {
+			color: #4a5568 !important;
+			font-size:
+			12px !important;
+			text-align: center !important;
+			display:
+			block !important;
+			line-height: 1.5 !important;
+			}
+
+			/* 작업 영역 */
+			.workspace-container {
+			<!-- background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important; -->
+			<!-- border-radius: 12px !important; -->
+			margin: 0px 3px !important;
+			overflow: hidden !important;
+			<!-- box-shadow: 0 6px 20px rgba(54, 116, 181, 0.12) !important; -->
+			flex: 1 !important;
+			width: 85% !important;
+			display: flex !important;
+			flex-direction: column !important;
+			<!-- border: 1px solid #e1e8f0 !important; -->
+			}
+
+			.workspace-header {
+			<!-- background: linear-gradient(135deg, #fffcea 0%, #efefef 100%) !important; -->
+			padding: 12px 28px !important;
+			<!-- border-bottom: 2px solid #e8e0b8 !important; -->
+			display: flex !important;
+			justify-content: space-between !important;
+			align-items: center !important;
+			}
+
+			.workspace-title {
+			margin-top: 3px;
+			color: #2d3748 !important;
+			font-size: 22px !important;
+			font-weight: 1000 !important;
+			}
+
+			/* 버튼 스타일 */
+			<!--저장 버튼 -->
+			.smart-button {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			color: white !important;
+			border: none !important;
+			padding: 7px 10px !important;
+			border-radius: 2px !important;
+			font-weight: 600 !important;
+			font-size: 13px !important;
+			cursor: pointer
+			!important;
+			transition: all 0.2s ease !important;
+			position: relative !important;
+			overflow: hidden !important;
+			margin: 0 2px !important;
+			box-shadow: 0 3px 10px rgba(54, 116, 181, 0.3) !important;
+			}
+
+			.smart-button:hover {
+			transform: translateY(-1px) !important;
+			box-shadow: 0 6px
+			20px rgba(54, 116, 181, 0.4) !important;
+			background: linear-gradient(135deg, #339941 0%, #339941 100%) !important;
+			}
+
+			<!--초기화 버튼 -->
+			.smart-button.secondary {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			box-shadow: 0 3px 10px rgba(113, 128,
+			150, 0.3) !important;
+			}
+
+			.smart-button.secondary:hover {
+			background: linear-gradient(135deg, #5a6c7d 0%, #6d7b8d 100%) !important;
+			box-shadow: 0 6px 20px rgba(113,
+			128, 150, 0.4) !important;
+			}
+
+			<!--로드 버튼 -->
+			.smart-button.accent {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			box-shadow: 0 3px 10px rgba(87, 143, 202,
+			0.3) !important;
+			}
+
+			.smart-button.accent:hover {
+			background: linear-gradient(135deg, #5a6c7d 0%, #6d7b8d 100%) !important;
+			box-shadow: 0 6px
+			20px rgba(87, 143, 202, 0.4) !important;
+			}
+
+			/* 버튼 그룹 */
+			#grp_buttons {
+			display: flex !important;
+			gap: 8px !important;
+			align-items: center
+			!important;
+			}
+
+			/* 글래스 컨테이너 */
+			.glass-container {
+			background: #ffffff !important;
+			border: 1px solid #e2e8f0 !important;
+			border-radius: 8px
+			!important;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+			}
+
+			/* 브라우저 모킹 */
+			.browser-mockup {
+			background: #dddddd !important;
+			border-radius: 3px 3px 0 0 !important;
+			padding: 16px 20px !important;
+			border-bottom: 1px solid #d4d8e8 !important;
+			display: flex !important;
+			align-items: center !important;
+			gap: 10px !important;
+			}
+
+			.browser-dot {
+			width: 12px !important;
+			height: 12px !important;
+			border-radius: 50%
+			!important;
+			display: inline-block !important;
+			}
+
+			.browser-dot.red { background: #ff6b6b !important; }
+			.browser-dot.yellow { background:
+			#feca57 !important; }
+			.browser-dot.green { background: #48ca7a !important; }
+
+			.browser-url {
+			flex: 1 !important;
+			text-align: center
+			!important;
+			background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+			padding: 8px 16px !important;
+			border-radius: 6px
+			!important;
+			font-size: 12px !important;
+			color: #4a5568 !important;
+			margin: 0 20px !important;
+			border: 1px solid #e1e8f0 !important;
+			font-weight: 500 !important;
+			}
+
+			/* 레이아웃 그리드 */
+			.layout-grid {
+			display: flex !important;
+			flex-direction: column !important;
+			height: 100% !important;
+			padding: 10px !important;
+			gap: 6px !important; /* 간격 줄이기 */
+			background:
+			linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%)
+			!important;
+			overflow:
+			hidden !important;
+			}
+
+			.grid-row {
+			display: flex !important;
+			gap: 8px !important;
+			}
+
+			.grid-row.row1 {
+			height: 60% !important;
+			flex: 1 !important;
+			}
+
+			.grid-row.row2 {
+			height: 40% !important;
+			flex: 1 !important;
+			}
+
+			/* 드롭
+			영역 */
+			.drop-zone {
+			background: linear-gradient(135deg,
+			#ffffff 0%,
+			#f8faff
+			100%)
+			!important;
+			border: 2px dashed #c7d2fe !important;
+			border-radius: 8px !important;
+			margin: 4px !important;
+			display:
+			flex
+			!important;
+			align-items: center !important;
+			justify-content: center
+			!important;
+			cursor: pointer !important;
+			transition: all 0.3s ease
+			!important;
+			position: relative !important;
+			overflow: hidden !important;
+			min-height: 8vh !important;
+			}
+
+			.drop-zone:hover {
+			border-color: #578FCA
+			!important;
+			background: linear-gradient(135deg, #f7faff 0%, #e8f4ff
+			100%) !important;
+			transform: translateY(-2px) !important;
+			box-shadow: 0
+			6px 20px rgba(87, 143, 202, 0.2) !important;
+			}
+
+			.drop-zone.occupied {
+			background: linear-gradient(135deg, #F5F0CD 0%, #faf6d6 100%)
+			!important;
+			border-color: #FADA7A !important;
+			border-style: solid !important;
+			box-shadow: 0 4px 15px rgba(250, 218, 122, 0.25) !important;
+			}
+
+			.drop-zone-label {
+			color: #4a5568 !important;
+			font-size: 14px !important;
+			font-weight: 600 !important;
+			text-align: center !important;
+			display: block !important;
+			}
+
+			/* 네온 보더 효과 제거 - 기업용으로 단순화 */
+			.neon-border {
+			/* 네온 효과
+			제거 */
+			}
+
+			.neon-border::before {
+			display: none !important;
+			}
+
+			/*
+			애니메이션 단순화 */
+			@keyframes subtle-float {
+			0%, 100% { transform: translateY(0px); }
+			50%
+			{ transform: translateY(-2px); }
+			}
+
+			.floating {
+			animation:
+			subtle-float 4s ease-in-out infinite !important;
+			}
+
+			/* 스크롤바 */
+			::-webkit-scrollbar {
+			width: 6px !important;
+			}
+
+			::-webkit-scrollbar-track {
+			background: #f1f5f9 !important;
+			border-radius: 3px !important;
+			}
+
+			::-webkit-scrollbar-thumb {
+			background: #cbd5e1 !important;
+			border-radius:
+			3px !important;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+			background:
+			#94a3b8 !important;
+			}
+
+			/* 반응형 */
+			@media (max-width: 1200px) {
+			.header-title {
+			font-size: 20px !important;
+			}
+			.module-card {
+			padding: 0.8vh 0.8vw !important; /* 1vh 1vw -> 0.8vh 0.8vw */
+			margin: 0.3vh 0.8vw !important; /* 0.5vh 1vw -> 0.3vh 0.8vw */
+			}
+			.workspace-container {
+			margin: 12px
+			!important;
+			}
+			}
+		</style>
 		<xf:model>
 			<w2:dataCollection baseNode="map">
 				<w2:dataList baseNode="list" repeatNode="map" id="dlt_layoutData" saveRemovedData="true">
@@ -26,12 +474,13 @@
 			</w2:dataCollection>
 			<w2:workflowCollection />
 			<xf:submission id="sbm_moduleList" action="/InsWebApp/ModuleList.pwkjson " method="post" mediatype="application/json"
-				ref='data:json,{"id":"dma_moduleList","key":"moduleVo"}' target='data:json,{"id":"dma_moduleList","key":"elData.modulVoList"}' encoding="UTF-8" instance="" replace="" errorHandler=""
-				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_moduleList_submitdone" ev:submiterror=""
-				abortTrigger="">
+				ref='data:json,{"id":"dma_moduleList","key":"moduleVo"}' target='data:json,{"id":"dma_moduleList","key":"elData.modulVoList"}'
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				ev:submitdone="scwin.sbm_moduleList_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_saveLayout" action="/InsWebApp/SessionModuleListIns.pwkjson" method="post" mediatype="application/json" ref='' target="" encoding="UTF-8"
-				instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_saveLayout_submitdone"
+			<xf:submission id="sbm_saveLayout" action="/InsWebApp/SessionModuleListIns.pwkjson" method="post"
+				mediatype="application/json" ref='' target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
+				mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_saveLayout_submitdone"
 				ev:submiterror="scwin.sbm_saveLayout_submiterror" abortTrigger="">
 			</xf:submission>
 		</xf:model>
@@ -53,7 +502,6 @@ scwin.loadModuleList = function () {
 scwin.sbm_moduleList_submitdone = function (e) {
     // 응답 데이터를 직접 가져오기
     if (e && e.responseJSON) {
-        console.log("응답 데이터:", e.responseJSON);
         // 응답 데이터를 받아서 처리
         scwin.moduleResponseData = e.responseJSON;
         scwin.createModuleElements();
@@ -73,18 +521,17 @@ scwin.createModuleElements = function () {
 
     console.log("모듈 데이터:", moduleData);
 
-    console.log("데이터>>> ", dma_moduleList);
-
     if (!moduleData || moduleData.length === 0) {
         console.log("모듈 데이터가 없습니다.");
         return;
     }
 
-    var sidebarGroup = $p.getComponentById("grp_sidebar");
+    //var sidebarGroup = $p.getComponentById("grp_sidebar");
 
     for (var i = 0; i < moduleData.length; i++) {
         var module = moduleData[i];
-        scwin.createSingleModule(sidebarGroup, module, i);
+        //scwin.createSingleModule(sidebarGroup, module, i);
+        scwin.createSingleModule(grp_module_list, module, i);
     }
 };
 
@@ -96,8 +543,7 @@ scwin.createSingleModule = function (parentGroup, moduleData, index) {
     // HTML 요소를 직접 생성
     var moduleGroup = document.createElement("div");
     moduleGroup.id = moduleId;
-    moduleGroup.className = "w2group";
-    moduleGroup.style.cssText = "width:83%;background:white;border:2px solid #4CAF50;border-radius:8px;padding:10px;margin:5px auto;cursor:pointer;";
+    moduleGroup.className = "w2group module-card";
 
     // 이벤트 핸들러 설정
     moduleGroup.addEventListener("mousedown", scwin.module_mouseDown);
@@ -105,7 +551,7 @@ scwin.createSingleModule = function (parentGroup, moduleData, index) {
     moduleGroup.addEventListener("mouseup", scwin.global_mouseUp);
 
     // 부모에 추가
-    document.getElementById("mf_grp_sidebar").appendChild(moduleGroup);
+    grp_module_list.appendChild(moduleGroup);
 
     // 내부 요소들 생성 (아이콘, 이름, 설명)
     scwin.createModuleContent(moduleGroup, moduleData);
@@ -120,21 +566,21 @@ scwin.createModuleContent = function (moduleGroup, moduleData) {
     var iconSpan = document.createElement("span");
     iconSpan.id = "span_icon_" + moduleData.moduleId;
     iconSpan.textContent = moduleData.icon;
-    iconSpan.style.cssText = "width:100%;text-align:center;font-size:24px;margin-bottom:8px;display:block;";
+    iconSpan.className = "module-icon floating";
     moduleGroup.appendChild(iconSpan);
 
     // 이름 span 생성
     var nameSpan = document.createElement("span");
     nameSpan.id = "span_name_" + moduleData.moduleId;
     nameSpan.textContent = moduleData.name;
-    nameSpan.style.cssText = "width:100%;text-align:center;font-weight:bold;margin-bottom:4px;display:block;";
+    nameSpan.className = "module-name";
     moduleGroup.appendChild(nameSpan);
 
     // 설명 span 생성
     var descSpan = document.createElement("span");
     descSpan.id = "span_desc_" + moduleData.moduleId;
     descSpan.textContent = moduleData.description;
-    descSpan.style.cssText = "width:100%;text-align:center;font-size:12px;color:#666;display:block;";
+    descSpan.className = "module-desc";
     moduleGroup.appendChild(descSpan);
 };
 
@@ -226,14 +672,16 @@ scwin.displayModuleInArea = function (zoneId, moduleId) {
     // 드롭한 영역을 모듈의 내용으로 변경
     var areaElement = document.getElementById(zoneId);
     if (areaElement) {
-        // 스타일 변경
-        areaElement.style.border = "2px solid #4CAF50";
-        areaElement.style.background = "#f0f8f0";
+        // 스타일 변경 - 새로운 스타일 적용
+        areaElement.classList.add('occupied');
 
         // 라벨 값 변경
         var labelElement = areaElement.querySelector('span');
         if (labelElement) {
             labelElement.innerHTML = moduleInfo.icon + " " + moduleInfo.name;
+            labelElement.style.color = "white";
+            labelElement.style.fontWeight = "600";
+            labelElement.style.textShadow = "0 2px 8px rgba(0,0,0,0.5)";
         }
 
         // 드롭된 영역에 data-module-id 속성으로 어떤 모듈인지 저장 - id값만 뽑아내기
@@ -269,28 +717,28 @@ scwin.getModuleData = function (moduleId) {
 scwin.handleDrop = function (zoneId) {
 
     // 영역별로 처리 - mf_ 접두사 추가  ---> 디버그 로그이므로 나중에 빼거나 모달같은걸로 변경.
-    switch (zoneId) {
-        case "mf_grp_area1":
-            alert("영역 1에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
-            break;
-        case "mf_grp_area2":
-            alert("영역 2에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
-            break;
-        case "mf_grp_area3":
-            alert("영역 3에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
-            break;
-        case "mf_grp_area4":
-            alert("영역 4에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
-            break;
-        case "mf_grp_area5":
-            alert("영역 5에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
-            break;
-        case "mf_grp_area6":
-            alert("영역 6에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
-            break;
-        default:
-            console.log("알 수 없는 영역:", zoneId);
-    }
+    // switch (zoneId) {
+    //     case "mf_grp_area1":
+    //         alert("영역 1에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+    //         break;
+    //     case "mf_grp_area2":
+    //         alert("영역 2에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+    //         break;
+    //     case "mf_grp_area3":
+    //         alert("영역 3에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+    //         break;
+    //     case "mf_grp_area4":
+    //         alert("영역 4에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+    //         break;
+    //     case "mf_grp_area5":
+    //         alert("영역 5에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+    //         break;
+    //     case "mf_grp_area6":
+    //         alert("영역 6에 " + scwin.draggedModuleId + " 모듈이 배치되었습니다!");
+    //         break;
+    //     default:
+    //         console.log("알 수 없는 영역:", zoneId);
+    // }
 
     // 드롭하면 해당영역에 모듈 정보 표시
     scwin.displayModuleInArea(zoneId, scwin.draggedModuleId);
@@ -331,7 +779,7 @@ scwin.checkDropZone = function (x, y) {
 // 드롭 영역 요소 찾기 함수
 scwin.findDropZoneElement = function (element) {
     // 영역1~4의 ID 목록 - mf_ 접두사 추가
-    var validDropZones = ["mf_grp_area1", "mf_grp_area2", "mf_grp_area3", "mf_grp_area4", "mf_grp_area5", "mf_grp_area6"];
+    var validDropZones = ["mf_fr_session_making_process_grp_area1", "mf_fr_session_making_process_grp_area2", "mf_fr_session_making_process_grp_area3", "mf_fr_session_making_process_grp_area4", "mf_fr_session_making_process_grp_area5", "mf_fr_session_making_process_grp_area6"];
 
     // 현재 요소부터 상위로 올라가면서 체크
     var currentElement = element;
@@ -367,216 +815,243 @@ scwin.findDropZoneElement = function (element) {
 
 /*------------------------배치정보 저장---------------------------*/
 
-scwin.saveLayoutConfiguration = function (e) {
-    var sessionId = 1;
+// scwin.saveLayoutConfiguration = function (e) {
+//     var sessionId = 1;
+//     var layoutDataArray = [];
+
+//     for (var i = 1; i <= 6; i++) {
+//         var areaId = "mf_fr_session_making_process_grp_area" + i;
+//         var areaElement = document.getElementById(areaId);
+
+//         if (areaElement && areaElement.dataset.moduleId) {
+//             layoutDataArray.push({
+//                 sessionId: sessionId,
+//                 moduleId: parseInt(areaElement.dataset.moduleId),
+//                 sessionModuleConfig: JSON.stringify({
+//                     area: areaId,
+//                     position: i
+//                     // 색상이나 그런거 추가 속성 넣을수있음...
+//                 })
+//             });
+//         }
+//     }
+
+//     dlt_layoutData.removeAll();
+
+//     layoutDataArray.forEach(function (item, index) {
+//         var rowIndex = dlt_layoutData.insertRow();
+
+//         dlt_layoutData.setCellData(rowIndex, "sessionId", item.sessionId.toString());
+//         dlt_layoutData.setCellData(rowIndex, "moduleId", item.moduleId.toString());
+//         dlt_layoutData.setCellData(rowIndex, "sessionModuleConfig", item.sessionModuleConfig);
+//     });
+
+//     let reqObj = {
+//         sessionModuleVoList: {
+//             sessionModuleVoList: dlt_layoutData.getAllJSON()
+//         }
+//     };
+
+//     // 디버그
+//     console.log(reqObj);
+
+//     $c.sbm.execute(sbm_saveLayout, reqObj);
+// };
+
+scwin.saveLayoutConfiguration = function() {
+    console.log("2단계 저장 버튼 클릭됨");
+    
     var layoutDataArray = [];
-
+    
+    // 배치된 모듈 데이터 수집
     for (var i = 1; i <= 6; i++) {
-        var areaId = "mf_grp_area" + i;
+        var areaId = "mf_fr_session_making_process_grp_area" + i;
         var areaElement = document.getElementById(areaId);
-
+        
         if (areaElement && areaElement.dataset.moduleId) {
             layoutDataArray.push({
-                sessionId: sessionId,
                 moduleId: parseInt(areaElement.dataset.moduleId),
                 sessionModuleConfig: JSON.stringify({
                     area: areaId,
                     position: i
-                    // 색상이나 그런거 추가 속성 넣을수있음...
                 })
             });
         }
     }
-
-    dlt_layoutData.removeAll();
-
-    layoutDataArray.forEach(function (item, index) {
-        var rowIndex = dlt_layoutData.insertRow();
-
-        dlt_layoutData.setCellData(rowIndex, "sessionId", item.sessionId.toString());
-        dlt_layoutData.setCellData(rowIndex, "moduleId", item.moduleId.toString());
-        dlt_layoutData.setCellData(rowIndex, "sessionModuleConfig", item.sessionModuleConfig);
-    });
-
-    let reqObj = {
-        sessionModuleVoList: {
-            sessionModuleVoList: dlt_layoutData.getAllJSON()
-        }
-    };
-    $c.sbm.execute(sbm_saveLayout, reqObj);
+    
+    if (layoutDataArray.length === 0) {
+        alert("최소 1개 이상의 모듈을 배치해주세요.");
+        return;
+    }
+    
+    console.log("수집된 레이아웃 데이터:", layoutDataArray);
+    
+    // 부모에게 데이터 전달
+    $p.parent().scwin.setLayoutConfig(layoutDataArray);
+    
+    // 다음 화면으로 이동
+    $p.parent().scwin.setScreen(3);
 };
 
 
 scwin.sbm_saveLayout_submitdone = function (e) {
     console.log("서브미션 성공:", e);
-    alert("저장 성공!");
+
+    // 레이아웃 데이터를 부모페이지로 전달
+    var layoutData = dlt_layoutData.getAllJSON();
+    $p.parent().scwin.setLayoutConfig(layoutData);
+
+    $p.parent().scwin.setScreen(3);
 };
 
 scwin.sbm_saveLayout_submiterror = function (e) {
     console.log("서브미션 실패:", e);
-    alert("저장 실패: " + (e.errorMsg || "알 수 없는 오류"));
+    alert("저장 실패: " + (e.errorMsg || "오류 발생..."));
+};
+
+/*----------------배치정보 불러오기----------------------*/
+// 불러오기 -> 팝업창
+
+scwin.loadLayoutConfiguration = function (e) {
+    console.log("팝업 호출 시작");
+
+    // 팝업 생성 옵션 지정
+    var options = {
+        id: "template_popup",
+        type: "wframePopup",
+        width: "1200px",
+        height: "700px",
+        top: "100px",
+        left: "200px",
+        popupName: "레이아웃 불러오기",
+        modal: true,
+        closeAction: "scwin.popup_closeAction"
+    };
+
+    console.log("팝업 옵션:", options);
+
+    // 팝업 생성
+    $p.openPopup("/InsWebApp/ui/sessionTemplate/SessionTemplate.xml", options);
+
+    console.log("팝업 호출 완료");
+};
+
+// 팝업 닫기 콜백 함수를 전역으로 명확히 정의
+scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
+    console.log("=== 팝업 닫기 콜백 호출됨 ===");
+    console.log("argRuntimeID:", argRuntimeID);
+    console.log("argJsnInfo:", argJsnInfo);
+
+    var returnData = argJsnInfo.returnValue;
+    console.log("returnData:", returnData);
+
+    if (returnData) {
+        console.log("팝업에서 넘겨받은 레이아웃 데이터 : ", returnData);
+    } else {
+        console.log("returnData가 없음");
+    }
+
+    return true;
+};
+
+// 팝업에서 호출할 함수
+scwin.applyTemplateLayout = function (templateData) {
+    console.log("=== 템플릿 데이터 받음 ===");
+    console.log("받은 데이터:", templateData);
+
+    // 여기서 레이아웃 복원 로직을 구현할 예정
 };
 ]]></script>
 	</head>
-	<body ev:onpageload="scwin.onpageload" style="">
-		<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
-			style="height: 90%;">
-			<xf:group class="pgtbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_01 페이지타이틀"
-				style="width:100%;height:80px;background: linear-gradient(135deg, #6B46C1 0%, #3B82F6 100%);color:white;font-size:18px;text-align:center;">
-				<w2:textbox class="pgt_tit" id="tb_title" label="UI 배치 설정" style="color: white;margin-left: 20px;" tagname=""></w2:textbox>
-				<xf:group class="breadcrumb" id="" style="">
-					<xf:group id="" style="" tagname="ul">
-						<xf:group class="home" id="" style="" tagname="li">
-							<w2:anchor id="" outerDiv="false" style="">
-								<xf:label><![CDATA[Home]]></xf:label>
-							</w2:anchor>
-						</xf:group>
-						<xf:group id="" style="" tagname="li">
-							<w2:anchor id="" outerDiv="false" style="">
-								<xf:label><![CDATA[1Depth Menu]]></xf:label>
-							</w2:anchor>
-						</xf:group>
-						<xf:group id="" style="" tagname="li">
-							<w2:anchor id="" outerDiv="false" style="">
-								<xf:label><![CDATA[2Depth Menu]]></xf:label>
-							</w2:anchor>
-						</xf:group>
-						<xf:group id="" style="" tagname="li">
-							<w2:span id="" label="3Depth Menu" style=""></w2:span>
-						</xf:group>
-					</xf:group>
-				</xf:group>
-				<xf:trigger class="btn_fav" id="" style="margin-right: 20px;" type="button">
-					<xf:label></xf:label>
-				</xf:trigger>
-			</xf:group>
-			<xf:group style='width:100%;height:90%;border:1px solid #ddd;' id="grp_main">
-				<xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true"
-					meta_snippetName="1_05 좌측 고정 2단 분할_width값 200px" style="height: 100%;">
-					<xf:group adaptiveThreshold="" style="width:400px;" id="" class="col_fix">
-						<xf:group style="width:100%;height:100%;background:#f8f9fa;float:left;" id="grp_sidebar">
-							<xf:group meta_snippetCategory="02_타이틀" meta_snippetName="2_03 서브타이틀(h4)" meta_snippetKeyComponent="true"
-								style="display: block;font-size: 20px;font-weight: bold;text-align: center;width: 100%;margin-top: 10px;" id="" class="titbox">
-								<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-									style="font-size: 20px;font-weight: bold;" id="" label="🧩 사용가능 모듈">
-								</w2:span>
-							</xf:group>
-							<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-								style="font-size: 17px; color: #6c757d; text-align: center; padding: 10px 15px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 10px auto; display: block; width: fit-content;"
-								id="ui_guide" label="모듈을 드래그해서 영역에 배치하세요">
-							</w2:span>
-						</xf:group>
-					</xf:group>
-					<xf:group style="background-color: #f0f2f5" id="" class="">
-						<xf:group style="display:flex;align-items:center;justify-content:center;flex-direction:column;height: 100%;"
-							id="grp_editWindow">
-							<xf:group style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 0;"
-								id="grp_eWHeader">
-								<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-									style="font-size: 20px;font-weight: bold;margin-left: 20px;" id="" label="🖥️ 배치 화면">
-								</w2:span>
-								<xf:group style="display:flex;gap:10px;" id="grp_buttons">
-									<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼" meta_snippetKeyComponent="true"
-										style="background:#6c757d;color:white;border:none;padding:1px 12px;border-radius:4px;" id="btn_reset" type="button"
-										class="btn_cm">
-										<xf:label><![CDATA[초기화]]></xf:label>
-									</xf:trigger>
-									<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼" meta_snippetKeyComponent="true"
-										style="background:#2196F3;color:white;border:none;padding:1px 12px;border-radius:4px;" id="btn_load" type="button"
-										class="btn_cm">
-										<xf:label><![CDATA[불러오기]]></xf:label>
-									</xf:trigger>
-									<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼"
-										ev:onclick="scwin.saveLayoutConfiguration" meta_snippetKeyComponent="true"
-										style="background:#4CAF50;color:white;border:none;padding:1px 12px;border-radius:4px;margin-right: 20px" id="btn_save"
-										type="button" class="btn_cm">
-										<xf:label><![CDATA[저장]]></xf:label>
-									</xf:trigger>
-								</xf:group>
-							</xf:group>
-							<xf:group
-								style="width:96%;height:90%;display:flex;flex-direction:column;border:1px solid #e1e5e9;border-radius:12px;background:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin-top: 5px;"
-								id="grp_canvasContainer">
-								<xf:group
-									style="width:100%;height:40px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px 8px 0 0;display:flex;align-items:center;padding:0;margin:0;box-sizing:border-box;"
-									id="grp_browserHeader">
-									<xf:group style="display:flex;gap:8px;margin-right:auto;margin-left: 10px;" id="">
+	<body ev:onpageload="scwin.onpageload">
+		<!-- 전체 컨테이너 -->
+		<xf:group class="sub_contents" id="" style="">
 
-										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-											meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#ff5f57;display:block;" id="" label="●">
-										</w2:span>
-										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-											meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#ffbd2e;display:block;" id="" label="●">
-										</w2:span>
-										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-											meta_snippetKeyComponent="true" style="width:12px;height:12px;border-radius:50%;color:#28ca42;display:block;" id="" label="●">
-										</w2:span>
-									</xf:group>
-									<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-										style="font-size:12px;color:#666;flex:1;text-align:center;" id="" label="localhost:3000/unicon">
-									</w2:span>
-									<xf:group style="display:flex;gap:8px;margin-right: 10px;" id="">
-										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-											meta_snippetKeyComponent="true" style="font-size:14px;color:#666;" id="" label="⟲">
-										</w2:span>
-										<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-											meta_snippetKeyComponent="true" style="font-size:14px;color:#666;" id="" label="✕">
-										</w2:span>
-									</xf:group>
-								</xf:group>
-								<xf:group style="flex: 1; display: flex; flex-direction: column; padding: 5px;" id="grp_screen">
-									<xf:group style="display:flex;height:61.80%;gap:5px;margin:5px;" id="row1">
-										<xf:group
-											style="width:64.74%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
-											id="grp_area1">
-											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span7" label="영역 1">
-											</w2:span>
-										</xf:group>
-										<xf:group
-											style="width:30%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
-											id="grp_area2">
-											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span8" label="영역 2">
-											</w2:span>
-										</xf:group>
-										<xf:group
-											style="width:64.75%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;"
-											id="grp_area3">
-											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span9" label="영역 3">
-											</w2:span>
-										</xf:group>
-										<xf:group
-											style="width:30%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;"
-											id="grp_area4">
-											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="span10" label="영역 4">
-											</w2:span>
-										</xf:group>
-									</xf:group>
-									<xf:group style="display:flex;height:47.59%;gap:5px;margin:5px;" id="row2">
-										<xf:group
-											style="width:64.74%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
-											id="grp_area5">
-											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="" label="영역 5">
-											</w2:span>
-										</xf:group>
-										<xf:group
-											style="width:50%;background:white;border:2px dashed #ddd;border-radius:8px;margin:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;"
-											id="grp_area6">
-											<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트"
-												meta_snippetKeyComponent="true" style="color:#999;text-align:center;font-size:14px;" id="" label="영역 6">
-											</w2:span>
-										</xf:group>
-									</xf:group>
-								</xf:group>
-							</xf:group>
+			<!-- 헤더 영역 -->
+			<!-- <xf:group class="header-container" id="">
+				<w2:textbox class="header-title" id="tb_title" label="Unicon UI 배치 설정" tagname=""></w2:textbox>
+				</xf:group> -->
+
+			<!-- 메인 컨테이너 (사이드바 + 작업영역) -->
+			<xf:group style='width:100%;height:100vh;display:flex;overflow:hidden;' id="grp_main">
+
+				<!-- 사이드바 (모듈 목록) -->
+				<xf:group class="sidebar-container" style="" id="grp_sidebar">
+					<xf:group class="sidebar-header" id="">
+						<w2:span class="sidebar-title" id="" label="보유 모듈"></w2:span>
+						<w2:span class="sidebar-subtitle" id="ui_guide" label="드래그하여 영역에 배치하세요"></w2:span>
+					</xf:group>
+					<xf:group style="overflow-y: auto !important;height: 100vh" id="grp_module_list"></xf:group>
+				</xf:group>
+
+				<!-- 작업 영역 (레이아웃 디자이너) -->
+				<xf:group class="workspace-container" style="flex: 1;" id="grp_editWindow">
+
+					<!-- 워크스페이스 헤더 -->
+					<xf:group class="workspace-header" id="grp_eWHeader">
+						<w2:span class="workspace-title" id="" label="레이아웃 디자이너"></w2:span>
+						<xf:group style="display:flex;gap:12px;" id="grp_buttons">
+							<xf:trigger class="smart-button secondary" id="btn_reset" type="button">
+								<xf:label><![CDATA[초기화]]></xf:label>
+							</xf:trigger>
+							<xf:trigger class="smart-button accent" id="btn_load" type="button" ev:onclick="scwin.loadLayoutConfiguration">
+								<xf:label><![CDATA[로드]]></xf:label>
+							</xf:trigger>
+							<xf:trigger class="smart-button" id="btn_save" type="button" ev:onclick="scwin.saveLayoutConfiguration">
+								<xf:label><![CDATA[다음]]></xf:label>
+							</xf:trigger>
 						</xf:group>
 					</xf:group>
-				</xf:group>
-			</xf:group>
-		</xf:group>
+
+					<!-- 캔버스 컨테이너 -->
+					<xf:group class="glass-container"
+						style="margin: 5px 15px 0 15px; flex: 1; display: flex; flex-direction: column;" id="grp_canvasContainer">
+
+						<!-- 브라우저 모킹 헤더 -->
+						<xf:group class="browser-mockup" id="grp_browserHeader">
+							<span class="browser-dot red"></span>
+							<span class="browser-dot yellow"></span>
+							<span class="browser-dot green"></span>
+							<div class="browser-url">localhost:3000/modulink-workspace</div>
+						</xf:group>
+
+						<!-- 레이아웃 그리드 -->
+						<xf:group class="layout-grid" id="grp_screen">
+
+							<!-- 첫 번째 행 (60% 높이) - 4개 영역 -->
+							<xf:group class="grid-row row1" id="row1">
+								<xf:group class="drop-zone neon-border" style="flex: 2;" id="grp_area1">
+									<w2:span class="drop-zone-label" id="span7" label="메인 영역 - 화상채팅 (영역 1)"></w2:span>
+								</xf:group>
+								<xf:group class="drop-zone neon-border" style="flex: 1;" id="grp_area2">
+									<w2:span class="drop-zone-label" id="span8" label="사이드 패널 (영역 2)"></w2:span>
+								</xf:group>
+								<xf:group class="drop-zone neon-border" style="flex: 2;" id="grp_area3">
+									<w2:span class="drop-zone-label" id="span9" label="채팅 영역 (영역 3)"></w2:span>
+								</xf:group>
+								<xf:group class="drop-zone neon-border" style="flex: 1;" id="grp_area4">
+									<w2:span class="drop-zone-label" id="span10" label="도구 영역 (영역 4)"></w2:span>
+								</xf:group>
+							</xf:group>
+
+							<!-- 두 번째 행 (40% 높이) - 2개 영역 -->
+							<xf:group class="grid-row row2" id="row2">
+								<xf:group class="drop-zone neon-border" style="flex: 2;" id="grp_area5">
+									<w2:span class="drop-zone-label" id="span11" label="상태 패널 (영역 5)"></w2:span>
+								</xf:group>
+								<xf:group class="drop-zone neon-border" style="flex: 1;" id="grp_area6">
+									<w2:span class="drop-zone-label" id="span12" label="추가 기능 (영역 6)"></w2:span>
+								</xf:group>
+							</xf:group>
+
+						</xf:group> <!-- layout-grid 끝 -->
+
+					</xf:group> <!-- canvas-container 끝 -->
+
+				</xf:group> <!-- workspace-container 끝 -->
+
+			</xf:group> <!-- main container 끝 -->
+
+		</xf:group> <!-- sub_contents 끝 -->
 	</body>
 </html>
