@@ -13,20 +13,19 @@ public class LoginPageVo extends com.demo.proworks.cmmn.ProworksCommVO {
     public LoginPageVo(){
     }
 
-    @ElDtoField(logicalName = "tenant_id", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
-    private String tenantId;
+    @ElDtoField(logicalName = "tenant_id", physicalName = "tenantId", type = "int", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private int tenantId;
 
     @ElDtoField(logicalName = "config_json", physicalName = "configJson", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String configJson;
 
     @ElVoField(physicalName = "tenantId")
-    public String getTenantId(){
-        String ret = this.tenantId;
-        return ret;
+    public int getTenantId(){
+        return tenantId;
     }
 
     @ElVoField(physicalName = "tenantId")
-    public void setTenantId(String tenantId){
+    public void setTenantId(int tenantId){
         this.tenantId = tenantId;
     }
 

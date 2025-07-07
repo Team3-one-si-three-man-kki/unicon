@@ -14,15 +14,14 @@ public class LoginPageDAO extends ProworksDefaultAbstractDAO {
     /**
      * Tenant ID로 로그인 페이지 설정을 조회합니다.
      */
-    public LoginPageVo selectLoginPage(String tenantId) throws ElException {
-        return (LoginPageVo) selectByPk("com.demo.proworks.tenant.selectLoginPage", tenantId);
+    public String selectLoginPage(int tenantId) throws ElException {
+        return (String) selectByPk("com.demo.proworks.tenant.selectLoginPage", tenantId);
     }
 
     /**
      * 로그인 페이지 설정을 저장하거나 수정합니다.
      */
     public int saveOrUpdateLoginPage(LoginPageVo vo) throws ElException {
-        // INSERT...ON DUPLICATE KEY UPDATE 구문은 INSERT로 처리합니다.
         return insert("com.demo.proworks.tenant.saveOrUpdateLoginPage", vo);
     }
 

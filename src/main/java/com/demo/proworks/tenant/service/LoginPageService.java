@@ -2,30 +2,42 @@ package com.demo.proworks.tenant.service;
 
 import java.util.List;
 
+import com.demo.proworks.tenant.vo.LoginPageVo;
 import com.demo.proworks.tenant.vo.TenantVo;
 
 /**  
- * @subject     : 테넌트 관련 처리를 담당하는 인터페이스
- * @description : 테넌트 관련 처리를 담당하는 인터페이스
- * @author      : LEEBYUNGWOOK
- * @since       : 2025/07/01
+ * @subject     : 로그인 커스텀 페이지 설정 처리를 담당하는 인터페이스
+ * @description : 로그인 커스텀 페이지 설정 처리를 담당하는 인터페이스
+ * @author      : LEEJAEWON
+ * @since       : 2025/07/04
  * @modification
  * ===========================================================
  * DATE				AUTHOR				DESC
  * ===========================================================
- * 2025/07/01			 LEEBYUNGWOOK	 		최초 생성
+ * 2025/07/04			 LEEJAEWON	 		최초 생성
  * 
  */
 public interface LoginPageService {
 	
     /**
-     * 테넌트 페이징 처리하여 목록을 조회한다.
+     * 로그인 커스텀 페이지 설정을 조회한다.
      *
-     * @param  tenantVo 테넌트 TenantVo
-     * @return 테넌트 목록 List<TenantVo>
+     * @param  subDomain subDomain String
+     * @return 설정 정보 String
      * @throws Exception
      */
 	 public String getConfigJsonBySubDomain(String subDomain) throws Exception;
+	 
+	 
+	 
+	 /**
+     * 로그인 커스텀 페이지 설정을 저장한다.
+     *
+     * @param  configJson configJson String
+     * @return 
+     * @throws Exception
+     */
+	 public int saveLoginPageConfig(LoginPageVo vo) throws Exception;
 	
    
 	

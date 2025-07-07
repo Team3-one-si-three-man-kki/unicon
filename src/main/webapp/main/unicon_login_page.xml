@@ -14,7 +14,7 @@
         			mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="scwin.loginSubmitHandler">
         		</w2:submission>
         	</w2:workflowCollection>
-        	<xf:submission id="loadCustom" action="/InsWebApp/data/config.json" method="post" mediatype="application/json" ref=""
+        	<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
         		target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
         		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
         		abortTrigger="">
@@ -113,6 +113,8 @@ scwin.overlayElement = null;
 scwin.loadCustomization = function (c) {
     if (!c) return;
 
+    console.log(c)
+    console.log("값 확인")
     // 배경 이미지 적용
     // var bgGroup = $p.getComponentById("leftPreview");
     if (leftPreview && c.backgroundImage) {
@@ -127,7 +129,7 @@ scwin.loadCustomization = function (c) {
         logoImage.setStyle("height", c.logoSize);
     }
 
-    if (btn_login && c.primaryColor){
+    if (btn_login && c.primaryColor) {
         btn_login.setStyle("backgroundColor", c.primaryColor);
         btn_login.setStyle("color", c.accentColor);
     }
@@ -157,13 +159,13 @@ scwin.loadCustomization = function (c) {
         scwin.overlayElement.style.right = 0;
         scwin.overlayElement.style.bottom = 0;
         scwin.overlayElement.style.zIndex = 1;
-        
+
         // var container = $p.getComponentById("leftPreview").getElement();
         if (leftPreview) {
             leftPreview.appendChild(scwin.overlayElement);
         }
     }
-    
+
     scwin.overlayElement.style.backgroundColor = c.overlayColor;
     scwin.overlayElement.style.opacity = (parseInt(c.overlayOpacity) || 0) / 100;
 };
@@ -339,7 +341,8 @@ scwin.loadCustom_submitdone = function (e) {
     console.log(e);
     // error 수신시
 
-    var elData = e.responseJSON.loginCustomInfo;
+    var elData = e.responseJSON;
+    console.log("받아온데이터입니다",elData)
     /*
     var elHeader  = e.responseJSON.elHeader;
     if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
@@ -370,26 +373,26 @@ scwin.login = function (e) {
 };
 
 scwin.login_submitdone = function (e) {
-     var elHeader = e.responseJSON.elHeader; // 응답 전문 elHeader
+    var elHeader = e.responseJSON.elHeader; // 응답 전문 elHeader
 
-		if(elHeader != "" && elHeader != null && elHeader != "undefined") {
-			
-			if(elHeader.resSuc == true) {
-				// setCookie("userId", elHeader.userId);
-				// moveLocation("html/emp/empList.html");
-                
-                //$p.url("/ui/dept/Dept.xml");
-               // $c.win.moveUrl("/InsWebApp/ui/dept/Dept.xml");
-               
-               //location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/dept/Dept.xml";
-                location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
-                
+    if (elHeader != "" && elHeader != null && elHeader != "undefined") {
 
-			} else {
-				alert(elHeader.resMsg)
-			}
-			
-		}
+        if (elHeader.resSuc == true) {
+            // setCookie("userId", elHeader.userId);
+            // moveLocation("html/emp/empList.html");
+
+            //$p.url("/ui/dept/Dept.xml");
+            // $c.win.moveUrl("/InsWebApp/ui/dept/Dept.xml");
+
+            //location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/dept/Dept.xml";
+            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
+
+
+        } else {
+            alert(elHeader.resMsg)
+        }
+
+    }
 };
 ]]></script>
         
