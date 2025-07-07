@@ -73,15 +73,6 @@ public class ProworksUserHeader extends com.inswave.elfw.core.UserHeader {
     @ElDtoField(logicalName = "이메일", physicalName = "email", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String email;
 
-    @ElDtoField(logicalName = "권한", physicalName = "role", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
-    private String role;
-
-    @ElDtoField(logicalName = "테넌트아이디", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
-    private String tenantId;
-
-    @ElDtoField(logicalName = "계정활성화 상태", physicalName = "isActive", type = "boolean", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
-    private boolean isActive;
-
     @ElVoField(physicalName = "fldLen")
     public int getFldLen(){
         return fldLen;
@@ -255,38 +246,6 @@ public class ProworksUserHeader extends com.inswave.elfw.core.UserHeader {
         this.email = email;
     }
 
-    @ElVoField(physicalName = "role")
-    public String getRole(){
-        String ret = this.role;
-        return ret;
-    }
-
-    @ElVoField(physicalName = "role")
-    public void setRole(String role){
-        this.role = role;
-    }
-
-    @ElVoField(physicalName = "tenantId")
-    public String getTenantId(){
-        String ret = this.tenantId;
-        return ret;
-    }
-
-    @ElVoField(physicalName = "tenantId")
-    public void setTenantId(String tenantId){
-        this.tenantId = tenantId;
-    }
-
-    @ElVoField(physicalName = "isActive")
-    public boolean isIsActive(){
-        return isActive;
-    }
-
-    @ElVoField(physicalName = "isActive")
-    public void setIsActive(boolean isActive){
-        this.isActive = isActive;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -306,10 +265,7 @@ public class ProworksUserHeader extends com.inswave.elfw.core.UserHeader {
         sb.append("testUserName").append("=").append(testUserName).append(",");
         sb.append("testDeptName").append("=").append(testDeptName).append(",");
         sb.append("testDeptNo").append("=").append(testDeptNo).append(",");
-        sb.append("email").append("=").append(email).append(",");
-        sb.append("role").append("=").append(role).append(",");
-        sb.append("tenantId").append("=").append(tenantId).append(",");
-        sb.append("isActive").append("=").append(isActive);
+        sb.append("email").append("=").append(email);
         sb.append("]");
         return sb.toString();
 

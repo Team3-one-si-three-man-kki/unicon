@@ -92,5 +92,9 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
     public UserVo loginUser(UserVo vo) throws ElException {
         return (UserVo) selectByPk("com.demo.proworks.user.loginUser", vo);
     }
+    
+     public UserVo getUserByEmail(String email) throws Exception {
+        return (UserVo) selectByPk("com.demo.proworks.user.getUserByEmail", email);
+    }
 
 }

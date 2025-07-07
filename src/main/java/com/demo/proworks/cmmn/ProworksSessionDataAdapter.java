@@ -89,14 +89,16 @@ try{
 			UserVo userVo = new UserVo();
 			System.out.println("아이디야~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~세션어뎁터``"+id);
 			userVo.setEmail(id);
+			userVo.setTenantId((String)obj[1]);
+			System.out.println("이거 서비스로 넘어가는 vo"+userVo);
 			UserVo resuserVo = userService.loginUser(userVo);
 
 			if( resuserVo == null ) {
 				throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
 			}
-			userHeader.setTenantId(resuserVo.getTenantId());
-			userHeader.setIsActive(resuserVo.isIsActive());
-			userHeader.setRole(resuserVo.getRole());
+//			userHeader.setTenantId(resuserVo.getTenantId());
+//			userHeader.setIsActive(resuserVo.isIsActive());
+//			userHeader.setRole(resuserVo.getRole());
 			System.out.println("유저헤더 값이야 설정해놓은거"+userHeader);
 			
 			
