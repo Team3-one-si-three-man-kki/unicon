@@ -8,56 +8,66 @@
         <w2:MSA/>
         <xf:model>
         	<w2:dataCollection baseNode="map">
-        		
-				<w2:dataMap id="dm_loginCustomInfo" ev:onmodelchange="scwin.dm_loginCustomInfo_onmodelchange">
-					<w2:keyInfo>
-						<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
-						<w2:key id="logo" name="logo" dataType="text"></w2:key>
-						<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
-						<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
-						<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
-						<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
-						<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
-						<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
-						<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
-						<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
-						<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
-						<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
-						<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
-						<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
-						<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
-						<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
-						<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
-						<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
-						<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
-					</w2:keyInfo>
-					<w2:data xmlns="" use="true">
-						<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
-						<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
-						<logoSize><![CDATA[80]]></logoSize>
-						<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
-						<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
-						<mainTitleSize><![CDATA[32]]></mainTitleSize>
-						<mainTitleFont><![CDATA[700]]></mainTitleFont>
-						<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
-						<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
-						<subTitleSize><![CDATA[18]]></subTitleSize>
-						<subTitleFont><![CDATA[400]]></subTitleFont>
-						<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
-						<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
-						<extraTitleSize><![CDATA[16]]></extraTitleSize>
-						<extraTitleFont><![CDATA[300]]></extraTitleFont>
-						<overlayOpacity><![CDATA[50]]></overlayOpacity>
-						<overlayColor><![CDATA[black]]></overlayColor>
-						<primaryColor><![CDATA[#667eea]]></primaryColor>
-						<accentColor><![CDATA[#ffffff]]></accentColor>
-					</w2:data>
-				</w2:dataMap>
-			</w2:dataCollection>
+
+        		<w2:dataMap id="dm_loginCustomInfo" ev:onmodelchange="scwin.dm_loginCustomInfo_onmodelchange">
+        			<w2:keyInfo>
+        				<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
+        				<w2:key id="logo" name="logo" dataType="text"></w2:key>
+        				<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
+        				<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
+        				<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
+        				<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
+        				<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
+        				<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
+        				<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
+        				<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
+        				<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
+        				<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
+        				<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
+        				<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
+        				<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
+        				<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
+        				<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
+        				<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
+        				<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+        			</w2:keyInfo>
+        			<w2:data xmlns="" use="false">
+        				<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
+        				<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
+        				<logoSize><![CDATA[80]]></logoSize>
+        				<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
+        				<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
+        				<mainTitleSize><![CDATA[32]]></mainTitleSize>
+        				<mainTitleFont><![CDATA[700]]></mainTitleFont>
+        				<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
+        				<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
+        				<subTitleSize><![CDATA[18]]></subTitleSize>
+        				<subTitleFont><![CDATA[400]]></subTitleFont>
+        				<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
+        				<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
+        				<extraTitleSize><![CDATA[16]]></extraTitleSize>
+        				<extraTitleFont><![CDATA[300]]></extraTitleFont>
+        				<overlayOpacity><![CDATA[50]]></overlayOpacity>
+        				<overlayColor><![CDATA[black]]></overlayColor>
+        				<primaryColor><![CDATA[#667eea]]></primaryColor>
+        				<accentColor><![CDATA[#ffffff]]></accentColor>
+        			</w2:data>
+        		</w2:dataMap>
+        		<w2:dataMap baseNode="map" id="dm_loginPage_request">
+        			<w2:keyInfo>
+        				<w2:key dataType="text" name="configJson" id="configJson"></w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        	</w2:dataCollection>
         	<w2:workflowCollection />
-        	<xf:submission id="loadPreview" action="/InsWebApp/data/config.json" method="post" mediatype="application/json" ref="" target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}'
-        		encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
-        		ev:submitdone="scwin.loadPreview_submitdone" ev:submiterror="" abortTrigger="">
+        	<xf:submission id="loadPreview" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
+        		target='data:json,[{"id":"loginCustomInfo","key":"loginCustomInfo"},"dm_loginCustomInfo"]' encoding="UTF-8" instance="" replace="" errorHandler=""
+        		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.loadPreview_submitdone" ev:submiterror=""
+        		abortTrigger="">
+        	</xf:submission>
+        	<xf:submission id="sbm_saveConfig" action="/InsWebApp/LCP0001Save.pwkjson" method="post" mediatype="application/json" ref='data:json,{"id":"dm_loginPage_request","key":"vo"}'
+        		target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="저장중입니다..." ev:submit=""
+        		ev:submitdone="scwin.sbm_saveConfig_submitdone" ev:submiterror="" abortTrigger="">
         	</xf:submission>
         </xf:model>
         <w2:layoutInfo/>
@@ -89,7 +99,8 @@ scwin.loginPage_onpageframeload = function () {
 };
 
 scwin.loadPreview_submitdone = function (e) {
-    var elData = e.responseJSON.loginCustomInfo;
+    var elData = e.responseJSON
+    dm_loginCustomInfo.setJSON(elData)
     /*
     var elHeader  = e.responseJSON.elHeader;
     if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
@@ -103,19 +114,34 @@ scwin.loadPreview_submitdone = function (e) {
         loginCustomInfo: elData
     };
 
-    // 로딩이 완료된 자식 페이지의 setInitData 함수를 직접 호출하여 데이터를 전달합니다.
-
-    loginPage.getWindow().scwin.setInitData(dataToPass);
+    // loginPage.getWindow().scwin.setInitData(dataToPass);
+    loginPage.getWindow().scwin.applyCustomization(elData);
 };
 
 scwin.dm_loginCustomInfo_onmodelchange = function (info) {
-    console.log("123123",info);
     // 변경된 전체 데이터를 미리보기 페이지에 전달(Push)
     var previewWindow = loginPage.getWindow();
     if (previewWindow && typeof previewWindow.scwin.applyCustomization === "function") {
         previewWindow.scwin.applyCustomization(dm_loginCustomInfo.getJSON());
-        console.log("요기조기",dm_loginCustomInfo.getJSON());
     }
+};
+
+scwin.btn_save_onclick = function (e) {
+    // 1. 현재 화면의 설정값이 바인딩된 dataMap에서 'vo' 객체를 가져옵니다.
+    // (현재 데이터맵 ID를 'dma_loginCustom_view'라고 가정)
+    var styleData = dm_loginCustomInfo.getJSON();
+
+    // 2. 이 JavaScript 객체를 JSON 문자열로 변환합니다.
+    var configJsonString = JSON.stringify(styleData);
+
+    dm_loginPage_request.set("configJson", configJsonString);
+
+    // 5. 전송용 데이터맵을 사용하는 submission을 실행합니다.
+    $p.executeSubmission("sbm_saveConfig");
+};
+
+scwin.sbm_saveConfig_submitdone = function (e) {
+    console.log(e);
 };
 ]]></script>
     </head>
@@ -143,7 +169,7 @@ scwin.dm_loginCustomInfo_onmodelchange = function (info) {
     							<w2:content alwaysDraw="false" style="" id="content22" src="/InsWebApp/ui/login_custom_tab/logo_custom.xml"></w2:content>
     						</w2:tabControl>
     					</xf:group>
-    					<xf:trigger style="width: 100%;padding: 10px;color:white;background:#66aaab;" id="" type="button">
+    					<xf:trigger style="width: 100%;padding: 10px;color:white;background:#66aaab;" id="btn_save" type="button" ev:onclick="scwin.btn_save_onclick">
     						<xf:label><![CDATA[변경사항 저장]]></xf:label>
     					</xf:trigger>
     				</xf:group>

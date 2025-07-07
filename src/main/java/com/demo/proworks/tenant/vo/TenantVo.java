@@ -40,9 +40,6 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "search_sub_domain", physicalName = "scSubDomain", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String scSubDomain;
 
-    @ElDtoField(logicalName = "config_json", physicalName = "configJson", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
-    private String configJson;
-
     @ElVoField(physicalName = "tenantId")
     public String getTenantId(){
         String ret = this.tenantId;
@@ -142,17 +139,6 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.scSubDomain = scSubDomain;
     }
 
-    @ElVoField(physicalName = "configJson")
-    public String getConfigJson(){
-        String ret = this.configJson;
-        return ret;
-    }
-
-    @ElVoField(physicalName = "configJson")
-    public void setConfigJson(String configJson){
-        this.configJson = configJson;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -165,8 +151,7 @@ public class TenantVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("scTenantId").append("=").append(scTenantId).append(",");
         sb.append("scCreatedAt").append("=").append(scCreatedAt).append(",");
         sb.append("scName").append("=").append(scName).append(",");
-        sb.append("scSubDomain").append("=").append(scSubDomain).append(",");
-        sb.append("configJson").append("=").append(configJson);
+        sb.append("scSubDomain").append("=").append(scSubDomain);
         sb.append("]");
         return sb.toString();
 
