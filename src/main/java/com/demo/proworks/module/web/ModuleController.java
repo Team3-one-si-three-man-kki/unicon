@@ -1,12 +1,16 @@
 package com.demo.proworks.module.web;
 
+import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.demo.proworks.cmmn.ProworksUserHeader;
 import com.demo.proworks.module.service.ModuleService;
 import com.demo.proworks.module.vo.ModuleVo;
 import com.demo.proworks.module.vo.ModuleListVo;
@@ -14,6 +18,8 @@ import com.demo.proworks.module.vo.ModuleListVo;
 import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
+import com.inswave.elfw.util.CommUtil;
+import com.inswave.elfw.util.ControllerContextUtil;
 
 /**  
  * @subject     : 모듈정보 관련 처리를 담당하는 컨트롤러
@@ -84,7 +90,8 @@ public class ModuleController {
     @ElService(key="ModuleIns")    
     @RequestMapping(value="ModuleIns")
     @ElDescription(sub="모듈정보 등록처리",desc="모듈정보를 등록 처리 한다.")
-    public void insertModule(ModuleVo moduleVo) throws Exception {    	 
+    public void insertModule(ModuleVo moduleVo, HttpServletRequest request) throws Exception {    
+    	 
     	moduleService.insertModule(moduleVo);   
     }
        

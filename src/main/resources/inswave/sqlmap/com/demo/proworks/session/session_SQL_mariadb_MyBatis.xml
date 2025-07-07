@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject : 세션정보 관련 처리를 담당하는 Sql Mapper
+	@description : 세션정보 관련 처리를 담당하는 Sql Mapper
+	@author : 여경원
+	@since : 2025/07/04
+	@modification
+	===========================================================
+	DATE AUTHOR DESC
+	===========================================================
+	2025/07/04 여경원 최초 생성
+-->
+<mapper namespace="com.demo.proworks.session">
+	<insert id="insertSession" parameterType="com.demo.proworks.session.vo.SessionVo" useGeneratedKeys="true" keyProperty="sessionId"
+		keyColumn="session_id">
+		INSERT INTO SESSION (
+		NAME
+		<if test="usingDept != null"> , USING_DEPT </if>
+		<if test="startTime != null"> , START_TIME </if>
+		<if test="inviteLink != null"> , INVITE_LINK </if>
+		<if test="linkExpiry != null"> , LINK_EXPIRY </if>
+		<if test="createdBy != null"> , CREATED_BY </if>
+		) VALUES (
+		#{name}
+		<if test="usingDept != null"> , #{usingDept} </if>
+		<if test="startTime != null"> , #{startTime} </if>
+		<if test="inviteLink != null"> , #{inviteLink} </if>
+		<if test="linkExpiry != null"> , #{linkExpiry} </if>
+		<if test="createdBy != null"> , #{createdBy} </if>
+		)
+	</insert>
+
+	<update id="updateSession" parameterType="com.demo.proworks.session.vo.SessionVo">
+		<!-- 세션정보를 갱신한다. -->
+
+		UPDATE SESSION /* QueryID : com.demo.proworks.session.updateSession */
+		SET
+		SESSION_ID = #{sessionId}
+		<if test="name       != null"> , NAME = #{name}        </if>
+		<if test="usingDept != null"> , USING_DEPT = #{usingDept}  </if>
+		<if test="startTime != null"> , START_TIME = #{startTime}  </if>
+		<if test="inviteLink!= null"> , INVITE_LINK = #{inviteLink} </if>
+		<if test="linkExpiry!= null"> , LINK_EXPIRY = #{linkExpiry} </if>
+		<if test="createdBy != null"> , CREATED_BY = #{createdBy}  </if>
+		WHERE SESSION_ID = #{sessionId}
+	</update>
+
+	<delete id="deleteSession" parameterType="com.demo.proworks.session.vo.SessionVo">
+		<!-- 세션정보를 삭제한다. -->
+
+		DELETE FROM SESSION /* QueryID : com.demo.proworks.session.deleteSession */
+		WHERE
+		SESSION_ID = #{sessionId}
+	</delete>
+
+	<select id="selectSession" parameterType="com.demo.proworks.session.vo.SessionVo"
+		resultType="com.demo.proworks.session.vo.SessionVo">
+		<!-- 세션정보를 상세 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.session.selectSession */
+		SESSION_ID as sessionId, NAME as name, USING_DEPT as usingDept, START_TIME
+		as startTime, INVITE_LINK as inviteLink, LINK_EXPIRY as linkExpiry,
+		CREATED_BY as createdBy
+		FROM SESSION
+		WHERE
+		SESSION_ID = #{sessionId}
+	</select>
+
+	<select id="selectListSession" parameterType="com.demo.proworks.session.vo.SessionVo"
+		resultType="com.demo.proworks.session.vo.SessionVo">
+		<!-- 세션정보 목록을 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.session.selectListSession */
+		SESSION_ID as sessionId, NAME as name, USING_DEPT as usingDept,
+		START_TIME as startTime, INVITE_LINK as inviteLink, LINK_EXPIRY as linkExpiry,
+		CREATED_BY as createdBy
+		FROM (
+		SELECT S.*, CEIL(
+		(@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+		FROM (
+		SELECT
+		*
+		FROM SESSION
+		WHERE 1=1
+
+		) S, (SELECT @ROWNUM := 0) TMP
+		) A
+		WHERE PAGE = #{pageIndex}
+	</select>
+
+	<select id="selectListCountSession" parameterType="com.demo.proworks.session.vo.SessionVo" resultType="long">
+		<!-- 세션정보 목록의 카운트를 조회한다. -->
+
+		SELECT /* QueryID : com.demo.proworks.session.selectListCountSession */
+		COUNT(*) totcnt
+		FROM SESSION
+		WHERE 1=1
+
+	</select>
+
+</mapper>

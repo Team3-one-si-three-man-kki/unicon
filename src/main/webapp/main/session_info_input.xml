@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map"/>
+            <w2:workflowCollection/>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        <script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+
+};
+
+
+scwin.btn_nextto2_onclick = function (e) {
+    // WebSquare inputCalendar 값 가져오기 (다양한 방식 시도)
+    var startTimeValue = ipt_start_time.getValue();
+    var endTimeValue = ipt_fin_time.getValue();
+    
+    console.log("시작 시간 값:", startTimeValue);
+    console.log("종료 시간 값:", endTimeValue);
+    
+    // 기본 유효성 검사
+    if (!endTimeValue || endTimeValue === "") {
+        alert("종료 시간을 입력해주세요.");
+        return;
+    }
+    
+    // 문자열로 받은 경우 그대로 사용하고, 만료일은 서버에서 계산하도록 변경
+    var sessionInfo = {
+        name: ipt_session_name.getValue(),
+        using_dept: ipt_using_dept.getValue(),
+        start_time: startTimeValue,
+        end_time: endTimeValue  // 종료시간을 그대로 전달
+    };
+    
+    console.log("전달할 세션 정보:", sessionInfo);
+    
+    // 부모페이지로 데이터 전달
+    $p.parent().scwin.setSessionInfo(sessionInfo);
+    
+    // 다음 단계로 이동
+    $p.parent().scwin.setScreen(2);
+};]]></script>
+    </head>
+    <body ev:onpageload="scwin.onpageload">
+    	<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+    		style="font-size:17px;padding-left: 300px;">
+    		<xf:group
+    			style="width:550px;height:500px;max-width:90%;margin:60px auto;background:white;border:3px solid #e8ecf4;border-radius:3px;padding:40px;position:relative;"
+    			id="grp_join">
+
+    			<xf:group style="margin-bottom: 20px;" id="grp_email">
+    				<w2:span id="" label="세션 이름 (필수 입력)" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    					meta_snippetName="10_16 출력텍스트" style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;">
+    				</w2:span>
+    				<xf:input class="" id="ipt_session_name" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    					meta_snippetName="10_01 InputBox" placeholder="세션 이름을 입력해주세요"
+    					style="width:83.14%;height:40px;padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:18px;">
+    				</xf:input>
+    				<xf:trigger class="btn_cm" id="btn_check" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
+    					meta_snippetName="8_01 기본버튼"
+    					style="width: 15%;font-size: 18px;height: 40px;background-color:gray;color: white;margin-left: 10px;font-weight:500;"
+    					type="button">
+    					<xf:label><![CDATA[중복검사]]></xf:label>
+    				</xf:trigger>
+    			</xf:group>
+    			<xf:group style="margin-bottom: 20px;" id="grp_pwd">
+    				<w2:span id="" label="사용 부서 (선택)" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    					meta_snippetName="10_16 출력텍스트" style="font-size: 20px;font-weight: 600;margin-bottom: 8px;display: block;">
+    				</w2:span>
+    				<xf:input class="" id="ipt_using_dept" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    					meta_snippetName="10_01 InputBox" placeholder="사용 부서를 입력해주세요"
+    					style="width:100%;height: 40px;padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:18px;">
+    				</xf:input>
+    			</xf:group>
+    			<xf:group style="margin-bottom: 20px;" id="">
+    				<w2:span id="" label="시작 시간 (필수 입력)" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+    					meta_snippetName="10_16 출력텍스트" style="font-size: 20px;    font-weight: 600;    margin-bottom: 8px;    display: block;">
+    				</w2:span>
+    				<w2:inputCalendar id="ipt_start_time" style="width:100%;height: 40px;border:2px solid #e8ecf4;border-radius:6px;font-size:18px;"
+    					calendarValueType="yearMonthDateTime" calendarClass="class1" placeholder="시작 시간을 입력해주세요">
+    				</w2:inputCalendar>
+    			</xf:group>
+    			<xf:group style="margin-bottom: 20px;" id="">
+    				<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+    					style="font-size: 20px;    font-weight: 600;    margin-bottom: 8px;    display: block;" id="" label="종료 시간 (필수 입력)">
+    				</w2:span>
+    				<w2:inputCalendar style="width:100%;height: 40px;border:2px solid #e8ecf4;border-radius:6px;font-size:18px;" id="ipt_fin_time"
+    					placeholder="종료 시간을 입력해주세요" calendarValueType="yearMonthDateTime" calendarClass="class1">
+    				</w2:inputCalendar>
+    			</xf:group>
+    			<xf:group style="margin-top: 70px; display: flex; justify-content: flex-end;" id="">
+    				<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼" meta_snippetKeyComponent="true"
+    					style="width: 7%;height: 40px;font-size: 60px;background: #1273EB;color: white;border: none;border-radius: 8px;font-size: 30px;font-weight: bold;text-align: center;    vertical-align: middle;clear:both;padding-bottom: 6px;"
+    					id="btn_nextto2" type="button" class="btn_cm" ev:onclick="scwin.btn_nextto2_onclick">
+    					<xf:label><![CDATA[▶]]></xf:label>
+    				</xf:trigger>
+    			</xf:group>
+    		</xf:group>
+    	</xf:group>
+    </body>
+</html>
