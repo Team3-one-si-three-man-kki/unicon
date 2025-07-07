@@ -74,4 +74,6 @@ public interface UserService {
 	
 	public UserVo loginUser(UserVo userVo) throws Exception;
 	
+	public UserVo getUserByEmail(String email) throws Exception;
+	
 }

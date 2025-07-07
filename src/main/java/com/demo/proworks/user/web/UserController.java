@@ -55,9 +55,11 @@ public class UserController {
 	public void login(com.demo.proworks.user.vo.UserLoginVo loginVo, HttpServletRequest request) throws Exception {
     	String email = loginVo.getEmail();
     	String password = loginVo.getPassword();
+    	String tenantId = "2";
     	System.out.println("겟야이디 패스워드 "+email+",,,,,,,,"+password+"=========================");
     	System.out.println("컨트롤러는잘타는중~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    	LoginInfo info = loginProcess.processLogin(request, email, password);
+    	System.out.println(request.toString().toString()+"ddddddddd");
+    	LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
     	System.out.println("로그인 인포에 정보 잘담기는거야?"+info+"======================================");
     	AppLog.debug("- Login 정보 : " + info.toString());
     	System.out.println("로그인 성공 여부: " + info.isSuc());
