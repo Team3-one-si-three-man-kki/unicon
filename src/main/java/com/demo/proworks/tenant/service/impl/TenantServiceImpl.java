@@ -122,4 +122,8 @@ public class TenantServiceImpl implements TenantService {
 		return tenantDAO.deleteTenant(tenantVo);
 	}
 	
+    public List<TenantVo> selectTenantList(TenantVo searchVo) throws Exception {
+        return tenantDAO.selectTenantList(searchVo);
+    }
+	
 }

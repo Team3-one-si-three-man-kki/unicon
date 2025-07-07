@@ -127,5 +127,11 @@ public class UserServiceImpl implements UserService {
 		UserVo resultVO = userDAO.loginUser(userVo);			
         return resultVO;
 	}
+
+
+	public UserVo getUserByEmail(String email) throws Exception {
+
+		return userDAO.getUserByEmail(email);
+	}
 	
 }
