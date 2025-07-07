@@ -30,7 +30,8 @@
       canvas { pointer-events:auto; }
     ]]></style>
 
-		<script type="text/javascript"><![CDATA[
+		<script type="text/javascript">
+<![CDATA[
       var scwin = scwin || {};
       scwin.onpageload = init;
 
@@ -43,6 +44,8 @@
         const bgPicker    = document.getElementById('bgPicker');
         const bgToggle    = document.getElementById('bgToggle');
         
+        const worker = new Worker('/InsWebApp/js/canvas/canvas-worker.js');
+
         const ws = new WebSocket('ws://' + location.host + '/InsWebApp/signal.do');
         ws.onopen = () => { console.log("웹소켓 연결 성공!"); };
 
@@ -52,13 +55,11 @@
             }
         }, 30000); 
 
+        // signal 함수는 이제 데이터를 압축하지 않고 워커에게 보내기만 합니다.
         function signal(data) {
             if (ws.readyState === WebSocket.OPEN) {
                 data.sender = senderId;
-                const jsonString = JSON.stringify(data);
-                const compressedData = pako.deflate(jsonString);
-                const base64String = btoa(String.fromCharCode.apply(null, compressedData));
-                ws.send(base64String);
+                worker.postMessage({ type: 'compress', data: data });
             }
         }
 
@@ -97,47 +98,34 @@
         bgToggle.onclick = () => {
             bgOn = !bgOn;
             bgToggle.classList.toggle('active', bgOn);
-
             const updates = [];
-
             if (bgOn) {
                 bgPicker.style.display = 'inline-block';
                 const c = bgPicker.value;
                 canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
                 signal({ type: 'bg-change', color: c });
-
                 canvas.getObjects().forEach(obj => {
                     if (obj.globalCompositeOperation === 'destination-out') {
-                        const newProps = {
-                            isEraser: true,
-                            stroke: c,
-                            globalCompositeOperation: 'source-over'
-                        };
+                        const newProps = { isEraser: true, stroke: c, globalCompositeOperation: 'source-over' };
                         obj.set(newProps);
                         updates.push({ id: obj.id, props: newProps });
                     }
                 });
-
             } else {
                 bgPicker.style.display = 'none';
                 canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
                 signal({ type: 'bg-change', color: null });
-
                 canvas.getObjects().forEach(obj => {
                     if (obj.isEraser) {
-                        const newProps = {
-                            globalCompositeOperation: 'destination-out'
-                        };
+                        const newProps = { globalCompositeOperation: 'destination-out' };
                         obj.set(newProps);
                         updates.push({ id: obj.id, props: newProps });
                     }
                 });
             }
-
             if (updates.length > 0) {
                 signal({ type: 'eraser-mode-change', updates: updates });
             }
-
             if (mode === 'eraser') {
                 if (bgOn) {
                     canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
@@ -154,7 +142,6 @@
             const c = e.target.value;
             canvas.setBackgroundColor(c, canvas.renderAll.bind(canvas));
             signal({ type: 'bg-change', color: c });
-
             const updates = [];
             canvas.getObjects().forEach(obj => {
                 if (obj.isEraser) {
@@ -163,11 +150,9 @@
                     updates.push({ id: obj.id, props: newProps });
                 }
             });
-
             if (updates.length > 0) {
                 signal({ type: 'eraser-mode-change', updates: updates });
             }
-
             if (mode === 'eraser') {
                 canvas.freeDrawingBrush.color = c;
             }
@@ -183,7 +168,6 @@
             if (button) {
                 button.onclick = () => {
                     mode = t;
-                    
                     if (t === 'pen' || t === 'eraser') {
                         canvas.isDrawingMode = true;
                         canvas.selection = false;
@@ -192,7 +176,6 @@
                         canvas.selection = true;
                         shape = null;
                     }
-
                     if (t === 'pen') {
                         canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
                         canvas.freeDrawingBrush.width = parseInt(widthPicker.value, 10);
@@ -208,7 +191,6 @@
                             canvas.freeDrawingBrush.globalCompositeOperation = 'destination-out';
                         }
                     }
-
                     tools.forEach(toolId => {
                         const el = document.getElementById(toolId);
                         if (el) el.classList.remove('active');
@@ -219,7 +201,6 @@
         });
         
         document.getElementById('select').click();
-
         document.getElementById('clear').onclick = () => {
           canvas.clear();
           if (bgOn) {
@@ -241,7 +222,6 @@
   
         canvas.on('path:created', e => {
             e.path.id = uuid.v4();
-
             if (e.path.path) { 
                 const pathArray = e.path.path;
                 for (let i = 0; i < pathArray.length; i++) {
@@ -251,7 +231,6 @@
                 }
                 e.path.set('path', pathArray);
             }
-
             if (mode === 'eraser') {
                 if (bgOn) {
                     e.path.isEraser = true;
@@ -261,7 +240,6 @@
                     e.path.globalCompositeOperation = 'destination-out';
                 }
             }
-
             const d = e.path.toObject(['id', 'path', 'stroke', 'strokeWidth', 'globalCompositeOperation', 'isEraser']);
             signal({ type: 'fabric-path', path: d });
         });
@@ -277,21 +255,13 @@
 
         canvas.on('mouse:down', opt => {
             if (opt.target || mode === 'select' || mode === 'pen' || mode === 'eraser') return;
-
             const p = canvas.getPointer(opt.e);
             sx = p.x;
             sy = p.y;
-            
             const id = uuid.v4();
             const strokeColor = colorPicker.value;
             const strokeWidth = parseInt(widthPicker.value, 10);
-            const styleOptions = {
-                id: id,
-                stroke: strokeColor,
-                strokeWidth: strokeWidth,
-                fill: 'transparent'
-            };
-
+            const styleOptions = { id: id, stroke: strokeColor, strokeWidth: strokeWidth, fill: 'transparent' };
             if (mode === 'rect') {
                 shape = new fabric.Rect({ ...styleOptions, left: sx, top: sy, width: 0, height: 0, originX: 'left', originY: 'top' });
             } else if (mode === 'circle') {
@@ -301,7 +271,6 @@
             } else if (mode === 'text') {
                 shape = new fabric.IText('Text', { ...styleOptions, left: sx, top: sy, fill: strokeColor, fontSize: strokeWidth * 5, originX: 'left', originY: 'top' });
             }
-            
             if (shape) {
                 canvas.add(shape);
             }
@@ -309,49 +278,35 @@
 
         canvas.on('mouse:move', opt => {
             if (!shape) return;
-
             let p = canvas.getPointer(opt.e);
             const canvasWidth = canvas.getWidth();
             const canvasHeight = canvas.getHeight();
-
             p.x = Math.max(0, Math.min(p.x, canvasWidth));
             p.y = Math.max(0, Math.min(p.y, canvasHeight));
-
             if (shape.type === 'rect') {
                 const left = Math.min(p.x, sx);
                 const top = Math.min(p.y, sy);
                 const width = Math.abs(p.x - sx);
                 const height = Math.abs(p.y - sy);
                 shape.set({ left: left, top: top, width: width, height: height });
-
             } else if (shape.type === 'circle') {
                 const radius = Math.hypot(p.x - sx, p.y - sy);
                 shape.set({ radius: radius });
-
             } else if (shape.type === 'line') {
                 shape.set({ x2: p.x, y2: p.y });
             }
-            
             canvas.renderAll();
         });
 
         canvas.on('mouse:up', () => {
             if (!shape) return;
             shape.setCoords(); 
-            
             const canvasWidth = canvas.getWidth();
             const canvasHeight = canvas.getHeight();
-            
             const shapeData = {
-                id: shape.id,
-                type: shape.type,
-                stroke: shape.stroke,
-                strokeWidth: shape.strokeWidth,
-                fill: shape.fill,
-                originX: shape.originX,
-                originY: shape.originY
+                id: shape.id, type: shape.type, stroke: shape.stroke, strokeWidth: shape.strokeWidth,
+                fill: shape.fill, originX: shape.originX, originY: shape.originY
             };
-
             if (shape.type === 'line') {
                 shapeData.x1 = shape.x1 / canvasWidth;
                 shapeData.y1 = shape.y1 / canvasHeight;
@@ -360,7 +315,6 @@
             } else {
                 shapeData.left = shape.left / canvasWidth;
                 shapeData.top = shape.top / canvasHeight;
-
                 if (shape.type === 'rect') {
                     shapeData.width = shape.width / canvasWidth;
                     shapeData.height = shape.height / canvasHeight;
@@ -371,7 +325,6 @@
                     shapeData.fontSize = shape.fontSize;
                 }
             }
-
             signal({ type: 'shape-create', shape: shapeData });
             shape = null;
         });
@@ -382,26 +335,34 @@
             signal({ type: 'object-modified', object: obj });
         });
         
+        // 웹소켓 메시지 수신 시 압축 해제를 하지 않고 워커에게 보냅니다.
         ws.onmessage = async ({ data }) => {
-            let m;
-            try {
-                m = JSON.parse(data);
-            } catch (e) {
-                try {
-                    const binaryString = atob(data);
-                    const len = binaryString.length;
-                    const bytes = new Uint8Array(len);
-                    for (let i = 0; i < len; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    const decompressedData = pako.inflate(bytes, { to: 'string' });
-                    m = JSON.parse(decompressedData);
-                } catch (err) {
-                    console.error("Base64 디코드 또는 압축 해제 오류:", err);
-                    return;
-                }
-            }
+            if (typeof data === 'string' && data.includes('ping')) return;
+            worker.postMessage({ type: 'decompress', data: data });
+        };
 
+        // 워커로부터 메시지를 받아 최종 처리하는 핸들러입니다.
+        worker.onmessage = (event) => {
+            const { type, result, message } = event.data;
+
+            if (type === 'error') {
+                console.error("웹 워커 오류:", message);
+                return;
+            }
+            
+            if (type === 'compressed') {
+                // 압축된 결과는 웹소켓으로 전송합니다.
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(result);
+                }
+            } else if (type === 'decompressed') {
+                // 압축 해제된 결과는 화면에 렌더링합니다.
+                handleCanvasMessage(result);
+            }
+        };
+
+        // 실제 메시지 처리 로직을 별도 함수로 분리했습니다.
+        function handleCanvasMessage(m) {
             if (m.sender === senderId) return;
           
             switch(m.type) {
@@ -414,7 +375,6 @@
                     }
                     canvas.setBackgroundColor(m.color || null, canvas.renderAll.bind(canvas));
                     break;
-
                 case 'eraser-mode-change':
                     m.updates.forEach(update => {
                         const objToUpdate = canvas.getObjects().find(o => o.id === update.id);
@@ -424,18 +384,15 @@
                     });
                     canvas.renderAll();
                     break;
-
                 case 'fabric-path':
                     fabric.Path.fromObject(m.path, (obj) => {
                         canvas.add(obj);
                     });
                     break;
-                    
                 case 'shape-create': {
                     const receivedShape = m.shape;
                     const canvasWidth = canvas.getWidth();
                     const canvasHeight = canvas.getHeight();
-                    
                     if (receivedShape.type === 'line') {
                         receivedShape.x1 = receivedShape.x1 * canvasWidth;
                         receivedShape.y1 = receivedShape.y1 * canvasHeight;
@@ -444,7 +401,6 @@
                     } else {
                         receivedShape.left = receivedShape.left * canvasWidth;
                         receivedShape.top = receivedShape.top * canvasHeight;
-
                         if (receivedShape.type === 'rect') {
                             receivedShape.width = receivedShape.width * canvasWidth;
                             receivedShape.height = receivedShape.height * canvasHeight;
@@ -452,7 +408,6 @@
                             receivedShape.radius = receivedShape.radius * Math.max(canvasWidth, canvasHeight);
                         }
                     }
-
                     fabric.util.enlivenObjects([receivedShape], ([obj]) => {
                         if (obj) {
                             canvas.add(obj);
@@ -461,7 +416,6 @@
                     });
                     break;
                 }
-                
                 case 'object-modified': {
                     const objToModify = canvas.getObjects().find(o => o.id === m.object.id);
                     if (objToModify) {
@@ -471,7 +425,6 @@
                     }
                     break;
                 }
-                
                 case 'object-removed': {
                     const objectsToRemove = canvas.getObjects().filter(o => m.ids.includes(o.id));
                     if (objectsToRemove.length > 0) {
@@ -480,7 +433,6 @@
                     }
                     break;
                 }
-
                 case 'clear':
                     canvas.clear();
                     if (bgOn) {
@@ -489,9 +441,9 @@
                     }
                     break;
             }
-        };
+        }
       }
-    ]]>
+]]>
 		</script>
 	</head>
 

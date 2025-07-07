@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>PAGE</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+			<w2:dataList baseNode="list" repeatNode="map" id="dlt_documentList" saveRemovedData="true">
+				<w2:columnInfo>
+					<w2:column id="chk" name="선택" dataType="text"></w2:column>
+					<w2:column id="docTitle" name="문서명" dataType="text"></w2:column>
+					<w2:column id="registrant" name="등록자" dataType="text"></w2:column>
+					<w2:column id="regDate" name="등록일" dataType="text"></w2:column>
+				</w2:columnInfo>
+			</w2:dataList>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="map" id="userList" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="userid" id="userid"></w2:column>
+						<w2:column dataType="text" name="tenant_id" id="tenant_id"></w2:column>
+						<w2:column dataType="text" name="name" id="name"></w2:column>
+						<w2:column dataType="text" name="email" id="email"></w2:column>
+						<w2:column dataType="text" name="password" id="password"></w2:column>
+						<w2:column dataType="text" name="role" id="role"></w2:column>
+						<w2:column dataType="text" name="created_at" id="createdAt"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="userDetail">
+					<w2:keyInfo></w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<xf:submission id="sbm_selectTenantUser" action="/selectTenantUser" method="post" mediatype="application/json" ref=""
+				target="data:json,userList" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg=""
+				ev:submit="" ev:submitdone="scwin.sbm_selectTenantUser_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_saveAllUser" action="/saveAllUser" method="post" mediatype="application/json" ref=""
+				target="data:json,userList" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg=""
+				ev:submit="" ev:submitdone="scwin.sbm_saveAllUser_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:publicInfo></w2:publicInfo>
+		<script type="text/javascript" lazy="false"><![CDATA[scwin.onpageload = function () {
+    
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const tenantName = urlParams.get('tenant');
+
+    if (tenantName) {
+        console.log("URL에서 가져온 테넌트 이름:", tenantName);
+        // 나중에 이 tenantName 변수를 submission 등에 활용할 수 있습니다.
+    } else {
+        console.log("URL에 'tenant' 파라미터가 없습니다.");
+    }
+
+    // '사용자 관리' 탭을 기본으로 표시합니다.
+    scwin.showPanel('user');
+
+    // 사용자 목록을 조회합니다.
+    scwin.btn_search_onclick();
+
+
+};
+
+scwin.showPanel = function (panelType) {
+    // 모든 관련 패널을 숨깁니다.
+    grp_userManagement_wrapper.hide();
+    grp_moduleMarketplace.hide();
+
+    // 선택된 타입에 맞는 패널만 보여줍니다.
+    if (panelType === 'user') {
+        grp_userManagement_wrapper.show();
+    } else if (panelType === 'module') {
+        grp_moduleMarketplace.show();
+    } else {
+        alert(panelType + " 메뉴입니다.");
+    }
+};
+
+scwin.toggleSidebar = function () {
+    var wrap = $p.getComponentById("wrap");
+    if (wrap.hasClass("sidebar-collapsed")) {
+        wrap.removeClass("sidebar-collapsed");
+    } else {
+        wrap.addClass("sidebar-collapsed");
+    }
+};
+
+
+scwin.btn_insert_onclick = function (e) { var _rowIdx = userList.insertRow(); };
+scwin.btn_delete_onclick = function (e) { var focusIdx = grd.getFocusedRowIndex(); if (focusIdx < 0) { alert("삭제할 행을 먼저 선택해주세요."); return; } user.deleteRow(focusIdx); };
+scwin.btn_remove_onclick = function (e) { var focusIdx = grd.getFocusedRowIndex(); if (focusIdx < 0) { alert("삭제할 행을 먼저 선택해주세요."); return; } var removeData = user.removeRow(focusIdx); console.log("삭제된 데이터:", JSON.stringify(removeData)); };
+scwin.btn_deleteRows_onclick = function (e) { var chkIdxArr = grd.getCheckedIndex("CHK"); userList.deleteRows(chkIdxArr); };
+scwin.btn_removeRows_onclick = function (e) { var chkIdxArr = grd.getCheckedIndex("CHK"); let removeObjs = userList.removeRows(chkIdxArr); console.log(JSON.stringify(removeObjs)); };
+scwin.btn_reset_onclick = function (e) { userList.setData([]); };
+scwin.btn_down_onclick = function (e) { grd.advancedExcelDownload({}); };
+scwin.btn_upload_onclick = function (e) { var options = {}; options.headerExist = "1"; options.type = "1"; options.status = "C"; grd.advancedExcelUpload(options); };
+
+scwin.btn_search_onclick = function (e) {
+    $p.executeSubmission("sbm_selectTenantUser");
+};
+
+scwin.ui_schRole_onviewchange = function (info) { userList.clearFilter(); userList.setColumnFilter({ type: 'row', colIndex: 'role', key: info.newValue, condition: 'and' }); };
+
+
+scwin.sbm_selectTenantUser_submitdone = function (e) {
+    var receivedData = e.responseJSON;
+
+    // 서버에서 에러 없이 데이터가 배열 형태로 왔는지 확인
+    if (Array.isArray(receivedData)) {
+        userList.setJSON(receivedData);
+    } else {
+        // elHeader와 같은 커스텀 에러 처리 로직이 있다면 여기에 구현
+        var elHeader = receivedData.elHeader;
+        if (elHeader && elHeader.resSuc === false) {
+            $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        }
+    }
+};
+
+scwin.sbm_saveAllUser_submitdone = function (e) {
+    alert("저장이 완료되었습니다.");
+    scwin.btn_search_onclick();
+};]]></script>
+		<style>
+            @import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
+            <![CDATA[
+            /* ========== 기본 레이아웃 및 애니메이션 ========== */
+            body { background-color: #f9fafb; }
+            .main-container { display: flex; flex-direction: column; height: 100vh; }
+            .main-header { flex-shrink: 0; display: flex; align-items: center; padding: 0 20px; height: 60px; border-bottom: 1px solid #eee; background-color: white; }
+            .btn_toggle_menu { font-size: 24px; cursor: pointer; background: none; border: none; }
+            .wrap { display: flex; height: 100%; overflow: hidden; }
+            .lnb_wrap { flex-shrink: 0; width: 260px; background-color: #3674B5; color: white; display: flex; flex-direction: column; padding: 20px; transition: width 0.3s ease-in-out, padding 0.3s ease-in-out; }
+            .container_wrap { flex-grow: 1; padding: 25px 35px; overflow-y: auto; background-color: #f9fafb; }
+
+            /* ========== 사이드바 ========== */
+            .wrap.sidebar-collapsed .lnb_wrap { width: 0; padding-left: 0; padding-right: 0; overflow: hidden; }
+            .lnb_wrap .logo { font-size: 24px; font-weight: bold; color: white; padding-bottom: 20px; white-space: nowrap; }
+            .lnb_wrap .pro_banner { background-color: #578FCA; border-radius: 8px; padding: 15px; margin-bottom: 20px; white-space: nowrap; }
+            .lnb_wrap .pro_banner .title { font-weight: 500; font-size: 14px; display: block; padding: 8px 10px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+            .lnb_wrap .pro_banner .title:hover { background-color: #578FCA; }
+            .lnb_wrap .snb { flex-grow: 1; background-color: transparent !important; color: white !important; border: none; white-space: nowrap; }
+            .lnb_wrap .w2_menu_item_label { color: #ccc !important; }
+            .lnb_wrap .w2_menu_item.w2_menu_selected > .w2_menu_item_label { color: white !important; font-weight: bold; }
+            .lnb_wrap .lnb_footer { font-size: 11px; opacity: 0.7; line-height: 1.6; white-space: nowrap; }
+            
+            /* ========== [개선] 모듈 마켓플레이스 UI 스타일 ========== */
+            .marketplace-wrapper { background-color: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; }
+            .marketplace-container { display: flex; gap: 24px; }
+            .marketplace-section { display: flex; flex-direction: column; }
+            
+            /* 왼쪽 섹션 */
+            .marketplace-section.left { flex: 6; }
+            .marketplace-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .marketplace-section-header h2 { font-size: 1.125rem; font-weight: 700; color: #111827; }
+            .search-box { display: flex; gap: 8px; }
+            .search-box .w2_input { border-radius: 6px; }
+            .search-box .btn_search { background-color: #3674B5; color: white; border:none; border-radius:6px; padding: 8px 16px; font-weight: 500; }
+            .module-list { display: flex; flex-direction: column; gap: 16px; }
+            .module-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; display: flex; align-items: center; gap: 16px; }
+            .module-icon { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; display:flex; align-items:center; justify-content:center; }
+            .module-icon.chat { background-color: #e0e7ff; color: #3674B5; }
+            .module-icon.docs { background-color: #d1fae5; color: #065f46; }
+            .module-icon.sign { background-color: #ffedd5; color: #9a3412; }
+            .module-icon svg { width: 24px; height: 24px; }
+            .module-card-info { flex-grow: 1; }
+            .module-card-info .title { font-weight: 600; font-size: 1rem; color: #1f2937; }
+            .module-card-info .desc { font-size: 0.875rem; color: #6b7280; margin-top: 4px; }
+            .module-card-info .price { font-size: 1rem; font-weight: 600; color: #374151; margin-top: 8px; }
+            .module-card-actions { text-align: right; }
+            .module-card-actions .rating { font-size: 0.875rem; color: #f59e0b; }
+            .module-card-actions .w2_trigger { margin-top: 8px; border-radius: 6px; font-size: 0.875rem; padding: 6px 14px; }
+
+            /* 오른쪽 섹션 */
+            .marketplace-section.right { flex: 4; background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #f3f4f6; }
+            .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; }
+            .filter-tabs .w2_trigger { background: none; border: none; padding: 6px 12px; font-size: 0.875rem; color: #6b7280; border-radius: 6px; cursor: pointer; }
+            .filter-tabs .w2_trigger:hover { background-color: #f3f4f6; }
+            .filter-tabs .w2_trigger.active { color: #3674B5; font-weight: 600; background-color: #eef2ff; }
+            .marketplace-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .grid-module-card { background-color: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+            .grid-module-card-header { display:flex; align-items: center; gap: 8px; }
+            .grid-icon { width: 32px; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+            .grid-icon.video { background-color: #fce7f3; color: #be185d; }
+            .grid-icon.esign { background-color: #ccfbf1; color: #047857; }
+            .grid-icon.excel { background-color: #dcfce7; color: #166534; }
+            .grid-icon.help { background-color: #fae8ff; color: #86198f; }
+            .grid-icon svg { width: 18px; height: 18px; }
+            .grid-module-card .title { font-weight: 600; font-size: 0.9rem; }
+            .grid-module-card .rating { font-size: 0.8rem; color: #f59e0b; margin-top: 8px; }
+            .grid-module-card .price { font-size: 1rem; font-weight: 700; color: #111827; margin: auto 0 12px 0; padding-top: 12px; }
+            .grid-module-card .w2_trigger { width: 100%; border-radius: 6px; }
+            
+            /* 버튼 공통 스타일 */
+            .btn-primary { background-color: #578FCA; color: white; border: 1px solid #4f46e5; font-weight: 500; }
+            .btn-secondary { background-color: #f9fafb; color: #374151; border: 1px solid #d1d5db; font-weight: 500; }
+        ]]></style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group id="main-container" class="main-container">
+			<xf:group id="" class="main-header">
+				<xf:trigger ev:onclick="scwin.toggleSidebar" id="btn_toggle" style="" type="button" class="btn_toggle_menu">
+					<xf:label><![CDATA[☰]]></xf:label>
+				</xf:trigger>
+			</xf:group>
+			<xf:group id="wrap" class="wrap">
+				<xf:group id="lnb_wrap" class="lnb_wrap">
+					<w2:textbox id="" label="인스웨이브" tagname="h1" class="logo"></w2:textbox>
+					<xf:group class="pro_banner">
+						<w2:textbox id="tab_user" label="사용자 관리" class="title" ev:onclick="scwin.showPanel('user')"></w2:textbox>
+						<w2:textbox class="title" id="tab_module" label="모듈 구매" ev:onclick="scwin.showPanel('module')"></w2:textbox>
+						<w2:textbox class="title" id="tab_login" label="로그인 페이지 관리" ev:onclick="scwin.showPanel('login')"></w2:textbox>
+						<w2:textbox class="title" id="tab_meeting" label="미팅 생성" ev:onclick="scwin.showPanel('meeting')"></w2:textbox>
+						<w2:textbox class="title" id="tab_history" label="이전 미팅 관리" ev:onclick="scwin.showPanel('history')"></w2:textbox>
+					</xf:group>
+					<w2:menu id="mainMenu" style="flex-grow:1" class="snb" submenuIndent="20">
+						<w2:itemSet>
+							<w2:item>
+								<w2:label><![CDATA[계약관리]]></w2:label>
+							</w2:item>
+							<w2:item selected="true">
+								<w2:label><![CDATA[문서관리]]></w2:label>
+								<w2:itemSet>
+									<w2:item selected="true">
+										<w2:label><![CDATA[내문서함]]></w2:label>
+									</w2:item>
+									<w2:item>
+										<w2:label><![CDATA[임시보관함]]></w2:label>
+									</w2:item>
+								</w2:itemSet>
+							</w2:item>
+							<w2:item>
+								<w2:label><![CDATA[회원관리]]></w2:label>
+							</w2:item>
+							<w2:item>
+								<w2:label><![CDATA[설정]]></w2:label>
+							</w2:item>
+						</w2:itemSet>
+					</w2:menu>
+					<xf:group id="" class="lnb_footer">
+						<w2:textbox id="" label="대표이사 : 이새롬" tagname="p"></w2:textbox>
+						<w2:textbox id="" label="주소 : 서울특별시 영등포구 여의도동 국제금융로 20, 24층" tagname="p"></w2:textbox>
+					</xf:group>
+				</xf:group>
+
+				<xf:group class="container_wrap" id="container_wrap">
+
+					<xf:group id="grp_userManagement_wrapper" style="">
+						<xf:group class="sub_contents " id="" style="">
+							<xf:group class="pgtbox" id="" style="">
+								<w2:textbox class="pgt_tit" id="" label="사용자 관리" style="" tagname=""></w2:textbox>
+								<xf:group class="breadcrumb" id="" style="">
+									<xf:group id="" style="" tagname="ul">
+										<xf:group class="home" id="" style="" tagname="li">
+											<w2:anchor id="" outerDiv="false" style="">
+												<xf:label><![CDATA[Home]]></xf:label>
+											</w2:anchor>
+										</xf:group>
+										<xf:group id="" style="" tagname="li">
+											<w2:anchor id="" outerDiv="false" style="">
+												<xf:label><![CDATA[1Depth Menu]]></xf:label>
+											</w2:anchor>
+										</xf:group>
+										<xf:group id="" style="" tagname="li">
+											<w2:anchor id="" outerDiv="false" style="">
+												<xf:label><![CDATA[2Depth Menu]]></xf:label>
+											</w2:anchor>
+										</xf:group>
+										<xf:group id="" style="" tagname="li">
+											<w2:span id="" label="3Depth Menu" style=""></w2:span>
+										</xf:group>
+									</xf:group>
+								</xf:group>
+								<xf:trigger class="btn_fav" id="" style="" type="button">
+									<xf:label></xf:label>
+								</xf:trigger>
+							</xf:group>
+							<xf:group class="schbox" id="" meta_snippetCategory="03_조회영역" meta_snippetKeyComponent="true" meta_snippetName="3_01 조회조건1행"
+								style="">
+								<xf:group class="schbox_inner" id="" style="">
+									<xf:group adaptive="layout" adaptiveThreshold="768" class="w2tb tbl " id="" style="" tagname="table">
+										<w2:attributes>
+											<w2:summary></w2:summary>
+										</w2:attributes>
+										<xf:group tagname="colgroup">
+											<xf:group style="width:100px;" tagname="col"></xf:group>
+											<xf:group style="" tagname="col"></xf:group>
+										</xf:group>
+										<xf:group class="" id="" style="" tagname="tr">
+											<xf:group class="w2tb_th" style="" tagname="th">
+												<w2:textbox class="" id="" label="역할 :" style=""></w2:textbox>
+											</xf:group>
+											<xf:group class="w2tb_td" id="" style="" tagname="td">
+												<xf:select1 allOption="true" appearance="minimal" chooseOption="" class="" direction="auto" disabled="false"
+													disabledClass="w2selectbox_disabled" id="ui_schRole" ref="" renderType="" style="width:100px;" submenuSize="auto"
+													ev:onviewchange="scwin.ui_schRole_onviewchange">
+													<xf:choices>
+														<xf:itemset nodeset="data:dc_code02">
+															<xf:label ref="CODE_NM"></xf:label>
+															<xf:value ref="CODE_CD"></xf:value>
+														</xf:itemset>
+													</xf:choices>
+												</xf:select1>
+											</xf:group>
+										</xf:group>
+									</xf:group>
+								</xf:group>
+								<xf:group class="btn_schbox" id="" style="">
+									<xf:trigger class="btn_cm sch" disabled="" escape="false" ev:onclick="scwin.btn_search_onclick" id="btn_search" style=""
+										type="button">
+										<xf:label><![CDATA[조회]]></xf:label>
+									</xf:trigger>
+								</xf:group>
+							</xf:group>
+							<xf:group class="titbox" id="" style="">
+								<xf:group class="rt" id="" style="">
+									<xf:trigger class="btn_cm " id="" style="" type="button">
+										<xf:label><![CDATA[+ 사용자 추가]]></xf:label>
+									</xf:trigger>
+								</xf:group>
+							</xf:group>
+							<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
+								meta_snippetName="2_02 서브타이틀(h3)" style="">
+								<xf:group class="rt" id="" style="">
+									<xf:group id="">
+										<xf:trigger ev:onclick="scwin.btn_insert_onclick" style="" id="btn_insert_" type="button" class="btn_cm  row_add">
+											<xf:label><![CDATA[행추가]]></xf:label>
+										</xf:trigger>
+									</xf:group>
+									<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_delete_onclick" id="btn_delete" style="" type="button">
+										<xf:label><![CDATA[행삭제]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_remove_onclick" id="btn_remove" style="" type="button">
+										<xf:label><![CDATA[remove]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_deleteRows_onclick" id="btn_deleteRows" style="" type="button">
+										<xf:label><![CDATA[다중삭제(deleteRows)]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_removeRows_onclick" id="btn_removeRows" style="" type="button">
+										<xf:label><![CDATA[다중삭제(removeRows)]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm " ev:onclick="scwin.btn_reset_onclick" id="btn_reset" style="" type="button">
+										<xf:label><![CDATA[초기화]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm download" ev:onclick="scwin.btn_down_onclick" id="btn_down" style="" type="button">
+										<xf:label><![CDATA[다운로드]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm  upload" ev:onclick="scwin.btn_upload_onclick" id="btn_upload" style="" type="button">
+										<xf:label><![CDATA[업로드]]></xf:label>
+									</xf:trigger>
+								</xf:group>
+							</xf:group>
+							<xf:group class="tblbox" id="" style="">
+								<xf:group adaptive="layout" adaptiveThreshold="768" class="w2tb tbl" id="" style="" tagname="table">
+									<w2:attributes>
+										<w2:summary></w2:summary>
+									</w2:attributes>
+									<xf:group tagname="colgroup">
+										<xf:group style="width:150px;" tagname="col"></xf:group>
+										<xf:group style="" tagname="col"></xf:group>
+										<xf:group style="width:150px;" tagname="col"></xf:group>
+										<xf:group style="" tagname="col"></xf:group>
+									</xf:group>
+								</xf:group>
+							</xf:group>
+							<w2:gridView autoFit="allColumn" autoFitMinWidth="900" checkReadOnlyOnPasteEnable="" class="gvw" columnMove="true"
+								dataList="data:userList" editModeEvent="onclick" ev:onafteredit="scwin.grd_onafteredit" ev:oncelldblclick="scwin.grd_oncelldblclick"
+								fixedColumn="10" focusFlow="linear" focusMode="row" id="grd" keyMoveEditMode="true" rowNumHeaderValue="순번" rowNumVisible="true"
+								rowStatusHeaderValue="상태" rowStatusVisible="true" scrollByColumn="false" scrollByColumnAdaptive="false" sortEvent="onclick"
+								sortable="true" style="height: 150px;" useFilterList="true" visibleRowNum="10">
+								<w2:caption id="caption8" style="" value="this is a grid caption."></w2:caption>
+								<w2:header id="header3" style="">
+									<w2:row id="row5" style="">
+										<w2:column displayMode="label" id="column31" inputType="checkbox" width="70"></w2:column>
+										<w2:column displayMode="label" id="column30" inputType="text" value="성명" width="70"></w2:column>
+										<w2:column displayMode="label" id="column29" inputType="text" readOnly="true" useFilter="true" value="이메일" width="100"></w2:column>
+										<w2:column displayMode="label" id="column28" inputType="text" readOnly="false" sortable="false" value="역할" width="66"></w2:column>
+										<w2:column displayMode="label" id="column27" inputType="text" value="마지막 로그인" width="100"></w2:column>
+										<w2:column displayMode="label" id="column26" inputType="text" value="관리" width="50"></w2:column>
+									</w2:row>
+								</w2:header>
+								<w2:gBody id="gBody3" style="">
+									<w2:row id="row6" style="">
+										<w2:column displayMode="label" id="CHK" inputType="checkbox" width="70"></w2:column>
+										<w2:column displayMode="label" id="name" inputType="text" width="120" headerValue="성명"></w2:column>
+										<w2:column displayMode="label" id="email" inputType="text" width="200" headerValue="이메일"></w2:column>
+										<w2:column displayMode="label" id="role" inputType="text" width="100" headerValue="역할"></w2:column>
+										<w2:column displayMode="label" id="created_at" inputType="text" width="150" headerValue="생성일"
+											displayFormat="yyyy-MM-dd HH:mm"></w2:column>
+									</w2:row>
+								</w2:gBody>
+							</w2:gridView>
+							<xf:group adaptiveThreshold="" class="gvwbox" id="" style=""></xf:group>
+							<xf:group class="pglbox" id="">
+								<w2:pageList class="pgl" displayButtonType="display" displayFormat="#" id="pageList2" pageSize="10" pagingType="0"
+									style=""></w2:pageList>
+							</xf:group>
+							<xf:group class="btnbox" id="" style="">
+								<xf:group class="rt" id="" style="">
+									<xf:trigger class="btn_cm" id="" style="" type="button">
+										<xf:label><![CDATA[업무버튼]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm" id="" style="" type="button">
+										<xf:label><![CDATA[업무버튼]]></xf:label>
+									</xf:trigger>
+									<w2:textbox class="bar_btndiv" id="" label="" style=""></w2:textbox>
+									<xf:trigger class="btn_cm pt" id="" style="" type="button">
+										<xf:label><![CDATA[저장]]></xf:label>
+									</xf:trigger>
+									<xf:trigger class="btn_cm " id="" style="" type="button">
+										<xf:label><![CDATA[삭제]]></xf:label>
+									</xf:trigger>
+								</xf:group>
+							</xf:group>
+						</xf:group>
+					</xf:group>
+
+					<xf:group id="grp_moduleMarketplace" style="">
+						<xf:group class="marketplace-wrapper">
+							<xf:group class="marketplace-container">
+								<xf:group class="marketplace-section left">
+									<xf:group class="marketplace-section-header">
+										<w2:textbox tagname="h2" label="인기 모듈"></w2:textbox>
+										<xf:group class="search-box">
+											<w2:input class="w2_input" placeholder="모듈 검색..."></w2:input>
+											<xf:trigger class="btn_search" type="button" label="검색"></xf:trigger>
+										</xf:group>
+									</xf:group>
+									<xf:group class="module-list">
+										<xf:group class="module-card">
+											<xf:group class="module-icon chat">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round"
+														d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+												</svg>
+											</xf:group>
+											<xf:group class="module-card-info">
+												<w2:textbox class="title" label="실시간 상담"></w2:textbox>
+												<w2:textbox class="desc" label="AI 기반 실시간 상담 솔루션입니다."></w2:textbox>
+												<w2:textbox class="price" label="₩89,000"></w2:textbox>
+											</xf:group>
+											<xf:group class="module-card-actions">
+												<w2:textbox class="rating" label="★★★★☆ 4.5"></w2:textbox>
+												<xf:trigger class="btn-secondary" type="button" label="자세히 보기"></xf:trigger>
+											</xf:group>
+										</xf:group>
+										<xf:group class="module-card">
+											<xf:group class="module-icon docs">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round"
+														d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+												</svg>
+											</xf:group>
+											<xf:group class="module-card-info">
+												<w2:textbox class="title" label="동시문서 워크플로우"></w2:textbox>
+												<w2:textbox class="desc" label="여러 사용자가 함께 문서를 편집합니다."></w2:textbox>
+												<w2:textbox class="price" label="₩125,000"></w2:textbox>
+											</xf:group>
+											<xf:group class="module-card-actions">
+												<w2:textbox class="rating" label="★★★★★ 4.8"></w2:textbox>
+												<xf:trigger class="btn-primary" type="button" label="구독하기"></xf:trigger>
+											</xf:group>
+										</xf:group>
+										<xf:group class="module-card">
+											<xf:group class="module-icon sign">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round"
+														d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+												</svg>
+											</xf:group>
+											<xf:group class="module-card-info">
+												<w2:textbox class="title" label="원터치 결재"></w2:textbox>
+												<w2:textbox class="desc" label="복잡한 결재 과정을 단순화합니다."></w2:textbox>
+												<w2:textbox class="price" label="₩149,000"></w2:textbox>
+											</xf:group>
+											<xf:group class="module-card-actions">
+												<w2:textbox class="rating" label="★★★★★ 4.9"></w2:textbox>
+												<xf:trigger class="btn-primary" type="button" label="구독하기"></xf:trigger>
+											</xf:group>
+										</xf:group>
+									</xf:group>
+								</xf:group>
+
+								<xf:group class="marketplace-section right">
+									<w2:textbox tagname="h2" label="인기 모듈"></w2:textbox>
+									<xf:group class="filter-tabs">
+										<xf:trigger class="active" type="button" label="전체"></xf:trigger>
+										<xf:trigger type="button" label="소통"></xf:trigger>
+										<xf:trigger type="button" label="문서"></xf:trigger>
+										<xf:trigger type="button" label="보안"></xf:trigger>
+									</xf:group>
+									<xf:group class="marketplace-grid">
+										<xf:group class="grid-module-card">
+											<xf:group class="grid-module-card-header">
+												<xf:group class="grid-icon video">
+													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+														<path
+															d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
+													</svg>
+												</xf:group>
+												<w2:textbox class="title" label="화상회의"></w2:textbox>
+											</xf:group>
+											<w2:textbox class="rating" label="★★★☆☆ 3.8"></w2:textbox>
+											<w2:textbox class="price" label="₩299,000"></w2:textbox>
+											<xf:trigger class="btn-primary" type="button" label="구독하기"></xf:trigger>
+										</xf:group>
+										<xf:group class="grid-module-card">
+											<xf:group class="grid-module-card-header">
+												<xf:group class="grid-icon esign">
+													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd"
+															d="M8.25 3.75A2.25 2.25 0 006 6v1.5h8.25a1.5 1.5 0 011.5 1.5v3.75a3 3 0 11-6 0v-2.25A.75.75 0 0110.5 9h-2.25a.75.75 0 01-.75-.75v-1.5A2.25 2.25 0 006 4.5h.75a.75.75 0 01.75.75v.75h.75a.75.75 0 01.75.75v.75h.75a.75.75 0 01.75.75V9h.75a.75.75 0 01.75.75v1.5a3 3 0 106 0v-3.75a1.5 1.5 0 00-1.5-1.5H12V6a2.25 2.25 0 00-2.25-2.25H8.25z"
+															clip-rule="evenodd" />
+													</svg>
+												</xf:group>
+												<w2:textbox class="title" label="전자서명"></w2:textbox>
+											</xf:group>
+											<w2:textbox class="rating" label="★★★★★ 4.7"></w2:textbox>
+											<w2:textbox class="price" label="₩139,000"></w2:textbox>
+											<xf:trigger class="btn-primary" type="button" label="구독하기"></xf:trigger>
+										</xf:group>
+										<xf:group class="grid-module-card">
+											<xf:group class="grid-module-card-header">
+												<xf:group class="grid-icon excel">
+													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+														<path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm2 2v2h12V5H4zm0 4v2h12V9H4zm0 4v2h12v-2H4z" />
+													</svg>
+												</xf:group>
+												<w2:textbox class="title" label="엑셀연동"></w2:textbox>
+											</xf:group>
+											<w2:textbox class="rating" label="★★★★☆ 4.2"></w2:textbox>
+											<w2:textbox class="price" label="₩249,000"></w2:textbox>
+											<xf:trigger class="btn-primary" type="button" label="구독하기"></xf:trigger>
+										</xf:group>
+										<xf:group class="grid-module-card">
+											<xf:group class="grid-module-card-header">
+												<xf:group class="grid-icon help">
+													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd"
+															d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
+															clip-rule="evenodd" />
+													</svg>
+												</xf:group>
+												<w2:textbox class="title" label="헬프데스크"></w2:textbox>
+											</xf:group>
+											<w2:textbox class="rating" label="★★★★☆ 4.6"></w2:textbox>
+											<w2:textbox class="price" label="₩179,000"></w2:textbox>
+											<xf:trigger class="btn-primary" type="button" label="구독하기"></xf:trigger>
+										</xf:group>
+									</xf:group>
+								</xf:group>
+
+							</xf:group>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
