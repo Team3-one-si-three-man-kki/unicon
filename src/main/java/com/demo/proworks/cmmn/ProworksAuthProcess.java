@@ -73,12 +73,12 @@ public class ProworksAuthProcess {
         
         
         if (!authService.hasRole(proWorksUserHeader, requiredRole)) {
-            AppLog.debug("권한 부족 - 사용자: " + proWorksUserHeader.getRole() 
-                   + ", 필요: " + requiredRole);
+//            AppLog.debug("권한 부족 - 사용자: " + proWorksUserHeader.getRole() 
+//                   + ", 필요: " + requiredRole);
         throw new UserException("ERR.USER.0003");
         }
         AppLog.debug("권한 체크 성공 - svcId: " + svcId + 
-                ", 사용자권한: " + proWorksUserHeader.getRole());
+                ", 사용자권한: " );
     }
     
    private String getRequiredRoleForProWorksService(String svcId) {
