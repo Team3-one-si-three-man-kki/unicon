@@ -4,14 +4,17 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import com.demo.proworks.user.service.SignupService;
 import com.demo.proworks.user.vo.UserSignupVo;
 import com.demo.proworks.user.service.impl.UserServiceImpl;
 import com.demo.proworks.user.vo.UserVo;
+import com.demo.proworks.util.PasswordEncryptUtil;
+import com.inswave.elfw.log.AppLog;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.tenant.vo.TenantVo;
 import com.demo.proworks.tenant.service.TenantService;
@@ -30,8 +33,8 @@ public class SignupServiceImpl implements SignupService {
     @Autowired
     private TenantService tenantService; // 인터페이스로 주입
     
-   // @Autowired
-    //private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncryptUtil passwordEncryptUtil;
     
     /**
      * 회원가입 처리 메인 메서드
@@ -61,6 +64,7 @@ public class SignupServiceImpl implements SignupService {
             System.out.println("테넌트 생성 완료 - ID: " + tenant.getTenantId());
             
             // 5. User 정보 생성 및 저장 (생성된 tenant_id 사용)
+            signupRequest.setPassword(passwordEncryptUtil.encryptPassword(signupRequest.getPassword()));
             UserVo user = createUserInfo(signupRequest, tenant.getTenantId());
             userService.insertUser(user); // AUTO_INCREMENT ID가 user 객체에 설정됨
             
@@ -244,4 +248,5 @@ public class SignupServiceImpl implements SignupService {
     private String getCurrentDateTimeString() {
         return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
+    
 }
