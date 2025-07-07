@@ -1,0 +1,24 @@
+{"loginCustomInfo": 
+	{
+		
+		  "backgroundImage": "/InsWebApp/ui/images/compmany.png",
+		  "logo": "/InsWebApp/ui/images/logo.png",
+		  "logoSize": "80",
+		  "mainTitle": "우리 회사에 오신 것을 환영합니다",
+		  "mainTitleColor": "#ffffff",
+		  "mainTitleSize": "32",
+		  "mainTitleFont": "700",
+		  "subTitle": "최고의 비즈니스 솔루션을 경험하세요",
+		  "subTitleColor": "#e5e7eb",
+		  "subTitleSize": "18",
+		  "subTitleFont": "400",
+		  "extraTitle": "혁신적인 기술로 함께하는 미래",
+		  "extraTitleColor": "#d1d5db",
+		  "extraTitleSize": "16",
+		  "extraTitleFont": "300",
+		  "overlayOpacity": "50",
+		  "overlayColor": "black",
+		  "primaryColor": "#667eea",
+		  "accentColor" : "#ffffff"
+		}
+}

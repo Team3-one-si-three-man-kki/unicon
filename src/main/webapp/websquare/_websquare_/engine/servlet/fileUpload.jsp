@@ -55,7 +55,7 @@ if(ref == null || ref.equals("") || param == null || param.equals("")) {
                 elem.textContent = str;
             }
         } catch (e) {
-            console.error(e);
+            opener.WebSquare.exception.printStackTrace(e);
         }
     }
 	

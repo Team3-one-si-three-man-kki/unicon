@@ -508,9 +508,9 @@
     };
 
     scwin.setImgURL = function() {
-        scwin.headerURL = "url(" + "'" + WebSquare.baseURI + "/_websquare_/uiplugin/grid/upload/images/bg_header.gif" + "')" + "repeat-x left top";
-        scwin.titleURL = "url(" + "'" + WebSquare.baseURI + "/_websquare_/uiplugin/grid/upload/images/bul_title.gif" + "')" + "no-repeat 11px 6px";
-        scwin.dotURL = "url(" + "'" + WebSquare.baseURI + "/_websquare_/uiplugin/grid/upload/images/dot.gif" + "')" + "no-repeat left center";
+        scwin.headerURL = "url(" + "'" + WebSquare.baseURI + "_websquare_/uiplugin/grid/upload/images/bg_header.gif" + "')" + "repeat-x left top";
+        scwin.titleURL = "url(" + "'" + WebSquare.baseURI + "_websquare_/uiplugin/grid/upload/images/bul_title.gif" + "')" + "no-repeat 11px 6px";
+        scwin.dotURL = "url(" + "'" + WebSquare.baseURI + "_websquare_/uiplugin/grid/upload/images/dot.gif" + "')" + "no-repeat left center";
 
         bg_header.setStyle("background", scwin.headerURL);
         bul_title.setStyle("background", scwin.titleURL);

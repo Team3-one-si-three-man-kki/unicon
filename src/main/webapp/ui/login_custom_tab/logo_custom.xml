@@ -14,8 +14,7 @@
         </xf:model>
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
-        <script lazy="false" type="text/javascript"><![CDATA[
-scwin.onpageload = function () {
+        <script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
     scwin.loginCustomInfo = aliasDataMap1.getObj();
     scwin.addSlider();
     scwin.addUpload();
@@ -28,7 +27,6 @@ scwin.addUpload = function () {
     // fileInput.multiple = true;         // 다중 선택 허용 (옵션)
     fileInput.style.display = 'none'; // input 자체는 숨기기 (label 클릭으로 대체)
     logoGroup.appendChild(fileInput);
-
 
     // 2. 업로드 아이콘(w2:anchor) 클릭 이벤트 연결
     fileNameDisplay.bind("onclick", function () {

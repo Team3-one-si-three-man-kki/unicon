@@ -14,6 +14,7 @@ Thumbs.db
 #project
 /target/
 /src/main/webapp/_wpack_/
+/src/main/webapp/websquare/_websquare_/
 
 # WebSquare 전용
 /WebContent/resource/build/

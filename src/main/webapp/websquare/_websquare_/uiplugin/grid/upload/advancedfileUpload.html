@@ -18,6 +18,8 @@
     var gridID = "";
     var maxFileSize = -1;
     var useModalDisable = "";
+    var frameModal = "";
+    var frameId = "";
     var useMaxByteLength = "";
     var dateFormat = "";
     var byteCheckEncoding = "";
@@ -103,7 +105,7 @@
                 elem.textContent = str;
             }
         } catch (e) {
-            console.error(e);
+            opener.WebSquare.exception.printStackTrace(e);
         }
     }
 
@@ -149,7 +151,24 @@
                     }
                 }
             }
-            if (uploadInfo.useModalDisable == "true") {
+            if (uploadInfo.frameModal == "true" && uploadInfo.frameId) {
+                frameId = uploadInfo.frameId;
+                var modalFrame = opener.WebSquare.util.getComponentById(uploadInfo.frameId);
+                if (modalFrame) {
+                    var info = {
+                        className : "w2modal_excelUploadPopup",
+                        popupModal : true,
+                        stackComponents : {
+                            popup : {
+                                id:frameId
+                            }
+                        }
+                    };
+                    modalFrame.showFrameModal(info);
+                    frameModal = "true"
+                }
+            }
+            if (uploadInfo.useModalDisable == "true" && frameModal != "true") {
                 opener.WebSquare.layer.showModal();
                 useModalDisable = "true";
             }
@@ -409,7 +428,9 @@
     }
 
     function doFinish() {
-        if (useModalDisable == "true") {
+        if (frameModal == "true") {
+            opener.WebSquare.layer._hideFrameModal(frameId);
+        } else if (useModalDisable == "true") {
             opener.WebSquare.layer.hideModal();
         }
     }
@@ -947,7 +968,7 @@
                 node2.style.width = processMsgWidth + "px";
 
                 document.body.appendChild(node2);
-                _safeInnerHTML(node2, "<iframe frameborder='0' scrolling='no'ß name='__processbarIFrame' style='position:absolute; width:" + processMsgWidth + "px; height:" + processMsgHeight + "px; top:0px; left:0px' src='" + processMsgURL + "'></iframe>");
+                _safeInnerHTML(node2, "<iframe frameborder='0' scrolling='no' name='__processbarIFrame' style='position:absolute; width:" + processMsgWidth + "px; height:" + processMsgHeight + "px; top:0px; left:0px' src='" + processMsgURL + "'></iframe>");
 
             } else {
                 var nTop = document.documentElement.scrollTop + document.documentElement.clientHeight / 2 - parseInt(processMsgHeight) / 2;
@@ -1055,7 +1076,7 @@
     }
 
     .wrap {
-        width: 444px;
+        width: 450px;
         min-height: 106px;
         border: 1px solid #b3b3b3;
     }
@@ -1097,7 +1118,7 @@
 
     .content .filebox {
         padding: 8px 0 0 11px;
-        width: 408px;
+        width: 420px;
         height: 33px;
         border: 1px solid #d3d3d3;
         background: #f6f6f6;

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <WebSquare>
-    <convertPageXML value="true"/>
-    <wpack use="true">
+    <dataPrefix value="true"/>
+    <wpack>
         <contextRoot value="/"/>
         <srcExtension value="xml"/>
         <destExtension value="js"/>
         <destRoot value="_wpack_"/>
+        <excludePrefix value="__"/>
     </wpack>
     <allValue value="all" />
     <docType value="standard" />

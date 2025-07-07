@@ -36,7 +36,7 @@ function _safeInnerHTML(elem, str) {
             elem.textContent = str;
         }
     } catch (e) {
-        console.error(e);
+        opener.WebSquare.exception.printStackTrace(e, null, this);
     }
 }
 
