@@ -16,7 +16,7 @@
         	</w2:workflowCollection>
         	<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
         		target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
-        		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
+        		customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
         		abortTrigger="">
         	</xf:submission>
         	<w2:dataCollection baseNode="map">
@@ -43,27 +43,6 @@
         				<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
         				<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
         			</w2:keyInfo>
-        			<w2:data xmlns="" use="true">
-        				<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
-        				<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
-        				<logoSize><![CDATA[80]]></logoSize>
-        				<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
-        				<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
-        				<mainTitleSize><![CDATA[32]]></mainTitleSize>
-        				<mainTitleFont><![CDATA[700]]></mainTitleFont>
-        				<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
-        				<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
-        				<subTitleSize><![CDATA[18]]></subTitleSize>
-        				<subTitleFont><![CDATA[400]]></subTitleFont>
-        				<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
-        				<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
-        				<extraTitleSize><![CDATA[16]]></extraTitleSize>
-        				<extraTitleFont><![CDATA[300]]></extraTitleFont>
-        				<overlayOpacity><![CDATA[50]]></overlayOpacity>
-        				<overlayColor><![CDATA[black]]></overlayColor>
-        				<primaryColor><![CDATA[#667eea]]></primaryColor>
-        				<accentColor><![CDATA[#ffffff]]></accentColor>
-        			</w2:data>
         		</w2:dataMap>
         		<w2:dataMap baseNode="map" id="dma_login">
         			<w2:keyInfo>
@@ -445,7 +424,7 @@ scwin.login_submitdone = function (e) {
     		style="display: flex; flex-direction: row; align-items: stretch; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
 
     		<xf:group id="leftPreview" class="leftPreview"
-    			style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;background-image: url("/InsWebApp/ui/images/compmany.png");'>
+    			style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;'>
 
     			<!-- 가운데 텍스트 콘텐츠 -->
     			<xf:group id="textContent"
@@ -460,7 +439,7 @@ scwin.login_submitdone = function (e) {
     				<w2:textbox id="extraTitle" label="추가입니다."
     					style="display: block;" ref="data:dm_loginCustomInfo.extraTitle"/>
     			</xf:group>
-    			<xf:image src="/InsWebApp/ui/images/logo.png" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;' id="logoImage"></xf:image>
+    			<xf:image src="" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;' id="logoImage"></xf:image>
     		</xf:group>
 
     		<!-- 오른쪽 로그인 영역 -->
