@@ -15,11 +15,21 @@
 		<w2:publicInfo method="" />
 		<script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
-    scwin.addSlider();
-    scwin.addColor();
-    scwin.addUpload();
-    scwin.loginCustomInfo = aliasDataMap1.getObj();
 
+
+};
+
+scwin.setDataAndRender = function () {
+    try {
+        scwin.loginCustomInfo = aliasDataMap1.getObj();
+
+        scwin.addColor("overlayColor", colorGroup, scwin.loginCustomInfo.get("overlayColor"));
+        scwin.addSlider(scwin.loginCustomInfo.get("overlayOpacity"));
+        scwin.addUpload();
+
+    } catch (e) {
+        console.error("데이터를 이용한 UI 렌더링 중 오류가 발생했습니다.", e);
+    }
 };
 
 scwin.addUpload = function () {
@@ -65,7 +75,7 @@ scwin.addUpload = function () {
     });
 }
 
-scwin.addSlider = function () {
+scwin.addSlider = function (opacity) {
     // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
 
     // input 엘리먼트 생성
@@ -74,7 +84,7 @@ scwin.addSlider = function () {
     slider.id = "customSlider";
     slider.min = "0";
     slider.max = "100";
-    slider.value = "50";
+    slider.value = opacity;
     slider.step = "1";
     slider.style.width = "100%";
 
@@ -89,20 +99,22 @@ scwin.addSlider = function () {
     opacity_text.setValue("오버레이 투명도 : " + slider.value + "%");
 }
 
-scwin.addColor = function () {
+scwin.addColor = function (id, colorGroup, color1) {
     // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
+    console.log(id, color1);
 
     // input 엘리먼트 생성
     var color = document.createElement("input");
     color.type = "color";
     color.style.width = "100%";
     color.style.height = "35px";
-    color.id = "customColor";
+    color.id = id;
+    color.value = color1
 
     // 이벤트 바인딩 예시
     color.addEventListener("input", function () {
         scwin.loginCustomInfo.set("overlayColor", color.value);
-        console.log("123",color.value);
+        console.log("123", color.value);
     });
 
     // DOM에 추가
