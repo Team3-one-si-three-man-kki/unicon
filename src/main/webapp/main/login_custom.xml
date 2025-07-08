@@ -8,7 +8,6 @@
         <w2:MSA/>
         <xf:model>
         	<w2:dataCollection baseNode="map">
-
         		<w2:dataMap id="dm_loginCustomInfo" ev:onmodelchange="scwin.dm_loginCustomInfo_onmodelchange">
         			<w2:keyInfo>
         				<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
@@ -31,27 +30,6 @@
         				<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
         				<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
         			</w2:keyInfo>
-        			<w2:data xmlns="" use="false">
-        				<backgroundImage><![CDATA[/InsWebApp/ui/images/compmany.png]]></backgroundImage>
-        				<logo><![CDATA[/InsWebApp/ui/images/logo.png]]></logo>
-        				<logoSize><![CDATA[80]]></logoSize>
-        				<mainTitle><![CDATA[우리 회사에 오신 것을 환영합니다]]></mainTitle>
-        				<mainTitleColor><![CDATA[#ffffff]]></mainTitleColor>
-        				<mainTitleSize><![CDATA[32]]></mainTitleSize>
-        				<mainTitleFont><![CDATA[700]]></mainTitleFont>
-        				<subTitle><![CDATA[최고의 비즈니스 솔루션을 경험하세요]]></subTitle>
-        				<subTitleColor><![CDATA[#e5e7eb]]></subTitleColor>
-        				<subTitleSize><![CDATA[18]]></subTitleSize>
-        				<subTitleFont><![CDATA[400]]></subTitleFont>
-        				<extraTitle><![CDATA[혁신적인 기술로 함께하는 미래]]></extraTitle>
-        				<extraTitleColor><![CDATA[#d1d5db]]></extraTitleColor>
-        				<extraTitleSize><![CDATA[16]]></extraTitleSize>
-        				<extraTitleFont><![CDATA[300]]></extraTitleFont>
-        				<overlayOpacity><![CDATA[50]]></overlayOpacity>
-        				<overlayColor><![CDATA[black]]></overlayColor>
-        				<primaryColor><![CDATA[#667eea]]></primaryColor>
-        				<accentColor><![CDATA[#ffffff]]></accentColor>
-        			</w2:data>
         		</w2:dataMap>
         		<w2:dataMap baseNode="map" id="dm_loginPage_request">
         			<w2:keyInfo>
@@ -75,7 +53,7 @@
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
 };
-scwin.dm_loginCustomInfo = dm_loginCustomInfo;
+// scwin.dm_loginCustomInfo = dm_loginCustomInfo;
 
 // 데이터 업데이트 함수
 scwin.updateCustomData = function (key, value) {
@@ -99,22 +77,15 @@ scwin.loginPage_onpageframeload = function () {
 };
 
 scwin.loadPreview_submitdone = function (e) {
+    // var elHeader = e.responseJSON.elHeader;
+    // if (elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
+    //     $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+    //     return false;
+    // }
+
     var elData = e.responseJSON
     dm_loginCustomInfo.setJSON(elData)
-    /*
-    var elHeader  = e.responseJSON.elHeader;
-    if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-        return false;
-    }
-    */
-    var dataToPass = {
-        mode: "preview",
-        tenantId: "inswave",
-        loginCustomInfo: elData
-    };
 
-    // loginPage.getWindow().scwin.setInitData(dataToPass);
     tabControl1.getWindow().scwin.setDataAndRender();
     loginPage.getWindow().scwin.applyCustomization(elData);
 };
@@ -174,7 +145,7 @@ scwin.sbm_saveConfig_submitdone = function (e) {
     				</xf:group>
     			</xf:group>
     			<xf:group class="" id="" style="" localeRef="">
-    				<w2:pageFrame style="" id="loginPage" src="/InsWebApp/main/unicon_login_page.xml" ev:onpageframeload="scwin.loginPage_onpageframeload"></w2:pageFrame>
+    				<w2:pageFrame style="" id="loginPage" src="/InsWebApp/main/unicon_login_page.xml?mode=preview" ev:onpageframeload="scwin.loginPage_onpageframeload"></w2:pageFrame>
     			</xf:group>
     		</xf:group>
     	</xf:group>

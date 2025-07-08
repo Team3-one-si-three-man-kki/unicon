@@ -68,22 +68,17 @@ scwin.onpageload = function () {
 
     // 엔터키 이벤트 바인딩
     scwin.bindEnterKeyEvents();
-
-    $c.sbm.execute(loadCustom);
-    // 4. 페이지 모드를 확인하여 역할을 결정합니다.
-    // var mode = $p.getParameter("mode");
-    // if (mode !== "preview") {
-    //     // '독립 실행' 모드: 스스로 DB 조회를 실행합니다.
-    //     $p.executeSubmission("sbm_getLoginDesign");
-    // }
-    // '미리보기' 모드: 아무것도 하지 않고 부모가 데이터를 주입해주길 기다립니다.
+    
+    var mode = $p.getParameter("mode");
+    console.log("mode",mode);
+    if (mode !== "preview") {
+        $c.sbm.execute(loadCustom);
+    }
 };
 
-// 5. '미리보기' 모드일 때 부모가 호출할 함수입니다.
+//미리보기' 모드일 때 부모가 호출할 함수
 scwin.applyCustomization = function (data) {
-    // 부모로부터 받은 데이터로 자신의 로컬 데이터맵을 업데이트합니다.
-    console.log("자식데이터 변경!!!")
-    dm_loginCustomInfo.setJSON(data);
+    // 부모로부터 받은 데이터로 자신의 로컬 데이터맵을 업데이트
     scwin.loadCustomization(data);
 };
 
@@ -92,16 +87,10 @@ scwin.overlayElement = null;
 scwin.loadCustomization = function (c) {
     if (!c) return;
 
-    console.log(c)
-    console.log("값 확인")
-    // 배경 이미지 적용
-    // var bgGroup = $p.getComponentById("leftPreview");
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
     }
 
-    // 로고
-    // var logoImage = $p.getComponentById("logoImage");
     if (logoImage && c.logo) {
         logoImage.setSrc(c.logo);
         logoImage.setStyle("width", c.logoSize);
@@ -115,14 +104,11 @@ scwin.loadCustomization = function (c) {
 
     // 텍스트들
     const setLabelStyle = function (id, text, color, size, weight) {
-        // var el = $p.getComponentById(id);
-        console.log("텍스트 변경!!!");
         if (!id) return;
         id.setLabel(text);
         id.setStyle("color", color);
         id.setStyle("fontSize", size);
         id.setStyle("fontWeight", weight);
-        console.log(id, weight)
     };
 
     setLabelStyle(mainTitle, c.mainTitle, c.mainTitleColor, c.mainTitleSize, c.mainTitleFont);
@@ -139,7 +125,6 @@ scwin.loadCustomization = function (c) {
         scwin.overlayElement.style.bottom = 0;
         scwin.overlayElement.style.zIndex = 1;
 
-        // var container = $p.getComponentById("leftPreview").getElement();
         if (leftPreview) {
             leftPreview.appendChild(scwin.overlayElement);
         }
@@ -295,9 +280,6 @@ scwin.redirectToMainPage = function () {
 
 // 비밀번호 보기/숨기기 토글
 scwin.togglePasswordVisibility = function () {
-    // var inp_password = $p.getComponentById("inp_password");
-    // var btn_password_toggle = $p.getComponentById("btn_password_toggle");
-
     if (inp_password.getInputType() === "password") {
         inp_password.setInputType("text");
         btn_password_toggle.setText("비밀번호 숨기기");
@@ -332,21 +314,6 @@ scwin.loadCustom_submitdone = function (e) {
     scwin.loadCustomization(elData);
 };
 
-scwin.setInitData = function (receivedData) {
-    console.log("부모로부터 데이터 수신 성공:", receivedData);
-
-    var mode = receivedData.mode;
-    var tenantId = receivedData.tenantId;
-
-    console.log("mode:", mode); // "preview"
-    console.log("tenantId:", tenantId); // "inswave"
-
-    // 이 함수 안에서 전달받은 파라미터를 사용하는 로직을 시작하면 됩니다.
-    if (mode === "preview") {
-        // ... 미리보기 관련 처리
-        console.log(123123, "여기다")
-    }
-}
 scwin.login = function (e) {
     $c.sbm.execute(login);
 };
