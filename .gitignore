@@ -36,7 +36,6 @@ Thumbs.db
 .cache/
 .temporary/
 output/
-dist/
 build/
 webpack-dist/
 webpack-temp/

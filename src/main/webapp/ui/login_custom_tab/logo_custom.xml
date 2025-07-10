@@ -16,7 +16,7 @@
         <w2:publicInfo method=""/>
         <script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
     scwin.loginCustomInfo = aliasDataMap1.getObj();
-    scwin.addSlider();
+    scwin.addSlider(scwin.loginCustomInfo.get("logoSize"));
     scwin.addUpload();
 };
 scwin.addUpload = function () {
@@ -60,7 +60,7 @@ scwin.addUpload = function () {
     });
 }
 
-scwin.addSlider = function () {
+scwin.addSlider = function (size) {
     // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
 
     // input 엘리먼트 생성
@@ -70,6 +70,7 @@ scwin.addSlider = function () {
     slider.min = "40";
     slider.max = "120";
     slider.step = "1";
+    slider.value = size;
     slider.style.width = "100%";
 
     // 이벤트 바인딩 예시
