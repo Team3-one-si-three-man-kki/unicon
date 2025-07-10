@@ -31,10 +31,10 @@
 				replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
 				ev:submitdone="scwin.sbm_createSession_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/SessionModuleListIns.pwkjson" method="post"
+			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/TNU0002SessionModuleListIns.pwkjson" method="post"
 				mediatype="application/json" ref='data:json,{"id":"dlt_sessionModules","key":"sessionModuleVoList.sessionModuleVoList"}' target=""
-				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone=""
-				ev:submiterror="" abortTrigger="">
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_createSessionModules_submitdone"
+				ev:submiterror="scwin.sbm_createSessionModules_submiterror" abortTrigger="">
 			</xf:submission>
 		</xf:model>
 		<w2:layoutInfo />
@@ -44,7 +44,54 @@ scwin.onpageload = function () {
     // 세션 정보 담을 공간
     scwin.sessionData = {};
 
+    // 초대 링크와 만료일을 미리 생성해서 저장
+    scwin.sessionData.generatedInfo = {
+        inviteLink: "https://modulink.com/join/" + scwin.generateRandomId(),
+        linkExpiry: null
+    };
+
     scwin.step1_onclick();
+};
+
+// 종료시간 기준으로 만료일 계산 함수
+scwin.calculateExpiry = function (endTime) {
+    if (!endTime) {
+        return null;
+    }
+
+    var endDate;
+
+    // YYYYMMDDHHMM 형식 처리
+    if (typeof endTime === 'string' && endTime.length === 12) {
+        var year = endTime.substring(0, 4);
+        var month = endTime.substring(4, 6);
+        var day = endTime.substring(6, 8);
+        var hour = endTime.substring(8, 10);
+        var minute = endTime.substring(10, 12);
+
+        // ISO 형식으로 변환
+        var isoString = year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':00';
+        endDate = new Date(isoString);
+    } else {
+        // 다른 형식은 기본 변환 시도
+        endDate = new Date(endTime);
+    }
+
+    if (isNaN(endDate.getTime())) {
+        return null;
+    }
+
+    // 종료시간에서 6시간 추가
+    var expiry = new Date(endDate.getTime() + 6 * 60 * 60 * 1000);
+
+    var result = expiry.getFullYear() + '-' +
+        String(expiry.getMonth() + 1).padStart(2, '0') + '-' +
+        String(expiry.getDate()).padStart(2, '0') + ' ' +
+        String(expiry.getHours()).padStart(2, '0') + ':' +
+        String(expiry.getMinutes()).padStart(2, '0') + ':' +
+        String(expiry.getSeconds()).padStart(2, '0');
+
+    return result;
 };
 
 scwin.setScreen = function (idx) {
@@ -60,7 +107,7 @@ scwin.setScreen = function (idx) {
         step2.addClass("on");
         step3.removeClass("on");
         step4.removeClass("on");
-        fr_session_making_process.setSrc("/InsWebApp/main/layout-designer.xml");
+        fr_session_making_process.setSrc("/InsWebApp/main/layout-designer2.xml");
     } else if (idx == 3) {
         step1.removeClass("on");
         step2.removeClass("on");
@@ -96,71 +143,78 @@ scwin.step4_onclick = function (e) {
 // 1단계에서 넘겨받은 데이터 저장 함수
 scwin.setSessionInfo = function (data) {
     scwin.sessionData.sessionInfo = data;
-    console.log("step1 데이터", data);
+    // 종료시간 기준으로 링크 만료시간 계산
+    var linkExpiry = scwin.calculateExpiry(data.end_time);
+    scwin.sessionData.generatedInfo.linkExpiry = linkExpiry;
 }
 
 // 2단계에서 넘겨받은 데이터 저장 함수
 scwin.setLayoutConfig = function (layoutData) {
     scwin.sessionData.layoutConfig = layoutData;
-    console.log("2단계 데이터 저장:", layoutData);
 }
 
 // 3단계에서 넘겨받은 데이터 저장 함수
 scwin.setInviteInfo = function (inviteData) {
     scwin.sessionData.inviteInfo = inviteData;
-    console.log("3단계 데이터 저장:", inviteData);
 };
 
-// 최종 세션 생성 함수
-scwin.saveAllSessionData = function () {
-    console.log("=== 최종 저장 시작 ===");
-    console.log("원본 세션 데이터:", scwin.sessionData);
-
+// 페이지 이동 로직 -> 트러블 슈팅 : wframe에 의한 페이지 이동의 제한
+scwin.navigateToLayout = function (sessionId) {
+    // -----sessionId를 localstorage에 저장---- -> 여러가지 해봤는데 제일 안전한 방법
     try {
-        // 날짜 형식 변환
-        var startTime = scwin.sessionData.sessionInfo.start_time;
-        var linkExpiry = scwin.sessionData.sessionInfo.link_expiry;
-
-        // 날짜가 없으면 기본값 설정
-        if (!startTime) {
-            startTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        localStorage.setItem('currentSessionId', sessionId);
+    } catch(e) {
+        // localStorage 사용 불가 시 무시
+    }
+    
+    try {
+        // sessionId 없이 페이지 이동 (넘어가는 페이지에서 sessionId를 localStorage에서 읽어옴)
+        if (typeof $p !== 'undefined' && typeof $p.url === 'function') {
+            $p.url("/InsWebApp/main/layout-load2.xml");
+            return;
         }
-        if (!linkExpiry) {
-            linkExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+    } catch (error) {
+        alert("페이지 이동에 실패했습니다. 수동으로 이동해주세요.\nSession ID: " + sessionId);
+    }
+};
+
+
+// 최종적인 세션 생성 함수
+
+scwin.saveAllSessionData = function (callback) {
+    try {
+        var startTimeRaw = scwin.sessionData.sessionInfo.start_time;
+        var endTimeRaw = scwin.sessionData.sessionInfo.end_time;
+        var inviteLink = scwin.sessionData.generatedInfo.inviteLink;
+        var linkExpiry = scwin.sessionData.generatedInfo.linkExpiry;
+
+        // 날짜 형식 변환 함수
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr || dateTimeStr.length !== 12) {
+                return dateTimeStr;
+            }
+            var year = dateTimeStr.substring(0, 4);
+            var month = dateTimeStr.substring(4, 6);
+            var day = dateTimeStr.substring(6, 8);
+            var hour = dateTimeStr.substring(8, 10);
+            var minute = dateTimeStr.substring(10, 12);
+            return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':00';
         }
 
-        // 날짜 형식 변환 (202507080000 → 2025-07-08 00:00:00)
-        if (startTime && startTime.length === 12) {
-            startTime = startTime.substring(0, 4) + '-' +
-                startTime.substring(4, 6) + '-' +
-                startTime.substring(6, 8) + ' ' +
-                startTime.substring(8, 10) + ':' +
-                startTime.substring(10, 12) + ':00';
-        }
+        // DB 저장용 날짜 형식으로 변환
+        var startTime = formatDateTime(startTimeRaw);
+        var endTime = formatDateTime(endTimeRaw);
 
-        var inviteLink = "https://modulink.com/join/" + scwin.generateRandomId();
-
-        // VO 필드명에 정확히 맞춰서 설정 (camelCase)
         dma_sessionData.set("name", scwin.sessionData.sessionInfo.name);
         dma_sessionData.set("usingDept", scwin.sessionData.sessionInfo.using_dept);
         dma_sessionData.set("startTime", startTime);
+        dma_sessionData.set("endTime", endTime);
         dma_sessionData.set("inviteLink", inviteLink);
-        dma_sessionData.set("linkExpiry", linkExpiry);  // 이게 중요! invite_link_expiry가 아님
+        dma_sessionData.set("linkExpiry", linkExpiry);
         dma_sessionData.set("createdBy", "1");
 
-        console.log("DataMap에 설정된 값들:");
-        console.log("- name:", dma_sessionData.get("name"));
-        console.log("- usingDept:", dma_sessionData.get("usingDept"));
-        console.log("- startTime:", dma_sessionData.get("startTime"));
-        console.log("- inviteLink:", dma_sessionData.get("inviteLink"));
-        console.log("- linkExpiry:", dma_sessionData.get("linkExpiry"));
-        console.log("- createdBy:", dma_sessionData.get("createdBy"));
-
-        // 디버깅 코드 추가
-        console.log("sessionInfo 체크:", scwin.sessionData.sessionInfo);
-        console.log("name 값:", scwin.sessionData.sessionInfo?.name);
-        console.log("using_dept 값:", scwin.sessionData.sessionInfo?.using_dept);
-
+        // submission 성공 후 콜백 실행하도록 currentCallback 저장
+        scwin.completionCallback = callback;
         $p.executeSubmission("sbm_createSession");
 
     } catch (error) {
@@ -175,50 +229,48 @@ scwin.generateRandomId = function () {
     return Math.random().toString(36).substr(2, 9);
 };
 
-// 세션 생성 성공 → session_id 받아서 모듈 저장
+// 세션 생성 성공 -> session_id 받아서 모듈 저장
 scwin.sbm_createSession_submitdone = function (e) {
-    console.log("세션 생성 성공:", e);
-
-    // 응답에서 session_id 추출 (여러 방법 시도)
+    console.log("세션 생성 성공");
+    
+    // 응답에서 sessionId 추출
     var sessionId = null;
-
+    
     try {
-        // 방법 1: responseJSON 직접 확인
-        if (e.responseJSON && e.responseJSON.sessionId) {
-            sessionId = e.responseJSON.sessionId;
+        if (e.responseJSON) {
+            sessionId = e.responseJSON.sessionId || e.responseJSON.id || e.responseJSON.session_id;
         }
-        // 방법 2: responseText 파싱
-        else if (e.responseText) {
+        
+        if (!sessionId && e.responseText) {
             var responseData = JSON.parse(e.responseText);
-            sessionId = responseData.sessionId;
+            sessionId = responseData.sessionId || responseData.id || responseData.session_id;
         }
-
-        console.log("추출된 sessionId:", sessionId);
-
+        
+        if (!sessionId && e.result) {
+            sessionId = e.result.sessionId || e.result.id || e.result.session_id;
+        }
+        
         if (!sessionId) {
             alert("세션 ID를 받지 못했습니다. 서버 응답을 확인해주세요.");
             return;
         }
 
+        // sessionId 저장 후 모듈 저장 진행
+        scwin.currentSessionId = sessionId;
+        scwin.saveSessionModules(sessionId);
+
     } catch (error) {
         console.error("sessionId 추출 오류:", error);
-        alert("세션 ID 추출 중 오류가 발생했습니다.");
-        return;
+        alert("세션 ID 추출 중 오류가 발생했습니다: " + error.message);
     }
-
-    // 모듈 데이터에 session_id 설정
-    scwin.saveSessionModules(sessionId);
 };
 
 // 모듈 저장 함수
 scwin.saveSessionModules = function (sessionId) {
-    console.log("모듈 저장 시작, sessionId:", sessionId);
-
     dlt_sessionModules.removeAll();
     var layoutConfig = scwin.sessionData.layoutConfig;
 
     if (!layoutConfig || layoutConfig.length === 0) {
-        console.log("저장할 모듈이 없습니다.");
         alert("세션이 생성되었지만 배치된 모듈이 없습니다.");
         return;
     }
@@ -228,19 +280,35 @@ scwin.saveSessionModules = function (sessionId) {
         dlt_sessionModules.setCellData(rowIndex, "sessionId", sessionId.toString());
         dlt_sessionModules.setCellData(rowIndex, "moduleId", item.moduleId.toString());
         dlt_sessionModules.setCellData(rowIndex, "sessionModuleConfig", item.sessionModuleConfig);
-
-        console.log("모듈 데이터 추가:", {
-            sessionId: sessionId,
-            moduleId: item.moduleId,
-            config: item.sessionModuleConfig
-        });
     });
 
-    // 서브미션 데이터 구조 확인
-    console.log("DataList 내용:", dlt_sessionModules.getAllJSON());
-
+    scwin.currentSessionId = sessionId;
     $p.executeSubmission("sbm_createSessionModules");
-};]]></script>
+};
+
+
+scwin.sbm_createSessionModules_submitdone = function (e) {
+    alert('세션 생성이 완료되었습니다!');
+    
+    var sessionId = scwin.currentSessionId;
+    
+    if (sessionId) {
+        // 콜백이 있으면 실행 (페이지 이동)
+        if (scwin.completionCallback && typeof scwin.completionCallback === 'function') {
+            scwin.completionCallback(sessionId);
+        } else {
+            // 콜백이 없으면 직접 이동
+            scwin.navigateToLayout(sessionId);
+        }
+    } else {
+        alert('세션 ID가 없어 페이지 이동할 수 없습니다.');
+    }
+};
+
+scwin.sbm_createSessionModules_submiterror = function (e) {
+    alert('모듈 배치 정보 저장 실패');
+};
+]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents"

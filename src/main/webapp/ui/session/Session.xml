@@ -362,8 +362,7 @@
 		
 		// 재조회
 		scwin.btn_search_onclick();
-	};
-]]></script>
+	};]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents " id="" style="">
@@ -485,22 +484,24 @@
     				<w2:textbox class="" id="" label=")" style=""></w2:textbox>
     			</xf:group>
 
-				<xf:group class="rt" id="" style="">
-					<xf:trigger class="btn_cm refresh" id="btn_reset" style="" type="button" localeRef="COMMON_BUTTON_00002"
-	    					ev:onclick="scwin.btn_reset_onclick">
-	    					<xf:label><![CDATA[초기화]]></xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm save" id="btn_save" style="" type="button" localeRef="COMMON_BUTTON_00003" ev:onclick="scwin.btn_save_onclick">
-	    					<xf:label><![CDATA[저장]]></xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm save" id="btn_edit" style="" type="button" localeRef="COMMON_BUTTON_00003" ev:onclick="scwin.btn_edit_onclick">
-						<xf:label><![CDATA[저장]]></xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm delete" ev:onclick="scwin.btn_delete_onclick" id="btn_delete" localeRef="COMMON_BUTTON_00004"
-						style="" type="button">
-						<xf:label><![CDATA[삭제]]></xf:label>
-					</xf:trigger>
-				</xf:group>
+                <xf:group class="rt" id="" style="">
+                	<xf:trigger class="btn_cm refresh" id="btn_reset" style="" type="button" localeRef="COMMON_BUTTON_00002"
+                		ev:onclick="scwin.btn_reset_onclick">
+                		<xf:label><![CDATA[초기화]]></xf:label>
+                	</xf:trigger>
+                	<xf:trigger class="btn_cm save" id="btn_save" style="" type="button" localeRef="COMMON_BUTTON_00003"
+                		ev:onclick="scwin.btn_save_onclick">
+                		<xf:label><![CDATA[저장]]></xf:label>
+                	</xf:trigger>
+                	<xf:trigger class="btn_cm save" id="btn_edit" style="" type="button" localeRef="COMMON_BUTTON_00003"
+                		ev:onclick="scwin.btn_edit_onclick">
+                		<xf:label><![CDATA[저장]]></xf:label>
+                	</xf:trigger>
+                	<xf:trigger class="btn_cm delete" ev:onclick="scwin.btn_delete_onclick" id="btn_delete" localeRef="COMMON_BUTTON_00004"
+                		style="" type="button">
+                		<xf:label><![CDATA[삭제]]></xf:label>
+                	</xf:trigger>
+                </xf:group>
 			</xf:group>
 			<xf:group class="tblbox" id="grp_sessionInfo" style="">
 				<xf:group adaptive="layout" adaptiveThreshold="600" class="w2tb tbl" id="" style="" tagname="table">
