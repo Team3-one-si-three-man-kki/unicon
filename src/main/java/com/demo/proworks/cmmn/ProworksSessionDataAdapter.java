@@ -3,6 +3,10 @@ package com.demo.proworks.cmmn;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.inswave.elfw.adapter.AdapterException;
 import com.inswave.elfw.exception.ElException;
@@ -12,6 +16,7 @@ import com.inswave.elfw.util.ElBeanUtils;
 
 import com.demo.proworks.emp.service.EmpService;
 import com.demo.proworks.emp.vo.EmpVo;
+import com.demo.proworks.jwt.JwtUtil;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
 
@@ -53,68 +58,43 @@ public class ProworksSessionDataAdapter extends SessionDataAdapter {
 	 * @return ProworksUserHeader
 	 * @throws AdapterException
 	 */
-	@Override
-	public ProworksUserHeader setSessionData(HttpServletRequest request, String id, Object... obj) throws AdapterException{
-		
-		// 로그인 후에 id 기반으로 세션 정보를 세팅하여 반환한다.		
-		ProworksUserHeader userHeader = new ProworksUserHeader();
-		userHeader.setUserId(id);
-		userHeader.setEmail(id);
+	  @Override
+    public ProworksUserHeader setSessionData(HttpServletRequest request, String id, Object... obj)
+            throws AdapterException {
 
-		// 사용자 세션을 UserHeader 에 설정 (샘플 예제)
-//		try{
-//			EmpService empService = (EmpService)ElBeanUtils.getBean("empServiceImpl");
-//			EmpVo empVo = new EmpVo();
-//
-//			empVo.setEmpno(Integer.parseInt(id));
-//			EmpVo resEmpVo = empService.selectEmp(empVo);
-//
-//			if( resEmpVo == null ) {
-//				throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
-//			}
-//			
-//			// 사용자 세션 설정
-//			userHeader.setTestDeptNo(resEmpVo.getDeptno());
-//			userHeader.setTestDeptName(resEmpVo.getDname());
-//		}catch(ElException e){
-//			AppLog.error("setSessionData Error1",e);
-//			throw e;
-//		}catch(Exception e){
-//			AppLog.error("setSessionData Error2",e);
-//			throw new AdapterException("EL.ERROR.LOGIN.0005");
-//		}
+        ProworksUserHeader userHeader = new ProworksUserHeader();
+        userHeader.setUserId(id);
+        userHeader.setEmail(id);
 
-try{
-			UserService userService = (UserService)ElBeanUtils.getBean("userServiceImpl");
-			UserVo userVo = new UserVo();
-			System.out.println("아이디야~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~세션어뎁터``"+id);
-			userVo.setEmail(id);
-			userVo.setTenantId((String)obj[1]);
-			System.out.println("이거 서비스로 넘어가는 vo"+userVo);
-			UserVo resuserVo = userService.loginUser(userVo);
+        try {
+            // 1) 사용자 정보 조회
+            UserService userService = (UserService) ElBeanUtils.getBean("userServiceImpl");
+            String tenantId = (String) obj[1];
 
-			if( resuserVo == null ) {
-				throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
-			}
-//			userHeader.setTenantId(resuserVo.getTenantId());
-//			userHeader.setIsActive(resuserVo.isIsActive());
-//			userHeader.setRole(resuserVo.getRole());
-			System.out.println("유저헤더 값이야 설정해놓은거"+userHeader);
-			
-			
-			
-			// 사용자 세션 설정
-			//userHeader.setTestDeptNo(resEmpVo.getDeptno());
-			//userHeader.setTestDeptName(resEmpVo.getDname());
-		}catch(ElException e){
-			AppLog.error("setSessionData Error1",e);
-			throw e;
-		}catch(Exception e){
-			AppLog.error("setSessionData Error2",e);
-			throw new AdapterException("EL.ERROR.LOGIN.0005");
-		}
-		
-		return userHeader;
-	}
+            UserVo userVo = new UserVo();
+            userVo.setEmail(id);
+            userVo.setTenantId(tenantId);
 
+            UserVo resUserVo = userService.loginUser(userVo);
+            if (resUserVo == null) {
+                throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
+            }
+
+            // 2) 세션 헤더에 추가 정보 설정
+            //userHeader.setTenantId(resUserVo.getTenantId());
+            //userHeader.setRole(resUserVo.getRole());
+            //userHeader.setIsActive(resUserVo.isIsActive());
+
+            AppLog.debug("세션 헤더 설정 완료 - " + userHeader);
+
+        } catch (ElException e) {
+            AppLog.error("setSessionData Error1", e);
+            throw e;
+        } catch (Exception e) {
+            AppLog.error("setSessionData Error2", e);
+            throw new AdapterException("EL.ERROR.LOGIN.0005");
+        }
+
+        return userHeader;
+    }
 }

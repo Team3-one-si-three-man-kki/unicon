@@ -152,18 +152,18 @@ export default {
     },
     "submission": {
       "processMsg": {
-        "@value": ""
+        "@value": "데이터 처리 중13..."
       },
       "showSubmissionTime": {
         "@value": "true"
       },
       "preSubmitFunction": {
-        "@value": ""
+        "@value": "$c.sbm.__preSubmitFunction"
       },
       "callbackSubmitFunction": {
         "@value": ""
       },
-      "requestID": {
+      "errorHandler": {
         "@value": ""
       },
       "makeGlobalObject": {

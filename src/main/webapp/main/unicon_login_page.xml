@@ -83,14 +83,30 @@
         <w2:publicInfo method=""/>
         
         <script lazy="false" type="text/javascript"><![CDATA[
+// 전역 공통 스크립트(common.js 등)에 추가
+// $w.onBeforeSubmit = function(submissionObj) {
+//   var token = sessionStorage.getItem('accessToken');
+//   console.log("onBeforeSubmit token:", token);
+//   if (token) {
+//     if (typeof submissionObj.addRequestHeader === "function") {
+//       submissionObj.addRequestHeader("Authorization", token);
+//       console.log("addRequestHeader 호출됨");
+//     } else if (typeof submissionObj.setRequestHeader === "function") {
+//       submissionObj.setRequestHeader("Authorization", token);
+//       console.log("setRequestHeader 호출됨");
+//     }
+//   }
+// };
+
+
 scwin.onpageload = function () {
     // 저장된 아이디 로드
-    scwin.loadSavedUserId();
-
+   
     // 엔터키 이벤트 바인딩
-    scwin.bindEnterKeyEvents();
-
-    $c.sbm.execute(loadCustom);
+     scwin.bindEnterKeyEvents();
+    //scwin.__preSubmitFunction(loadCustom);
+     $c.sbm.execute(loadCustom);
+    //  $p.executeSubmission("loadCustom")
     // 4. 페이지 모드를 확인하여 역할을 결정합니다.
     // var mode = $p.getParameter("mode");
     // if (mode !== "preview") {
@@ -342,7 +358,7 @@ scwin.loadCustom_submitdone = function (e) {
     // error 수신시
 
     var elData = e.responseJSON;
-    console.log("받아온데이터입니다",elData)
+    console.log("받아온데이터입니다", elData)
     /*
     var elHeader  = e.responseJSON.elHeader;
     if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
@@ -373,26 +389,40 @@ scwin.login = function (e) {
 };
 
 scwin.login_submitdone = function (e) {
+    console.log("응답 전체:", e);
     var elHeader = e.responseJSON.elHeader; // 응답 전문 elHeader
 
-    if (elHeader != "" && elHeader != null && elHeader != "undefined") {
-
-        if (elHeader.resSuc == true) {
-            // setCookie("userId", elHeader.userId);
-            // moveLocation("html/emp/empList.html");
-
-            //$p.url("/ui/dept/Dept.xml");
-            // $c.win.moveUrl("/InsWebApp/ui/dept/Dept.xml");
-
-            //location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/dept/Dept.xml";
-            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
-
-
-        } else {
-            alert(elHeader.resMsg)
+    if (elHeader && elHeader.resSuc === true) {
+        console.log("Response Headers:", e.responseHeadersJSON);
+        var headers = {};
+        try {
+            headers = JSON.parse(e.responseHeadersJSON);
+        } catch (err) {
+            console.error("헤더 JSON 파싱 오류:", err);
         }
 
+        // 2) 토큰 추출 및 저장
+        var accessToken = headers.authorization;
+        var refreshToken = headers["refresh-token"];
+        console.log("Access Token:", accessToken);
+        console.log("Refresh Token:", refreshToken);
+        if (accessToken) sessionStorage.setItem('accessToken', accessToken);
+        if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken);
+
+        // 3. 페이지 이동
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
+
+    } else {
+        alert(elHeader ? elHeader.resMsg : "로그인 응답이 유효하지 않습니다.");
     }
+};
+
+
+
+
+
+scwin.login_submit = function (e) {
+
 };
 ]]></script>
         
