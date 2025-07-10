@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject     : 세션별 화면 레이아웃 정보 관련 처리를 담당하는 Sql Mapper
+	@description : 세션별 화면 레이아웃 정보 관련 처리를 담당하는 Sql Mapper
+	@author      : 여경원
+	@since       : 2025/07/03
+	@modification
+	===========================================================
+	DATE              AUTHOR             DESC
+	===========================================================
+	2025/07/03              여경원             최초 생성
+ -->
+<mapper namespace="com.demo.proworks.sessionTemplate">
+    <insert id="insertSessionTemplate" parameterType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo">
+    	<!-- 세션별 화면 레이아웃 정보를 등록한다. -->	
+    		
+        INSERT INTO SESSION_TEMPLATE   /* QueryID : com.demo.proworks.sessionTemplate.insertSessionTemplate */
+        ( 
+            TEMPLATE_ID
+            <if test="sessionId != null"> , SESSION_ID  </if>
+            <if test="tenantId  != null"> , TENANT_ID   </if>
+            <if test="name       != null"> , NAME        </if>
+            <if test="createdAt != null"> , CREATED_AT  </if>
+            <if test="configJson!= null"> , CONFIG_JSON </if>
+            <if test="createdBy != null"> , CREATED_BY  </if>
+        )
+        VALUES  
+        ( 
+            #{templateId}
+            <if test="sessionId != null"> , #{sessionId}  </if>
+            <if test="tenantId  != null"> , #{tenantId}   </if>
+            <if test="name       != null"> , #{name}        </if>
+            <if test="createdAt != null"> , #{createdAt}  </if>
+            <if test="configJson!= null"> , #{configJson} </if>
+            <if test="createdBy != null"> , #{createdBy}  </if> 
+        )          
+    </insert>	
+	
+    <update id="updateSessionTemplate" parameterType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo">
+    	<!-- 세션별 화면 레이아웃 정보를 갱신한다. -->
+    	
+        UPDATE SESSION_TEMPLATE    /* QueryID : com.demo.proworks.sessionTemplate.updateSessionTemplate */      
+      	  SET  
+                TEMPLATE_ID = #{templateId}        	                       
+            <if test="sessionId != null"> , SESSION_ID  = #{sessionId}  </if>
+            <if test="tenantId  != null"> , TENANT_ID   = #{tenantId}   </if>
+            <if test="name       != null"> , NAME        = #{name}        </if>
+            <if test="createdAt != null"> , CREATED_AT  = #{createdAt}  </if>
+            <if test="configJson!= null"> , CONFIG_JSON = #{configJson} </if>
+            <if test="createdBy != null"> , CREATED_BY  = #{createdBy}  </if>                 
+        WHERE   
+                TEMPLATE_ID = #{templateId}
+    </update>
+	
+    <delete id="deleteSessionTemplate" parameterType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo">
+    	<!-- 세션별 화면 레이아웃 정보를 삭제한다. -->
+    	
+        DELETE FROM SESSION_TEMPLATE   /* QueryID : com.demo.proworks.sessionTemplate.deleteSessionTemplate */ 
+        WHERE   
+                TEMPLATE_ID = #{templateId}        
+    </delete>
+	
+    <select id="selectSessionTemplate" parameterType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo" resultType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo">
+    	<!-- 세션별 화면 레이아웃 정보를 상세 조회한다. -->	
+        SELECT     /* QueryID : com.demo.proworks.sessionTemplate.selectSessionTemplate */
+            TEMPLATE_ID as templateId, SESSION_ID as sessionId, TENANT_ID as tenantId, NAME as name, CREATED_AT as createdAt, CONFIG_JSON as configJson, CREATED_BY as createdBy
+        FROM SESSION_TEMPLATE 
+        WHERE 
+                TEMPLATE_ID = #{templateId}			
+    </select>
+	
+    <select id="selectListSessionTemplate" parameterType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo" resultType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo">
+    	<!-- 세션별 화면 레이아웃 정보 목록을 조회한다. -->
+           SELECT    /* QueryID : com.demo.proworks.sessionTemplate.selectListSessionTemplate */
+               TEMPLATE_ID as templateId, SESSION_ID as sessionId, TENANT_ID as tenantId, NAME as name, CREATED_AT as createdAt, CONFIG_JSON as configJson, CREATED_BY as createdBy		       
+           FROM (
+               SELECT  S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+               FROM (				
+                   SELECT 
+                       *  		                  
+                   FROM SESSION_TEMPLATE
+                   WHERE  1=1    		
+	     																														
+               ) S, (SELECT @ROWNUM := 0) TMP
+           ) A
+            WHERE PAGE = #{pageIndex}
+    </select>
+	
+    <select id="selectListCountSessionTemplate" parameterType="com.demo.proworks.sessionTemplate.vo.SessionTemplateVo" resultType="long">
+    <!-- 세션별 화면 레이아웃 정보 목록의 카운트를 조회한다. -->
+    
+         SELECT    /* QueryID : com.demo.proworks.sessionTemplate.selectListCountSessionTemplate */
+             COUNT(*) totcnt  		                  
+         FROM SESSION_TEMPLATE
+         WHERE  1=1    		
+
+    </select>
+
+</mapper>
