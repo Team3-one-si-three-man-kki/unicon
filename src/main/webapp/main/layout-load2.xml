@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<style>
+			/* WebSquare용 ModuLink 스타일 - Zoom/WebEx 스타일 레이아웃 */
+
+			/* 기본 레이아웃 */
+			.sub_contents {
+			background: white !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			min-height: 100vh !important;
+			color: #2d3748 !important;
+			width: 100vw !important;
+			height: 100vh !important;
+			}
+
+			/* 메인 컨테이너 */
+			#grp_main {
+			width: 100% !important;
+			height: 100% !important;
+			max-width: none !important;
+			max-height: none !important;
+			}
+
+			/* 사이드바 스타일 */
+			.sidebar-container {
+			border-right: 2px solid #e8ecf4 !important;
+			width: 20% !important;
+			min-width: 180px !important;
+			}
+
+			.sidebar-header {
+			padding: 17px 24px !important;
+			}
+
+			.sidebar-title {
+			color: #2d3748 !important;
+			font-size: 22px !important;
+			font-weight: 1000 !important;
+			margin-bottom: 12px !important;
+			display: block !important;
+			}
+
+			@keyframes fadeBackground {
+			0% { background-color: #fef3c0; }
+			50% { background-color: #FADA7A; }
+			100% { background-color: #fef3c0; }
+			}
+
+			.sidebar-subtitle {
+			color: #4a5568 !important;
+			font-size: 15px !important;
+			font-weight: 800 !important;
+			padding: 8px 18px !important;
+			border-radius: 6px !important;
+			text-align: center !important;
+			display: block !important;
+			box-shadow: 0 2px 4px rgba(250, 218, 122, 0.2) !important;
+			background-color: #fef3c0 !important;
+			animation: fadeBackground 2s infinite alternate !important;
+			}
+
+			/* 모듈 카드 스타일 */
+			.module-card {
+			background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+			border: 1.5px solid #becfe1 !important;
+			border-radius: 8px !important;
+			padding: 1vh 1vw !important;
+			margin: 0.5vh 1vw !important;
+			cursor: grab !important;
+			transition: all 0.3s ease !important;
+			position: relative !important;
+			overflow: hidden !important;
+			display: block !important;
+			text-align: center !important;
+			box-shadow: 0 3px 10px rgba(54, 116, 181, 0.08) !important;
+			}
+
+			.module-card:hover {
+			transform: translateY(-3px) !important;
+			box-shadow: 0 8px 25px rgba(54, 116, 181, 0.15) !important;
+			border-color: #0052ac !important;
+			background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%) !important;
+			}
+
+			.module-card:active {
+			cursor: grabbing !important;
+			transform: translateY(-1px) !important;
+			}
+
+			.module-icon {
+			font-size: 28px !important;
+			margin-bottom: 12px !important;
+			display: block !important;
+			text-align: center !important;
+			opacity: 0.85 !important;
+			}
+
+			.module-name {
+			color: #2d3748 !important;
+			font-size: 14px !important;
+			font-weight: 600 !important;
+			text-align: center !important;
+			margin-bottom: 6px !important;
+			display: block !important;
+			line-height: 1.4 !important;
+			}
+
+			.module-desc {
+			color: #4a5568 !important;
+			font-size: 12px !important;
+			text-align: center !important;
+			display: block !important;
+			line-height: 1.5 !important;
+			}
+
+			/* 작업 영역 */
+			.workspace-container {
+			margin: 0px 3px !important;
+			overflow: hidden !important;
+			flex: 1 !important;
+			width: 85% !important;
+			display: flex !important;
+			flex-direction: column !important;
+			}
+
+			.workspace-header {
+			padding: 12px 28px !important;
+			display: flex !important;
+			justify-content: space-between !important;
+			align-items: center !important;
+			}
+
+			.workspace-title {
+			margin-top: 3px;
+			color: #2d3748 !important;
+			font-size: 22px !important;
+			font-weight: 1000 !important;
+			}
+
+			/* 버튼 스타일 */
+			.smart-button {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			color: white !important;
+			border: none !important;
+			padding: 7px 10px !important;
+			border-radius: 2px !important;
+			font-weight: 600 !important;
+			font-size: 13px !important;
+			cursor: pointer !important;
+			transition: all 0.2s ease !important;
+			position: relative !important;
+			overflow: hidden !important;
+			margin: 0 2px !important;
+			box-shadow: 0 3px 10px rgba(54, 116, 181, 0.3) !important;
+			}
+
+			.smart-button:hover {
+			transform: translateY(-1px) !important;
+			box-shadow: 0 6px 20px rgba(54, 116, 181, 0.4) !important;
+			background: linear-gradient(135deg, #339941 0%, #339941 100%) !important;
+			}
+
+			.smart-button.secondary {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			box-shadow: 0 3px 10px rgba(113, 128, 150, 0.3) !important;
+			}
+
+			.smart-button.secondary:hover {
+			background: linear-gradient(135deg, #5a6c7d 0%, #6d7b8d 100%) !important;
+			box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4) !important;
+			}
+
+			.smart-button.accent {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			box-shadow: 0 3px 10px rgba(87, 143, 202, 0.3) !important;
+			}
+
+			.smart-button.accent:hover {
+			background: linear-gradient(135deg, #5a6c7d 0%, #6d7b8d 100%) !important;
+			box-shadow: 0 6px 20px rgba(87, 143, 202, 0.4) !important;
+			}
+
+			#grp_buttons {
+			display: flex !important;
+			gap: 8px !important;
+			align-items: center !important;
+			}
+
+			/* 글래스 컨테이너 */
+			.glass-container {
+			background: #ffffff !important;
+			border: 1px solid #e2e8f0 !important;
+			border-radius: 8px !important;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+			}
+
+			/* 브라우저 모킹 */
+			.browser-mockup {
+			background: #dddddd !important;
+			border-radius: 3px 3px 0 0 !important;
+			padding: 16px 20px !important;
+			border-bottom: 1px solid #d4d8e8 !important;
+			display: flex !important;
+			align-items: center !important;
+			gap: 10px !important;
+			}
+
+			.browser-dot {
+			width: 12px !important;
+			height: 12px !important;
+			border-radius: 50% !important;
+			display: inline-block !important;
+			}
+
+			.browser-dot.red { background: #ff6b6b !important; }
+			.browser-dot.yellow { background: #feca57 !important; }
+			.browser-dot.green { background: #48ca7a !important; }
+
+			.browser-url {
+			flex: 1 !important;
+			text-align: center !important;
+			background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+			padding: 8px 16px !important;
+			border-radius: 6px !important;
+			font-size: 12px !important;
+			color: #4a5568 !important;
+			margin: 0 20px !important;
+			border: 1px solid #e1e8f0 !important;
+			font-weight: 500 !important;
+			}
+
+			/* Zoom/WebEx 스타일 메인 레이아웃 */
+			.video-layout {
+			display: flex !important;
+			height: 100% !important;
+			background: linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%) !important;
+			}
+
+			/* 메인 화상회의 영역 */
+			.main-video-area {
+			flex: 1 !important;
+			display: flex !important;
+			flex-direction: column !important;
+			padding: 10px !important;
+			}
+
+			/* 우측 사이드바 (채팅+참여자) */
+			.right-sidebar {
+			width: 300px !important;
+			background: #f8f9fa !important;
+			border-left: 2px solid #e1e5e9 !important;
+			display: flex !important;
+			flex-direction: column !important;
+			}
+
+			/* 사이드바 탭 */
+			.sidebar-tabs {
+			display: flex !important;
+			border-bottom: 1px solid #e1e5e9 !important;
+			}
+
+			.sidebar-tab {
+			flex: 1 !important;
+			padding: 12px !important;
+			text-align: center !important;
+			background: #f8f9fa !important;
+			border: none !important;
+			cursor: pointer !important;
+			font-weight: 600 !important;
+			color: #666 !important;
+			}
+
+			.sidebar-tab.active {
+			background: white !important;
+			color: #3674B5 !important;
+			border-bottom: 2px solid #3674B5 !important;
+			}
+
+			/* 사이드바 콘텐츠 */
+			.sidebar-content {
+			flex: 1 !important;
+			padding: 15px !important;
+			overflow-y: auto !important;
+			background: white !important;
+			}
+
+			/* 드롭 영역들 */
+			.drop-zone {
+			background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+			border: 2px dashed #c7d2fe !important;
+			border-radius: 8px !important;
+			margin: 7px !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			cursor: pointer !important;
+			transition: all 0.3s ease !important;
+			position: relative !important;
+			overflow: hidden !important;
+			min-height: 120px !important;
+			}
+
+			.drop-zone:hover {
+			border-color: #578FCA !important;
+			background: linear-gradient(135deg, #f7faff 0%, #e8f4ff 100%) !important;
+			transform: translateY(-2px) !important;
+			box-shadow: 0 6px 20px rgba(87, 143, 202, 0.2) !important;
+			}
+
+			.drop-zone.occupied {
+			background: linear-gradient(135deg, #F5F0CD 0%, #faf6d6 100%) !important;
+			border-color: #FADA7A !important;
+			border-style: solid !important;
+			box-shadow: 0 4px 15px rgba(250, 218, 122, 0.25) !important;
+			}
+
+			.drop-zone-label {
+			color: #4a5568 !important;
+			font-size: 14px !important;
+			font-weight: 600 !important;
+			text-align: center !important;
+			display: block !important;
+			}
+
+			/* 메인 비디오 영역 */
+			#grp_area1 {
+			flex: 1 !important;
+			min-height: 600px !important;
+			}
+
+			/* 하단 모듈 영역들 */
+			.bottom-modules {
+			display: grid !important;
+			grid-template-columns: repeat(4, 1fr) !important;
+			gap: 10px !important;
+			padding: 10px 0 !important;
+			max-height: 120px !important;
+			}
+
+			#grp_area3, #grp_area4, #grp_area5, #grp_area6 {
+			min-height: 80px !important;
+			}
+
+			/* 우측 사이드바 모듈 */
+			#grp_area2 {
+			min-height: 400px !important;
+			margin-bottom: 10px !important;
+			}
+
+			/* 참여자 목록 고정 영역 */
+			.participants-fixed {
+			background: white !important;
+			border: 1px solid #e1e5e9 !important;
+			border-radius: 8px !important;
+			padding: 15px !important;
+			flex: 1 !important;
+			max-height: 280px !important;
+			overflow-y: auto !important;
+			}
+
+			.participants-title {
+			font-weight: 600 !important;
+			margin-bottom: 10px !important;
+			color: #2d3748 !important;
+			font-size: 14px !important;
+			}
+
+			/* 참여자 리스트 스타일 */
+			.participant-list {
+			list-style: none !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			}
+
+			.participant-item {
+			display: flex !important;
+			align-items: center !important;
+			padding: 8px 0 !important;
+			border-bottom: 1px solid #f0f0f0 !important;
+			}
+
+			.participant-avatar {
+			width: 32px !important;
+			height: 32px !important;
+			border-radius: 50% !important;
+			background: #3674B5 !important;
+			color: white !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			margin-right: 10px !important;
+			font-weight: bold !important;
+			}
+
+			.participant-name {
+			flex: 1 !important;
+			font-weight: 500 !important;
+			}
+
+			/* 스크롤바 */
+			::-webkit-scrollbar {
+			width: 6px !important;
+			}
+
+			::-webkit-scrollbar-track {
+			background: #f1f5f9 !important;
+			border-radius: 3px !important;
+			}
+
+			::-webkit-scrollbar-thumb {
+			background: #cbd5e1 !important;
+			border-radius: 3px !important;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+			background: #94a3b8 !important;
+			}
+
+			/* 반응형 */
+			@media (max-width: 1200px) {
+			.right-sidebar {
+			width: 250px !important;
+			}
+			.module-card {
+			padding: 0.8vh 0.8vw !important;
+			margin: 0.3vh 0.8vw !important;
+			}
+			.workspace-container {
+			margin: 12px !important;
+			}
+			}
+		</style>
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_sessionRequest">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="sessionId" id="sessionId"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+			<xf:submission id="sbm_getSessionModuleDetails" action="/InsWebApp/TNU0002SessionModuleDetailListBySessionId.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"dma_sessionRequest","key":"requestData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
+				mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_getSessionModuleDetails_submitdone"
+				ev:submiterror="scwin.sbm_getSessionModuleDetails_submiterror" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function() {
+    // URL 파라미터에서 sessionId 받기
+    var sessionId;
+    
+    // localStorage에서 받기
+    if (!sessionId) {
+        try {
+            sessionId = localStorage.getItem('currentSessionId');
+            console.log('전달받은 sessionId: ', sessionId);
+        } catch(e) {
+            alert('세션 아이디를 넘겨받지 못했습니다.')
+        }
+    }
+    
+    if (sessionId) {
+        scwin.currentSessionId = sessionId;
+        scwin.loadSessionModules(sessionId);
+    } else {
+        alert("세션 정보를 찾을 수 없습니다. 다시 시도해주세요.");
+    }
+};
+
+// 모듈 배치 정보 로드 함수
+scwin.loadSessionModules = function(sessionId) {
+    dma_sessionRequest.set("sessionId", sessionId);
+    $p.executeSubmission("sbm_getSessionModuleDetails");
+};
+
+//--------------------------모듈 불러오기--------------------------
+
+scwin.loadLayout = function () {
+    var sessionId = scwin.currentSessionId;
+
+    if (!sessionId) {
+        alert("세션 정보가 없습니다.");
+        return;
+    }
+
+    dma_sessionRequest.set("sessionId", sessionId);
+    $p.executeSubmission("sbm_getSessionModuleDetails");
+};
+
+
+scwin.sbm_getSessionModuleDetails_submitdone = function (e) {
+    if (e && e.responseJSON && e.responseJSON.elData) {
+        var sessionModuleList = e.responseJSON.elData.sessionModuleDetailVoList;
+
+        if (sessionModuleList && sessionModuleList.length > 0) {
+            scwin.restoreModuleLayout(sessionModuleList);
+        }
+    }
+};
+
+scwin.sbm_getSessionModuleDetails_submiterror = function (e) {
+    alert("모듈 목록을 불러오는데 실패했습니다.");
+};
+
+// 모듈 배치 복원 함수
+scwin.restoreModuleLayout = function (sessionModules) {
+    // 모든 영역 초기화
+    scwin.clearAllAreas();
+
+    // 각 모듈을 해당 위치에 배치
+    sessionModules.forEach(function (sessionModule) {
+        var config = JSON.parse(sessionModule.sessionModuleConfig);
+
+        // area 정보에서 실제 영역 ID 추출
+        var areaId = config.area;
+        if (areaId && areaId.indexOf("mf_") === 0) {
+            areaId = areaId.replace("mf_fr_session_making_process", "mf");
+        }
+
+        var moduleInfo = {
+            moduleId: sessionModule.moduleId,
+            code: sessionModule.code,
+            name: sessionModule.name,
+            description: sessionModule.description,
+            icon: sessionModule.icon
+        };
+
+        scwin.displayModuleInArea(areaId, moduleInfo);
+    });
+};
+
+// 모든 영역 초기화 함수
+scwin.clearAllAreas = function () {
+    for (var i = 1; i <= 6; i++) {
+        var areaId = "grp_area" + i;
+        var areaElement = document.getElementById(areaId);
+
+        if (areaElement) {
+            // 스타일 초기화
+            areaElement.classList.remove('occupied');
+
+            // 라벨 초기화
+            var labelElement = areaElement.querySelector('span');
+            if (labelElement) {
+                // 원래 라벨로 복원
+                var originalLabels = {
+                    1: "메인 영역 - 화상채팅 (영역 1)",
+                    2: "사이드 패널 (영역 2)",
+                    3: "채팅 영역 (영역 3)",
+                    4: "도구 영역 (영역 4)",
+                    5: "상태 패널 (영역 5)",
+                    6: "추가 기능 (영역 6)"
+                };
+
+                labelElement.textContent = originalLabels[i];
+                labelElement.style.color = "";
+                labelElement.style.fontWeight = "";
+                labelElement.style.textShadow = "";
+            }
+
+            // 데이터 속성 제거
+            delete areaElement.dataset.moduleId;
+            delete areaElement.dataset.hasModule;
+        }
+    }
+};
+
+// 영역에 모듈 정보 표시하는 함수
+scwin.displayModuleInArea = function (areaId, moduleInfo) {
+    var areaElement = document.getElementById(areaId);
+    if (!areaElement) {
+        return;
+    }
+
+    // 스타일 변경
+    areaElement.classList.add('occupied');
+
+    // 라벨 변경
+    var labelElement = areaElement.querySelector('span');
+    if (labelElement) {
+        labelElement.innerHTML = moduleInfo.icon + " " + moduleInfo.name;
+        labelElement.style.color = "white";
+        labelElement.style.fontWeight = "600";
+        labelElement.style.textShadow = "0 2px 8px rgba(0,0,0,0.5)";
+    }
+
+    // 데이터 속성 설정
+    areaElement.dataset.moduleId = moduleInfo.moduleId || "";
+    areaElement.dataset.hasModule = "true";
+};
+
+
+scwin.btn_next_onclick = function (e) {
+    $p.url("/InsWebApp/main/conference_room.xml");
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<!-- 전체 컨테이너 -->
+		<xf:group class="sub_contents" id="" style="">
+
+			<!-- 메인 컨테이너 (사이드바 + 작업영역) -->
+			<xf:group style='width:100%;height:100vh;display:flex;overflow:hidden;' id="grp_main">
+
+				<!-- 사이드바 (모듈 목록) -->
+
+				<!-- 작업 영역 (레이아웃 디자이너) -->
+				<xf:group class="workspace-container" style="flex: 1;" id="grp_editWindow">
+
+					<!-- 워크스페이스 헤더 -->
+					<xf:group class="workspace-header" id="grp_eWHeader">
+						<w2:span class="workspace-title" id="" label="최종 배치 화면 - sessionId로 모듈 배치 로드"></w2:span>
+						<xf:group style="display:flex;gap:12px;" id="grp_buttons">
+							<xf:trigger class="smart-button" id="btn_next" type="button" ev:onclick="scwin.btn_next_onclick">
+								<xf:label><![CDATA[다음]]></xf:label>
+							</xf:trigger>
+						</xf:group>
+					</xf:group>
+
+					<!-- 캔버스 컨테이너 -->
+					<xf:group class="glass-container"
+						style="margin: 5px 15px 0 15px; display: flex; flex-direction: column; border: 2px solid #e2e8f0 !important;height: 800px;" id="grp_canvasContainer">
+
+						<!-- 브라우저 모킹 헤더 -->
+						<xf:group class="browser-mockup" id="grp_browserHeader">
+							<span class="browser-dot red"></span>
+							<span class="browser-dot yellow"></span>
+							<span class="browser-dot green"></span>
+							<div class="browser-url">localhost:3000/modulink-workspace</div>
+						</xf:group>
+
+						<!-- Zoom/WebEx 스타일 메인 레이아웃 -->
+						<xf:group class="video-layout" id="grp_screen">
+
+							<!-- 메인 화상회의 영역 + 하단 모듈들 -->
+							<xf:group class="main-video-area" id="main_area">
+								<!-- 메인 비디오 영역 -->
+								<xf:group class="drop-zone neon-border" id="grp_area1" style="height: 550px;">
+									<w2:span class="drop-zone-label" id="span1" label="메인 화상회의 영역" style=""></w2:span>
+								</xf:group>
+
+								<!-- 하단 모듈들 (4개) -->
+								<xf:group class="bottom-modules" id="bottom_modules">
+									<xf:group class="drop-zone neon-border" id="grp_area3">
+										<w2:span class="drop-zone-label" id="span3" label="모듈 버튼1"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="grp_area4">
+										<w2:span class="drop-zone-label" id="span4" label="모듈 버튼2"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="grp_area5">
+										<w2:span class="drop-zone-label" id="span5" label="모듈 버튼 3"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="grp_area6">
+										<w2:span class="drop-zone-label" id="span6" label="모듈 버튼 4"></w2:span>
+									</xf:group>
+								</xf:group>
+							</xf:group>
+
+							<!-- 우측 사이드바 -->
+							<xf:group class="right-sidebar" id="right_sidebar" style="padding-top: 10px;">
+								<!-- 상단 모듈 영역 -->
+								<xf:group class="drop-zone neon-border" id="grp_area2" style="margin: 15px;height: 350px;">
+									<w2:span class="drop-zone-label" id="span2" label="띄워진 모듈(채팅)" style=""></w2:span>
+								</xf:group>
+								
+								<!-- 참여자 목록 (고정) -->
+								<xf:group class="participants-fixed" id="participants_fixed" style="margin: 7px; margin-top: 5px;">
+									<w2:span class="participants-title" id="" label="참여자 목록(예시 참여자)"></w2:span>
+									<ul class="participant-list">
+										<li class="participant-item">
+											<div class="participant-avatar">김</div>
+											<div class="participant-name">김대리</div>
+										</li>
+										<li class="participant-item">
+											<div class="participant-avatar">이</div>
+											<div class="participant-name">이과장</div>
+										</li>
+										<li class="participant-item">
+											<div class="participant-avatar">박</div>
+											<div class="participant-name">박부장</div>
+										</li>
+										<li class="participant-item">
+											<div class="participant-avatar">최</div>
+											<div class="participant-name">최팀장</div>
+										</li>
+									</ul>
+								</xf:group>
+							</xf:group>
+
+						</xf:group> <!-- video-layout 끝 -->
+
+					</xf:group> <!-- canvas-container 끝 -->
+
+				</xf:group> <!-- workspace-container 끝 -->
+
+			</xf:group> <!-- main container 끝 -->
+
+		</xf:group> <!-- sub_contents 끝 -->
+	</body>
+</html>
