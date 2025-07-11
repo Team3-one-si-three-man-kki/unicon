@@ -67,13 +67,47 @@ scwin.getContextPath = function () {
  * @exception 
  */
 scwin.__preSubmitFunction = function (sbmObj) {
-    if (($c.util.isEmpty(scwin.CONTEXT_PATH) === false) && (sbmObj.action.indexOf(scwin.CONTEXT_PATH) !== 0)) {
-        sbmObj.action = scwin.CONTEXT_PATH + sbmObj.action;
-    }
 
-    // REST API 방식 처리를 위해서 GET Method에 대해서 Request 데이터를 Path Variable 치환 및 QueryString으로 생성함
-    if (scwin.IS_RESTFUL_URL === true) {
-        $c.sbm.__setActionParam(sbmObj);
+     console.log("preSubmitFunction 시작", sbmObj);
+    
+    try {
+        // 1. Context Path 설정
+        if (($c.util.isEmpty(scwin.CONTEXT_PATH) === false) && 
+            (sbmObj.action.indexOf(scwin.CONTEXT_PATH) !== 0)) {
+           console.log("1");
+            sbmObj.action = scwin.CONTEXT_PATH + sbmObj.action;
+        console.log("2");
+        }
+
+        // 2. 요청 헤더 초기화
+        if (!sbmObj.requestHeader) {
+            console.log("3");
+            sbmObj.requestHeader = {};
+            console.log("4");
+        }
+
+        // 3. 인증 토큰 설정
+        const accessToken = sessionStorage.getItem("accessToken");
+        console.log("5");
+        if (accessToken) {
+            console.log("6");
+            sbmObj.requestHeader["Authorization"] = accessToken;
+            console.log("7");
+        }
+    
+        // 4. RESTful URL 처리
+        if (scwin.IS_RESTFUL_URL === true) {
+            console.log("8");
+            $c.sbm.__setActionParam(sbmObj);
+        }
+         console.log("9");
+         console.log("19");
+        return true;
+        
+    } catch (error) {
+        console.log("10");
+        console.error("preSubmitFunction 오류:", error);
+        return true; // 오류가 발생해도 통신 진행
     }
 };
 
@@ -245,6 +279,9 @@ scwin.__callbackSubmitFunction = function (resObj, sbmObj) {
  * @exception 
  */
 scwin.__submitErrorHandler = function (resObj) {
+    console.log("여기당 색갸1")
+    console.log(resObj);
+    console.log("여기다 색갸2")
     const $p = $c.win.__getScope(resObj.id).scwin.$w;
 
     let detailStr = "HTTP STATUS INFO";

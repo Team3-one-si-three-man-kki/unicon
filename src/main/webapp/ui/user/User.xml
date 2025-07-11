@@ -72,302 +72,324 @@
 		</xf:model>
 		<w2:layoutInfo></w2:layoutInfo>
 		<w2:publicInfo method="" />
-		<script lazy="false" type="text/javascript"><![CDATA[
-	scwin.onpageload = function() {
-		// 테넌트유저 readOnly false
-		
-		// 버튼 숨김
-		btn_save.show("");   // 저장 버튼 
-		btn_edit.hide();     // 수정 버튼 제거
-		btn_delete.hide();   // 삭제 버튼 제거
-		
-		/////////////////////////////////////////////
-		// 페이지 크기 설정 영역 / 웹관리자 화면 page 생성 시 주석 해제
-		/////////////////////////////////////////////
-		//sel_pageSize.setValue("10");
-		
-		//search_box
-        var cptIbxName = $p.getComponentById("searchComp_1");
-        if(cptIbxName == undefined){
-			search_box.hide();
-        }
-		
-		// 테넌트유저 조회
-		scwin.btn_search_onclick();
-	};
+		<script lazy="false" type="text/javascript"><![CDATA[//   $w.onBeforeSubmit = function (submissionObj) {
+//         var token = sessionStorage.getItem('accessToken');
+//         console.log("onBeforeSubmit token:", token);
+//         if (token) {
+//             if (typeof submissionObj.addRequestHeader === "function") {
+//                 submissionObj.addRequestHeader("Authorization", token);
+//                 console.log("addRequestHeader 호출됨");
+//             } else if (typeof submissionObj.setRequestHeader === "function") {
+//                 submissionObj.setRequestHeader("Authorization", token);
+//                 console.log("setRequestHeader 호출됨");
+//             }
+//         }
+//     };
 
-	/************************** 이벤트 함수 *************************/
-	
-	/**
-	 * 조회 버튼 클릭 이벤트
-	 * @date
-	 * @memberOf
-	 * @param 
-	 * @returns
-	 * @author 
-	 * @example
-	 */		   
-	scwin.btn_search_onclick = function(e) {
-	
-		// PGAE번호 초기화
-		dmp_userVo.set("pageIndex","1");
-		pgl_userList.setSelectedIndex(1);
-
-		// 서버통신 - 테넌트유저 조회
-		$c.sbm.execute($p, sbm_selectUserVoList);
-	};
-	
-	scwin.sbm_userList_submitdone = function(e) {
-
-		// error 수신시
-		var elData = e.responseJSON.elData;
-		var elHeader  = e.responseJSON.elHeader;
-		if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-			$c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-			return false;
-		}
-
-		// 테넌트유저 dataMap 초기화
-		dmp_userVoDetail.setEmptyValue();
-		
-		// 테넌트유저 readOnly false
-		grp_userInfo.setReadOnly(false);
-		
-		// 버튼 숨김
-		btn_save.show("");   // 저장 버튼
-		btn_edit.hide();     // 수정 버튼 제거
-		btn_delete.hide();   // 삭제 버튼 제거		
-
-		// 총 레코드 수 업데이트
-        spn_listCnt.setLabel(elData.totalCount);
+scwin.onpageload = function () {
+   // 세션 스토리지에서 access 토큰 확인
+    // var accessToken = sessionStorage.getItem('accessToken');
+    
+    // if (accessToken) {
+    //     // Submission 객체 가져오기
+    //     var subObj = $p.getSubmission("sbm_selectUserVoList");
         
-        // 데이터를 그리드에 셋팅
-        dlt_userVoList.setJSON(elData.userVoList);
-        
-        // 페이지 네비게이터 업데이트
-        var totalPageCount = Math.ceil(elData.totalCount / dmp_userVo.get("pageSize"));
-        pgl_userList.setCount(totalPageCount);
-        
-        spn_registerFlag.setValue("등록");
+    //     // Authorization 헤더에 Bearer 토큰 설정
+    //     subObj.setRequestHeader({
+    //         "Authorization": accessToken
+    //     });
+    // }
+    btn_save.show("");   // 저장 버튼 
+    btn_edit.hide();     // 수정 버튼 제거
+    btn_delete.hide();   // 삭제 버튼 제거
 
-		// 페이징 정보 업데이트
-        spn_totalPageCount.setValue(totalPageCount);
-        spn_pageIndex.setValue(dmp_userVo.get("pageIndex"));
-        pgl_userList.setSelectedIndex(dmp_userVo.get("pageIndex"));
-	};	
+    /////////////////////////////////////////////
+    // 페이지 크기 설정 영역 / 웹관리자 화면 page 생성 시 주석 해제
+    /////////////////////////////////////////////
+    //sel_pageSize.setValue("10");
 
-	/**
-	 * 페이지 번호 클릭 이벤트
-	 * @date
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */
-	scwin.pgl_userList_onclick = function(idx) {
-	
-		// 페이지 번호 세팅
-		dmp_userVo.set("pageIndex", idx);
-		
-		/////////////////////////////////////////////
-		// 페이지 크기 설정 영역 / 웹관리자 화면 page 생성 시 주석 해제
-		/////////////////////////////////////////////
-		//dmp_userVo.set("pageSize", sel_pageSize.getValue());
-		 
-		// 서버통신 - 테넌트유저 조회
-		$c.sbm.execute($p, sbm_selectUserVoList);
-	};
+    //search_box
+    var cptIbxName = $p.getComponentById("searchComp_1");
+    if (cptIbxName == undefined) {
+        search_box.hide();
+    }
 
-	// 테넌트유저 clear
-	scwin.btn_reset_onclick = function(e) {
-	
-		// 테넌트유저 dataMap 초기화
-		dmp_userVoDetail.setEmptyValue();
-		// 테넌트유저 readOnly false
-		grp_userInfo.setReadOnly(false);
+    // 테넌트유저 조회
+    scwin.btn_search_onclick();
+};
 
-		btn_save.show("");   // 저장 버튼 생성
-		btn_edit.hide();     // 수정 버튼 제거
-		btn_delete.hide();   // 삭제 버튼 제거
-		
-		spn_registerFlag.setValue("등록");
-	};
+/************************** 이벤트 함수 *************************/
 
-	/**
-	 * 그리드 셀 클릭 이벤트
-	 * @date
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */
-	scwin.grd_list_oncellclick = function(row,col,colId) {
+/**
+ * 조회 버튼 클릭 이벤트
+ * @date
+ * @memberOf
+ * @param 
+ * @returns
+ * @author 
+ * @example
+ */
+scwin.btn_search_onclick = function (e) {
 
-		dmp_userVoDetail.setJSON(dlt_userVoList.getRowJSON(row));
+    // PGAE번호 초기화
+    dmp_userVo.set("pageIndex", "1");
+    pgl_userList.setSelectedIndex(1);
 
-		btn_save.hide(); 		// 저장 버튼 제거
-		btn_edit.show("");      // 수정 버튼 생성
-		btn_delete.show("");    // 삭제 버튼 생성
-		
-		spn_registerFlag.setValue("수정");
-	};
+    // 서버통신 - 테넌트유저 조회
+    $c.sbm.execute($p, sbm_selectUserVoList);
+};
 
-	/**
-	 * 저장 버튼 클릭 이벤트
-	 * @date
-	 * @memberOf
-	 * @param 
-	 * @returns
-	 * @author 
-	 * @example
-	 */	
-	scwin.btn_save_onclick = function(e) {
-		
-		// 유효성 체크
-		var valInfo = [
-			{ id: "userId", mandatory: true }
-           
-		];
-		
-		if ($c.data.validateGroup(grp_userInfo, valInfo) === true) {
-			var promise = $c.win.confirm("저장하시겠습니까?");
-			promise.then(function(result) {  
-				if (result){
-					$c.sbm.execute(sbm_insertUserVo);
-				}
-			})
-		} 	
-	};
+scwin.sbm_userList_submitdone = function (e) {
 
-	/**
-	 * 사원정보 등록 콜백
-	 * @date 
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */
-	scwin.sbm_insertUserVo_submitdone = function(e) {
-		
-		// error 수신시
-		var elHeader  = e.responseJSON.elHeader;
-		if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-			$c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-			return false;
-		}else{
-			// 등록되었습니다. msg 출력
-			$c.win.alert("등록되었습니다.");
-		}
-		
-		// 재조회
-		scwin.btn_search_onclick();
-	};
+    // error 수신시
+    var elData = e.responseJSON.elData;
+    var elHeader = e.responseJSON.elHeader;
+    if (elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
+        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        return false;
+    }
 
-	/**
-	 * 수정 버튼 클릭 이벤트
-	 * @date
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */		
-	scwin.btn_edit_onclick = function(e) {
-		
-		// 유효성 체크
-		var valInfo = [
-			{ id: "userId", mandatory: true }
-           
-		];
-		
-		if ($c.data.validateGroup(grp_userInfo, valInfo) === true) {
-			var promise = $c.win.confirm("수정하시겠습니까?");
-			promise.then(function(result) {  
-				if (result){
-					$c.sbm.execute(sbm_updateUserVo);
-				}
-			})
-		} 
-	};
+    // 테넌트유저 dataMap 초기화
+    dmp_userVoDetail.setEmptyValue();
 
-	/**
-	 * 사원정보 수정 콜백
-	 * @date 
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */
-	scwin.sbm_updateUserVo_submitdone = function(e) {
+    // 테넌트유저 readOnly false
+    grp_userInfo.setReadOnly(false);
 
-		// error 수신시
-		var elHeader  = e.responseJSON.elHeader;
-		if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-			$c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-			return false;
-		}else{
-			// 수정되었습니다. msg 출력
-			$c.win.alert("수정되었습니다.");
-		}
-		// 재조회
-		scwin.btn_search_onclick();
-	};
+    // 버튼 숨김
+    btn_save.show("");   // 저장 버튼
+    btn_edit.hide();     // 수정 버튼 제거
+    btn_delete.hide();   // 삭제 버튼 제거		
 
-	/**
-	 * 삭제 버튼 클릭 이벤트
-	 * @date
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */		
-	scwin.btn_delete_onclick = function(e) {
-		
-		// 유효성 체크
-		var valInfo = [
-			{ id: "userId", mandatory: true }
-           
-		];
-		
-		if ($c.data.validateGroup(grp_userInfo, valInfo) === true) {
-			var promise = $c.win.confirm("삭제하시겠습니까?");
-			promise.then(function(result) {  
-				if (result){
-					$c.sbm.execute(sbm_deleteUserVo);
-				}
-			})
-		}	
-	};
+    // 총 레코드 수 업데이트
+    spn_listCnt.setLabel(elData.totalCount);
 
-	/**
-	 * 삭제 콜백
-	 * @date 
-	 * @memberOf
-	 * @param 
-	 * @returns 
-	 * @author 
-	 * @example
-	 */
-	scwin.sbm_deleteUserVo_submitdone = function(e) {
-	
-		// error 수신시
-		var elHeader  = e.responseJSON.elHeader;
-		if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-			$c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-			return false;
-		}else{
-			// 삭제되었습니다. msg 출력
-			$c.win.alert("삭제되었습니다.");
-		}
-		
-		// 재조회
-		scwin.btn_search_onclick();
-	};
+    // 데이터를 그리드에 셋팅
+    dlt_userVoList.setJSON(elData.userVoList);
+
+    // 페이지 네비게이터 업데이트
+    var totalPageCount = Math.ceil(elData.totalCount / dmp_userVo.get("pageSize"));
+    pgl_userList.setCount(totalPageCount);
+
+    spn_registerFlag.setValue("등록");
+
+    // 페이징 정보 업데이트
+    spn_totalPageCount.setValue(totalPageCount);
+    spn_pageIndex.setValue(dmp_userVo.get("pageIndex"));
+    pgl_userList.setSelectedIndex(dmp_userVo.get("pageIndex"));
+};
+
+/**
+ * 페이지 번호 클릭 이벤트
+ * @date
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.pgl_userList_onclick = function (idx) {
+
+    // 페이지 번호 세팅
+    dmp_userVo.set("pageIndex", idx);
+
+    /////////////////////////////////////////////
+    // 페이지 크기 설정 영역 / 웹관리자 화면 page 생성 시 주석 해제
+    /////////////////////////////////////////////
+    //dmp_userVo.set("pageSize", sel_pageSize.getValue());
+
+    // 서버통신 - 테넌트유저 조회
+    $c.sbm.execute($p, sbm_selectUserVoList);
+};
+
+// 테넌트유저 clear
+scwin.btn_reset_onclick = function (e) {
+
+    // 테넌트유저 dataMap 초기화
+    dmp_userVoDetail.setEmptyValue();
+    // 테넌트유저 readOnly false
+    grp_userInfo.setReadOnly(false);
+
+    btn_save.show("");   // 저장 버튼 생성
+    btn_edit.hide();     // 수정 버튼 제거
+    btn_delete.hide();   // 삭제 버튼 제거
+
+    spn_registerFlag.setValue("등록");
+};
+
+/**
+ * 그리드 셀 클릭 이벤트
+ * @date
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.grd_list_oncellclick = function (row, col, colId) {
+
+    dmp_userVoDetail.setJSON(dlt_userVoList.getRowJSON(row));
+
+    btn_save.hide(); 		// 저장 버튼 제거
+    btn_edit.show("");      // 수정 버튼 생성
+    btn_delete.show("");    // 삭제 버튼 생성
+
+    spn_registerFlag.setValue("수정");
+};
+
+/**
+ * 저장 버튼 클릭 이벤트
+ * @date
+ * @memberOf
+ * @param 
+ * @returns
+ * @author 
+ * @example
+ */
+scwin.btn_save_onclick = function (e) {
+
+    // 유효성 체크
+    var valInfo = [
+        { id: "userId", mandatory: true }
+
+    ];
+
+    if ($c.data.validateGroup(grp_userInfo, valInfo) === true) {
+        var promise = $c.win.confirm("저장하시겠습니까?");
+        promise.then(function (result) {
+            if (result) {
+                $c.sbm.execute(sbm_insertUserVo);
+            }
+        })
+    }
+};
+
+/**
+ * 사원정보 등록 콜백
+ * @date 
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.sbm_insertUserVo_submitdone = function (e) {
+
+    // error 수신시
+    var elHeader = e.responseJSON.elHeader;
+    if (elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
+        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        return false;
+    } else {
+        // 등록되었습니다. msg 출력
+        $c.win.alert("등록되었습니다.");
+    }
+
+    // 재조회
+    scwin.btn_search_onclick();
+};
+
+/**
+ * 수정 버튼 클릭 이벤트
+ * @date
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.btn_edit_onclick = function (e) {
+
+    // 유효성 체크
+    var valInfo = [
+        { id: "userId", mandatory: true }
+
+    ];
+
+    if ($c.data.validateGroup(grp_userInfo, valInfo) === true) {
+        var promise = $c.win.confirm("수정하시겠습니까?");
+        promise.then(function (result) {
+            if (result) {
+                $c.sbm.execute(sbm_updateUserVo);
+            }
+        })
+    }
+};
+
+/**
+ * 사원정보 수정 콜백
+ * @date 
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.sbm_updateUserVo_submitdone = function (e) {
+
+    // error 수신시
+    var elHeader = e.responseJSON.elHeader;
+    if (elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
+        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        return false;
+    } else {
+        // 수정되었습니다. msg 출력
+        $c.win.alert("수정되었습니다.");
+    }
+    // 재조회
+    scwin.btn_search_onclick();
+};
+
+/**
+ * 삭제 버튼 클릭 이벤트
+ * @date
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.btn_delete_onclick = function (e) {
+
+    // 유효성 체크
+    var valInfo = [
+        { id: "userId", mandatory: true }
+
+    ];
+
+    if ($c.data.validateGroup(grp_userInfo, valInfo) === true) {
+        var promise = $c.win.confirm("삭제하시겠습니까?");
+        promise.then(function (result) {
+            if (result) {
+                $c.sbm.execute(sbm_deleteUserVo);
+            }
+        })
+    }
+};
+
+/**
+ * 삭제 콜백
+ * @date 
+ * @memberOf
+ * @param 
+ * @returns 
+ * @author 
+ * @example
+ */
+scwin.sbm_deleteUserVo_submitdone = function (e) {
+
+    // error 수신시
+    var elHeader = e.responseJSON.elHeader;
+    if (elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
+        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        return false;
+    } else {
+        // 삭제되었습니다. msg 출력
+        $c.win.alert("삭제되었습니다.");
+    }
+
+    // 재조회
+    scwin.btn_search_onclick();
+};
 ]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
