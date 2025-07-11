@@ -15,71 +15,36 @@ public class ProworksAuthProcess {
 	
 	}
 	
-	public void checkAuth(HttpServletRequest request, String svcId, String inputData) throws Exception{
-	 	String requiredRole = getRequiredRoleForProWorksService(svcId);
-	 	System.out.println(requiredRole);
-	 	
-	 	if(requiredRole.equals("GUEST")){
-	 		AppLog.debug("게스트서비스 서비스 - 권한 체크 제외: " + svcId+ ", "+requiredRole);
-        return; // 권한 체크 없이 통과
-	 	}
-	 	System.out.println("유저헤더 터지는 것같은데");
-		UserHeader userHeader = ControllerContextUtil.getUserHeader();
-		System.out.println(userHeader);
-		
-//		try{
-//			if( userHeader != null ) {  // 세션이 존재함 
-//				if( userHeader instanceof ProworksUserHeader ) {
-//					ProworksUserHeader siteUserHeader = (ProworksUserHeader)userHeader;
-//					String userId = siteUserHeader.getUserId();
-//					
-//					// userId 기반으로   ServiceImple 을 사용하여 권한등 체크로직 수행 -> 아래는 ElBeanUtils 를 사용해서 권한 체크 하라는 예시 
-//					EmpService empService = (EmpService)ElBeanUtils.getBean("empServiceImpl");  
-//					boolean bCheck = false;
-//					//..... 권한 체크 로직 수행 
-//					
-//					if( false == bCheck) { // 권한 체크 결과 
-//					    throw new UserException("ERR.USER.0003");  // 권한이 존재하지 않습니다.
-//					}
-//				} else {
-//					throw new UserException("ERR.USER.0002");  // 세션이 존재하지 않습니다.
-//				}
-//			} else { /// 세션이 존재하지 않으면 
-//				throw new UserException("ERR.USER.0002");  // 세션이 존재하지 않습니다.
-//			}
-//		}catch(UserException ue){
-//			AppLog.error("CommAuthProcess-UserException", ue);
-//			throw ue;
-//		}catch(Exception e){
-//			AppLog.error("CommAuthProcess-Exception", e);
-//			throw new UserException("ERR.USER.0003");  // 기타 에러 메시지....
-//		}
-
-  if (!(userHeader instanceof ProworksUserHeader)) {
-	  		System.out.println(userHeader);
-            throw new UserException("ERR.USER.0002");
-        }
-        
-        ProworksUserHeader proWorksUserHeader = (ProworksUserHeader) userHeader;
-        
-        // AuthorizationService를 통한 권한 체크
-        AuthorizationService authService = 
-            (AuthorizationService) ElBeanUtils.getBean("authorizationService");
-        System.out.println("auth프로세스 헤더 뭐로넘어와?"+proWorksUserHeader);
-        
-        if (!authService.isActiveUser(proWorksUserHeader)) {
-            throw new UserException("ERR.USER.0004"); // 비활성 계정
-        }
-        
-        
-        if (!authService.hasRole(proWorksUserHeader, requiredRole)) {
-//            AppLog.debug("권한 부족 - 사용자: " + proWorksUserHeader.getRole() 
-//                   + ", 필요: " + requiredRole);
-        throw new UserException("ERR.USER.0003");
-        }
-        AppLog.debug("권한 체크 성공 - svcId: " + svcId + 
-                ", 사용자권한: " );
+	public void checkAuth(HttpServletRequest request, String svcId, String inputData) throws Exception {
+    String requiredRole = getRequiredRoleForProWorksService(svcId);
+    if ("GUEST".equals(requiredRole)) {
+        AppLog.debug("게스트서비스 서비스 - 권한 체크 제외: " + svcId + ", " + requiredRole);
+        return;
     }
+
+    // JWT 인증만 허용 (세션 기반 인증 완전 제거)
+    System.out.println("일단 권한프로세스는 된거");
+    Boolean jwtAuthenticated = (Boolean) request.getAttribute("jwtAuthenticated");
+    if (jwtAuthenticated == null || !jwtAuthenticated) {
+        throw new UserException("ERR.USER.0002"); // 인증 정보가 없습니다.
+    }
+
+    String userRole = (String) request.getAttribute("userRole");
+    Boolean isActive = (Boolean) request.getAttribute("isActive");
+
+    if (isActive == null || !isActive) {
+        throw new UserException("ERR.USER.0004"); // 비활성 계정
+    }
+
+    UserRole current = UserRole.valueOfOrDefault(userRole);
+    UserRole required = UserRole.valueOfOrDefault(requiredRole);
+    if (!current.hasPermission(required)) {
+        throw new UserException("ERR.USER.0003"); // 권한 부족
+    }
+
+    AppLog.debug("권한 체크 성공 - svcId: " + svcId + ", 사용자권한: " + userRole);
+}
+	
     
    private String getRequiredRoleForProWorksService(String svcId) {
     // 관리자 전용 서비스 (TNU0003xxx)
