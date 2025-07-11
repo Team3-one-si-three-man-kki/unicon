@@ -1,5 +1,5 @@
 (function () {
-  "use strict";
+  'use strict';
 
   // client/utils/EventEmitter.js
 
@@ -51,12 +51,12 @@
         throw new Error("roomId is required to join a room");
       }
       //    WebSocket 접속 주소에 roomId를 쿼리 파라미터로 추가합니다.
-      // IMPORTANT: Replace '13.125.229.206' with your AWS EC2 instance's PUBLIC IP address or domain name.
-      // 개발 환경에서 self-signed certificate를 사용하는 경우, 브라우저에서 경고를 무시해야 할 수 있습니다.
-      // 프로덕션 환경에서는 유효한 SSL/TLS 인증서를 사용해야 합니다.
-      this.ws = new WebSocket(
-        `wss://${"13.125.229.206:3000"}/?roomId=${roomId}`
-      );
+      // WebSocket 접속 주소를 현재 페이지의 호스트 주소(IP 또는 도메인)를 동적으로 사용하도록 수정합니다.
+      // 이렇게 하면 서버 주소가 변경되어도 클라이언트 코드를 수정할 필요가 없습니다.
+      // 포트는 3000으로 고정합니다.
+      const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}`;
+      console.log(`Connecting to WebSocket: ${wsUrl}`);
+      this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
         console.log("   WebSocket connected");
         try {
@@ -316,10 +316,7 @@
           })
         );
       } catch (error) {
-        console.error(
-          `    Failed to create consumer for ${producerId}:`,
-          error
-        );
+        console.error(`    Failed to create consumer for ${producerId}:`, error);
       }
     }
 
@@ -342,9 +339,7 @@
             reject(new Error(response.error));
           } else {
             resolve(
-              response.id
-                ? { id: response.id, ...response.data }
-                : response.data
+              response.id ? { id: response.id, ...response.data } : response.data
             );
           }
         });
@@ -446,17 +441,14 @@
 
   // client/modules/MediaPipeModule.js
 
+
   // ✅ EventEmitter를 상속받습니다.
   class MediaPipeModule extends EventEmitter {
     constructor(videoElement) {
       super();
 
       this.videoElement = videoElement;
-      this.worker = new Worker(
-        "/InsWebApp/media/dist/mediapipe-worker.bundle.js"
-      );
-	  console.log(this.worker);
-	  console.log("여기다!!!!");
+      this.worker = new Worker("/InsWebApp/media/dist/mediapipe-worker.bundle.js");
 
       // ✅ 1. 모든 상태와 상수를 클래스의 속성(this)으로 변경합니다.
       this.isDrowsy = false;
@@ -870,9 +862,7 @@
     removeRemoteTrack(producerId) {
       // 일반 비디오와 화면 공유 엘리먼트를 모두 찾아 제거
       const remoteVideo = document.getElementById(`remote-${producerId}`);
-      const screenShare = document.getElementById(
-        `remote-screen-${producerId}`
-      );
+      const screenShare = document.getElementById(`remote-screen-${producerId}`);
 
       if (remoteVideo) {
         remoteVideo.remove();
@@ -917,6 +907,7 @@
 
   // client/main.js
 
+
   // 2. 웹스퀘어의 전역 스코프에서 이 클래스들을 사용할 수 있도록 window 객체에 할당합니다.
   // 이것이 가장 중요한 부분입니다.
   // 2. 웹스퀘어의 전역 스코프에서 이 클래스들을 사용할 수 있도록 window 객체에 할당합니다.
@@ -926,5 +917,6 @@
     RoomClient: RoomClient,
     MediaPipeModule: MediaPipeModule,
   };
+
 })();
 //# sourceMappingURL=app.bundle.js.map
