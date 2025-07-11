@@ -57,12 +57,12 @@
         <makeGlobalObject value="true"/>
     </workflow>
     <submission>
-        <processMsg value=""/>
+       <processMsg value="데이터 처리 중13..." />
         <showSubmissionTime value="true"/>
-        <preSubmitFunction value=""/>
-        <callbackSubmitFunction value=""/>
-        <requestID value=""/>
-        <makeGlobalObject value="true"/>
+        <preSubmitFunction value="$c.sbm.__preSubmitFunction" />
+		<callbackSubmitFunction value="" />
+		<errorHandler value="" />
+        <makeGlobalObject value="true" />
     </submission>
     <visibleHelper>
         <targetHandler value=""/>

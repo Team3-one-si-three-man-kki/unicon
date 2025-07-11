@@ -4,11 +4,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.demo.proworks.jwt.JwtUtil;
 import com.demo.proworks.user.service.SignupService;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
@@ -18,8 +20,11 @@ import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
 import com.inswave.elfw.log.AppLog;
+import com.inswave.elfw.login.LoginException;
 import com.inswave.elfw.login.LoginInfo;
 import com.inswave.elfw.login.LoginProcessor;
+import com.inswave.elfw.util.ElBeanUtils;
+
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**  
@@ -56,13 +61,27 @@ public class UserController {
     	String email = loginVo.getEmail();
     	String password = loginVo.getPassword();
     	String tenantId = "2";
-    	System.out.println("겟야이디 패스워드 "+email+",,,,,,,,"+password+"=========================");
-    	System.out.println("컨트롤러는잘타는중~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    	System.out.println(request.toString().toString()+"ddddddddd");
-    	LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
-    	System.out.println("로그인 인포에 정보 잘담기는거야?"+info+"======================================");
-    	AppLog.debug("- Login 정보 : " + info.toString());
-    	System.out.println("로그인 성공 여부: " + info.isSuc());
+//    	System.out.println("겟야이디 패스워드 "+email+",,,,,,,,"+password+"=========================");
+//    	System.out.println("컨트롤러는잘타는중~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+//    	System.out.println(request.toString().toString()+"ddddddddd");
+//    	LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
+//    	System.out.println("로그인 인포에 정보 잘담기는거야?"+info+"======================================");
+//    	AppLog.debug("- Login 정보 : " + info.toString());
+//    	System.out.println("로그인 성공 여부: " + info.isSuc());
+    	try {
+        // 1. 로그인 처리 (ProworksLoginAdapter + ProworksSessionDataAdapter 호출)
+        LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
+        AppLog.debug("로그인 처리 결과: " + info);
+        
+        // 2. 성공 여부만 판별. 세션 어댑터가 JWT 헤더 설정을 이미 수행함
+        if (!info.isSuc()) {
+            throw new LoginException("EL.ERROR.LOGIN.0001");
+        }
+        
+    } catch (Exception e) {
+        AppLog.error("로그인 처리 중 오류 발생", e);
+        throw e;
+    }
     }
     
     /**

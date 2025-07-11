@@ -60,10 +60,17 @@
         
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
+<<<<<<< HEAD:src/main/webapp/main/unicon_tenant_login_page.xml
     // // 저장된 아이디 로드
     scwin.loadSavedUserId();
 
     // // 엔터키 이벤트 바인딩
+=======
+    // 저장된 아이디 로드
+   
+    // 엔터키 이벤트 바인딩
+
+>>>>>>> main:src/main/webapp/main/unicon_login_page.xml
     scwin.bindEnterKeyEvents();
     
     var mode = $p.getParameter("mode");
@@ -300,7 +307,7 @@ scwin.loadCustom_submitdone = function (e) {
     // error 수신시
 
     var elData = e.responseJSON;
-    console.log("받아온데이터입니다",elData)
+    console.log("받아온데이터입니다", elData)
     /*
     var elHeader  = e.responseJSON.elHeader;
     if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
@@ -316,26 +323,40 @@ scwin.login = function (e) {
 };
 
 scwin.login_submitdone = function (e) {
+    console.log("응답 전체:", e);
     var elHeader = e.responseJSON.elHeader; // 응답 전문 elHeader
 
-    if (elHeader != "" && elHeader != null && elHeader != "undefined") {
-
-        if (elHeader.resSuc == true) {
-            // setCookie("userId", elHeader.userId);
-            // moveLocation("html/emp/empList.html");
-
-            //$p.url("/ui/dept/Dept.xml");
-            // $c.win.moveUrl("/InsWebApp/ui/dept/Dept.xml");
-
-            //location.href="/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/dept/Dept.xml";
-            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
-
-
-        } else {
-            alert(elHeader.resMsg)
+    if (elHeader && elHeader.resSuc === true) {
+        console.log("Response Headers:", e.responseHeadersJSON);
+        var headers = {};
+        try {
+            headers = JSON.parse(e.responseHeadersJSON);
+        } catch (err) {
+            console.error("헤더 JSON 파싱 오류:", err);
         }
 
+        // 2) 토큰 추출 및 저장
+        var accessToken = headers.authorization;
+        var refreshToken = headers["refresh-token"];
+        console.log("Access Token:", accessToken);
+        console.log("Refresh Token:", refreshToken);
+        if (accessToken) sessionStorage.setItem('accessToken', accessToken);
+        if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken);
+
+        // 3. 페이지 이동
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
+
+    } else {
+        alert(elHeader ? elHeader.resMsg : "로그인 응답이 유효하지 않습니다.");
     }
+};
+
+
+
+
+
+scwin.login_submit = function (e) {
+
 };
 ]]></script>
         

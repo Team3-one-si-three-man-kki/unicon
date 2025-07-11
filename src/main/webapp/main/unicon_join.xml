@@ -22,7 +22,7 @@
         	<w2:workflowCollection />
         	<xf:submission id="signupProcess" action="/InsWebApp/TNU0000Signup.pwkjson" method="post" mediatype="application/json"
         		ref='data:json,{"id":"signup_dma","key":"elData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
-        		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="" ev:submiterror="" abortTrigger="">
+        		customHandler="" mode="asynchronous" processMsg="전송중..." ev:submit="" ev:submitdone="scwin.signupProcess_submitdone" ev:submiterror="" abortTrigger="">
         	</xf:submission>
         	<xf:submission id="emailCheck" action="/InsWebApp/TNU0000CheckEmail.pwkjson" method="post" mediatype="application/json" ref='data:json,{"id":"signup_dma","key":"elData"}' target="" encoding="UTF-8"
         		instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone=""
@@ -44,6 +44,11 @@ scwin.trigger1_onclick = function (e) {
 
 scwin.btn_check_onclick = function (e) {
     $c.sbm.execute(emailCheck);
+};
+
+
+scwin.signupProcess_submitdone = function (e) {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_main.xml";
 };
 ]]></script>
     </head>

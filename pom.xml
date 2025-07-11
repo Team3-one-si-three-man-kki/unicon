@@ -495,6 +495,34 @@
 			<artifactId>spring-security-crypto</artifactId>
 			<version>5.7.2</version>
 		</dependency>
+		  <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+        <version>5.7.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-config</artifactId>
+        <version>5.7.2</version>
+    </dependency>
+		
+		<dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>0.12.3</version>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>0.12.3</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>0.12.3</version>
+        <scope>runtime</scope>
+    </dependency>
 
 
 		<!-- Jedis for Redis -->
