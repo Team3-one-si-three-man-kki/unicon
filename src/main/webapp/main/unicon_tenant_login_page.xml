@@ -3,22 +3,13 @@
     xmlns:ev="http://www.w3.org/2001/xml-events"
     xmlns:w2="http://www.inswave.com/websquare" 
     xmlns:xf="http://www.w3.org/2002/xforms">
-    <head meta_templateCategory="01_Single" meta_templateName="1_06 login">
+    <head>
         <w2:type>COMPONENT</w2:type>
         <w2:buildDate/>
         <w2:MSA/>
         <xf:model>
-        	<!-- 서버 통신을 위한 submission -->
-        	<w2:workflowCollection>
-        		<w2:submission id="sbm_login" ref="data:loginInfo" target="data:loginInfo" action="/api/login" method="post"
-        			mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="scwin.loginSubmitHandler">
-        		</w2:submission>
-        	</w2:workflowCollection>
-        	<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
-        		target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
-        		customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
-        		abortTrigger="">
-        	</xf:submission>
+
+        	
         	<w2:dataCollection baseNode="map">
 
         		<w2:dataMap id="dm_loginCustomInfo">
@@ -51,9 +42,15 @@
         			</w2:keyInfo>
         		</w2:dataMap>
         	</w2:dataCollection>
+            <w2:workflowCollection />
         	<xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
         		ref='data:json,{"id":"dma_login","key":"elData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
         		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
+        		abortTrigger="">
+        	</xf:submission>
+            <xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
+        		target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+        		customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
         		abortTrigger="">
         	</xf:submission>
         </xf:model>
@@ -63,10 +60,10 @@
         
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
-    // 저장된 아이디 로드
+    // // 저장된 아이디 로드
     scwin.loadSavedUserId();
 
-    // 엔터키 이벤트 바인딩
+    // // 엔터키 이벤트 바인딩
     scwin.bindEnterKeyEvents();
     
     var mode = $p.getParameter("mode");
@@ -398,7 +395,7 @@ scwin.login_submitdone = function (e) {
     				style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
 
     				<w2:textbox id="mainTitle" label="메인 입니다."
-    					style="margin-bottom: 20px; display: block;font-size: font-size: expression(dm_loginCustomInfo.get('mainTitleSize') + 'px')&quot;" ref="data:dm_loginCustomInfo.mainTitle"/>
+    					style="margin-bottom: 20px; display: block; " ref="data:dm_loginCustomInfo.mainTitle"/>
 
     				<w2:textbox id="subTitle" label="서브입니다."
     					style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle"/>
