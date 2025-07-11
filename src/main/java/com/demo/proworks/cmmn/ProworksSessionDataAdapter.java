@@ -20,21 +20,19 @@ import com.demo.proworks.jwt.JwtUtil;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
 
-/**  
+/**
  * @Class Name : ProworksSessionDataAdapter.java
- * @Description : 프로젝트 세션 데이터 어댑터 - 로그인 후 사용자 헤더 정보를 Setting 한다. 
- * @Modification Information  
- * @
- * @  수정일                  수정자                  수정내용
- * @ ---------   ---------   -------------------------------
- * @ 2019.08.01   EL개발팀             최초생성
+ * @Description : 프로젝트 세션 데이터 어댑터 - 로그인 후 사용자 헤더 정보를 Setting 한다.
+ * @Modification Information
+ * @ @ 수정일 수정자 수정내용 @ --------- --------- ------------------------------- @
+ *   2019.08.01 EL개발팀 최초생성
  * 
  * @author EL개발팀
  * @since 2013.08.01
  * @version 1.0
  * @see
  * 
- *  Copyright (C) by Inswave All right reserved.
+ *      Copyright (C) by Inswave All right reserved.
  */
 public class ProworksSessionDataAdapter extends SessionDataAdapter {
 	/**
@@ -47,14 +45,12 @@ public class ProworksSessionDataAdapter extends SessionDataAdapter {
 	}
 
 	/**
-	 * 데모용 세션 터이터의 로드를 담당하는 구현체 메소드.
-	 * - 프레임워크 SessionDataAdapter 추상클래스의 세션 데이터를 Set 하는 구현체 메소드
-	 * - 프로젝트에 필요한 헤더 정보를 세팅한다. 
-	 * -  해당 헤더 정보는 로그인 후에 사용가능하다. 
+	 * 데모용 세션 터이터의 로드를 담당하는 구현체 메소드. - 프레임워크 SessionDataAdapter 추상클래스의 세션 데이터를 Set
+	 * 하는 구현체 메소드 - 프로젝트에 필요한 헤더 정보를 세팅한다. - 해당 헤더 정보는 로그인 후에 사용가능하다.
 	 * 
 	 * @param request HttpServletRequest
 	 * @param id
-	 * @param obj 기타 동적 파라미터에 추가할 수 있다.(ex. 서비스 구현체 )
+	 * @param obj     기타 동적 파라미터에 추가할 수 있다.(ex. 서비스 구현체 )
 	 * @return ProworksUserHeader
 	 * @throws AdapterException
 	 */

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject : 세션모듈설정정보 관련 처리를 담당하는 Sql Mapper
+	@description : 세션모듈설정정보 관련 처리를 담당하는 Sql Mapper
+	@author : 여경원
+	@since : 2025/07/02
+	@modification
+	===========================================================
+	DATE AUTHOR DESC
+	===========================================================
+	2025/07/02 여경원 최초 생성
+-->
+<mapper namespace="com.demo.proworks.module">
+	<insert id="insertSessionModule" parameterType="com.demo.proworks.module.vo.SessionModuleVo">
+		<!-- 세션모듈설정정보를 등록한다. -->
+
+		INSERT INTO SESSION_MODULE /* QueryID : com.demo.proworks.module.insertSessionModule */
+		(
+		SESSION_ID
+		, MODULE_ID
+		<if test="sessionModuleConfig!= null"> , SESSION_MODULE_CONFIG </if>
+		) VALUES ( #{sessionId}
+		, #{moduleId}
+		<if test="sessionModuleConfig!= null"> , #{sessionModuleConfig} </if>
+		)
+	</insert>
+
+	<update id="updateSessionModule" parameterType="com.demo.proworks.module.vo.SessionModuleVo">
+		<!-- 세션모듈설정정보를 갱신한다. -->
+
+		UPDATE SESSION_MODULE /* QueryID : com.demo.proworks.module.updateSessionModule */
+		SET
+		SESSION_ID = #{sessionId}
+		, MODULE_ID = #{moduleId}
+		<if test="sessionModuleConfig!= null"> , SESSION_MODULE_CONFIG = #{sessionModuleConfig} </if>
+		WHERE
+		SESSION_ID = #{sessionId}
+		AND MODULE_ID = #{moduleId}
+	</update>
+
+	<delete id="deleteSessionModule" parameterType="com.demo.proworks.module.vo.SessionModuleVo">
+		<!-- 세션모듈설정정보를 삭제한다. -->
+
+		DELETE FROM SESSION_MODULE /* QueryID : com.demo.proworks.module.deleteSessionModule */
+		WHERE
+		SESSION_ID = #{sessionId}
+		AND MODULE_ID =
+		#{moduleId}
+	</delete>
+
+	<select id="selectSessionModule" parameterType="com.demo.proworks.module.vo.SessionModuleVo"
+		resultType="com.demo.proworks.module.vo.SessionModuleVo">
+		<!-- 세션모듈설정정보를 상세 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.module.selectSessionModule */
+		SESSION_ID as sessionId, MODULE_ID as moduleId, SESSION_MODULE_CONFIG
+		as sessionModuleConfig
+		FROM SESSION_MODULE
+		WHERE
+		SESSION_ID = #{sessionId}
+		AND MODULE_ID = #{moduleId}
+	</select>
+
+	<select id="selectListSessionModule" parameterType="com.demo.proworks.module.vo.SessionModuleVo"
+		resultType="com.demo.proworks.module.vo.SessionModuleVo">
+		<!-- 세션모듈설정정보 목록을 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.module.selectListSessionModule */
+		SESSION_ID as sessionId, MODULE_ID as moduleId,
+		SESSION_MODULE_CONFIG as sessionModuleConfig
+		FROM (
+		SELECT S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+		FROM (
+		SELECT
+		*
+		FROM
+		SESSION_MODULE
+		WHERE 1=1
+
+		) S, (SELECT @ROWNUM := 0) TMP
+		) A
+		WHERE PAGE = #{pageIndex}
+	</select>
+
+	<select id="selectListCountSessionModule" parameterType="com.demo.proworks.module.vo.SessionModuleVo" resultType="long">
+		<!-- 세션모듈설정정보 목록의 카운트를 조회한다. -->
+
+		SELECT /* QueryID : com.demo.proworks.module.selectListCountSessionModule */
+		COUNT(*) totcnt
+		FROM SESSION_MODULE
+		WHERE 1=1
+
+	</select>
+
+	<select id="selectListSessionModuleDetailBySessionId" parameterType="string"
+		resultType="com.demo.proworks.module.vo.SessionModuleDetailVo">
+		<!-- 특정 세션의 모듈 상세 목록을 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.module.selectListSessionModuleDetailBySessionId */
+		sm.SESSION_ID as sessionId,
+		sm.MODULE_ID as moduleId,
+		sm.SESSION_MODULE_CONFIG as sessionModuleConfig,
+		m.CODE as code,
+		m.NAME as name,
+		m.DESCRIPTION as description,
+		m.ICON as icon
+		FROM SESSION_MODULE sm
+		INNER JOIN MODULE m ON sm.MODULE_ID = m.MODULE_ID
+		WHERE sm.SESSION_ID = #{sessionId}
+		ORDER BY sm.MODULE_ID
+	</select>
+
+</mapper>
