@@ -10,16 +10,22 @@ import com.inswave.elfw.log.AppLog;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 public class JwtAuthenticationFilter extends ElServletFilter {
-
 	private JwtUtil jwtUtil;
-	private TokenBlacklistService tokenBlacklistService;
-
-	public void setJwtUtil(JwtUtil jwtUtil) {
-		this.jwtUtil = jwtUtil;
-	}
+	
+    private TokenBlacklistService tokenBlacklistService;
+    
+  
+    public void setJwtUtil(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+    
+    public void setTokenBlacklistService(TokenBlacklistService tokenBlacklistService) {
+        this.tokenBlacklistService = tokenBlacklistService;
+    }
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -37,45 +43,46 @@ public class JwtAuthenticationFilter extends ElServletFilter {
 
 		// 나머지 JWT 인증 로직...
 		String token = extractToken(httpRequest);
-		
-		 if (token != null && !token.isEmpty()) {
-        // 1. 블랙리스트 확인
-        if (tokenBlacklistService.isBlacklisted(token)) {
-            AppLog.debug("토큰이 블랙리스트에 등록됨: " + token);
-            httpRequest.setAttribute("jwtAuthenticated", false);
-            chain.doFilter(request, response);
-            return;
-        }
 
-		 // 2. 토큰 유효성 검증
-        if (jwtUtil.validateToken(token)) {
-            try {
-                // 기존 토큰 처리 로직
-                String userId = jwtUtil.getUserIdFromToken(token);
-                String tenantId = jwtUtil.getTenantIdFromToken(token);
-                String userRole = jwtUtil.getRoleFromToken(token);
-                Boolean isActive = jwtUtil.getIsActiveFromToken(token);
 
-                httpRequest.setAttribute("jwtAuthenticated", true);
-                httpRequest.setAttribute("userId", userId);
-                httpRequest.setAttribute("tenantId", tenantId);
-                httpRequest.setAttribute("userRole", userRole);
-                httpRequest.setAttribute("isActive", isActive);
-                
-                AppLog.debug("JWT 인증 성공 - userId: " + userId);
-            } catch (Exception e) {
-                AppLog.error("JWT 토큰 처리 중 오류: " + e.getMessage(), e);
-                httpRequest.setAttribute("jwtAuthenticated", false);
-            }
-        } else {
-            httpRequest.setAttribute("jwtAuthenticated", false);
-        }
-    } else {
-        httpRequest.setAttribute("jwtAuthenticated", false);
-    }
+		if (token != null && !token.isEmpty()) {
+			// 1. 블랙리스트 확인
+			if (tokenBlacklistService.isBlacklisted(token)) {
+				AppLog.debug("토큰이 블랙리스트에 등록됨: " + token);
+				httpRequest.setAttribute("jwtAuthenticated", false);
+				chain.doFilter(request, response);
+				return;
+			}
 
-    chain.doFilter(request, response);
-}
+			// 2. 토큰 유효성 검증
+			if (jwtUtil.validateToken(token)) {
+				try {
+					// 기존 토큰 처리 로직
+					String userId = jwtUtil.getUserIdFromToken(token);
+					String tenantId = jwtUtil.getTenantIdFromToken(token);
+					String userRole = jwtUtil.getRoleFromToken(token);
+					Boolean isActive = jwtUtil.getIsActiveFromToken(token);
+
+					httpRequest.setAttribute("jwtAuthenticated", true);
+					httpRequest.setAttribute("userId", userId);
+					httpRequest.setAttribute("tenantId", tenantId);
+					httpRequest.setAttribute("userRole", userRole);
+					httpRequest.setAttribute("isActive", isActive);
+
+					AppLog.debug("JWT 인증 성공 - userId: " + userId);
+				} catch (Exception e) {
+					AppLog.error("JWT 토큰 처리 중 오류: " + e.getMessage(), e);
+					httpRequest.setAttribute("jwtAuthenticated", false);
+				}
+			} else {
+				httpRequest.setAttribute("jwtAuthenticated", false);
+			}
+		} else {
+			httpRequest.setAttribute("jwtAuthenticated", false);
+		}
+
+		chain.doFilter(request, response);
+	}
 
 	private boolean isGuestService(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();

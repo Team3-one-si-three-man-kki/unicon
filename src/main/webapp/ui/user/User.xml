@@ -10,39 +10,39 @@
 				<w2:dataMap baseNode="map" id="dmp_userVo" style="">
 					<w2:keyInfo>
 						<w2:key dataType="text" id="scTenantId" name="search_tenant_id"></w2:key>
-                        <w2:key dataType="text" id="scName" name="search_name"></w2:key>
-                        <w2:key dataType="text" id="scEmail" name="search_email"></w2:key>
-                        <w2:key dataType="text" id="scRole" name="search_role"></w2:key>
-                        <w2:key dataType="text" id="scCreatedAt" name="search_created_at"></w2:key>
-                       
+						<w2:key dataType="text" id="scName" name="search_name"></w2:key>
+						<w2:key dataType="text" id="scEmail" name="search_email"></w2:key>
+						<w2:key dataType="text" id="scRole" name="search_role"></w2:key>
+						<w2:key dataType="text" id="scCreatedAt" name="search_created_at"></w2:key>
+
 						<w2:key dataType="text" id="pageIndex" name="페이지번호" defaultValue="1"></w2:key>
 						<w2:key dataType="text" id="pageSize" name="페이지사이즈" defaultValue="10"></w2:key>
-						<w2:key dataType="text" id="totalPageCount" name="페이지건수" ></w2:key>
+						<w2:key dataType="text" id="totalPageCount" name="페이지건수"></w2:key>
 					</w2:keyInfo>
 					<w2:data use="false"></w2:data>
 				</w2:dataMap>
 				<w2:dataList baseNode="list" id="dlt_userVoList" repeatNode="map" saveRemovedData="true" style="">
 					<w2:columnInfo>
 						<w2:column dataType="text" id="userId" name="user_id"></w2:column>
-                        <w2:column dataType="text" id="tenantId" name="tenant_id"></w2:column>
-                        <w2:column dataType="text" id="name" name="name"></w2:column>
-                        <w2:column dataType="text" id="email" name="email"></w2:column>
-                        <w2:column dataType="text" id="password" name="password"></w2:column>
-                        <w2:column dataType="text" id="role" name="role"></w2:column>
-                        <w2:column dataType="text" id="createdAt" name="created_at"></w2:column>
-                       
+						<w2:column dataType="text" id="tenantId" name="tenant_id"></w2:column>
+						<w2:column dataType="text" id="name" name="name"></w2:column>
+						<w2:column dataType="text" id="email" name="email"></w2:column>
+						<w2:column dataType="text" id="password" name="password"></w2:column>
+						<w2:column dataType="text" id="role" name="role"></w2:column>
+						<w2:column dataType="text" id="createdAt" name="created_at"></w2:column>
+
 					</w2:columnInfo>
 				</w2:dataList>
 				<w2:dataMap baseNode="map" id="dmp_userVoDetail" style="">
 					<w2:keyInfo>
 						<w2:key dataType="text" id="userId" name="user_id"></w2:key>
-                        <w2:key dataType="text" id="tenantId" name="tenant_id"></w2:key>
-                        <w2:key dataType="text" id="name" name="name"></w2:key>
-                        <w2:key dataType="text" id="email" name="email"></w2:key>
-                        <w2:key dataType="text" id="password" name="password"></w2:key>
-                        <w2:key dataType="text" id="role" name="role"></w2:key>
-                        <w2:key dataType="text" id="createdAt" name="created_at"></w2:key>
-                       
+						<w2:key dataType="text" id="tenantId" name="tenant_id"></w2:key>
+						<w2:key dataType="text" id="name" name="name"></w2:key>
+						<w2:key dataType="text" id="email" name="email"></w2:key>
+						<w2:key dataType="text" id="password" name="password"></w2:key>
+						<w2:key dataType="text" id="role" name="role"></w2:key>
+						<w2:key dataType="text" id="createdAt" name="created_at"></w2:key>
+
 					</w2:keyInfo>
 				</w2:dataMap>
 			</w2:dataCollection>
@@ -53,21 +53,29 @@
 				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous"
 				processMsg="테넌트유저 리스트를 조회 중입니다." ev:submit="" ev:submitdone="scwin.sbm_userList_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_deleteUserVo" ref='data:json,{"id":"dmp_userVoDetail","key":"userVo"}' target="" action="/InsWebApp/TNU0002Del.pwkjson" method="post"
-				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg=""
-				ev:submit="" ev:submitdone="scwin.sbm_deleteUserVo_submitdone" ev:submiterror="" abortTrigger="">
+			<xf:submission id="sbm_deleteUserVo" ref='data:json,{"id":"dmp_userVoDetail","key":"userVo"}' target=""
+				action="/InsWebApp/TNU0002Del.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_deleteUserVo_submitdone"
+				ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_updateUserVo" ref='data:json,["dmp_userVoDetail",{"id":"dmp_userVoDetail","key":"userVo"}]' target="" action="/InsWebApp/TNU0002Upd.pwkjson" method="post"
-				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg=""
-				ev:submit="" ev:submitdone="scwin.sbm_updateUserVo_submitdone" ev:submiterror="" abortTrigger="">
+			<xf:submission id="sbm_updateUserVo" ref='data:json,["dmp_userVoDetail",{"id":"dmp_userVoDetail","key":"userVo"}]' target=""
+				action="/InsWebApp/TNU0002Upd.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_updateUserVo_submitdone"
+				ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_insertUserVo" ref='data:json,["dmp_userVoDetail",{"id":"dmp_userVoDetail","key":"userVo"}]' target="" action="/InsWebApp/TNU0002Ins.pwkjson" method="post"
-				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg=""
-				ev:submit="" ev:submitdone="scwin.sbm_insertUserVo_submitdone" ev:submiterror="" abortTrigger="">
+			<xf:submission id="sbm_insertUserVo" ref='data:json,["dmp_userVoDetail",{"id":"dmp_userVoDetail","key":"userVo"}]' target=""
+				action="/InsWebApp/TNU0002Ins.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_insertUserVo_submitdone"
+				ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_selectUserVo" ref='data:json,{"id":"dmp_userVo","key":"elData"}' target="" action="/InsWebApp/TNU0001UpdView.pwkjson" method="post"
-				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous"
-				processMsg="테넌트유저를 조회 중입니다." ev:submit="" ev:submitdone="scwin.sbm_selectUserVo_submitdone" ev:submiterror="" abortTrigger="">
+			<xf:submission id="sbm_selectUserVo" ref='data:json,{"id":"dmp_userVo","key":"elData"}' target=""
+				action="/InsWebApp/TNU0001UpdView.pwkjson" method="post" mediatype="application/json" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="테넌트유저를 조회 중입니다." ev:submit=""
+				ev:submitdone="scwin.sbm_selectUserVo_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_logout" action="/InsWebApp/TNU0000Logout.pwkjson" method="post" mediatype="application/json" ref="" target=""
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="로그아웃처리중" ev:submit="" ev:submitdone="scwin.sbm_logout_submitdone"
+				ev:submiterror="" abortTrigger="">
 			</xf:submission>
 		</xf:model>
 		<w2:layoutInfo></w2:layoutInfo>
@@ -390,12 +398,35 @@ scwin.sbm_deleteUserVo_submitdone = function (e) {
     // 재조회
     scwin.btn_search_onclick();
 };
+
+scwin.btn_logout_onclick = function (e) {
+    $c.sbm.execute($p.getSubmission("sbm_logout"));
+};
+
+
+
+scwin.sbm_logout_submitdone = function(resObj, sbmObj) {
+    // 이제 resObj.responseJSON.success 등 사용 가능
+    if (resObj.responseJSON && resObj.responseJSON.success) {
+        // 토큰·세션 정리
+        sessionStorage.removeItem("accessToken");
+        // 화면 전환
+         location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_login_page.xml";
+    } else {
+        $c.win.alert("로그아웃에 실패했습니다.");
+    }
+};
 ]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents " id="" style="">
 			<xf:group class="pgtbox" id="" style="">
+
 				<w2:textbox class="pgt_tit" id="" label="테넌트유저" style="" tagname="" />
+				<xf:trigger class="btn_cm" id="btn_logout" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true" meta_snippetName="8_01 기본버튼"
+					style="" type="button" ev:onclick="scwin.btn_logout_onclick">
+					<xf:label><![CDATA[로그아웃]]></xf:label>
+				</xf:trigger>
 			</xf:group>
 			<xf:group class="schbox" id="search_box" style="">
 				<xf:group class="schbox_inner" id="" style="">

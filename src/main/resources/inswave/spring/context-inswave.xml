@@ -129,6 +129,7 @@
 	<!-- JWT 인증 필터 빈 등록 -->
 	<bean id="jwtAuthenticationFilter" class="com.demo.proworks.jwt.JwtAuthenticationFilter">
 		<property name="jwtUtil" ref="jwtUtil" />
+		<property name="tokenBlacklistService" ref="tokenBlacklistService" />
 	</bean>
 
 
