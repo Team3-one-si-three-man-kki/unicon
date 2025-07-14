@@ -8,7 +8,7 @@
 			<xf:instance>
 				<data xmlns="" />
 			</xf:instance>
-			<w2:dataList baseNode="list" repeatNode="map" id="dlt_documentList" saveRemovedData="true">
+			<w2:dataList baseNode="list" repeatNode="" id="userList" saveRemovedData="true">
 				<w2:columnInfo>
 					<w2:column id="chk" name="선택" dataType="text"></w2:column>
 					<w2:column id="userId" name="사용자 ID" dataType="text"></w2:column>
@@ -60,7 +60,7 @@
 				<w2:dataMap baseNode="map" id="emailCheckData">
 					<w2:keyInfo>
 						<w2:key dataType="text" name="이메일" id="email"></w2:key>
-						<w2:key dataType="text" name="테넌트 ID" id="tenantId"></w2:key>
+						<w2:key dataType="text" name="테넌트ID" id="tenantId"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
 			</w2:dataCollection>
@@ -75,9 +75,10 @@
 				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_saveUserList_submitdone" ev:submiterror=""
 				abortTrigger="">
 			</xf:submission>
+
 			<xf:submission id="sbm_checkEmailByTenant" action="/InsWebApp/checkEmailByTenant.pwkjson" method="post"
-				mediatype="application/json" ref='data:json,{"id":"emailCheckData","key":"vo"}' target="" encoding="UTF-8" instance="" replace=""
-				errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_checkEmailByTenant_submitdone"
+				mediatype="application/json" ref='data:json,{"id":"emailCheckData","key":"vo"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_checkEmailByTenant_submitdone"
 				ev:submiterror="" abortTrigger="">
 			</xf:submission>
 		</xf:model>
@@ -98,6 +99,9 @@
     scwin.showPanel('user');
 
     scwin.btn_search_onclick();
+
+
+
 
 
 };
@@ -238,103 +242,59 @@ scwin.btn_save_onclick = function (e) {
 };
 
 console.log("✅ 저장 버튼 함수 수정 완료!");
+
+
 scwin.sbm_checkEmailByTenant_submitdone = function (e) {
     console.log("이메일 중복검사 완료:", e);
 
     try {
-        const response = e.responseJSON;
-        console.log("서버 응답:", response);
+        var response = e.responseJSON;
 
-        if (!response) {
-            console.error("서버 응답이 없습니다.");
-            alert("이메일 중복검사 중 오류가 발생했습니다.");
+        // 'elData'가 없는 경우를 대비한 방어 코드
+        if (!response || !response.elData) {
+            console.error("잘못된 서버 응답 형식입니다.", response);
+            alert("서버 응답 처리 중 오류가 발생했습니다.");
             return;
         }
 
-        let emailCheckResult;
-        let email;
+        // elData에서 직접 값을 가져오도록 수정
+        var emailCheckResult = response.elData.emailCheckResult;
+        var email = response.elData.email;
 
-        if (response.elData) {
-            // elData 구조인 경우
-            emailCheckResult = response.elData.emailCheckResult || response.elData.result;
-            email = response.elData.email;
-        } else {
-            // 단순 JSON 응답인 경우
-            emailCheckResult = response.emailCheckResult || response.result;
-            email = response.email;
-        }
-
-        console.log("이메일 검사 결과:", emailCheckResult, "이메일:", email);
-
-        if (emailCheckResult === "unavailable" || emailCheckResult === false) {
+        // 'unavailable' 상태일 때만 중복으로 처리
+        if (emailCheckResult === "unavailable") {
             alert("'" + email + "'은(는) 이미 사용 중인 이메일입니다.\n다른 이메일을 입력해주세요.");
 
-            // 포커스를 해당 셀로 이동
-            const gridComponent = $p.getComponentById("grd");
-            if (gridComponent) {
-                const currentRowIndex = gridComponent.getFocusedRowIndex();
-                if (currentRowIndex >= 0) {
-                    gridComponent.focusCell(currentRowIndex, "email");
+            // 해당 셀로 포커스 이동 및 값 초기화
+            if (scwin.currentEmailCheckRowIndex !== undefined) {
+                var grid = $p.getComponentById("grd");
+                var dataList = $p.getComponentById("userList");
+
+                // 새로운 행(rowStatus 'C')인 경우 값을 비움
+                if (dataList.getRowStatus(scwin.currentEmailCheckRowIndex) === "C") {
+                    dataList.setCellData(scwin.currentEmailCheckRowIndex, "email", "");
+                }
+
+                if (grid) {
+                    grid.focusCell(scwin.currentEmailCheckRowIndex, "email");
                 }
             }
-        } else if (emailCheckResult === "available" || emailCheckResult === true) {
-            console.log("이메일 사용 가능:", email);
-            // 성공 메시지는 표시하지 않고 로그만 남김
-        } else {
-            console.warn("알 수 없는 이메일 검사 결과:", emailCheckResult);
-            alert("이메일 중복검사 결과를 확인할 수 없습니다.");
-        }
-
-    } catch (error) {
-        console.error("응답 처리 중 오류:", error);
-        alert("이메일 중복검사 응답 처리 중 오류가 발생했습니다: " + error.message);
-    }
-};
-scwin.debugEmailCheck = function () {
-    console.log("=== 이메일 중복검사 디버깅 정보 ===");
-
-    try {
-        const emailCheckDataMap = $p.getComponentById("emailCheckData");
-        if (emailCheckDataMap) {
-            console.log("emailCheckData 존재:", emailCheckDataMap.getJSON());
-        } else {
-            console.log("emailCheckData가 존재하지 않음");
         }
     } catch (error) {
-        console.log("emailCheckData 확인 중 오류:", error);
-    }
-
-    try {
-        const submission = $p.getSubmission("sbm_checkEmailByTenant");
-        if (submission) {
-            console.log("sbm_checkEmailByTenant submission 존재");
-            console.log("Action URL:", submission.action);
-        } else {
-            console.log("sbm_checkEmailByTenant submission이 존재하지 않음");
-        }
-    } catch (error) {
-        console.log("Submission 확인 중 오류:", error);
-    }
-
-    try {
-        const gridComponent = $p.getComponentById("grd");
-        if (gridComponent) {
-            console.log("Grid 컴포넌트 존재");
-            console.log("현재 포커스된 행:", gridComponent.getFocusedRowIndex());
-        } else {
-            console.log("Grid 컴포넌트가 존재하지 않음 - ID 확인 필요");
-        }
-    } catch (error) {
-        console.log("Grid 확인 중 오류:", error);
+        console.error("중복검사 결과 처리 중 오류:", error);
+        alert("오류가 발생했습니다. 개발자 도구 콘솔을 확인해주세요.");
     }
 };
 
-scwin.grid_oncellvaluechange = function (e) {
-    console.log("그리드 셀 값 변경:", e);
+scwin.grd_oncellindexchange = function (info) {
+    // 포커스가 이동하기 전의 컬럼이 'email' 컬럼일 때만 로직 실행
+    if (info.oldColId === "email") {
+        console.log("이메일 컬럼에서 포커스가 이동했습니다.");
 
-    if (e.colId === "email") {
-        const emailValue = e.newValue;
-        console.log("이메일 컬럼 변경 감지. 새 값:", emailValue);
+        // 이전 셀의 데이터(방금 입력한 이메일 값)를 가져옵니다.
+        const emailValue = userList.getCellData(info.oldRowIndex, info.oldColId);
+
+        console.log("검사할 이메일 값:", emailValue);
 
         if (!emailValue || emailValue.trim() === "") {
             console.log("이메일이 비어있어 검사를 건너뜁니다.");
@@ -347,57 +307,55 @@ scwin.grid_oncellvaluechange = function (e) {
             return;
         }
 
-        const rowStatus = userList.getRowStatus(e.rowIndex);
-        if (rowStatus !== "C" && e.newValue === e.oldValue) {
-            console.log("이메일이 변경되지 않아 중복검사를 건너뜁니다.");
+        // 중복검사 서브미션 실행
+        try {
+            const emailCheckDataMap = $p.getComponentById("emailCheckData");
+            if (emailCheckDataMap) {
+                emailCheckDataMap.set("email", emailValue);
+                emailCheckDataMap.set("tenantId", "1"); // 테넌트 ID
+
+                console.log("이메일 중복검사 서브미션 실행. 전송 데이터:", emailCheckDataMap.getJSON());
+                scwin.currentEmailCheckRowIndex = info.oldRowIndex; // 현재 행 인덱스 저장
+                $p.executeSubmission("sbm_checkEmailByTenant");
+            }
+        } catch (error) {
+            console.error("이메일 중복검사 실행 중 오류:", error);
+        }
+    }
+};  
+
+scwin.userList_oncelldatachange = function(info) {
+    // colId를 colID로 수정
+    if (info.colID === "email") {
+        const emailValue = info.newValue; 
+        console.log("이메일 값 변경 감지 및 검사 시작. 값:", emailValue);
+
+        if (!emailValue || emailValue.trim() === "") {
+            console.log("이메일이 비어있어 검사를 건너뜁니다.");
             return;
         }
 
-        const tenantId = "1";
-
-        console.log("emailCheckData 설정 시작...");
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailValue)) {
+            alert("올바른 이메일 형식이 아닙니다.");
+            // colId를 colID로 수정
+            info.dataList.setCellData(info.rowIndex, info.colID, info.oldValue, true);
+            return;
+        }
 
         try {
             const emailCheckDataMap = $p.getComponentById("emailCheckData");
-
             if (emailCheckDataMap) {
                 emailCheckDataMap.set("email", emailValue);
-                emailCheckDataMap.set("tenantId", tenantId);
+                emailCheckDataMap.set("tenantId", "1");
 
                 console.log("이메일 중복검사 서브미션 실행. 전송 데이터:", emailCheckDataMap.getJSON());
-
-                // 중복검사 서브미션 실행
-                $p.executeSubmission("mf_sbm_checkEmailByTenant");
-            } else {
-                console.error("sbm_checkEmailByTenant_submitdone  DataMap을 찾을 수 없습니다.");
-                alert("이메일 중복검사 설정에 오류가 발생했습니다.");
+                scwin.currentEmailCheckRowIndex = info.rowIndex; 
+                $p.executeSubmission("sbm_checkEmailByTenant");
             }
-
         } catch (error) {
             console.error("이메일 중복검사 실행 중 오류:", error);
-            alert("이메일 중복검사 설정에 오류가 발생했습니다: " + error.message);
         }
-    }
-};
-
-scwin.testEmailCheck = function (email, tenantId) {
-    if (!email) email = "test@example.com";
-    if (!tenantId) tenantId = "1";
-
-    console.log("수동 이메일 중복검사 실행:", email, tenantId);
-
-    try {
-        const emailCheckDataMap = $p.getComponentById("emailCheckData");
-        if (emailCheckDataMap) {
-            emailCheckDataMap.set("email", email);
-            emailCheckDataMap.set("tenantId", tenantId);
-            console.log("테스트 데이터 설정:", emailCheckDataMap.getJSON());
-            $p.executeSubmission("sbm_checkEmailByTenant");
-        } else {
-            console.error("emailCheckData DataMap을 찾을 수 없습니다.");
-        }
-    } catch (error) {
-        console.error("테스트 실행 중 오류:", error);
     }
 };]]></script>
 		<style>
@@ -627,8 +585,8 @@ scwin.testEmailCheck = function (email, tenantId) {
 								</xf:group>
 							</xf:group>
 							<w2:gridView autoFit="allColumn" autoFitMinWidth="900" class="gvw" dataList="data:userList" editModeEvent="onclick"
-								id="grd" keyMoveEditMode="true" rowNumHeaderValue="순번" rowNumVisible="true" rowStatusHeaderValue="상태" rowStatusVisible="true"
-								sortable="true" style="height: 150px;" ev:oncellvaluechange="scwin.grid_oncellvaluechange">
+								id="grd" rowNumHeaderValue="순번" rowNumVisible="true" rowStatusHeaderValue="상태" rowStatusVisible="true" sortable="true"
+								style="height: 150px;" ev:oncellindexchange="scwin.grd_oncellindexchange" ev:oncellindexchange="scwin.grd_oncellindexchange">
 								<w2:caption id="caption8" style="" value="this is a grid caption."></w2:caption>
 								<w2:header id="header3" style="">
 									<w2:row id="row5" style="">

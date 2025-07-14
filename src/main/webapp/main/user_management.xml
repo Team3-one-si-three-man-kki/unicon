@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+			<w2:dataList baseNode="list" repeatNode="" id="userList" saveRemovedData="true">
+				<w2:columnInfo>
+					<w2:column id="chk" name="선택" dataType="text"></w2:column>
+					<w2:column id="userId" name="사용자 ID" dataType="text"></w2:column>
+					<w2:column id="name" name="성명" dataType="text"></w2:column>
+					<w2:column id="email" name="이메일" dataType="text"></w2:column>
+					<w2:column id="password" name="비밀번호" dataType="text"></w2:column>
+					<w2:column id="role" name="역할" dataType="text"></w2:column>
+					<w2:column id="passwordDisplay" name="비밀번호표시" dataType="text"></w2:column>
+				</w2:columnInfo>
+			</w2:dataList>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="" id="userList" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column id="chk" name="선택" dataType="text"></w2:column>
+						<w2:column dataType="text" name="테넌트 ID" id="tenantId"></w2:column>
+						<w2:column id="userId" name="사용자 ID" dataType="text"></w2:column>
+						<w2:column id="name" name="성명" dataType="text"></w2:column>
+						<w2:column id="email" name="이메일" dataType="text"></w2:column>
+						<w2:column id="password" name="비밀번호" dataType="text"></w2:column>
+						<w2:column dataType="text" name="역할" id="role"></w2:column>
+						<w2:column dataType="text" name="생성일시" id="createdAt"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="userDetail">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="테넌트 id" id="tenantId"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+
+				<w2:dataList baseNode="list" repeatNode="" id="dlt_roleList" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="코드" id="role_cd"></w2:column>
+						<w2:column dataType="text" name="코드명" id="role_nm"></w2:column>
+					</w2:columnInfo>
+					<w2:data use="true">
+						<w2:row>
+							<role_cd><![CDATA[admin]]></role_cd>
+							<role_nm><![CDATA[관리자]]></role_nm>
+						</w2:row>
+						<w2:row>
+							<role_cd><![CDATA[manager]]></role_cd>
+							<role_nm><![CDATA[매니저]]></role_nm>
+						</w2:row>
+						<w2:row>
+							<role_cd><![CDATA[user]]></role_cd>
+							<role_nm><![CDATA[사용자]]></role_nm>
+						</w2:row>
+					</w2:data>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="emailCheckData">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="이메일" id="email"></w2:key>
+						<w2:key dataType="text" name="테넌트ID" id="tenantId"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<xf:submission id="sbm_selectUserList" action="/InsWebApp/selectUserList.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"userDetail","key":"vo"}'
+				target='data:json,{"id":"userList","key":"userVoList",  "baseNode":"elData"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_selectUserList_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_saveUserList" action="/InsWebApp/saveUserList.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"userList","key":"saveDataList"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_saveUserList_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
+
+			<xf:submission id="sbm_checkEmailByTenant" action="/InsWebApp/checkEmailByTenant.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"emailCheckData","key":"vo"}' target="" encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_checkEmailByTenant_submitdone"
+				ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:publicInfo></w2:publicInfo>
+		<script type="text/javascript" lazy="false"><![CDATA[
+scwin.onpageload = function () {
+    scwin.btn_search_onclick();
+};
+
+scwin.btn_insert_onclick = function (e) {
+    var _rowIdx = userList.insertRow();
+    userList.setCellData(_rowIdx, "tenantId", "1");
+};
+
+scwin.btn_delete_onclick = function (e) {
+    var focusIdx = grd.getFocusedRowIndex();
+    if (focusIdx < 0) {
+        alert("삭제할 행을 먼저 선택해주세요.");
+        return;
+    }
+    userList.deleteRow(focusIdx);
+};
+
+scwin.btn_remove_onclick = function (e) {
+    var focusIdx = grd.getFocusedRowIndex();
+    if (focusIdx < 0) {
+        alert("삭제할 행을 먼저 선택해주세요.");
+        return;
+    }
+    var removeData = userList.removeRow(focusIdx);
+    console.log("삭제된 데이터:", JSON.stringify(removeData));
+};
+
+scwin.btn_deleteRows_onclick = function (e) {
+    var chkIdxArr = grd.getCheckedIndex("chk");
+    userList.deleteRows(chkIdxArr);
+};
+
+scwin.btn_removeRows_onclick = function (e) {
+    var chkIdxArr = grd.getCheckedIndex("chk");
+    let removeObjs = userList.removeRows(chkIdxArr);
+    console.log(JSON.stringify(removeObjs));
+};
+
+scwin.btn_reset_onclick = function (e) {
+    userList.setData([]);
+};
+
+scwin.btn_down_onclick = function (e) {
+    var options = {
+        exceptColumns: "chk"
+    };
+    grd.advancedExcelDownload({});
+};
+
+scwin.btn_upload_onclick = function (e) {
+    var options = {};
+    options.headerExist = "1";
+    options.type = "1";
+    options.status = "C";
+    grd.advancedExcelUpload(options);
+};
+
+scwin.btn_search_onclick = function (e) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tenantIdFromUrl = "1"; // 또는 urlParams.get('tenant');
+
+    var userDetailDataMap = $p.getComponentById("userDetail");
+
+    if (userDetailDataMap) {
+        userDetailDataMap.set("tenantId", tenantIdFromUrl);
+    } else {
+        alert("userDetail DataMap을 찾을 수 없습니다. XML의 ID를 확인해주세요.");
+        return;
+    }
+
+    console.log("'sbm_selectUserList' 서브미션을 실행합니다. 전송 데이터:", userDetailDataMap.getJSON());
+    $p.executeSubmission("sbm_selectUserList");
+};
+
+scwin.ui_schRole_onviewchange = function (info) {
+    userList.clearFilter();
+    userList.setColumnFilter({ type: 'row', colIndex: 'role', key: info.newValue, condition: 'and' });
+};
+
+scwin.sbm_selectTenantUser_submitdone = function (e) {
+    var receivedData = e.responseJSON;
+
+    if (Array.isArray(receivedData)) {
+        userList.setJSON(receivedData);
+    } else {
+        var elHeader = receivedData.elHeader;
+        if (elHeader && elHeader.resSuc === false) {
+            $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        }
+    }
+};
+
+scwin.sbm_saveAllUser_submitdone = function (e) {
+    alert("저장이 완료되었습니다.");
+    scwin.btn_search_onclick();
+};
+
+/**
+ * @description 테넌트별 사용자 목록 조회 콜백 함수
+ */
+scwin.sbm_selectUserList_submitdone = function (e) {
+    console.log("서버 응답 원본:", e.responseJSON);
+
+    var responseData = e.responseJSON;
+
+    var userArray = responseData.elData.userVoList;
+
+    if (userArray && Array.isArray(userArray)) {
+        userList.setJSON(userArray);
+
+        scwin.maskAllPasswords();
+
+    } else {
+        userList.removeAll();
+        console.error("서버 응답에서 유효한 사용자 목록 배열을 찾을 수 없습니다. 응답 구조를 확인하세요.");
+    }
+
+    console.log("DataList('userList')에 최종적으로 담긴 데이터:", userList.getAllJSON());
+};
+
+scwin.sbm_saveUserList_submitdone = function (e) {
+    alert("저장이 완료되었습니다.");
+    // 데이터 재조회하여 화면 갱신
+    scwin.btn_search_onclick();
+};
+
+/**
+ * @description 개선된 저장 버튼 클릭 이벤트
+ */
+scwin.btn_save_onclick = function (e) {
+    console.log("저장 버튼 클릭됨");
+
+    var dataList = $p.getComponentById("userList");
+    if (!dataList) {
+        console.error("userList DataList를 찾을 수 없습니다.");
+        alert("데이터 목록을 찾을 수 없습니다.");
+        return;
+    }
+
+    var modifiedData = dataList.getModifiedJSON();
+    console.log("변경된 데이터:", modifiedData);
+
+    if (modifiedData.length === 0) {
+        alert("저장할 변경사항이 없습니다.");
+        return;
+    }
+
+    if (confirm("변경 내용을 저장하시겠습니까?")) {
+        // 저장 전 실제 비밀번호로 복원
+        scwin.restorePasswordsBeforeSave();
+
+        console.log("서버로 전송할 데이터:", dataList.getModifiedJSON());
+
+        try {
+            $p.executeSubmission("sbm_saveUserList");
+            console.log("저장 서브미션 실행 완료");
+        } catch (error) {
+            console.error("저장 서브미션 실행 실패:", error);
+            alert("저장 중 오류가 발생했습니다: " + error.message);
+            scwin.reapplyPasswordMasking();
+        }
+    }
+};
+
+console.log("저장 버튼 함수 수정 완료!");
+
+scwin.sbm_checkEmailByTenant_submitdone = function (e) {
+    console.log("이메일 중복검사 완료:", e);
+
+    try {
+        var response = e.responseJSON;
+
+        if (!response || !response.elData) {
+            console.error("잘못된 서버 응답 형식입니다.", response);
+            alert("서버 응답 처리 중 오류가 발생했습니다.");
+            return;
+        }
+
+        var emailCheckResult = response.elData.emailCheckResult;
+        var email = response.elData.email;
+
+        if (emailCheckResult === "unavailable") {
+            alert("'" + email + "'은(는) 이미 사용 중인 이메일입니다.\n다른 이메일을 입력해주세요.");
+
+            if (scwin.currentEmailCheckRowIndex !== undefined) {
+                var grid = $p.getComponentById("grd");
+                var dataList = $p.getComponentById("userList");
+
+                if (dataList.getRowStatus(scwin.currentEmailCheckRowIndex) === "C") {
+                    dataList.setCellData(scwin.currentEmailCheckRowIndex, "email", "");
+                }
+
+                if (grid) {
+                    grid.focusCell(scwin.currentEmailCheckRowIndex, "email");
+                }
+            }
+        }
+    } catch (error) {
+        console.error("중복검사 결과 처리 중 오류:", error);
+        alert("오류가 발생했습니다. 개발자 도구 콘솔을 확인해주세요.");
+    }
+};
+
+scwin.grd_oncellindexchange = function (newRowIndex, newColIndex, oldRowIndex, oldColIndex) {
+    console.log("=== oncellindexchange 이벤트 발생 ===");
+    console.log("newRowIndex:", newRowIndex);
+    console.log("newColIndex:", newColIndex);
+    console.log("oldRowIndex:", oldRowIndex);
+    console.log("oldColIndex:", oldColIndex);
+
+    const grid = $p.getComponentById("grd");
+    const oldColId = grid.getColumnID(oldColIndex);
+    const newColId = grid.getColumnID(newColIndex);
+
+    console.log("oldColId:", oldColId);
+    console.log("newColId:", newColId);
+
+    if (oldColId === "email") {
+        console.log("이메일 컬럼에서 포커스가 이동했습니다.");
+
+        // 이메일 값 가져오기
+        const emailValue = userList.getCellData(oldRowIndex, "email");
+        console.log("검사할 이메일 값:", emailValue);
+
+        if (!emailValue || emailValue.trim() === "") {
+            console.log("이메일이 비어있어 검사를 건너뜁니다.");
+            return;
+        }
+
+        // 이메일 형식 검증
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailValue)) {
+            alert("올바른 이메일 형식이 아닙니다.");
+            // 포커스를 다시 이메일 셀로 이동
+            setTimeout(function () {
+                grid.focusCell(oldRowIndex, oldColIndex);
+            }, 100);
+            return;
+        }
+
+        // 중복검사 실행
+        scwin.checkEmailDuplicate(emailValue, oldRowIndex);
+    }
+};
+
+// 이메일 중복검사 함수
+scwin.checkEmailDuplicate = function (email, rowIndex) {
+    console.log("이메일 중복검사 시작:", email);
+
+    $.ajax({
+        url: '/InsWebApp/checkEmailByTenant.pwkjson',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            vo: {
+                email: email,
+                tenantId: "1"
+            }
+        }),
+        success: function (response) {
+            let emailCheckResult = response.emailCheckResult || response.elData?.emailCheckResult;
+
+            if (emailCheckResult === "unavailable") {
+                $c.win.alert("'" + email + "'은(는) 이미 사용 중인 이메일입니다.\n다른 이메일을 입력해주세요.", function () {
+                    const grid = $p.getComponentById("grd");
+                    if (grid && userList.getRowStatus(rowIndex) === "C") {
+                        userList.setCellData(rowIndex, "email", "");
+                        setTimeout(function () {
+                            grid.focusCell(rowIndex, grid.getColumnIndex("email"));
+                        }, 100);
+                    }
+                });
+            } else if (emailCheckResult === "available") {
+                console.log("사용 가능한 이메일입니다.");
+            }
+        },
+        error: function (xhr, status, error) {
+            $c.win.alert("이메일 중복검사 중 오류가 발생했습니다.");
+        }
+    });
+};
+
+
+/**
+ * @description 모든 비밀번호를 *** 으로 마스킹
+ */
+scwin.maskAllPasswords = function () {
+    var rowCount = userList.getTotalRow();
+    for (var i = 0; i < rowCount; i++) {
+        var password = userList.getCellData(i, "password");
+        if (password && password.length > 0 && password !== "***") {
+            userList.setCellData(i, "originalPassword", password);
+            userList.setCellData(i, "password", "***");
+        }
+    }
+};
+
+/**
+ * @description 그리드 셀 포커스 변경 시 처리
+ */
+scwin.grd_oncellposchange = function (row, col, oldRow, oldCol) {
+    if (row === -1 || col === -1) return; // 유효하지 않은 인덱스 체크
+
+    var grid = $p.getComponentById("grd");
+    var colId = grid.getColumnID(col);
+    var oldColId = oldCol >= 0 ? grid.getColumnID(oldCol) : null;
+
+    console.log("셀 포커스 변경:", "새 위치(" + row + "," + colId + ") 이전 위치(" + oldRow + "," + oldColId + ")");
+
+    if (colId === "password") {
+        var currentValue = userList.getCellData(row, "password");
+        var originalPassword = userList.getCellData(row, "originalPassword");
+
+        console.log("비밀번호 컬럼 진입 - 현재값:", currentValue, "원본값:", originalPassword);
+
+        if (currentValue === "***" && originalPassword) {
+            userList.setCellData(row, "password", originalPassword);
+            console.log("마스킹 해제 - 원본 비밀번호 표시");
+        }
+        else if (!currentValue || currentValue === "") {
+            userList.setCellData(row, "password", "");
+            console.log("새 행 - 빈 비밀번호");
+        }
+    }
+
+    if (oldColId === "password" && oldRow >= 0) {
+        var currentPassword = userList.getCellData(oldRow, "password");
+
+        console.log("비밀번호 컬럼 이탈 - 현재값:", currentPassword);
+
+        if (currentPassword && currentPassword !== "***" && currentPassword.trim() !== "") {
+            userList.setCellData(oldRow, "originalPassword", currentPassword);
+            userList.setCellData(oldRow, "password", "***");
+            console.log("비밀번호 마스킹 처리 완료");
+        }
+    }
+};
+
+/**
+ * @description 셀 편집 완료 시 처리 (추가 보완)
+ */
+scwin.grd_oncelleditend = function (row, col, value) {
+    var grid = $p.getComponentById("grd");
+    var colId = grid.getColumnID(col);
+
+    console.log("셀 편집 완료:", colId, "값:", value);
+
+    if (colId === "password") {
+        if (value && value !== "***" && value.trim() !== "") {
+            userList.setCellData(row, "originalPassword", value);
+
+            setTimeout(function () {
+                var currentValue = userList.getCellData(row, "password");
+                if (currentValue !== "***") {
+                    userList.setCellData(row, "password", "***");
+                    console.log("편집 완료 후 마스킹 적용");
+                }
+            }, 500); 
+        }
+    }
+};
+
+
+/**
+ * @description 저장 전 실제 비밀번호로 복원
+ */
+scwin.restorePasswordsBeforeSave = function () {
+    console.log("저장 전 비밀번호 복원 시작");
+    var rowCount = userList.getTotalRow();
+    var restoredCount = 0;
+
+    for (var i = 0; i < rowCount; i++) {
+        var originalPassword = userList.getCellData(i, "originalPassword");
+        var currentPassword = userList.getCellData(i, "password");
+
+        if (originalPassword && currentPassword === "***") {
+            userList.setCellData(i, "password", originalPassword);
+            restoredCount++;
+            console.log("행 " + i + " 비밀번호 복원");
+        }
+    }
+
+    console.log("총 " + restoredCount + "개 비밀번호 복원 완료");
+};
+
+/**
+ * @description 저장 후 다시 마스킹 적용
+ */
+scwin.reapplyPasswordMasking = function () {
+    console.log("저장 후 비밀번호 재마스킹 시작");
+    setTimeout(function () {
+        scwin.maskAllPasswords();
+        console.log("비밀번호 재마스킹 완료");
+    }, 100);
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="sub_contents " id="" style="">
+			<xf:group class="pgtbox" id="" style="">
+				<w2:textbox class="pgt_tit" id="" label="사용자 관리" style="" tagname=""></w2:textbox>
+				<xf:group class="breadcrumb" id="" style="">
+					<xf:group id="" style="" tagname="ul">
+						<xf:group class="home" id="" style="" tagname="li">
+							<w2:anchor id="" outerDiv="false" style="">
+								<xf:label><![CDATA[Home]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+						<xf:group id="" style="" tagname="li">
+							<w2:anchor id="" outerDiv="false" style="">
+								<xf:label><![CDATA[1Depth Menu]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+						<xf:group id="" style="" tagname="li">
+							<w2:anchor id="" outerDiv="false" style="">
+								<xf:label><![CDATA[2Depth Menu]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+						<xf:group id="" style="" tagname="li">
+							<w2:span id="" label="3Depth Menu" style=""></w2:span>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+				<xf:trigger class="btn_fav" id="" style="" type="button">
+					<xf:label></xf:label>
+				</xf:trigger>
+			</xf:group>
+			<xf:group class="schbox" id="" meta_snippetCategory="03_조회영역" meta_snippetKeyComponent="true" meta_snippetName="3_01 조회조건1행"
+				style="">
+				<xf:group class="schbox_inner" id="" style="">
+					<xf:group adaptive="layout" adaptiveThreshold="768" class="w2tb tbl " id="" style="" tagname="table">
+						<w2:attributes>
+							<w2:summary></w2:summary>
+						</w2:attributes>
+						<xf:group tagname="colgroup">
+							<xf:group style="width:58px;" tagname="col"></xf:group>
+							<xf:group style="" tagname="col"></xf:group>
+						</xf:group>
+						<xf:group class="" id="" style="" tagname="tr">
+							<xf:group class="w2tb_th" style="" tagname="th">
+								<w2:textbox class="" id="" label="검색어" style=""></w2:textbox>
+							</xf:group>
+							<xf:group class="w2tb_td" id="" style="" tagname="td">
+								<w2:input id="ipt_searchKeyword" class="w2_input" placeholder="사용자명 또는 이메일로 검색" style="width: 200px;"></w2:input>
+							</xf:group>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+				<xf:group class="btn_schbox" id="" style="">
+					<xf:trigger class="btn_cm sch" disabled="" escape="false" ev:onclick="scwin.btn_search_onclick" id="btn_search" style=""
+						type="button">
+						<xf:label><![CDATA[검색]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+			<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_02 서브타이틀(h3)"
+				style="">
+				<xf:group class="rt" id="" style="">
+					<xf:group id="">
+						<xf:trigger ev:onclick="scwin.btn_insert_onclick" style="" id="btn_insert_" type="button" class="btn_cm  row_add">
+							<xf:label><![CDATA[행추가]]></xf:label>
+						</xf:trigger>
+					</xf:group>
+					<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_delete_onclick" id="btn_delete" style="" type="button">
+						<xf:label><![CDATA[행삭제]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_remove_onclick" id="btn_remove" style="" type="button">
+						<xf:label><![CDATA[remove]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_deleteRows_onclick" id="btn_deleteRows" style="" type="button">
+						<xf:label><![CDATA[다중삭제(deleteRows)]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm  row_del" ev:onclick="scwin.btn_removeRows_onclick" id="btn_removeRows" style="" type="button">
+						<xf:label><![CDATA[다중삭제(removeRows)]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm " ev:onclick="scwin.btn_reset_onclick" id="btn_reset" style="" type="button">
+						<xf:label><![CDATA[초기화]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm download" ev:onclick="scwin.btn_down_onclick" id="btn_down" style="" type="button">
+						<xf:label><![CDATA[다운로드]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm  upload" ev:onclick="scwin.btn_upload_onclick" id="btn_upload" style="" type="button">
+						<xf:label><![CDATA[업로드]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+			<xf:group class="tblbox" id="" style="">
+				<xf:group adaptive="layout" adaptiveThreshold="768" class="w2tb tbl" id="" style="" tagname="table">
+					<w2:attributes>
+						<w2:summary></w2:summary>
+					</w2:attributes>
+					<xf:group tagname="colgroup">
+						<xf:group style="width:150px;" tagname="col"></xf:group>
+						<xf:group style="" tagname="col"></xf:group>
+						<xf:group style="width:150px;" tagname="col"></xf:group>
+						<xf:group style="" tagname="col"></xf:group>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+			<w2:gridView autoFit="allColumn" autoFitMinWidth="900" class="gvw" dataList="data:userList" editModeEvent="onclick" id="grd"
+				rowNumHeaderValue="순번" rowNumVisible="true" rowStatusHeaderValue="상태" rowStatusVisible="true" sortable="true" style="height: 150px;"
+				ev:oncellindexchange="scwin.grd_oncellindexchange" ev:oncellposchange="scwin.grd_oncellposchange"
+				ev:oncelleditend="scwin.grd_oncelleditend">
+				<w2:caption id="caption8" style="" value="this is a grid caption."></w2:caption>
+				<w2:header id="header3" style="">
+					<w2:row id="row5" style="">
+						<w2:column displayMode="inputType" id="h_chk" inputType="checkbox" width="70" value="선택"></w2:column>
+						<w2:column id="h_userId_hidden" value="사용자 ID" width="70" hidden="true"></w2:column>
+						<w2:column displayMode="label" id="h_name" inputType="text" value="성명" width="120"></w2:column>
+						<w2:column displayMode="label" id="h_email" inputType="text" value="이메일" width="200"></w2:column>
+						<w2:column displayMode="label" id="h_password" inputType="text" value="비밀번호" width="200"></w2:column>
+						<w2:column displayMode="label" id="h_role" inputType="text" value="역할" width="100"></w2:column>
+					</w2:row>
+				</w2:header>
+				<w2:gBody id="gBody3" style="">
+					<w2:row id="row6" style="">
+						<w2:column displayMode="inputType" id="chk" inputType="checkbox" width="70"></w2:column>
+						<w2:column displayMode="label" id="userId" inputType="text" width="70" readOnly="true" hidden="true"></w2:column>
+
+						<w2:column id="name" inputType="text" width="120" displayMode="inputType">
+							<xf:input id="" class="w2_input" style="width:100%;"></xf:input>
+						</w2:column>
+
+						<w2:column id="email" inputType="text" width="200" displayMode="inputType">
+							<xf:input id="" class="w2_input" style="width:100%;"></xf:input>
+						</w2:column>
+						<w2:column id="password" inputType="text" width="200" displayMode="inputType">
+							<xf:input class="w2_input" style="width:100%;"></xf:input>
+						</w2:column>
+
+						<w2:column displayMode="inputType" id="role" inputType="select" width="100">
+							<xf:select id="sbx_role" appearance="minimal" submenuSize="auto" style="width:100%;" nodeset="data:dlt_roleList"
+								labelRef="role_nm" valueRef="role_cd">
+							</xf:select>
+							<w2:choices>
+								<w2:itemset nodeset="data:dlt_roleList">
+									<w2:label ref="role_nm"></w2:label>
+									<w2:value ref="role_cd"></w2:value>
+								</w2:itemset>
+							</w2:choices>
+						</w2:column>
+					</w2:row>
+				</w2:gBody>
+			</w2:gridView>
+			<xf:group adaptiveThreshold="" class="gvwbox" id="" style=""></xf:group>
+			<xf:group class="pglbox" id="">
+				<w2:pageList class="pgl" displayButtonType="display" displayFormat="#" id="pageList2" pageSize="10" pagingType="0" style=""></w2:pageList>
+			</xf:group>
+			<xf:group class="btnbox" id="" style="">
+				<xf:group class="rt" id="" style="">
+
+					<w2:textbox class="bar_btndiv" id="" label="" style=""></w2:textbox>
+					<xf:trigger class="btn_cm pt" id="btn_save" ev:onclick="scwin.btn_save_onclick" style="" type="button">
+						<xf:label><![CDATA[저장]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="btn_cm " id="" style="" type="button">
+						<xf:label><![CDATA[취소]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
+        
