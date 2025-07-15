@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map" />
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<style type="text/css"><![CDATA[
+            .popup_container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                max-width: 400px;
+                padding: 40px 30px;
+                text-align: center;
+                position: relative;
+                margin: 0 auto;
+            }
+            
+            .close_btn {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                font-size: 18px;
+                color: #999;
+                cursor: pointer;
+                padding: 5px;
+            }
+            
+            .icon_container {
+                margin-bottom: 20px;
+            }
+            
+            .main_icon {
+                margin: 0 auto 20px;
+                display: block;
+            }
+            
+            .walking_icon {
+                font-size: 48px;
+                color: #ff6b35;
+                margin-bottom: 10px;
+                display: block;
+                text-align: center;
+            }
+            
+            .title_text {
+                font-size: 20px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+            
+            .description_text {
+                font-size: 14px;
+                color: #666;
+                line-height: 1.4;
+                text-align: center;
+            }
+            
+            .status_icons {
+
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            }
+            
+            .status_item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .status_icon {
+                font-size: 24px;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: #f8f8f8;
+                text-align: center;
+                line-height: 40px;
+            }
+            
+            .status_icon.error {
+                color: #ff4757;
+            }
+            
+            .status_icon.warning {
+                color: #ffa502;
+            }
+            
+            .status_icon.info {
+                color: #5352ed;
+            }
+            
+            .status_label {
+                font-size: 12px;
+                color: #666;
+                text-align: center;
+            }
+            
+            .confirm_btn {
+                background: #ff6b35;
+                color: white;
+                border: none;
+                padding: 12px 40px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            
+            .confirm_btn:hover {
+                background: #e55a2b;
+            }]]>
+		</style>
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.drowsyStartTime = null;
+scwin.drowsyInterva = null;
+
+scwin.onpageload = function () {
+    drowsyStartTime = new Date();
+
+    drowsyInterval = setInterval(function() {
+        const now = new Date();
+        const elapsed = Math.floor((now - drowsyStartTime) / 1000); // 초 단위
+        const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const seconds = String(elapsed % 60).padStart(2, '0');
+        const display = `졸음 지속 시간: ${minutes}:${seconds}`;
+
+        drowsyTimerText.setValue(display);
+    }, 1000); // 매초 갱신
+};
+
+scwin.confirmBtn_onclick = function (e) {
+    clearInterval(drowsyInterval); // 타이머 중지
+    $p.closePopup();
+};
+]]></script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group id="iconContainer" class="icon_container">
+			<xf:image src="/InsWebApp/images/icons/drowsiness_detection.svg" style="width: 100px;height: 100px;" id="imgMainIcon"
+				class="main_icon">
+			</xf:image>
+		</xf:group>
+		<w2:textbox style="color: #ff9999" id="titleText" label="졸음 감지 알림" class="title_text"></w2:textbox>
+		<w2:textbox style="padding: 3px;" id="descriptionText" label="AI가 졸음을 감지했습니다." class="description_text"></w2:textbox>
+		<w2:textbox style="padding: 2px;" id="" label="잠시 휴식을 취하거나 자세를 바꿔보세요" class="description_text"></w2:textbox>
+		<w2:textbox style="font-family:  bold;padding: 5px;" id="" label="집중해서 강의를 들어주세요" class="description_text"></w2:textbox>
+		<w2:textbox style="" id="drowsyTimerText" label="졸음 지속 시간: 00:00" class="description_text"></w2:textbox>
+		<xf:group meta_snippetCategory="08_버튼" meta_snippetName="8_05 팝업전체제어버튼" meta_snippetKeyComponent="true" style="margin-top: 20px"
+			id="" class="btnbox">
+			<xf:trigger ev:onclick="scwin.confirmBtn_onclick" style="margin : auto;" id="confirmBtn" type="button" class="confirm_btn">
+				<xf:label><![CDATA[확인]]></xf:label>
+			</xf:trigger>
+		</xf:group>
+	</body>
+</html>
