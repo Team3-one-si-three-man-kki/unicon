@@ -60,17 +60,11 @@
         
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
-<<<<<<< HEAD:src/main/webapp/main/unicon_tenant_login_page.xml
     // // 저장된 아이디 로드
     scwin.loadSavedUserId();
 
     // // 엔터키 이벤트 바인딩
-=======
-    // 저장된 아이디 로드
-   
-    // 엔터키 이벤트 바인딩
 
->>>>>>> main:src/main/webapp/main/unicon_login_page.xml
     scwin.bindEnterKeyEvents();
     
     var mode = $p.getParameter("mode");
