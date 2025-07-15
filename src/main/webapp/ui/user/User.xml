@@ -435,7 +435,7 @@ scwin.sbm_logout_submitdone = function(resObj, sbmObj) {
             console.log("전역 defaultHeader Authorization 삭제");
         }
         // 4) 리디렉션
-        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_login_page.xml";
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml";
     } else {
         $c.win.alert("로그아웃에 실패했습니다.");
     }
