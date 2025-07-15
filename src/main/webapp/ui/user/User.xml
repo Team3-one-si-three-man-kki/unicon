@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
-	xmlns:xf="http://www.w3.org/2002/xforms">
-	<head>
-		<w2:type>COMPONENT</w2:type>
-		<w2:buildDate />
-		<w2:MSA />
-		<xf:model>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:w2="http://www.inswave.com/websquare"
+      xmlns:xf="http://www.w3.org/2002/xforms">
+  <head>
+    <w2:type>COMPONENT</w2:type>
+    <w2:buildDate/>
+    <w2:MSA/>
+    <xf:model>
 			<w2:dataCollection baseNode="map">
 				<w2:dataMap baseNode="map" id="dmp_userVo" style="">
 					<w2:keyInfo>
@@ -73,13 +75,18 @@
 				errorHandler="" customHandler="" mode="asynchronous" processMsg="테넌트유저를 조회 중입니다." ev:submit=""
 				ev:submitdone="scwin.sbm_selectUserVo_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_logout" action="/InsWebApp/TNU0000Logout.pwkjson" method="post" mediatype="application/json" ref="" target=""
-				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="로그아웃처리중" ev:submit="" ev:submitdone="scwin.sbm_logout_submitdone"
-				ev:submiterror="" abortTrigger="">
-			</xf:submission>
+			 <xf:submission id="sbm_logout"
+                     action="/InsWebApp/TNU0000Logout.pwkjson"
+                     method="post"
+                     mediatype="application/json"
+                     mode="asynchronous"
+                     processMsg="로그아웃처리중"
+                     ev:submitdone="scwin.sbm_logout_submitdone"
+                     ev:submiterror="">
+      </xf:submission>
 		</xf:model>
 		<w2:layoutInfo></w2:layoutInfo>
-		<w2:publicInfo method="" />
+		<w2:publicInfo method=""/>
 		<script lazy="false" type="text/javascript"><![CDATA[//   $w.onBeforeSubmit = function (submissionObj) {
 //         var token = sessionStorage.getItem('accessToken');
 //         console.log("onBeforeSubmit token:", token);
@@ -400,23 +407,39 @@ scwin.sbm_deleteUserVo_submitdone = function (e) {
 };
 
 scwin.btn_logout_onclick = function (e) {
-    $c.sbm.execute($p.getSubmission("sbm_logout"));
+     // 1) 확인창 표시
+    var promise = $c.win.confirm("로그아웃하시겠습니까?");
+    promise.then(function(result) {
+        if (result) {
+            // 2) 사용자가 확인을 누르면 로그아웃 서브미션 실행
+            $c.sbm.execute(sbm_logout);
+        }
+        // result가 false면 아무 동작도 하지 않음
+    });
+   
 };
 
 
 
 scwin.sbm_logout_submitdone = function(resObj, sbmObj) {
-    // 이제 resObj.responseJSON.success 등 사용 가능
+    console.log("로그아웃 응답:", resObj);
+
     if (resObj.responseJSON && resObj.responseJSON.success) {
-        // 토큰·세션 정리
+        // 1) sessionStorage·쿠키 삭제
         sessionStorage.removeItem("accessToken");
-        // 화면 전환
-         location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_login_page.xml";
+        document.cookie = 'refreshToken=; path=/; max-age=0;';
+
+        // 2) 전역 defaultHeader 삭제
+        if ($c.sbm.defaultHeader && $c.sbm.defaultHeader['Authorization']) {
+            delete $c.sbm.defaultHeader['Authorization'];
+            console.log("전역 defaultHeader Authorization 삭제");
+        }
+        // 4) 리디렉션
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_login_page.xml";
     } else {
         $c.win.alert("로그아웃에 실패했습니다.");
     }
-};
-]]></script>
+};]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents " id="" style="">

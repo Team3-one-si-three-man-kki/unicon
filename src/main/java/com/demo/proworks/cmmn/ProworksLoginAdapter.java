@@ -198,7 +198,7 @@ private void setRefreshTokenCookie(String refreshToken) {
             Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
             
             // 쿠키 보안 설정
-            refreshCookie.setHttpOnly(true);  // JavaScript 접근 차단
+            refreshCookie.setHttpOnly(false);  // JavaScript 접근 차단
             refreshCookie.setSecure(true);    // HTTPS에서만 전송 (개발 시에는 false)
             refreshCookie.setPath("/");       // 모든 경로에서 사용
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (Refresh Token 만료시간과 동일하게)

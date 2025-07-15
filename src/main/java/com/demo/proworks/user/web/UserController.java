@@ -282,7 +282,7 @@ public void signup(UserSignupVo signupVo, HttpServletRequest request) throws Exc
                 response.setHeader("Access-Control-Allow-Origin", "*");
                 // Refresh Token 쿠키
                 Cookie cookie = new Cookie("refreshToken", refreshToken);
-                cookie.setHttpOnly(true);
+                cookie.setHttpOnly(false);
                 cookie.setSecure(false);
                 cookie.setPath("/");
                 cookie.setMaxAge(7 * 24 * 60 * 60);
@@ -311,7 +311,7 @@ public void signup(UserSignupVo signupVo, HttpServletRequest request) throws Exc
             HttpServletResponse response = attr.getResponse();
             if (response != null) {
                 Cookie cookie = new Cookie("refreshToken", null);
-                cookie.setHttpOnly(true);
+                cookie.setHttpOnly(false);
                 cookie.setSecure(false);
                 cookie.setPath("/");
                 cookie.setMaxAge(0);
