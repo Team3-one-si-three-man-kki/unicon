@@ -9,11 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.demo.proworks.jwt.JwtUtil;
+import com.demo.proworks.jwt.TokenBlacklistService;
 import com.demo.proworks.user.service.SignupService;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserListVo;
@@ -42,6 +48,9 @@ import com.inswave.elfw.login.LoginProcessor;
 @Controller
 public class UserController {
 
+	@Resource(name = "jwtUtil")
+	private JwtUtil jwtUtil;
+
 	/** UserService */
 	@Resource(name = "userServiceImpl")
 	private UserService userService;
@@ -52,21 +61,17 @@ public class UserController {
 	@Resource(name = "loginProcess")
 	protected LoginProcessor loginProcess;
 
+	@Resource(name = "tokenBlacklistService")
+	private TokenBlacklistService tokenBlacklistService;
+
 	@ElService(key = "TNU0000Login")
 	@RequestMapping(value = "TNU0000Login")
 	@ElDescription(sub = "로그인처리", desc = "이메일 로그인처리")
 	public void login(com.demo.proworks.user.vo.UserLoginVo loginVo, HttpServletRequest request) throws Exception {
-
 		String email = loginVo.getEmail();
 		String password = loginVo.getPassword();
 		String tenantId = "2";
-//    	System.out.println("겟야이디 패스워드 "+email+",,,,,,,,"+password+"=========================");
-//    	System.out.println("컨트롤러는잘타는중~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-//    	System.out.println(request.toString().toString()+"ddddddddd");
-//    	LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
-//    	System.out.println("로그인 인포에 정보 잘담기는거야?"+info+"======================================");
-//    	AppLog.debug("- Login 정보 : " + info.toString());
-//    	System.out.println("로그인 성공 여부: " + info.isSuc());
+
 		try {
 			// 1. 로그인 처리 (ProworksLoginAdapter + ProworksSessionDataAdapter 호출)
 			LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
@@ -143,6 +148,43 @@ public class UserController {
 
 			throw e;
 		}
+	}
+
+	@ElService(key = "TNU0000Logout")
+	@RequestMapping(value = "TNU0000Logout")
+	@ElDescription(sub = "로그아웃처리", desc = "로그아웃 및 토큰 블랙리스트 처리")
+	public Map<String, Object> logout(HttpServletRequest request) throws Exception {
+
+		Map<String, Object> result = new HashMap<>();
+
+		try {
+			// 1. Authorization 헤더에서 토큰 추출
+			String authHeader = request.getHeader("Authorization");
+			if (authHeader != null && authHeader.startsWith("Bearer ")) {
+				String token = authHeader.substring(7);
+
+				// 2. 토큰을 블랙리스트에 추가
+				long remainingTime = tokenBlacklistService.getTokenRemainingTime(token);
+				if (remainingTime > 0) {
+					tokenBlacklistService.addToBlacklist(token, remainingTime);
+					AppLog.debug("토큰이 블랙리스트에 추가됨: " + token);
+				}
+			}
+
+			// 3. Refresh Token 쿠키 삭제
+			clearRefreshTokenCookie();
+
+			result.put("success", true);
+			result.put("message", "로그아웃이 성공했습니다.");
+			AppLog.debug("[Logout] 로그아웃 성공 - 토큰 블랙리스트 처리 완료");
+
+		} catch (Exception e) {
+			AppLog.error("로그아웃 중 오류: " + e.getMessage(), e);
+			result.put("success", false);
+			result.put("message", "로그아웃 처리 중 오류가 발생했습니다.");
+		}
+
+		return result;
 	}
 
 	/**
@@ -223,6 +265,59 @@ public class UserController {
 	@ElDescription(sub = "테넌트유저 삭제처리", desc = "테넌트유저를 삭제 처리한다.")
 	public void deleteUser(UserVo userVo) throws Exception {
 		userService.deleteUser(userVo);
+	}
+
+	private void setTokensToResponse(String accessToken, String refreshToken) {
+		try {
+			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			HttpServletResponse response = attr.getResponse();
+			if (response != null) {
+				// Access Token 헤더
+				response.setHeader("Authorization", "Bearer " + accessToken);
+				response.setHeader("Access-Control-Expose-Headers", "Authorization");
+				response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+				response.setHeader("Access-Control-Allow-Origin", "*");
+				// Refresh Token 쿠키
+				Cookie cookie = new Cookie("refreshToken", refreshToken);
+				cookie.setHttpOnly(false);
+				cookie.setSecure(false);
+				cookie.setPath("/");
+				cookie.setMaxAge(7 * 24 * 60 * 60);
+				response.addCookie(cookie);
+				AppLog.debug("토큰 응답 설정 완료");
+			}
+		} catch (Exception e) {
+			AppLog.error("토큰 설정 중 오류: " + e.getMessage(), e);
+		}
+	}
+
+	private String getRefreshTokenFromCookie(HttpServletRequest request) {
+		if (request.getCookies() != null) {
+			for (Cookie c : request.getCookies()) {
+				if ("refreshToken".equals(c.getName())) {
+					return c.getValue();
+				}
+			}
+		}
+		return null;
+	}
+
+	private void clearRefreshTokenCookie() {
+		try {
+			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			HttpServletResponse response = attr.getResponse();
+			if (response != null) {
+				Cookie cookie = new Cookie("refreshToken", null);
+				cookie.setHttpOnly(false);
+				cookie.setSecure(false);
+				cookie.setPath("/");
+				cookie.setMaxAge(0);
+				response.addCookie(cookie);
+				AppLog.debug("Refresh Token 쿠키 삭제 완료");
+			}
+		} catch (Exception e) {
+			AppLog.error("쿠키 삭제 중 오류: " + e.getMessage(), e);
+		}
 	}
 
 	@ElService(key = "selectUserList")
