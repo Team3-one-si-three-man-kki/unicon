@@ -145,7 +145,7 @@ scwin.sbm_saveConfig_submitdone = function (e) {
     				</xf:group>
     			</xf:group>
     			<xf:group class="" id="" style="" localeRef="">
-    				<w2:pageFrame style="" id="loginPage" src="/InsWebApp/main/unicon_login_page.xml?mode=preview" ev:onpageframeload="scwin.loginPage_onpageframeload"></w2:pageFrame>
+    				<w2:pageFrame style="" id="loginPage" src="/InsWebApp/main/unicon_tenant_login_page.xml?mode=preview" ev:onpageframeload="scwin.loginPage_onpageframeload"></w2:pageFrame>
     			</xf:group>
     		</xf:group>
     	</xf:group>
