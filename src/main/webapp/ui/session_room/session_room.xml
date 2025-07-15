@@ -11,168 +11,567 @@
 		</xf:model>
 		<w2:layoutInfo />
 		<w2:publicInfo method="" />
-		<script  src="/InsWebApp/media/mediasoup-client.browser.js" />
-		<script  src="/InsWebApp/media/dist/app.bundle.js" />
-		<script lazy="false" type="text/javascript"><![CDATA[
-scwin.onpageload = function () {
-    console.log("WebSquare page loaded. Attempting to initialize app.");
+		<style type="text/css"><![CDATA[/* ============================================= */
+/* 최종 클라이언트 CSS 코드            */
+/* ============================================= */
 
-    function checkAndInitializeApp() {
-        if (typeof window.AppClasses !== 'undefined' &&
-            typeof window.AppClasses.UIManager !== 'undefined' &&
-            typeof window.AppClasses.RoomClient !== 'undefined' &&
-            typeof window.AppClasses.MediaPipeModule !== 'undefined') {
+/* --- 기본 구조 --- */
+#remoteSection {
+    display: flex;
+    width: 80%;
+    flex-grow: 1;
+    gap: 8px;
+    padding: 8px;
+}
 
-            console.log("Application classes are loaded. Application starting...");
+#mainStageContainer {
+    position: relative;
+    flex-grow: 1;
+    background-color: #202020;
+    border-radius: 8px;
+    overflow: hidden;
+}
 
-            console.log("여기1");
-            const uiManager = new window.AppClasses.UIManager();
-            console.log("여기2");
+#sidebarContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 240px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
 
-            let aiModule = null; // aiModule을 더 넓은 스코프에서 선언
-            const roomClient = new window.AppClasses.RoomClient(uiManager);
+/* --- 미디어 요소 공통 스타일 --- */
+#mainStageContainer > div,
+#sidebarContainer > div {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
 
-            let isAudioEnabled = true;
-            let isVideoEnabled = true;
-            let isScreenSharing = false;
+#mainStageContainer > div > video,
+#sidebarContainer > div > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-            // 관리자 여부를 받아서 화면 공유 버튼 활성화
-            roomClient.on("adminStatus", (isAdmin) => {
-                uiManager.setAdminControls(isAdmin);
-            });
+/* --- 사이드바 썸네일 스타일 --- */
+#sidebarContainer > div {
+    aspect-ratio: 4 / 3;
+    height: auto;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
 
-            // 화면 공유 버튼 클릭 이벤트 핸들러
-            uiManager.screenShareButton.onclick = () => {
+#sidebarContainer > div:hover {
+    border-color: #00aaff;
+}
+
+/* --- 카메라 Off 아바타 스타일 --- */
+div.video-paused::after {
+    content: '사용자';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(40, 40, 40, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: #fff;
+    pointer-events: none; 
+}]]></style>
+		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
+		<script src="/InsWebApp/media/dist/app.bundle.js" />
+
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = async function () {
+
+    // window.App 객체가 로드될 때까지 잠시 기다리는 안전장치 추가
+
+    await scwin.checkAppReady();
+    console.log("Application classes are loaded. Application starting...");
+    const { UIManager, RoomClient, loadModule } = window.App;
+
+    scwin.uiManager = new UIManager();
+    const roomClient = new RoomClient(scwin.uiManager);
+
+    let aiModule = null;
+    let canvasModule = null;
+    let wsInstance = null;
+
+    scwin.pinnedProducerId = null;
+    scwin.remoteElements = new Map(); // 원격 미디어 요소를 관리하는 Map
+    scwin.remoteCanvasModules = new Map(); // 원격 화면 공유용 캔버스 모듈을 관리하는 Map
+
+    let isAudioEnabled = true;
+    let isVideoEnabled = true;
+    let isScreenSharing = false;
+    let isWhiteboardActive = false;
+
+    const CANVAS_WEBSOCKET_URL = 'wss://' + location.host + '/InsWebApp/signal.do';
+    const CANVAS_WORKER_URL = '/InsWebApp/js/canvas/canvas-worker.js'
+    const MEDIA_PIPE_WORKER_URL = '/InsWebApp/media/dist/mediapipe.worker.bundle.js'
+
+    // --- 모듈 보유 여부 (원래는 서버에서 받아와야 할 값) ---
+
+    const userHasAiModule = true;
+    const userHasCanvasModule = true;
+    const userHasScreenShareModule = true;
+
+    // WebSocket 연결이 성공하면, 보유한 모듈 관련 UI를 설정합니다.
+    roomClient.on("connected", (ws) => {
+        wsInstance = ws; // WebSocket 인스턴스 저장
+        if (userHasCanvasModule) {
+            scwin.uiManager.showWhiteboardButton();
+        }
+    });
+
+    // 관리자 여부와 모듈 보유 여부를 모두 확인하여 화면 공유 기능 활성화
+    roomClient.on("adminStatus", (isAdmin) => {
+        if (userHasScreenShareModule && isAdmin) {
+            scwin.uiManager.enableScreenSharing(() => {
                 if (isScreenSharing) {
                     roomClient.stopScreenShare();
                 } else {
+                    // 칠판 모드가 활성화되어 있으면 비활성화 후 화면 공유 시작
+                    if (isWhiteboardActive) {
+                        scwin.uiManager.whiteboardButton.click();
+                    }
                     roomClient.startScreenShare();
                 }
-            };
-
-            // 화면 공유 상태가 변경되면 UI 업데이트
-            roomClient.on("screenShareState", ({ isSharing }) => {
-                isScreenSharing = isSharing;
-                uiManager.screenShareButton.textContent = isSharing
-                    ? "공유 중지"
-                    : "화면 공유";
             });
+        }
+    });
 
-            // [핵심 추가] RoomClient가 컨트롤 준비 완료를 방송하면, UIManager가 버튼을 활성화합니다.
-            roomClient.on("controlsReady", () => {
-                uiManager.enableControls();
+    // 칠판 버튼 클릭 이벤트 핸들러
+    scwin.uiManager.whiteboardButton.onclick = async () => {
+        if (!wsInstance) {
+            console.error("WebSocket is not connected. Cannot toggle whiteboard.");
+            return;
+        }
+        isWhiteboardActive = !isWhiteboardActive;
 
-                uiManager.cameraOffButton.onclick = () => {
-                    isVideoEnabled = !isVideoEnabled;
-                    roomClient.setVideoEnabled(isVideoEnabled);
-                    uiManager.cameraOffButton.textContent = isVideoEnabled
-                        ? "카메라 끄기"
-                        : "카메라 켜기";
+        if (isWhiteboardActive) {
+            // 화면 공유 중이라면 중지
+            if (isScreenSharing) await roomClient.stopScreenShare();
 
-                    // AI 모듈 제어 로직 추가
-                    if (aiModule) {
-                        if (isVideoEnabled) {
-                            aiModule.start(); // 카메라 켜질 때 AI 시작
-                        } else {
-                            aiModule.stop(); // 카메라 꺼질 때 AI 중지
-                        }
-                    }
-                };
-
-                uiManager.muteButton.onclick = () => {
-                    isAudioEnabled = !isAudioEnabled;
-                    roomClient.setAudioEnabled(isAudioEnabled); // UIManager가 아닌 RoomClient를 직접 호출
-                    uiManager.muteButton.textContent = isAudioEnabled
-                        ? "음소거"
-                        : "음소거 해제";
-                };
-            });
-
-            // RoomClient가 방송하는 이벤트를 구독하여 UIManager에 작업을 지시합니다.
-            roomClient.on("new-consumer", (consumer) => {
-                console.log(" Event: new-consumer -> UI Manager adding remote track.");
-                // consumer에 포함된 appData를 함께 전달
-                uiManager.addRemoteTrack(
-                    consumer.track,
-                    consumer.producerId,
-                    consumer.appData
+            try {
+                let CanvasModule = await loadModule(
+                    "/InsWebApp/media/dist/modules/canvas.bundle.js",
+                    "CanvasModule"
                 );
-            });
+                if (CanvasModule && !CanvasModule.prototype) {
+                    CanvasModule = CanvasModule.CanvasModule || CanvasModule.default;
+                }
+                const container = scwin.uiManager.getMainStageContainer();
 
-            roomClient.on("producer-closed", (producerId) => {
-                console.log(" Event: producer-closed -> UI Manager removing remote track.");
-                uiManager.removeRemoteTrack(producerId);
-            });
+                const canvasContainer = document.createElement("div");
+                canvasContainer.id = "canvasStandaloneContainer";
+                canvasContainer.style.cssText = `position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #FFFFFF;`;
 
-            // 로컬 화면 공유 시작/중지 이벤트 처리
-            roomClient.on("local-screen-share-started", (track) => {
-                uiManager.addLocalScreenShare(track);
-            });
+                container.appendChild(canvasContainer);
 
-            roomClient.on("local-screen-share-stopped", () => {
-                uiManager.removeLocalScreenShare();
-            });
+                //canvasModule = new CanvasModule(canvasContainer, wsInstance);
+                canvasModule = new CanvasModule(canvasContainer, CANVAS_WEBSOCKET_URL, CANVAS_WORKER_URL);
+                canvasModule.on("ready", () => {
+                    canvasModule.signal({ type: "bg-change", color: "#FFFFFF" });
+                });
+                scwin.uiManager.whiteboardButton.textContent = "칠판 끄기";
+            } catch (error) {
+                console.error("Failed to load CanvasModule:", error);
+            }
+        } else {
+            if (canvasModule) {
+                canvasModule.destroy();
+                canvasModule = null;
+            }
+            const container = document.getElementById("canvasStandaloneContainer");
+            if (container) container.remove();
+            scwin.uiManager.whiteboardButton.textContent = "칠판";
+        }
+    };
 
-            //핵심: 사용자가 '졸음 감지 모듈'을 구매했는지 여부 (나중에는 서버에서 받아올 값)
-            const userHasAiModule = true;
+    // 화면 공유 상태가 변경되면 UI 업데이트
+    roomClient.on("screenShareState", ({ isSharing }) => {
+        isScreenSharing = isSharing;
+        scwin.uiManager.screenShareButton.textContent = isSharing
+            ? "공유 중지"
+            : "화면 공유";
+    });
 
-            if (userHasAiModule) {
-                const videoElement = document.getElementById("localVideo");
-                aiModule = new window.AppClasses.MediaPipeModule(videoElement); // aiModule 초기화
+    // RoomClient가 컨트롤 준비 완료를 방송하면, UIManager가 버튼을 활성화합니다.
+    roomClient.on("controlsReady", () => {
+        scwin.uiManager.enableControls();
+        scwin.uiManager.cameraOffButton.onclick = () => {
+            isVideoEnabled = !isVideoEnabled;
+            roomClient.setVideoEnabled(isVideoEnabled);
+            scwin.uiManager.cameraOffButton.textContent = isVideoEnabled
+                ? "카메라 끄기"
+                : "카메라 켜기";
+            if (aiModule) {
+                isVideoEnabled ? aiModule.start() : aiModule.stop();
+            }
+        };
+        scwin.uiManager.muteButton.onclick = () => {
+            isAudioEnabled = !isAudioEnabled;
+            roomClient.setAudioEnabled(isAudioEnabled);
+            scwin.uiManager.muteButton.textContent = isAudioEnabled
+                ? "음소거"
+                : "음소거 해제";
+        };
+    });
 
-                console.log("AI Module will be initialized.");
+    // 원격 트랙 수신 처리
+    roomClient.on("new-consumer", async (consumer) => {
+        const { track, producerId, appData } = consumer;
+        let elementWrapper;
+        const key = (appData && appData.source === 'screen') ? `screen-${producerId}` : producerId;
 
-                // --- 지휘자(main.js)가 각 모듈의 이벤트를 연결(구독)해줍니다. ---
+        if (appData && appData.source === 'screen') {
+            elementWrapper = document.createElement("div");
+            elementWrapper.id = `remote-screen-${producerId}`;
+            elementWrapper.classList.add("screen-share-wrapper");
 
-                // 1. RoomClient가 '로컬 스트림 준비 완료'를 방송하면, AI 모듈이 분석을 시작합니다.
-                roomClient.on("localStreamReady", () => {
-                    console.log(
-                        "AI-DEBUG: localStreamReady event received. Attempting to start AI module."
-                    );
-                    console.log("Event: localStreamReady -> AI Module starting analysis.");
-                    if (aiModule) {
-                        //  aiModule이 초기화되었는지 확인 후 시작
-                        aiModule.start();
+            // 원격 화면 공유 위에 그림을 그릴 캔버스 오버레이 추가
+            if (userHasCanvasModule) {
+                try {
+                    let CanvasModule = await loadModule("/InsWebApp/media/dist/modules/canvas.bundle.js", "CanvasModule");
+                    if (CanvasModule && !CanvasModule.prototype) {
+                        CanvasModule = CanvasModule.CanvasModule || CanvasModule.default;
                     }
-                });
+                    const canvasContainer = document.createElement("div");
+                    canvasContainer.id = `canvas-overlay-${producerId}`;
+                    canvasContainer.style.cssText = `position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none;`;
+                    elementWrapper.appendChild(canvasContainer);
 
-                // 2. AI 모듈이 '랜드마크 업데이트'를 방송하면, UI 매니저가 화면에 그림을 그립니다.
-                aiModule.on("landmarksUpdate", (landmarks) => {
-                    uiManager.drawFaceMesh(landmarks);
-                });
-
-                // 3. AI 모듈이 '상태 변경'을 방송하면, RoomClient가 서버로 데이터를 전송합니다.
-                aiModule.on("drowsinessUpdate", (data) => {
-                    console.log("Event: drowsinessUpdate -> Sending status to server.");
-                    roomClient.sendPeerStatus(data);
-                });
-                aiModule.on("absenceUpdate", (data) => {
-                    console.log(" Event: absenceUpdate -> Sending status to server.");
-                    roomClient.sendPeerStatus(data);
-                });
-
-                // 4. AI 모듈에서 에러가 발생하면 콘솔에 출력합니다.
-                aiModule.on("error", (error) => {
-                    console.error(" AI Module Error:", error);
-                });
+                    const remoteCanvasModule = new CanvasModule(canvasContainer, CANVAS_WEBSOCKET_URL, CANVAS_WORKER_URL);
+                    scwin.remoteCanvasModules.set(producerId, remoteCanvasModule);
+                } catch (error) {
+                    console.error("Failed to create canvas overlay for remote screen share:", error);
+                }
             }
 
-            // 화상회의 클라이언트의 모든 준비를 시작합니다.
-            // 나중에 이 roomId는 URL이나 다른 방법으로 받아와야한다!!
-            const roomId = "my-first-room";
-            roomClient.join(roomId);
-        } else {
-            console.log("window.AppClasses not yet defined. Retrying in 100ms...");
-            setTimeout(checkAndInitializeApp, 100);
+        } else if (track.kind === 'video') {
+            elementWrapper = document.createElement('div');
+            elementWrapper.id = `remote-video-${producerId}`;
+            elementWrapper.onclick = () => {
+                if (Array.from(scwin.remoteElements.values()).some(el => el.classList.contains('screen-share-wrapper'))) {
+                    alert("화면 공유 중에는 다른 화면을 고정할 수 없습니다.");
+                    return;
+                }
+                scwin.pinnedProducerId = (scwin.pinnedProducerId === producerId) ? null : producerId;
+                scwin.updateVideoLayout();
+            };
+        } else if (track.kind === 'audio') {
+            const audioEl = document.createElement('audio');
+            audioEl.id = `remote-audio-${producerId}`;
+            audioEl.srcObject = new MediaStream([track]);
+            audioEl.autoplay = true;
+            document.body.appendChild(audioEl);
+            return;
+        }
+
+        if (elementWrapper) {
+            const mediaEl = document.createElement(track.kind);
+            mediaEl.srcObject = new MediaStream([track]);
+            mediaEl.autoplay = true;
+            mediaEl.playsInline = true;
+            elementWrapper.appendChild(mediaEl);
+            scwin.remoteElements.set(key, elementWrapper);
+            scwin.updateVideoLayout();
+        }
+    });
+
+
+
+    // 원격 트랙 종료 처리
+    roomClient.on("producer-closed", (producerId) => {
+        const screenShareKey = `screen-${producerId}`;
+        const videoKey = producerId;
+
+        // 화면 공유 트랙이 닫혔는지 확인
+        if (scwin.remoteElements.has(screenShareKey)) {
+            // 캔버스 모듈 정리
+            const remoteCanvasModule = scwin.remoteCanvasModules.get(producerId);
+            if (remoteCanvasModule) {
+                remoteCanvasModule.destroy();
+                scwin.remoteCanvasModules.delete(producerId);
+            }
+            // DOM에서 화면 공유 래퍼 명시적으로 제거
+            const screenShareWrapper = document.getElementById(`remote-screen-${producerId}`);
+            if (screenShareWrapper) {
+                screenShareWrapper.remove();
+            }
+            scwin.remoteElements.delete(screenShareKey);
+        } else if (scwin.remoteElements.has(videoKey)) {
+            // 비디오 트랙 정리
+            const videoWrapper = document.getElementById(`remote-video-${producerId}`);
+            if (videoWrapper) {
+                videoWrapper.remove();
+            }
+            scwin.remoteElements.delete(videoKey);
+        }
+
+        // 오디오 트랙 정리
+        const audioEl = document.getElementById(`remote-audio-${producerId}`);
+        if (audioEl) {
+            audioEl.remove();
+        }
+
+        if (scwin.pinnedProducerId === producerId) {
+            scwin.pinnedProducerId = null;
+        }
+        scwin.updateVideoLayout(); // 레이아웃 업데이트
+    });
+
+
+    // 로컬 화면 공유 시작/중지 이벤트 처리
+
+    roomClient.on("local-screen-share-started", async (track) => {
+        const screenShareWrapper = document.createElement("div");
+        screenShareWrapper.id = "local-screen-share-wrapper";
+        screenShareWrapper.classList.add("screen-share-wrapper");
+
+        const element = document.createElement(track.kind);
+        element.srcObject = new MediaStream([track]);
+        element.muted = true;
+        element.autoplay = true;
+        element.playsInline = true;
+        screenShareWrapper.appendChild(element);
+
+        scwin.remoteElements.set("local-screen-share", screenShareWrapper);
+        scwin.updateVideoLayout();
+
+        if (userHasCanvasModule) {
+            try {
+                let CanvasModule = await loadModule(
+                    "/InsWebApp/media/dist/modules/canvas.bundle.js",
+                    "CanvasModule"
+                );
+                if (CanvasModule && !CanvasModule.prototype) {
+                    CanvasModule = CanvasModule.CanvasModule || CanvasModule.default;
+                }
+                const canvasContainer = document.createElement("div");
+                canvasContainer.id = "canvasOverlayContainer";
+                canvasContainer.style.cssText = `position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;`;
+
+                screenShareWrapper.appendChild(canvasContainer);
+                
+                //canvasModule = new CanvasModule(canvasContainer, wsInstance);
+                canvasModule = new CanvasModule(canvasContainer, CANVAS_WEBSOCKET_URL, CANVAS_WORKER_URL);
+            } catch (error) {
+                console.error("Failed to load CanvasModule for overlay:", error);
+            }
+        }
+        scwin.updateVideoLayout();
+    });
+    roomClient.on("local-screen-share-stopped", () => {
+        scwin.remoteElements.delete("local-screen-share");
+        scwin.updateVideoLayout();
+        if (canvasModule) {
+            canvasModule.destroy();
+            canvasModule = null;
+        }
+        // 로컬 화면 공유 종료 시 캔버스 오버레이 컨테이너 및 화면 공유 래퍼 제거
+        const canvasOverlayContainer = document.getElementById("canvasOverlayContainer");
+        if (canvasOverlayContainer) {
+            canvasOverlayContainer.remove();
+        }
+        const localScreenShareWrapper = document.getElementById("local-screen-share-wrapper");
+        if (localScreenShareWrapper) {
+            localScreenShareWrapper.remove(); // DOM에서 직접 제거
+        }
+    });
+
+
+    roomClient.on("remote-producer-pause", ({ producerId }) => {
+        const videoWrapper = scwin.remoteElements.get(producerId); 
+        if (videoWrapper) {
+            videoWrapper.classList.add('video-paused');
+        }
+    }); roomClient.on("remote-producer-resume", ({ producerId }) => {
+        const videoWrapper = scwin.remoteElements.get(producerId);
+        if (videoWrapper) {
+            videoWrapper.classList.remove('video-paused');
+        }
+    });
+
+
+    // AI 모듈 초기화 로직
+    if (userHasAiModule) {
+        try {
+            let MediaPipeModule = await loadModule(
+                "/InsWebApp/media/dist/modules/mediapipe.bundle.js",
+                "MediaPipeModule"
+            );
+            if (MediaPipeModule && !MediaPipeModule.prototype) {
+                MediaPipeModule = MediaPipeModule.MediaPipeModule || MediaPipeModule.default;
+            }
+            const videoElement = document.getElementById("localVideo");
+            aiModule = new MediaPipeModule(videoElement, MEDIA_PIPE_WORKER_URL);
+            console.log("AI Module will be initialized.");
+
+            roomClient.on("localStreamReady", () => {
+                if (aiModule) aiModule.start();
+            });
+            aiModule.on("landmarksUpdate", (landmarks) => {
+                scwin.uiManager.drawFaceMesh(landmarks);
+            });
+
+
+            // 3. AI 모듈이 '상태 변경'을 방송하면, RoomClient가 서버로 데이터를 전송합니다.
+            // 졸음 감지
+            aiModule.on("drowsinessDetected", (data) => {
+                console.log("Event: drowsinessUpdate -> Sending status to server.");
+                scwin.createPopUp(
+                    "drowsinessPopUp",
+                    "Warning !!",
+                    null,
+                    "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml",
+                    400,
+                    425
+                );
+                roomClient.sendPeerStatus(data);
+            });
+            aiModule.on("drowsinessResolved", (data) => {
+                console.log("Event: drowsinessUpdate -> Sending status to server.");
+                roomClient.sendPeerStatus(data);
+            });
+
+            // 자리비움 감지
+            aiModule.on("absenceStarted", (data) => {
+                console.log(" Event: absenceStarted -> Sending status to server.");
+                scwin.createPopUp(
+                    "adfPopUp",
+                    "Warning !!",
+                    null,
+                    "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml",
+                    400,
+                    475
+                );
+                roomClient.sendPeerStatus(data);
+            });
+            aiModule.on("absenceEnded", (data) => {
+                console.log(" Event: absenceEnded -> Sending status to server.");
+                roomClient.sendPeerStatus(data);
+            });
+
+            // 4. AI 모듈에서 에러가 발생하면 콘솔에 출력합니다.
+            aiModule.on("error", (error) => {
+                console.error(" AI Module Error:", error);
+            });
+        } catch (error) {
+            console.error("Failed to load MediaPipeModule:", error);
         }
     }
+    const roomId = "my-first-room";
+    roomClient.join(roomId);
+}
 
-    checkAndInitializeApp();
+scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
+    if ($p.getPopup(_id)) {
+        console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
+        return; // 이미 팝업이 있으면 함수를 종료
+    }
+    // 팝업 크기를 변수로 지정 (계산에 사용하기 위함)
+    var popupWidth = _popupWidth;
+    var popupHeight = _popupHeight;
+
+    var topPosition = (window.innerHeight - popupHeight) / 2;
+    var leftPosition = (window.innerWidth - popupWidth) / 2;
+    // 팝업 생성 옵션 지정
+    var options = {
+        id: _id,
+        type: "wframePopup",
+        width: popupWidth + "px",
+        height: popupHeight + "px",
+        top: topPosition + "px",
+        left: leftPosition + "px",
+        popupName: _name,
+        modal: true,
+        closeAction: "scwin.popup_closeAction", // [선택] 팝업의 닫기 버튼을 클릭했을 때 실행할 함수명
+        dataObject: _jsnData
+    };
+
+    // 팝업 생성
+    $p.openPopup(url, options);
+}
+
+scwin.checkAppReady = function () {
+    return new Promise(resolve => {
+        const interval = setInterval(() => {
+            console.log(window.App)
+            // 'window.App'과 그 안의 내용이 모두 준비되었는지 확인
+            if (window.App && window.App.UIManager && window.App.RoomClient) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 50);
+    });
 };
-]]></script>
+
+
+
+/**
+ * 비디오 컨테이너의 레이아웃을 동적으로 업데이트하는 함수
+ */
+
+scwin.updateVideoLayout = function () {
+    const mainStage = scwin.uiManager.getMainStageContainer();
+    const sidebar = scwin.uiManager.getSidebarContainer();
+
+    const allElements = Array.from(scwin.remoteElements.values());
+    const screenShareElement = allElements.find(el => el.classList.contains('screen-share-wrapper'));
+
+    let mainElement = null;
+
+    if (screenShareElement) {
+        mainElement = screenShareElement;
+    } else if (scwin.pinnedProducerId) {
+        mainElement = scwin.remoteElements.get(scwin.pinnedProducerId);
+    } else if (allElements.length > 0) {
+        mainElement = allElements.find(el => !el.classList.contains('screen-share-wrapper')) || null;
+    }
+
+    // 기존 자식 노드를 모두 제거하여 깨끗하게 시작
+    while (mainStage.firstChild) {
+        mainStage.removeChild(mainStage.firstChild);
+    }
+    while (sidebar.firstChild) {
+        sidebar.removeChild(sidebar.firstChild);
+    }
+
+    // 화면 공유 요소가 있다면 항상 메인 스테이지에 배치
+    if (screenShareElement) {
+        mainStage.appendChild(screenShareElement);
+        allElements.forEach(el => {
+            if (el !== screenShareElement) {
+                sidebar.appendChild(el);
+            }
+        });
+    } else if (mainElement) { // 화면 공유가 없고, 메인으로 지정된 요소가 있다면
+        mainStage.appendChild(mainElement);
+        allElements.forEach(el => {
+            if (el !== mainElement) {
+                sidebar.appendChild(el);
+            }
+        });
+    } else { // 메인으로 지정된 요소가 없다면 모든 요소를 사이드바에 배치
+        allElements.forEach(el => {
+            sidebar.appendChild(el);
+        });
+    }
+}]]></script>
 	</head>
-	<body ev:onpageload="scwin.onpageload">
 
-
+	<body class="" ev:onpageload="scwin.onpageload">
 	</body>
+
 </html>

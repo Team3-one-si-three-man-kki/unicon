@@ -1,0 +1,19 @@
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <!-- 얼굴 -->
+  <circle cx="24" cy="24" r="20" fill="#FFE0B2" stroke="#FF6B35" stroke-width="2"/>
+  
+  <!-- 졸린 눈 (반달 모양) -->
+  <path d="M14 20 Q18 18 22 20" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M26 20 Q30 18 34 20" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- 코 -->
+  <circle cx="24" cy="26" r="1" fill="#FF6B35"/>
+  
+  <!-- 입 (하품하는 모양) -->
+  <ellipse cx="24" cy="32" rx="4" ry="2" fill="#333"/>
+  
+  <!-- 졸음 표시 (Z 문자들) -->
+  <text x="35" y="15" font-family="Arial, sans-serif" font-size="8" fill="#FF6B35" opacity="0.8">Z</text>
+  <text x="38" y="10" font-family="Arial, sans-serif" font-size="6" fill="#FF6B35" opacity="0.6">z</text>
+  <text x="41" y="7" font-family="Arial, sans-serif" font-size="4" fill="#FF6B35" opacity="0.4">z</text>
+</svg>
