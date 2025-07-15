@@ -273,18 +273,26 @@ public class UserController {
 					String rowStatus = userNode.has("rowStatus") ? userNode.get("rowStatus").asText() : "";
 
 					userVo.setUserId(userId.isEmpty() ? null : userId);
-					userVo.setTenantId("1");
+					userVo.setTenantId("1"); // 예시 테넌트 ID
 					userVo.setName(userNode.get("name").asText());
 					userVo.setEmail(userNode.get("email").asText());
-					userVo.setPassword(userNode.get("password").asText());
-					userVo.setRole(userNode.get("role").asText());
 
+					String password = userNode.get("password").asText();
+					// 비밀번호가 변경되지 않았으면(특수값) null로 설정
+					if ("KEEP_EXISTING_PASSWORD".equals(password)) {
+						userVo.setPassword(null);
+					} else {
+						userVo.setPassword(password); // 비밀번호 암호화는 서비스에서 처리 권장
+					}
+
+					userVo.setRole(userNode.get("role").asText());
 					userVo.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 					userVo.setRowStatus(rowStatus);
 
 					userList.add(userVo);
 				}
 
+				// 수정된 서비스 메소드 호출
 				userService.saveUserList(userList);
 
 				System.out.println("=== Service를 통한 처리 완료 ===");

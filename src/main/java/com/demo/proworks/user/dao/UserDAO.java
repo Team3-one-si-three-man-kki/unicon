@@ -4,9 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.inswave.elfw.exception.ElException;
 import com.demo.proworks.user.vo.UserVo;
-import com.demo.proworks.user.dao.UserDAO;
+import com.inswave.elfw.exception.ElException;
 
 /**
  * @subject : 테넌트유저 관련 처리를 담당하는 DAO
@@ -25,7 +24,7 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	/**
 	 * 테넌트유저 상세 조회한다.
 	 * 
-	 * @param UserVo 테넌트유저
+	 * @param AttendanceVO 테넌트유저
 	 * @return UserVo 테넌트유저
 	 * @throws ElException
 	 */
@@ -36,7 +35,7 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	/**
 	 * 페이징을 처리하여 테넌트유저 목록조회를 한다.
 	 * 
-	 * @param UserVo 테넌트유저
+	 * @param AttendanceVO 테넌트유저
 	 * @return List<UserVo> 테넌트유저
 	 * @throws ElException
 	 */
@@ -47,7 +46,7 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	/**
 	 * 테넌트유저 목록 조회의 전체 카운트를 조회한다.
 	 * 
-	 * @param UserVo 테넌트유저
+	 * @param AttendanceVO 테넌트유저
 	 * @return 테넌트유저 조회의 전체 카운트
 	 * @throws ElException
 	 */
@@ -58,7 +57,7 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	/**
 	 * 테넌트유저를 등록한다.
 	 * 
-	 * @param UserVo 테넌트유저
+	 * @param AttendanceVO 테넌트유저
 	 * @return 번호
 	 * @throws ElException
 	 */
@@ -69,7 +68,7 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	/**
 	 * 테넌트유저를 갱신한다.
 	 * 
-	 * @param UserVo 테넌트유저
+	 * @param AttendanceVO 테넌트유저
 	 * @return 번호
 	 * @throws ElException
 	 */
@@ -80,7 +79,7 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	/**
 	 * 테넌트유저를 삭제한다.
 	 * 
-	 * @param UserVo 테넌트유저
+	 * @param AttendanceVO 테넌트유저
 	 * @return 번호
 	 * @throws ElException
 	 */
@@ -141,6 +140,10 @@ public class UserDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstractD
 	 */
 	public int deleteUserBatch(List<UserVo> deleteList) throws ElException {
 		return delete("com.demo.proworks.user.deleteUserBatch", deleteList);
+	}
+
+	public int deleteSessionsByUserBatch(List<UserVo> deleteList) {
+		return delete("com.demo.proworks.user.deleteSessionsByUserBatch", deleteList);
 	}
 
 }

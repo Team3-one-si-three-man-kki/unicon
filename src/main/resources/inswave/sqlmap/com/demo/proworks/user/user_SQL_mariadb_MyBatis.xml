@@ -135,8 +135,8 @@
 			AND CREATED_AT like '%${scCreatedAt}%'
 		</if>
 	</select>
-    
-    <!-- 이메일로 사용자 조회 + 테넌트 활성여부 포함 -->
+
+	<!-- 이메일로 사용자 조회 + 테넌트 활성여부 포함 -->
 	<select id="getUserByEmail" parameterType="string" resultType="com.demo.proworks.user.vo.UserVo">
 		SELECT
 		u.user_id AS userId,
@@ -218,6 +218,14 @@
 		</foreach>
 	</delete>
 
+	<delete id="deleteSessionsByUserBatch" parameterType="java.util.List">
+		DELETE FROM session
+		WHERE created_by IN
+		<foreach collection="list" item="user" open="(" separator="," close=")">
+			#{user.userId}
+		</foreach>
+	</delete>
+
 	<!-- 테넌트별 이메일 중복 검사용 쿼리 -->
 	<select id="selectUsersByEmailAndTenant" parameterType="com.demo.proworks.user.vo.UserVo"
 		resultType="com.demo.proworks.user.vo.UserVo">
@@ -228,7 +236,8 @@
 		NAME as name
 		FROM USER
 		WHERE EMAIL = #{email}
-		AND TENANT_ID = #{tenantId}
+		AND TENANT_ID =
+		#{tenantId}
 	</select>
 
 </mapper>

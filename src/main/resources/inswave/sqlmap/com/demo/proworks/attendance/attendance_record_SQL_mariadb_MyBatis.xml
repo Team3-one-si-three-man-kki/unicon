@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject : 출석모듈 관련 처리를 담당하는 Sql Mapper
+	@description : 출석모듈 관련 처리를 담당하는 Sql Mapper
+	@author : kimsiyeon
+	@since : 2025/07/15
+	@modification
+	===========================================================
+	DATE AUTHOR DESC
+	===========================================================
+	2025/07/15 kimsiyeon 최초 생성
+-->
+<mapper namespace="com.demo.proworks.attendance">
+	<insert id="insertAttendance" parameterType="com.demo.proworks.attendance.vo.AttendanceVo">
+		<!-- 출석모듈를 등록한다. -->
+
+		INSERT INTO ATTENDANCE_RECORD /* QueryID : com.demo.proworks.attendance.insertAttendance */
+		(
+		RECORD_ID
+		<if test="sessionId!= null"> , SESSION_ID </if>
+		<if test="name      != null"> , NAME       </if>
+		<if test="email     != null"> , EMAIL      </if>
+		<if test="ipAddress!= null"> , IP_ADDRESS </if>
+		<if test="joinTime != null"> , JOIN_TIME  </if>
+		<if test="leaveTime!= null"> , LEAVE_TIME </if>
+		) VALUES ( #{recordId}
+		<if test="sessionId!= null"> , #{sessionId} </if>
+		<if test="name      != null"> , #{name}       </if>
+		<if test="email     != null"> , #{email}      </if>
+		<if test="ipAddress!= null"> , #{ipAddress} </if>
+		<if test="joinTime != null"> , #{joinTime}  </if>
+		<if test="leaveTime!= null"> , #{leaveTime} </if>
+		)
+	</insert>
+
+	<update id="updateAttendance" parameterType="com.demo.proworks.attendance.vo.AttendanceVo">
+		<!-- 출석모듈를 갱신한다. -->
+
+		UPDATE ATTENDANCE_RECORD /* QueryID : com.demo.proworks.attendance.updateAttendance */
+		SET
+		RECORD_ID = #{recordId}
+		<if test="sessionId!= null"> , SESSION_ID = #{sessionId} </if>
+		<if test="name      != null"> , NAME = #{name}       </if>
+		<if test="email     != null"> , EMAIL = #{email}      </if>
+		<if test="ipAddress!= null"> , IP_ADDRESS = #{ipAddress} </if>
+		<if test="joinTime != null"> , JOIN_TIME = #{joinTime}  </if>
+		<if test="leaveTime!= null"> , LEAVE_TIME = #{leaveTime} </if>
+		WHERE RECORD_ID = #{recordId}
+	</update>
+
+	<delete id="deleteAttendance" parameterType="com.demo.proworks.attendance.vo.AttendanceVo">
+		<!-- 출석모듈를 삭제한다. -->
+
+		DELETE FROM ATTENDANCE_RECORD /* QueryID : com.demo.proworks.attendance.deleteAttendance */
+		WHERE
+		RECORD_ID = #{recordId}
+	</delete>
+
+	<select id="selectAttendance" parameterType="com.demo.proworks.attendance.vo.AttendanceVo"
+		resultType="com.demo.proworks.attendance.vo.AttendanceVo">
+		<!-- 출석모듈를 상세 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.attendance.selectAttendance */
+		RECORD_ID as recordId, SESSION_ID as sessionId, NAME as name, EMAIL as email, IP_ADDRESS as ipAddress, JOIN_TIME as joinTime, LEAVE_TIME as
+		leaveTime
+		FROM ATTENDANCE_RECORD
+		WHERE
+		RECORD_ID = #{recordId}
+	</select>
+
+	<select id="selectListAttendance" parameterType="com.demo.proworks.attendance.vo.AttendanceVo"
+		resultType="com.demo.proworks.attendance.vo.AttendanceVo">
+		<!-- 출석모듈 목록을 조회한다. -->
+		SELECT /* QueryID : com.demo.proworks.attendance.selectListAttendance */
+		RECORD_ID as recordId, SESSION_ID as sessionId, NAME as name, EMAIL as email, IP_ADDRESS as ipAddress, JOIN_TIME as joinTime, LEAVE_TIME as
+		leaveTime
+		FROM (
+		SELECT S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+		FROM (
+		SELECT
+		*
+		FROM ATTENDANCE_RECORD
+		WHERE 1=1
+		<if test="scSessionId != null and scSessionId != ''">
+			AND SESSION_ID like '%${scSessionId}%'
+		</if>
+		<if test="scName != null and scName != ''">
+			AND NAME like '%${scName}%'
+		</if>
+		<if test="scEmail != null and scEmail != ''">
+			AND EMAIL like '%${scEmail}%'
+		</if>
+		<if test="scJoinTime != null and scJoinTime != ''">
+			AND JOIN_TIME like '%${scJoinTime}%'
+		</if>
+		) S, (SELECT @ROWNUM := 0) TMP ) A WHERE PAGE = #{pageIndex}
+	</select>
+
+	<select id="selectListCountAttendance" parameterType="com.demo.proworks.attendance.vo.AttendanceVo" resultType="long">
+		<!-- 출석모듈 목록의 카운트를 조회한다. -->
+
+		SELECT /* QueryID : com.demo.proworks.attendance.selectListCountAttendance */
+		COUNT(*) totcnt
+		FROM ATTENDANCE_RECORD
+		WHERE 1=1
+		<if test="scSessionId != null and scSessionId != ''">
+			AND SESSION_ID like '%${scSessionId}%'
+		</if>
+		<if test="scName != null and scName != ''">
+			AND NAME like '%${scName}%'
+		</if>
+		<if test="scEmail != null and scEmail != ''">
+			AND EMAIL like '%${scEmail}%'
+		</if>
+		<if test="scJoinTime != null and scJoinTime != ''">
+			AND JOIN_TIME like '%${scJoinTime}%'
+		</if>
+	</select>
+    
+     <!-- CSV 다운로드용 출석 목록 조회 (계산 필드 포함) -->
+	<select id="selectAttendanceForCSV" parameterType="com.demo.proworks.attendance.vo.AttendanceVo" resultMap="attendanceResultMap">
+		SELECT
+		record_id,
+		session_id,
+		name,
+		email,
+		COALESCE(ip_address, '') as ip_address,
+		DATE_FORMAT(join_time, '%Y-%m-%d %H:%i:%s') as join_time,
+		CASE
+		WHEN leave_time IS NOT NULL
+		THEN DATE_FORMAT(leave_time, '%Y-%m-%d %H:%i:%s')
+		ELSE '진행중'
+		END as leave_time,
+		CASE
+		WHEN leave_time IS NOT NULL
+		THEN TIMESTAMPDIFF(MINUTE, join_time, leave_time)
+		ELSE '-'
+		END as participation_minutes,
+		CASE
+		WHEN leave_time IS NULL THEN '참여중'
+		ELSE '퇴장완료'
+		END as status
+		FROM attendance_records
+		WHERE 1=1
+		<if test="scSessionId != null and scSessionId != ''">
+			AND session_id = #{scSessionId}
+		</if>
+		<if test="scName != null and scName != ''">
+			AND name LIKE CONCAT('%', #{scName}, '%')
+		</if>
+		<if test="scEmail != null and scEmail != ''">
+			AND email LIKE CONCAT('%', #{scEmail}, '%')
+		</if>
+		<if test="scJoinTime != null and scJoinTime != ''">
+			AND DATE(join_time) = #{scJoinTime}
+		</if>
+		ORDER BY join_time ASC
+	</select>
+
+	<!-- 출석 통계 조회 -->
+	<select id="selectAttendanceStats" parameterType="com.demo.proworks.attendance.vo.AttendanceVo" resultMap="attendanceResultMap">
+		SELECT
+		#{scSessionId} as session_id,
+		COUNT(*) as record_id, /* 총 참여자 수 */
+		COUNT(leave_time) as name, /* 퇴장 완료자 수 */
+		COUNT(CASE WHEN leave_time IS NULL THEN 1 END) as email, /* 현재 참여중 */
+		ROUND(AVG(CASE
+		WHEN leave_time IS NOT NULL
+		THEN TIMESTAMPDIFF(MINUTE, join_time, leave_time)
+		ELSE NULL
+		END), 1) as participation_minutes, /* 평균 참여시간 */
+		DATE_FORMAT(MIN(join_time), '%Y-%m-%d %H:%i:%s') as join_time, /* 세션 시작시간 */
+		DATE_FORMAT(MAX(leave_time), '%Y-%m-%d %H:%i:%s') as leave_time /* 마지막 퇴장시간 */
+		FROM attendance_records
+		WHERE 1=1
+		<if test="scSessionId != null and scSessionId != ''">
+			AND session_id = #{scSessionId}
+		</if>
+	</select>
+
+	<!-- 퇴장 처리 (leave_time 업데이트) -->
+	<update id="updateLeaveTime" parameterType="com.demo.proworks.attendance.vo.AttendanceVo">
+		UPDATE attendance_records
+		SET leave_time = NOW()
+		WHERE record_id = #{recordId}
+		AND leave_time IS NULL
+	</update>
+
+	<!-- 세션별 참여자 목록 조회 -->
+	<select id="selectAttendanceBySession" parameterType="string" resultMap="attendanceResultMap">
+		SELECT
+		record_id,
+		session_id,
+		name,
+		email,
+		ip_address,
+		DATE_FORMAT(join_time, '%Y-%m-%d %H:%i:%s') as join_time,
+		DATE_FORMAT(leave_time, '%Y-%m-%d %H:%i:%s') as leave_time,
+		CASE
+		WHEN leave_time IS NOT NULL
+		THEN TIMESTAMPDIFF(MINUTE, join_time, leave_time)
+		ELSE NULL
+		END as participation_minutes,
+		CASE
+		WHEN leave_time IS NULL THEN '참여중'
+		ELSE '퇴장완료'
+		END as status
+		FROM attendance_records
+		WHERE session_id = #{sessionId}
+		ORDER BY join_time ASC
+	</select>
+
+	<!-- 이메일 중복 체크 (같은 세션 내) -->
+	<select id="checkDuplicateEmailInSession" parameterType="com.demo.proworks.attendance.vo.AttendanceVo" resultType="int">
+		SELECT COUNT(*)
+		FROM attendance_records
+		WHERE session_id = #{sessionId}
+		AND email = #{email}
+		<if test="recordId != null and recordId != ''">
+			AND record_id != #{recordId}
+		</if>
+	</select>
+
+	<!-- 늦게 입장한 참여자 조회 (세션 시작 후 5분 이후) -->
+	<select id="selectLateAttendees" parameterType="string" resultMap="attendanceResultMap">
+		SELECT
+		a1.record_id,
+		a1.session_id,
+		a1.name,
+		a1.email,
+		DATE_FORMAT(a1.join_time, '%Y-%m-%d %H:%i:%s') as join_time,
+		TIMESTAMPDIFF(MINUTE,
+		(SELECT MIN(join_time) FROM attendance_records a2 WHERE a2.session_id = a1.session_id),
+		a1.join_time
+		) as participation_minutes /* 지각 시간(분) */
+		FROM attendance_records a1
+		WHERE a1.session_id = #{sessionId}
+		AND a1.join_time > (
+		SELECT DATE_ADD(MIN(join_time), INTERVAL 5 MINUTE)
+		FROM attendance_records a2
+		WHERE a2.session_id = a1.session_id
+		)
+		ORDER BY a1.join_time
+	</select>
+
+	<!-- 일괄 등록 (배치) -->
+	<insert id="insertAttendanceBatch" parameterType="java.util.List">
+		INSERT INTO attendance_records (session_id, name, email, ip_address, join_time)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.sessionId}, #{item.name}, #{item.email}, #{item.ipAddress},
+			COALESCE(#{item.joinTime}, NOW()))
+		</foreach>
+	</insert>
+
+	<!-- 일괄 삭제 (배치) -->
+	<delete id="deleteAttendanceBatch" parameterType="java.util.List">
+		DELETE FROM attendance_records
+		WHERE record_id IN
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item.recordId}
+		</foreach>
+	</delete>
+
+
+</mapper>

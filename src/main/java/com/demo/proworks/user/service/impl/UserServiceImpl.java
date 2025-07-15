@@ -134,18 +134,40 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional // 전체 처리를 하나의 트랜잭션으로
 	public void saveUserList(List<UserVo> userList) throws Exception {
-		for (UserVo userVo : userList) {
-			switch (userVo.getRowStatus()) {
-			case "C":
-				userDAO.insertUser(userVo);
+		// 1. C/U/D 상태에 따라 리스트 분리
+		List<UserVo> insertList = new ArrayList<>();
+		List<UserVo> updateList = new ArrayList<>();
+		List<UserVo> deleteList = new ArrayList<>();
+
+		for (UserVo user : userList) {
+			switch (user.getRowStatus()) {
+			case "C": // 생성
+				insertList.add(user);
 				break;
-			case "U":
-				userDAO.updateUser(userVo);
+			case "U": // 수정
+				updateList.add(user);
 				break;
-			case "D":
-				userDAO.deleteUser(userVo);
+			case "D": // 삭제
+				deleteList.add(user);
 				break;
 			}
+		}
+
+		if (!insertList.isEmpty()) {
+			userDAO.insertUserBatch(insertList);
+		}
+
+		// [수정] updateList 처리 로직 위치 변경 (아래 설명 참조)
+		if (!updateList.isEmpty()) {
+			for (UserVo userToUpdate : updateList) {
+				userDAO.updateUser(userToUpdate);
+			}
+		}
+
+		if (!deleteList.isEmpty()) {
+			// [수정] 사용자 삭제 전, 관련 세션 데이터 먼저 삭제
+			userDAO.deleteSessionsByUserBatch(deleteList); // 👈 이 부분 추가
+			userDAO.deleteUserBatch(deleteList);
 		}
 	}
 
