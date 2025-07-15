@@ -1,5 +1,5 @@
 (function () {
-  "use strict";
+  'use strict';
 
   // client/utils/EventEmitter.js
 
@@ -21,6 +21,11 @@
       if (this.events[eventName]) {
         this.events[eventName].forEach((listener) => listener(...args));
       }
+    }
+
+    // 모든 리스너 제거
+    removeAllListeners() {
+      this.events = {};
     }
   }
 
@@ -51,14 +56,18 @@
         throw new Error("roomId is required to join a room");
       }
       //    WebSocket 접속 주소에 roomId를 쿼리 파라미터로 추가합니다.
-      // IMPORTANT: Replace '13.125.229.206' with your AWS EC2 instance's PUBLIC IP address or domain name.
-      // 개발 환경에서 self-signed certificate를 사용하는 경우, 브라우저에서 경고를 무시해야 할 수 있습니다.
-      // 프로덕션 환경에서는 유효한 SSL/TLS 인증서를 사용해야 합니다.
-      this.ws = new WebSocket(
-        `wss://${"13.125.229.206:3000"}/?roomId=${roomId}`
-      );
+      // WebSocket 접속 주소를 현재 페이지의 호스트 주소(IP 또는 도메인)를 동적으로 사용하도록 수정합니다.
+      // 이렇게 하면 서버 주소가 변경되어도 클라이언트 코드를 수정할 필요가 없습니다.
+      // 포트는 3000으로 고정합니다.
+      const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}`;
+      console.log(`Connecting to WebSocket: ${wsUrl}`);
+      this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
         console.log("   WebSocket connected");
+        this.emit("connected", this.ws); // main.js에 연결 성공을 알림
+
+        // CanvasModule 초기화 로직을 main.js로 이동시켰으므로 이 코드는 제거합니다.
+
         try {
           this.device = new window.mediasoupClient.Device();
           this.ws.send(JSON.stringify({ action: "getRtpCapabilities" }));
@@ -104,6 +113,22 @@
           case "producerClosed":
             this._handleProducerClosed(msg);
             break;
+          // ✅ [추가] 다른 참여자의 프로듀서 상태 변경 알림을 처리
+          case "producerStateChanged": {
+            const { producerId, kind, state } = msg.data;
+            if (state === "pause") {
+              if (kind === "video")
+                this.emit("remote-producer-pause", { producerId });
+              // 필요하다면 오디오 pause 처리도 추가
+              // if (kind === 'audio') this.emit('remote-audio-pause', { producerId });
+            } else if (state === "resume") {
+              if (kind === "video")
+                this.emit("remote-producer-resume", { producerId });
+              // 필요하다면 오디오 resume 처리도 추가
+              // if (kind === 'audio') this.emit('remote-audio-resume', { producerId });
+            }
+            break;
+          }
         }
       };
     }
@@ -316,10 +341,7 @@
           })
         );
       } catch (error) {
-        console.error(
-          `    Failed to create consumer for ${producerId}:`,
-          error
-        );
+        console.error(`    Failed to create consumer for ${producerId}:`, error);
       }
     }
 
@@ -342,9 +364,7 @@
             reject(new Error(response.error));
           } else {
             resolve(
-              response.id
-                ? { id: response.id, ...response.data }
-                : response.data
+              response.id ? { id: response.id, ...response.data } : response.data
             );
           }
         });
@@ -362,7 +382,19 @@
         await audioProducer.pause();
       }
       // 필요하다면 서버에 음소거 상태를 알리는 시그널링을 보낼 수 있습니다.
-      // this.sendPeerStatus({ isMuted: !enabled });
+      // ✅ [추가] 서버에 프로듀서 상태 변경을 알립니다.
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(
+          JSON.stringify({
+            action: "changeProducerState",
+            data: {
+              producerId: audioProducer.id,
+              kind: "audio",
+              action: enabled ? "resume" : "pause",
+            },
+          })
+        );
+      }
     }
 
     //    비디오 트랙을 끄거나 켭니다.
@@ -374,6 +406,18 @@
         await videoProducer.resume();
       } else {
         await videoProducer.pause();
+      }
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(
+          JSON.stringify({
+            action: "changeProducerState",
+            data: {
+              producerId: videoProducer.id,
+              kind: "video",
+              action: enabled ? "resume" : "pause",
+            },
+          })
+        );
       }
     }
     _findProducerByKind(kind) {
@@ -444,152 +488,11 @@
     }
   }
 
-  // client/modules/MediaPipeModule.js
-
-  // ✅ EventEmitter를 상속받습니다.
-  class MediaPipeModule extends EventEmitter {
-    constructor(videoElement) {
-      super();
-
-      this.videoElement = videoElement;
-      this.worker = new Worker(
-        "/InsWebApp/media/dist/mediapipe-worker.bundle.js"
-      );
-	  console.log(this.worker);
-	  console.log("여기다!!!!");
-
-      // ✅ 1. 모든 상태와 상수를 클래스의 속성(this)으로 변경합니다.
-      this.isDrowsy = false;
-      this.isPresent = true;
-
-      this.LEFT_EYE = [33, 160, 158, 133, 153, 144];
-      this.RIGHT_EYE = [362, 385, 387, 263, 373, 380];
-      this.EAR_THRESH = 0.2;
-      this.DROWSY_FRAMES = 10;
-
-      this.closureFrames = 0;
-      this.absenceCounter = 0;
-      this.ABSENCE_CONSECUTIVE_FRAMES = 15; // 필요에 따라 조정
-      this.analysisIntervalId = null; // ✅ AI 분석 루프의 ID를 저장할 변수
-
-      this.worker.onerror = (error) => {
-        console.error("❌ MediaPipe Worker 오류:", error);
-        this.emit("error", error); // 에러도 이벤트로 외부에 알립니다.
-      };
-
-      // ✅ 경쟁 상태(Race Condition)를 피하기 위해 onmessage 핸들러를 생성자에서 설정합니다.
-      this.worker.onmessage = (event) => {
-        const { type, landmarks } = event.data;
-        if (type === "ready") {
-          this._startAnalysisLoop();
-        } else if (type === "result") {
-          this._handleAnalysisResult(landmarks);
-        }
-      };
-    }
-
-    // ✅ AI 분석을 시작하는 메소드
-    start() {
-      if (this.analysisIntervalId) {
-        console.log("AI analysis is already running.");
-        return;
-      }
-      console.log("🚀 Starting AI analysis loop.");
-      const AI_ANALYSIS_INTERVAL = 200;
-      this.analysisIntervalId = setInterval(async () => {
-        if (
-          this.worker &&
-          this.videoElement.readyState >= 2 &&
-          this.videoElement.videoWidth > 0 &&
-          this.videoElement.videoHeight > 0
-        ) {
-          try {
-            const imageBitmap = await createImageBitmap(this.videoElement);
-            this.worker.postMessage({ imageBitmap }, [imageBitmap]);
-          } catch (error) {
-            console.error(
-              "❌ Error creating ImageBitmap in MediaPipeModule:",
-              error
-            );
-          }
-        }
-      }, AI_ANALYSIS_INTERVAL);
-    }
-
-    // ✅ AI 분석을 중지하는 메소드
-    stop() {
-      if (!this.analysisIntervalId) {
-        console.log("AI analysis is not running.");
-        return;
-      }
-      console.log("🛑 Stopping AI analysis loop.");
-      clearInterval(this.analysisIntervalId);
-      this.analysisIntervalId = null;
-    }
-
-    _startAnalysisLoop() {
-      // 이제 이 함수는 start() 메소드에 의해 관리되므로 비워두거나,
-      // 초기 자동 시작이 필요하다면 로직을 유지할 수 있습니다.
-      // 현재 요구사항에서는 외부에서 제어하므로 비워둡니다.
-    }
-
-    _handleAnalysisResult(landmarks) {
-      // ✅ 2. 랜드마크 그리기 요청은 이벤트로만 방송합니다.
-      this.emit("landmarksUpdate", landmarks);
-
-      const previousIsPresent = this.isPresent;
-      const previousIsDrowsy = this.isDrowsy;
-
-      // --- 자리 비움 / 복귀 판단 ---
-      if (!landmarks) {
-        this.absenceCounter++;
-        if (this.absenceCounter > this.ABSENCE_CONSECUTIVE_FRAMES) {
-          this.isPresent = false;
-        }
-      } else {
-        this.absenceCounter = 0;
-        this.isPresent = true;
-      }
-
-      // --- 졸음 판단 (얼굴이 감지된 경우에만) ---
-      if (landmarks) {
-        const getEAR = (eyeIndices) => {
-          const pts = eyeIndices.map((i) => landmarks[i]);
-          const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-          return (
-            (d(pts[1], pts[5]) + d(pts[2], pts[4])) / (2 * d(pts[0], pts[3]))
-          );
-        };
-        const ear = (getEAR(this.LEFT_EYE) + getEAR(this.RIGHT_EYE)) / 2;
-
-        if (ear < this.EAR_THRESH) {
-          this.closureFrames++;
-          if (this.closureFrames >= this.DROWSY_FRAMES) {
-            this.isDrowsy = true;
-          }
-        } else {
-          this.isDrowsy = false;
-          this.closureFrames = 0;
-        }
-      } else {
-        // 얼굴이 없으면 졸음 상태는 아니므로 리셋
-        this.isDrowsy = false;
-        this.closureFrames = 0;
-      }
-
-      // ✅ 3. 상태가 '변경'되었을 때만 이벤트를 방송합니다.
-      if (previousIsPresent !== this.isPresent) {
-        this.emit("absenceUpdate", { isPresent: this.isPresent });
-      }
-      if (previousIsDrowsy !== this.isDrowsy) {
-        this.emit("drowsinessUpdate", { isDrowsy: this.isDrowsy });
-      }
-    }
-  }
-
   // client/UIManager.js
 
-  // 이 상수는 그림을 그리는 UIManager가 가지고 있는 것이 더 적합합니다.
+  // UIManager는 더 이상 특정 모듈(CanvasModule)을 알지 못합니다.
+  // import { CanvasModule } from "./modules/CanvasModule.js";
+
   const FACE_LANDMARKS_CONNECTORS = [
     { start: 61, end: 146 },
     { start: 146, end: 91 },
@@ -631,7 +534,6 @@
     { start: 311, end: 310 },
     { start: 310, end: 415 },
     { start: 415, end: 308 },
-    // Left eye
     { start: 362, end: 382 },
     { start: 382, end: 381 },
     { start: 381, end: 380 },
@@ -640,13 +542,11 @@
     { start: 374, end: 390 },
     { start: 390, end: 249 },
     { start: 249, end: 362 },
-    // Left eyebrow
     { start: 336, end: 296 },
     { start: 296, end: 334 },
     { start: 334, end: 293 },
     { start: 293, end: 300 },
     { start: 300, end: 276 },
-    // Right eye
     { start: 33, end: 7 },
     { start: 7, end: 163 },
     { start: 163, end: 144 },
@@ -655,13 +555,11 @@
     { start: 153, end: 154 },
     { start: 154, end: 155 },
     { start: 155, end: 33 },
-    // Right eyebrow
     { start: 107, end: 66 },
     { start: 66, end: 105 },
     { start: 105, end: 63 },
     { start: 63, end: 70 },
     { start: 70, end: 46 },
-    // Face oval
     { start: 10, end: 338 },
     { start: 338, end: 297 },
     { start: 297, end: 332 },
@@ -702,108 +600,124 @@
 
   class UIManager {
     constructor() {
-      // 1. 메인 컨테이너 생성 및 body에 추가
       this.appRootContainer = document.createElement("div");
-      this.appRootContainer.className = "sub_contents"; // 기존 class 유지
+      this.appRootContainer.className = "sub_contents";
       this.appRootContainer.style.cssText =
         "width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;";
       document.body.appendChild(this.appRootContainer);
 
-      // 2. localMediaContainer 생성 및 appRootContainer에 추가
       this.localMediaContainer = document.createElement("div");
       this.localMediaContainer.id = "localMediaContainer";
       this.localMediaContainer.style.cssText =
         "position: relative; width: 300px; height: 225px; border: 1px solid #ccc; border-radius: 4px; background-color: #000; margin-bottom: 10px;";
       this.appRootContainer.appendChild(this.localMediaContainer);
 
-      // 3. video 요소 생성 및 localMediaContainer에 추가
       this.video = document.createElement("video");
       this.video.id = "localVideo";
       this.video.controls = true;
-      this.video.autoplay = true; // 자동 재생 추가
-      this.video.playsInline = true; // iOS에서 인라인 재생
+      this.video.muted = true;
+      this.video.autoplay = true;
+      this.video.playsInline = true;
       this.video.style.cssText = "height: 100%; object-fit: cover;";
       this.localMediaContainer.appendChild(this.video);
 
-      // 4. canvas 요소 생성 및 localMediaContainer에 추가
       this.canvas = document.createElement("canvas");
       this.canvas.id = "localCanvas";
       this.canvas.style.cssText =
-        "position: absolute; top: 0; left: 0; width: 100%; height: 100%;";
+        "position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"; // AI용 캔버스는 이벤트 방해 안함
       this.localMediaContainer.appendChild(this.canvas);
       this.canvasCtx = this.canvas.getContext("2d");
 
-      // 5. controls 그룹 생성 및 appRootContainer에 추가
       this.controlsGroup = document.createElement("div");
-      this.controlsGroup.className = "controls"; // 기존 class 유지
+      this.controlsGroup.className = "controls";
       this.appRootContainer.appendChild(this.controlsGroup);
 
-      // 6. muteButton 생성 및 controlsGroup에 추가
-      this.muteButton = document.createElement("button"); // xf:trigger 대신 button 사용
+      this.muteButton = document.createElement("button");
       this.muteButton.id = "muteButton";
       this.muteButton.textContent = "음소거";
       this.muteButton.disabled = true;
       this.controlsGroup.appendChild(this.muteButton);
 
-      // 7. cameraOffButton 생성 및 controlsGroup에 추가
-      this.cameraOffButton = document.createElement("button"); // xf:trigger 대신 button 사용
+      this.cameraOffButton = document.createElement("button");
       this.cameraOffButton.id = "cameraOffButton";
       this.cameraOffButton.textContent = "카메라 끄기";
       this.cameraOffButton.disabled = true;
       this.controlsGroup.appendChild(this.cameraOffButton);
 
-      // 8. screenShareButton 생성 및 controlsGroup에 추가
-      this.screenShareButton = document.createElement("button"); // xf:trigger 대신 button 사용
+      this.screenShareButton = document.createElement("button");
       this.screenShareButton.id = "screenShareButton";
       this.screenShareButton.textContent = "화면공유";
-      this.screenShareButton.disabled = true; // 초기에는 비활성화
+      this.screenShareButton.disabled = true;
       this.controlsGroup.appendChild(this.screenShareButton);
 
-      // 9. remoteMediaContainer 생성 및 appRootContainer에 추가
-      this.remoteMediaContainer = document.createElement("div");
-      this.remoteMediaContainer.id = "remoteMediaContainer";
-      this.appRootContainer.appendChild(this.remoteMediaContainer);
+      this.whiteboardButton = document.createElement("button");
+      this.whiteboardButton.id = "whiteboardButton";
+      this.whiteboardButton.textContent = "칠판";
+      this.whiteboardButton.style.display = "none";
+      this.controlsGroup.appendChild(this.whiteboardButton);
 
-      console.log("UIManager: All UI elements created and appended to DOM.");
+      // --- ✅ [핵심 수정] 새로운 원격 미디어 섹션 ---
+      this.remoteSection = document.createElement("div");
+      this.remoteSection.id = "remoteSection";
+      this.appRootContainer.appendChild(this.remoteSection);
+
+      this.mainStageContainer = document.createElement("div");
+      this.mainStageContainer.id = "mainStageContainer";
+      this.remoteSection.appendChild(this.mainStageContainer);
+
+      this.sidebarContainer = document.createElement("div");
+      this.sidebarContainer.id = "sidebarContainer";
+      this.remoteSection.appendChild(this.sidebarContainer);
+
+      console.log("UIManager: Stage and Sidebar UI created.");
     }
 
-    //      [핵심 추가] 모든 컨트롤 버튼을 활성화하는 메소드
+    getMainStageContainer() {
+      return this.mainStageContainer;
+    }
+    getSidebarContainer() {
+      return this.sidebarContainer;
+    }
+
+    // main.js가 공용 컨테이너에 접근할 수 있도록 getter 제공
+    getRemoteMediaContainer() {
+      return this.remoteMediaContainer;
+    }
+
+    // 칠판 버튼을 표시하는 메서드
+    showWhiteboardButton() {
+      this.whiteboardButton.style.display = "inline-block";
+    }
+
     enableControls() {
       console.log("🛠️ Enabling media controls...");
       this.muteButton.disabled = false;
       this.cameraOffButton.disabled = false;
-      // screenShareButton은 관리자만 활성화되므로 여기서는 처리하지 않음
     }
 
-    //      관리자 여부에 따라 화면 공유 버튼 활성화
-    setAdminControls(isAdmin) {
-      console.log(`👑 Admin status: ${isAdmin}. Setting controls.`);
-      this.screenShareButton.disabled = !isAdmin;
+    enableScreenSharing(onClickCallback) {
+      console.log("💻 Enabling screen sharing feature...");
+      this.screenShareButton.disabled = false;
+      this.screenShareButton.onclick = onClickCallback;
     }
 
-    //      화면 공유 상태에 따라 레이아웃을 변경하는 메소드
     updateLayoutForScreenShare(isSharing) {
-      // localMediaContainer는 이미 this.localMediaContainer로 참조됨
       if (isSharing) {
-        // 화면 공유 시, 로컬 비디오는 작게 만들고, 원격 컨테이너는 화면 공유에 집중
         this.localMediaContainer.classList.add("small");
         this.remoteMediaContainer.classList.add("screen-sharing-active");
       } else {
-        // 화면 공유 종료 시, 원래대로 복원
         this.localMediaContainer.classList.remove("small");
         this.remoteMediaContainer.classList.remove("screen-sharing-active");
       }
     }
 
     drawFaceMesh(landmarks) {
-      // 캔버스 크기를 비디오 크기에 맞춥니다.
       this.canvas.width = this.video.videoWidth;
       this.canvas.height = this.video.videoHeight;
       this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
       if (!landmarks) return;
 
-      // 선 스타일 설정
       this.canvasCtx.strokeStyle = "rgba(0, 255, 0, 0.7)";
       this.canvasCtx.lineWidth = 1.5;
 
@@ -825,7 +739,11 @@
       }
     }
 
-    // 원격 비디오 엘리먼트 생성 등 다른 UI 관련 로직도 여기에 추가...
+    // 아래의 트랙 추가/제거 로직은 이제 main.js에서 직접 DOM을 조작하므로 UIManager에서는 제거하거나,
+    // 혹은 main.js에서 호출할 수 있는 더 일반적인 DOM 조작 헬퍼 함수로 남겨둘 수 있습니다.
+    // 여기서는 main.js가 직접 처리하도록 역할을 완전히 분리하기 위해 제거하는 방향으로 진행합니다.
+    // 아래 함수 사용안함 -> 나중에 제거
+
     addRemoteTrack(track, producerId, appData) {
       if (!this.remoteMediaContainer) {
         console.error(
@@ -870,9 +788,7 @@
     removeRemoteTrack(producerId) {
       // 일반 비디오와 화면 공유 엘리먼트를 모두 찾아 제거
       const remoteVideo = document.getElementById(`remote-${producerId}`);
-      const screenShare = document.getElementById(
-        `remote-screen-${producerId}`
-      );
+      const screenShare = document.getElementById(`remote-screen-${producerId}`);
 
       if (remoteVideo) {
         remoteVideo.remove();
@@ -886,7 +802,6 @@
       }
     }
 
-    //      관리자 자신의 화면 공유를 UI에 추가하는 메소드
     addLocalScreenShare(track) {
       this.updateLayoutForScreenShare(true);
       const screenShareWrapper = document.createElement("div");
@@ -904,7 +819,6 @@
       console.log("     Added local screen share to UI.");
     }
 
-    //      로컬 화면 공유를 UI에서 제거하는 메소드
     removeLocalScreenShare() {
       const element = document.getElementById("local-screen-share-wrapper");
       if (element) {
@@ -917,14 +831,48 @@
 
   // client/main.js
 
-  // 2. 웹스퀘어의 전역 스코프에서 이 클래스들을 사용할 수 있도록 window 객체에 할당합니다.
-  // 이것이 가장 중요한 부분입니다.
-  // 2. 웹스퀘어의 전역 스코프에서 이 클래스들을 사용할 수 있도록 window 객체에 할당합니다.
-  // 이것이 가장 중요한 부분입니다.
-  window.AppClasses = {
-    UIManager: UIManager,
+
+  // ✨ 동적 모듈 로더 함수 (import() 대체)
+  function loadModule(url, moduleName) {
+    return new Promise((resolve, reject) => {
+      // 이미 로드된 모듈인지 확인
+      if (window[moduleName]) {
+        console.log(`${moduleName} is already loaded.`);
+        let Module = window[moduleName];
+        if (Module && !Module.prototype) {
+          Module = Module[moduleName] || Module.default;
+        }
+        return resolve(Module);
+      }
+
+      console.log(`Loading module: ${moduleName} from ${url}`);
+      const script = document.createElement("script");
+      script.src = `${url}`; // 서버 절대 경로 사용
+
+      script.onload = () => {
+        if (window[moduleName]) {
+          console.log(`Successfully loaded module: ${moduleName}`);
+          let Module = window[moduleName];
+          if (Module && !Module.prototype) {
+            Module = Module[moduleName] || Module.default;
+          }
+          resolve(Module);
+        } else {
+          reject(new Error(`Module ${moduleName} not found after script load.`));
+        }
+      };
+
+      script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  // 이렇게 하면 app.bundle.js가 로드되는 즉시 window.App이 생성됩니다.
+  window.App = {
     RoomClient: RoomClient,
-    MediaPipeModule: MediaPipeModule,
+    UIManager: UIManager,
+    loadModule: loadModule,
   };
+
 })();
 //# sourceMappingURL=app.bundle.js.map
