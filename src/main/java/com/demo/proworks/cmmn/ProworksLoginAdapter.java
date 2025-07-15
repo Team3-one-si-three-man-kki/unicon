@@ -2,6 +2,7 @@ package com.demo.proworks.cmmn;
 
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -17,6 +18,7 @@ import com.inswave.elfw.login.LoginInfo;
 import com.inswave.elfw.util.ElBeanUtils;
 
 import com.demo.proworks.jwt.JwtUtil;
+import com.demo.proworks.jwt.TokenBlacklistService;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
 import com.demo.proworks.util.PasswordEncryptUtil;
@@ -104,7 +106,14 @@ public class ProworksLoginAdapter extends LoginAdapter {
 			String refreshToken = jwtUtil.generateRefreshToken(id);
 
 			// 응답 헤더에 토큰 추가
-			setTokensToResponse(accessToken, refreshToken);
+			//setTokensToResponse(accessToken, refreshToken);
+			
+			// Access Token은 응답 헤더에 설정 (기존과 동일)
+			setAccessTokenToResponse(accessToken);
+
+			// Refresh Token은 HttpOnly 쿠키로 설정
+			setRefreshTokenCookie(refreshToken);
+			
 			// ElHeader에 userId 설정
 			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 			HttpServletRequest currentRequest = attr.getRequest();
@@ -138,26 +147,70 @@ public class ProworksLoginAdapter extends LoginAdapter {
 	 * @param accessToken  액세스 토큰
 	 * @param refreshToken 리프레시 토큰
 	 */
-	private void setTokensToResponse(String accessToken, String refreshToken) {
-		try {
-			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-			HttpServletResponse response = attr.getResponse();
-			if (response != null) {
-				// Bearer 접두사 포함하여 설정
-				response.setHeader("Authorization", "Bearer " + accessToken);
-				response.setHeader("Refresh-Token", refreshToken);
+//	private void setTokensToResponse(String accessToken, String refreshToken) {
+//		try {
+//			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+//			HttpServletResponse response = attr.getResponse();
+//			if (response != null) {
+//				// Bearer 접두사 포함하여 설정
+//				response.setHeader("Authorization", "Bearer " + accessToken);
+//				// response.setHeader("Refresh-Token", refreshToken);
+//
+//				// CORS 설정 - 중요!
+//				response.setHeader("Access-Control-Expose-Headers", "Authorization, Refresh-Token");
+//				response.setHeader("Access-Control-Allow-Headers", "Authorization, Refresh-Token, Content-Type");
+//				response.setHeader("Access-Control-Allow-Origin", "*");
+//
+//				AppLog.debug("토큰 헤더 설정 완료 - Authorization: Bearer " + accessToken);
+//			}
+//		} catch (Exception e) {
+//			AppLog.error("응답 헤더 설정 중 오류: " + e.getMessage(), e);
+//		}
+//	}
 
-				// CORS 설정 - 중요!
-				response.setHeader("Access-Control-Expose-Headers", "Authorization, Refresh-Token");
-				response.setHeader("Access-Control-Allow-Headers", "Authorization, Refresh-Token, Content-Type");
-				response.setHeader("Access-Control-Allow-Origin", "*");
+/**
+ * Access Token을 응답 헤더에 설정
+ */
+private void setAccessTokenToResponse(String accessToken) {
+    try {
+        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpServletResponse response = attr.getResponse();
+        if (response != null) {
+            response.setHeader("Authorization", "Bearer " + accessToken);
+            response.setHeader("Access-Control-Expose-Headers", "Authorization");
+            response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            AppLog.debug("Access Token 헤더 설정 완료");
+        }
+    } catch (Exception e) {
+        AppLog.error("Access Token 헤더 설정 중 오류: " + e.getMessage(), e);
+    }
+}
 
-				AppLog.debug("토큰 헤더 설정 완료 - Authorization: Bearer " + accessToken);
-			}
-		} catch (Exception e) {
-			AppLog.error("응답 헤더 설정 중 오류: " + e.getMessage(), e);
-		}
-	}
+/**
+ * Refresh Token을 HttpOnly 쿠키로 설정
+ */
+private void setRefreshTokenCookie(String refreshToken) {
+    try {
+        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpServletResponse response = attr.getResponse();
+        if (response != null) {
+            Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+            
+            // 쿠키 보안 설정
+            refreshCookie.setHttpOnly(false);  // JavaScript 접근 차단
+            refreshCookie.setSecure(true);    // HTTPS에서만 전송 (개발 시에는 false)
+            refreshCookie.setPath("/");       // 모든 경로에서 사용
+            refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (Refresh Token 만료시간과 동일하게)
+            // refreshCookie.setSameSite("Strict"); // CSRF 방지 (Servlet 4.0 이상)
+            
+            response.addCookie(refreshCookie);
+            AppLog.debug("Refresh Token 쿠키 설정 완료");
+        }
+    } catch (Exception e) {
+        AppLog.error("Refresh Token 쿠키 설정 중 오류: " + e.getMessage(), e);
+    }
+}
 
 	/**
 	 * 데모용 로그아웃 처리를 담당하는 구현체 메소드. 프레임워크 DefaultLoginAdapter 추상클래스의 로그아웃 구현체 메소드
@@ -171,16 +224,32 @@ public class ProworksLoginAdapter extends LoginAdapter {
 	@Override
 	public LoginInfo logout(HttpServletRequest request, String id, Object... params) throws LoginException {
 		LoginInfo info = new LoginInfo();
-		try {
-			// 1. 로그아웃 처리로직 추가
-
-			// 2. 로그아웃 성공 설정
+		  try {
+        // 1. Authorization 헤더에서 토큰 추출
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            
+            // 2. 토큰을 블랙리스트에 추가
+            TokenBlacklistService blacklistService = 
+                (TokenBlacklistService) ElBeanUtils.getBean("tokenBlacklistService");
+            
+            if (blacklistService != null) {
+                long remainingTime = blacklistService.getTokenRemainingTime(token);
+                if (remainingTime > 0) {
+                    blacklistService.addToBlacklist(token, remainingTime);
+                    AppLog.debug("토큰이 블랙리스트에 추가됨: " + token);
+                }
+            }
+        }
+			 // 3. 로그아웃 성공 설정
 			info.setSuc(true);
-			AppLog.debug("[Logout] Proworks Logout 성공.....");
-
+			AppLog.debug("[Logout] Proworks Logout 성공 - 토큰 블랙리스트 처리 완료");
 		} catch (Exception e) {
+			AppLog.error("로그아웃 중 오류: " + e.getMessage(), e);
 			throw new LoginException(e);
 		}
+
 		return info;
 	}
 }
