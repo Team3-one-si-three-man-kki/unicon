@@ -17,7 +17,7 @@ public class RedisConfig {
 	private static final String CANVAS_CHANNEL = "canvas-updates";
 
 	/**
-	 * Redis 연결을 위한 ConnectionFactory를 Bean으로 등록 
+	 * Redis 연결을 위한 ConnectionFactory를 Bean으로 등록
 	 */
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
@@ -34,6 +34,8 @@ public class RedisConfig {
 		template.setConnectionFactory(redisConnectionFactory);
 		template.setKeySerializer(new StringRedisSerializer());
 		template.setValueSerializer(new StringRedisSerializer());
+		template.setHashKeySerializer(new StringRedisSerializer()); // 추가
+		template.setHashValueSerializer(new StringRedisSerializer()); // 추가
 		return template;
 	}
 

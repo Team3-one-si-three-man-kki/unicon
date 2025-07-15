@@ -110,4 +110,23 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+    
+    public long getRefreshTokenExpiration() {
+    return this.refreshTokenExpiration; // millisecond
+}
+
+public long getTokenRemainingTime(String token) {
+    try {
+        Claims claims = getClaimsFromToken(token);
+        Date expiration = claims.getExpiration();
+        long currentTime = System.currentTimeMillis() / 1000;
+        long expirationTime = expiration.getTime() / 1000;
+        
+        return Math.max(0, expirationTime - currentTime);
+    } catch (Exception e) {
+        return 0;
+    }
+}
+
+
 }
