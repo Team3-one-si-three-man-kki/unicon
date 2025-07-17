@@ -13,6 +13,37 @@
 		<w2:publicInfo method="" />
 		<style type="text/css"><![CDATA[
 /* --- 기본 구조 --- */
+
+/* ✅ 상태 아이콘 관련 스타일 */
+.status-indicator-container {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    display: flex; /* 아이콘들을 가로로 나란히 배치 */
+    gap: 5px;      /* 아이콘 사이의 간격 */
+    z-index: 20;   /* 다른 요소들 위에 보이도록 z-index 설정 */
+}
+
+.audio-muted-indicator,
+.video-paused-indicator {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.audio-muted-indicator {
+    background-image: url('/InsWebApp/images/icons/mic_off.svg'); /* 음소거 이미지 경로 */
+    background-size: 14px; /* 이미지 크기 조절 */
+}
+
+.video-paused-indicator {
+    background-image: url('/InsWebApp/images/icons/camera_off.svg'); /* 카메라 꺼짐 이미지 경로 */
+    background-size: 16px; /* 이미지 크기 조절 */
+}
+
 #remoteSection {
     display: flex;
     width: 80%;
@@ -624,25 +655,42 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("remote-producer-pause", ({ producerId }) => {
-        for (const [peerId, peer] of scwin.remotePeers.entries()) {
-            if (peer.videoProducerId === producerId && peer.elementWrapper) {
-                peer.elementWrapper.classList.add('video-paused');
-                console.log(`[PAUSE] video-paused class added to peer ${peerId}`, peer.elementWrapper);
-                break;
-            }
+    // --- 원격 사용자의 비디오/오디오 상태 변경 처리 ---
+roomClient.on("remote-producer-pause", ({ producerId }) => {
+    for (const peer of scwin.remotePeers.values()) {
+        if (peer.videoProducerId === producerId) {
+            scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true);
+            break;
         }
-    });
+    }
+});
 
-    roomClient.on("remote-producer-resume", ({ producerId }) => {
-        for (const [peerId, peer] of scwin.remotePeers.entries()) {
-            if (peer.videoProducerId === producerId && peer.elementWrapper) {
-                peer.elementWrapper.classList.remove('video-paused');
-                console.log(`[RESUME] video-paused class removed from peer ${peerId}`, peer.elementWrapper);
-                break;
-            }
+roomClient.on("remote-producer-resume", ({ producerId }) => {
+    for (const peer of scwin.remotePeers.values()) {
+        if (peer.videoProducerId === producerId) {
+            scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, false);
+            break;
         }
-    });
+    }
+});
+
+roomClient.on("remote-audio-pause", ({ producerId }) => {
+    for (const peer of scwin.remotePeers.values()) {
+        if (peer.audioProducerId === producerId) {
+            scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, true);
+            break;
+        }
+    }
+});
+
+roomClient.on("remote-audio-resume", ({ producerId }) => {
+    for (const peer of scwin.remotePeers.values()) {
+        if (peer.audioProducerId === producerId) {
+            scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, false);
+            break;
+        }
+    }
+});
 
     const roomId = "my-first-rrom";
     roomClient.join(roomId);
