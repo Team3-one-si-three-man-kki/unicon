@@ -402,6 +402,9 @@ scwin.onpageload = async function () {
     roomClient.on("screenShareState", ({ isSharing }) => {
         scwin.isScreenSharing = isSharing;
         scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
+        // 화면공유 시작시에만 칠판 지우기
+        isSharing ? scwin.canvasModule.clear() : "";
+
         // 순서 변경: 배경 상태를 먼저 업데이트
         scwin.updateCanvasBackground();
         scwin.updateVideoLayout();
@@ -655,7 +658,7 @@ scwin.onpageload = async function () {
         screenShareWrapper.appendChild(element);
 
         scwin.localScreenShareElement = screenShareWrapper;
-        
+
         scwin.updateCanvasBackground();
         scwin.updateVideoLayout();
     });
