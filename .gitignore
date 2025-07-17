@@ -67,3 +67,5 @@ test-output/
 
 /src/main/webapp/websquare/_websquare_/
 
+#환경설정
+/src/main/resources/inswave/properties/elfw.properties
