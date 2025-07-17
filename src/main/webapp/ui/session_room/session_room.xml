@@ -455,7 +455,7 @@ scwin.onpageload = async function () {
 
                     aiModule.on("absenceStarted", (data) => {
                         console.log(" Event: absenceStarted -> Sending status to server.");
-                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/adf_pop_up.xml", 400, 475);
+                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
                         roomClient.sendPeerStatus(data);
                     });
                     aiModule.on("absenceEnded", (data) => {
@@ -644,7 +644,7 @@ scwin.onpageload = async function () {
         }
     });
 
-    const roomId = "my-first";
+    const roomId = "my-first-rrom";
     roomClient.join(roomId);
 };
 ]]>
