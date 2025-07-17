@@ -398,12 +398,11 @@
 			/* 하단 모듈 영역들 */
 			.bottom-modules {
 			display: grid !important;
-			grid-template-columns: repeat(12, 1fr) !important;
-			gap: 5px
-			!important;
+			grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+			gap: 5px !important;
 			padding: 5px 0 !important;
-			height: 120px !important;
-			min-height: 120px !important;
+			height: 80px !important;
+			min-height: 80px !important;
 			max-height: 120px !important;
 			}
 
@@ -775,6 +774,26 @@
 			padding: 5px !important;
 			}
 			}
+
+			/* 화상회의 영역 전용 스타일 추가 */
+			#grp_area1 {
+				background: transparent !important;
+				border: none !important;
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+
+			/* 화상회의 영역에는 드롭존 스타일 적용 안함 */
+			#grp_area1.drop-zone {
+				background: transparent !important;
+				border: none !important;
+				cursor: default !important;
+			}
+
+			/* 화상회의 영역의 span 라벨 숨기기 */
+			#grp_area1 .drop-zone-label {
+				display: none !important;
+			}
 		</style>
 		<xf:model>
 			<w2:dataCollection baseNode="map">
@@ -794,7 +813,14 @@
 		</xf:model>
 		<w2:layoutInfo />
 		<w2:publicInfo method="" />
-		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
+		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
+		<script src="/InsWebApp/media/dist/app.bundle.js" />
+		<script src="/InsWebApp/media/dist/modules/mediapipe.bundle.js" />
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = async function () {
+    // App 로드 대기
+    await scwin.checkAppReady();
+    console.log("App 로드 완료. ModuLink 초기화 시작...");
+
     // URL 파라미터에서 sessionId 받기
     var sessionId;
 
@@ -817,6 +843,9 @@
 
     // 탭 시스템 초기화
     scwin.initTabSystem();
+
+    // 메인 화상회의 영역 초기화
+    await scwin.initVideoConferenceArea();
 };
 
 /*----------------------------탭 시스템 관리----------------------------*/
@@ -842,6 +871,352 @@ scwin.initTabSystem = function () {
     });
 
     console.log("탭 시스템 초기화 완료");
+};
+
+
+// App 로드 대기 함수 (session_room.xml에서 가져옴)
+scwin.checkAppReady = function () {
+    return new Promise(resolve => {
+        const interval = setInterval(() => {
+            console.log("App 로드 상태:", !!window.App);
+            // 'window.App'과 그 안의 내용이 모두 준비되었는지 확인
+            if (window.App && window.App.UIManager && window.App.RoomClient && window.App.loadModule) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 50);
+    });
+};
+
+// AI 관련 전역 변수들
+scwin.aiModule = null;
+scwin.roomClient = null;
+scwin.uiManager = null;
+
+// AI 모듈 상수들
+const MEDIA_PIPE_WORKER_URL = '/InsWebApp/media/dist/mediapipe.worker.bundle.js';
+const userHasAiModule = true;
+
+
+// 메인 화상회의 영역 초기화 함수
+scwin.initVideoConferenceArea = async function () {
+    try {
+        console.log("메인 화상회의 영역 초기화 시작...");
+
+        var mainVideoArea = document.getElementById('mf_grp_area1');
+
+        if (!mainVideoArea) {
+            console.error("메인 비디오 영역을 찾을 수 없습니다.");
+            return;
+        }
+
+        console.log("메인 비디오 영역 찾음:", mainVideoArea.id);
+
+        // 드롭존 클래스와 스타일 제거 (화상회의 전용이므로)
+        mainVideoArea.classList.remove('drop-zone');
+        mainVideoArea.style.border = 'none';
+        mainVideoArea.style.background = 'transparent';
+
+        // 기존 내용 제거
+        mainVideoArea.innerHTML = '';
+
+        // 화상회의 컨테이너 생성 (session_room.xml과 동일한 구조)
+        var videoContainer = document.createElement('div');
+        videoContainer.id = 'remoteSection';
+        videoContainer.style.cssText =
+            'display: flex;' +
+            'width: 100%;' +
+            'height: 113%;' +
+            'gap: 12px;' +
+            'background: #f5f7fa;';
+
+        // 메인 스테이지 컨테이너
+        var mainStageContainer = document.createElement('div');
+        mainStageContainer.id = 'mainStageContainer';
+        mainStageContainer.style.cssText =
+            'position: relative;' +
+            'flex-grow: 1;' +
+            'background-color: #202020;' +
+            'border-radius: 12px;' +
+            'overflow: hidden;' +
+            'display: flex;' +
+            'align-items: center;' +
+            'justify-content: center;' +
+            'color: white;' +
+            'min-height: 400px;';
+
+        // 사이드바 컨테이너 (작은 화면들) - 크기 증가
+        var sidebarContainer = document.createElement('div');
+        sidebarContainer.id = 'sidebarContainer';
+        sidebarContainer.style.cssText =
+            'display: flex;' +
+            'flex-direction: column;' +
+            'gap: 12px;' +
+            'width: 450px;' +
+            'overflow-y: auto;' +
+            'flex-shrink: 0;';
+
+        // 초기 화면 설정
+        mainStageContainer.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 600;">화상회의 대기 중</div>
+                <div style="font-size: 0.9rem; opacity: 0.8;">다른 참여자가 들어오면 화상회의가 시작됩니다</div>
+            </div>
+        `;
+
+        videoContainer.appendChild(mainStageContainer);
+        videoContainer.appendChild(sidebarContainer);
+        mainVideoArea.appendChild(videoContainer);
+
+        // session_room.xml의 화상회의 로직 초기화
+        await scwin.initVideoConferenceLogic();
+
+        console.log("✅ 메인 화상회의 영역 초기화 완료!");
+
+    } catch (error) {
+        console.error("❌ 메인 화상회의 영역 초기화 실패:", error);
+
+        // 실패 시 기본 UI 표시
+        var mainVideoArea = document.getElementById('mf_grp_area1');
+        if (mainVideoArea) {
+            mainVideoArea.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; border-radius: 8px;">
+                    <div style="text-align: center; color: #666;">
+                        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">화상회의 영역</div>
+                        <div style="font-size: 0.9rem; color: #999;">초기화 중 오류 발생</div>
+                        <div style="font-size: 0.8rem; color: #f44336; margin-top: 10px;">${error.message}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+};
+
+
+// 화상회의 로직 초기화 (session_room.xml의 로직 적용)
+scwin.initVideoConferenceLogic = async function () {
+    try {
+        console.log("화상회의 로직 초기화 시작...");
+
+        // session_room.xml의 App 초기화 로직
+        const { UIManager, RoomClient, loadModule } = window.App;
+
+        scwin.uiManager = new UIManager();
+        scwin.roomClient = new RoomClient(scwin.uiManager); // 전역으로 설정
+
+        scwin.pinnedProducerId = null;
+        scwin.remoteElements = new Map();
+        scwin.remoteCanvasModules = new Map();
+
+        let isAudioEnabled = true;
+        let isVideoEnabled = true;
+        let isScreenSharing = false;
+
+        // 원격 트랙 수신 처리
+        scwin.roomClient.on("new-consumer", async (consumer) => {
+            const { track, producerId, appData } = consumer;
+            let elementWrapper;
+            const key = (appData && appData.source === 'screen') ? `screen-${producerId}` : producerId;
+
+            if (appData && appData.source === 'screen') {
+                elementWrapper = document.createElement("div");
+                elementWrapper.id = `remote-screen-${producerId}`;
+                elementWrapper.classList.add("screen-share-wrapper");
+            } else if (track.kind === 'video') {
+                elementWrapper = document.createElement('div');
+                elementWrapper.id = `remote-video-${producerId}`;
+                elementWrapper.onclick = () => {
+                    if (Array.from(scwin.remoteElements.values()).some(el => el.classList.contains('screen-share-wrapper'))) {
+                        alert("화면 공유 중에는 다른 화면을 고정할 수 없습니다.");
+                        return;
+                    }
+                    scwin.pinnedProducerId = (scwin.pinnedProducerId === producerId) ? null : producerId;
+                    scwin.updateVideoLayout();
+                };
+
+            } else if (track.kind === 'audio') {
+                const audioEl = document.createElement('audio');
+                audioEl.id = `remote-audio-${producerId}`;
+                audioEl.srcObject = new MediaStream([track]);
+                audioEl.autoplay = true;
+                document.body.appendChild(audioEl);
+                return;
+            }
+
+            if (elementWrapper) {
+                const mediaEl = document.createElement(track.kind);
+                mediaEl.srcObject = new MediaStream([track]);
+                mediaEl.autoplay = true;
+                mediaEl.playsInline = true;
+
+                // 비디오 요소 스타일 설정 - 높이 550px로 설정
+                if (track.kind === 'video') {
+                    mediaEl.style.cssText =
+                        'width: 100%;' +
+                        'height: 550px;' +
+                        'object-fit: cover;' +
+                        'border-radius: 6px;' +
+                        'background: #000;';
+                }
+
+                elementWrapper.appendChild(mediaEl);
+                scwin.remoteElements.set(key, elementWrapper);
+                scwin.updateVideoLayout();
+            }
+        });
+
+        // 원격 트랙 종료 처리
+        scwin.roomClient.on("producer-closed", (producerId) => {
+            const screenShareKey = `screen-${producerId}`;
+            const videoKey = producerId;
+
+            if (scwin.remoteElements.has(screenShareKey)) {
+                const screenShareWrapper = document.getElementById(`remote-screen-${producerId}`);
+                if (screenShareWrapper) {
+                    screenShareWrapper.remove();
+                }
+                scwin.remoteElements.delete(screenShareKey);
+            } else if (scwin.remoteElements.has(videoKey)) {
+                const videoWrapper = document.getElementById(`remote-video-${producerId}`);
+                if (videoWrapper) {
+                    videoWrapper.remove();
+                }
+                scwin.remoteElements.delete(videoKey);
+            }
+
+            const audioEl = document.getElementById(`remote-audio-${producerId}`);
+            if (audioEl) {
+                audioEl.remove();
+            }
+
+            if (scwin.pinnedProducerId === producerId) {
+                scwin.pinnedProducerId = null;
+            }
+            scwin.updateVideoLayout();
+        });
+
+        // 컨트롤 준비 완료 시 버튼 활성화
+        scwin.roomClient.on("controlsReady", () => {
+            scwin.uiManager.enableControls();
+            console.log("✅ 화상회의 컨트롤 준비 완료");
+        });
+
+        // 방 참가
+        const roomId = scwin.currentSessionId || "default-room"; // 세션 아이디 -> 룸 아이디
+        scwin.roomClient.join(roomId);
+
+        console.log("✅ 화상회의 로직 초기화 완료! 방 ID:", roomId);
+
+        // // 화상회의 로직 초기화 완료 후 AI 모듈 초기화
+        // await scwin.initAIModule();
+
+    } catch (error) {
+        console.error("❌ 화상회의 로직 초기화 실패:", error);
+    }
+};
+
+// 비디오 레이아웃 업데이트 함수 (session_room.xml과 동일)
+scwin.updateVideoLayout = function () {
+    const mainStage = document.getElementById('mainStageContainer');
+    const sidebar = document.getElementById('sidebarContainer');
+
+    if (!mainStage || !sidebar) {
+        console.warn("화상회의 컨테이너를 찾을 수 없습니다.");
+        return;
+    }
+
+    const allElements = Array.from(scwin.remoteElements.values());
+    const screenShareElement = allElements.find(el => el.classList.contains('screen-share-wrapper'));
+
+    let mainElement = null;
+
+    if (screenShareElement) {
+        mainElement = screenShareElement;
+    } else if (scwin.pinnedProducerId) {
+        mainElement = scwin.remoteElements.get(scwin.pinnedProducerId);
+    } else if (allElements.length > 0) {
+        mainElement = allElements.find(el => !el.classList.contains('screen-share-wrapper')) || null;
+    }
+
+    // 기존 자식 노드를 모두 제거하여 깨끗하게 시작
+    while (mainStage.firstChild) {
+        mainStage.removeChild(mainStage.firstChild);
+    }
+    while (sidebar.firstChild) {
+        sidebar.removeChild(sidebar.firstChild);
+    }
+
+    scwin.adjustSidebarVideoSize = function (videoElement) {
+        if (videoElement) {
+            videoElement.style.cssText =
+                'width: 250px;' +
+                'height: 250px;' +
+                'background: #2a2a2a;' +
+                'border-radius: 8px;' +
+                'overflow: hidden;' +
+                'position: relative;' +
+                'margin-bottom: 12px;' +
+                'cursor: pointer;' +
+                'border: 2px solid transparent;' +
+                'transition: border-color 0.3s ease;';
+
+            // 클릭 시 테두리 효과
+            videoElement.addEventListener('mouseenter', function () {
+                this.style.borderColor = '#667eea';
+            });
+
+            videoElement.addEventListener('mouseleave', function () {
+                this.style.borderColor = 'transparent';
+            });
+
+            // 내부 video 요소 크기 조정
+            const videoTag = videoElement.querySelector('video');
+            if (videoTag) {
+                videoTag.style.cssText =
+                    'width: 100%;' +
+                    'height: 250px;' +
+                    'object-fit: cover;' +
+                    'border-radius: 6px;' +
+                    'background: #000;';
+            }
+
+            console.log("비디오 요소 크기 조정 완료:", videoElement.id, "높이: 550px");
+        }
+    };
+
+    // 화면 공유 요소가 있다면 항상 메인 스테이지에 배치
+    if (screenShareElement) {
+        mainStage.appendChild(screenShareElement);
+        allElements.forEach(el => {
+            if (el !== screenShareElement) {
+                
+                scwin.adjustSidebarVideoSize(el);
+                sidebar.appendChild(el);
+            }
+        });
+    } else if (mainElement) {
+        mainStage.appendChild(mainElement);
+        allElements.forEach(el => {
+            if (el !== mainElement) {
+                
+                scwin.adjustSidebarVideoSize(el);
+                sidebar.appendChild(el);
+            }
+        });
+    } else {
+        // 메인으로 지정된 요소가 없다면 기본 화면 표시
+        mainStage.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 600;">화상회의 대기 중</div>
+                <div style="font-size: 0.9rem; opacity: 0.8;">다른 참여자가 들어오면 화상회의가 시작됩니다</div>
+            </div>
+        `;
+        allElements.forEach(el => {
+            
+            scwin.adjustSidebarVideoSize(el);
+            sidebar.appendChild(el);
+        });
+    }
 };
 
 // 모듈 타입 정의
@@ -895,12 +1270,15 @@ scwin.sbm_getSessionModuleDetails_submiterror = function (e) {
 
 /*----------------------------모듈 버튼 생성----------------------------*/
 
-// 세션 모듈 정보로 버튼 생성
+// 세션 모듈 정보로 버튼 생성 (화상회의 영역 제외)
 scwin.createModuleButtons = function (sessionModules) {
     console.log("모듈 버튼 생성 시작:", sessionModules);
 
-    // 버튼 영역들 초기화
-    scwin.clearAllButtonAreas();
+    // 먼저 모든 버튼 영역을 숨김 처리
+    scwin.hideAllButtonAreas();
+
+    // 배치된 모듈이 있는 영역들을 추적
+    var usedAreas = [];
 
     // 각 모듈을 해당 위치에 버튼으로 배치
     sessionModules.forEach(function (sessionModule) {
@@ -909,6 +1287,12 @@ scwin.createModuleButtons = function (sessionModules) {
 
         if (areaId && areaId.indexOf("mf_") === 0) {
             areaId = areaId.replace("mf_fr_session_making_process", "mf");
+        }
+
+        // grp_area1은 화상회의 전용이므로 건너뛰기
+        if (areaId === 'mf_grp_area1') {
+            console.log("화상회의 영역(grp_area1) 모듈 배치 건너뛰기:", sessionModule.name);
+            return;
         }
 
         var moduleInfo = {
@@ -921,10 +1305,14 @@ scwin.createModuleButtons = function (sessionModules) {
         };
 
         scwin.createModuleButton(areaId, moduleInfo);
+        usedAreas.push(areaId);
     });
+
+    // 사용된 영역들만 표시
+    scwin.showUsedAreas(usedAreas);
+
+    console.log("✅ 모듈 버튼 생성 완료 (화상회의 영역 제외)");
 };
-
-
 
 // 모든 영역 초기화 함수
 scwin.clearAllAreas = function () {
@@ -1311,6 +1699,8 @@ scwin.getDropTarget = function (x, y) {
             container: targetContainer,
             insertPosition: scwin.getInsertPosition(element, y)
         };
+
+
     }
 
     // 임시 좌측 영역으로 이동
@@ -1321,6 +1711,8 @@ scwin.getDropTarget = function (x, y) {
             container: null,
             insertPosition: 0
         };
+
+
     }
 
     // 좌측 영역으로 이동 (좌표 기반 감지)
@@ -1349,6 +1741,7 @@ scwin.getDropTarget = function (x, y) {
                 container: null,
                 insertPosition: 0
             };
+
         }
     }
 
@@ -1617,23 +2010,6 @@ scwin.createLeftTabContainerLikeRight = function () {
             <span class="tab-icon">${tabInfo.moduleInfo.icon}</span>
             <span class="tab-name">${tabInfo.moduleInfo.name}</span>
             <button class="tab-close">×</button>
-        `;
-
-        // 탭 헤더 스타일 (우측과 동일)
-        tabHeader.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 12px;
-            background: ${index === 0 ? 'white' : '#f8f9fa'};
-            border-right: 1px solid #e1e5e9;
-            cursor: pointer;
-            white-space: nowrap;
-            min-width: 100px;
-            flex: 1;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-            ${index === 0 ? 'border-bottom: 2px solid #667eea;' : ''}
         `;
 
         // 탭 클릭 이벤트
@@ -1949,6 +2325,7 @@ scwin.getLeftDropTarget = function (x, y) {
             return {
                 type: 'move-to-right'
             };
+
         }
     } else {
         console.log("❌ targetArea를 찾을 수 없음");
@@ -2039,7 +2416,7 @@ scwin.cleanupLeftTabDrag = function () {
 
 /*----------------------------좌측 사이드바 탭 렌더링----------------------------*/
 
-// 탭용 채팅 모듈 로더
+// 탭용 채팅 모듈 로더 --> 이제 안씀
 // scwin.loadChatModuleInTab = function (tabContentElement, moduleInfo) {
 //     try {
 //         var tempId = 'chat_tab_' + Date.now();
@@ -2059,30 +2436,78 @@ scwin.cleanupLeftTabDrag = function () {
 //         tabContentElement.innerHTML = '<div style="color: red; text-align: center; padding: 20px;">채팅 모듈 로드 실패</div>';
 //     }
 // };
-scwin.loadChatModuleInTab = function(tabContentElement, moduleInfo) {
+
+scwin.loadChatModuleInTab = async function (tabContentElement, moduleInfo) {
     if (!tabContentElement) {
         console.error("탭 콘텐츠 요소가 없습니다.");
         return;
     }
 
-    var frameId = 'frame_chat_' + Date.now();
+    try {
+        console.log("탭에 ChatModule 로드 시작...");
 
-    var options = {
-        src: '/InsWebApp/modules/chatting/chatting.xml',
-        style: 'width:100%; height:100%; border:none;'
-    };
+        // ChatModule 동적 로드 (session_room.xml 방식과 동일)
+        let ChatModule = await window.App.loadModule(
+            "/InsWebApp/media/dist/modules/chat.bundle.js",
+            "ChatModule"
+        );
 
-    // 여기서 tabContentElement는 반드시 실제 DOM 요소여야 함
-    $c.util.createComponent(frameId, 'w2:frame', options, null, tabContentElement);
+        if (ChatModule && !ChatModule.prototype) {
+            ChatModule = ChatModule.ChatModule || ChatModule.default;
+        }
+
+        // 탭 콘텐츠 영역을 채팅 컨테이너로 설정
+        tabContentElement.style.cssText = `
+            width: 100%;
+            height: 100%;
+            background: white;
+            position: relative;
+        `;
+
+        // ChatModule 인스턴스 생성
+        var chatModule = new ChatModule(tabContentElement, {
+            roomId: scwin.currentSessionId || "default-room",
+            currentUser: "사용자" + Math.floor(Math.random() * 1000), // -> 채팅 사용자아이디 랜덤값
+            websocketManagerUrl: "/InsWebApp/js/websocket/websocket-manager.js"
+        });
+
+        // 이벤트 리스너 등록
+        chatModule.on('ready', () => {
+            console.log("✅ 탭 ChatModule 준비 완료!");
+
+            // 환영 메시지 추가
+            // setTimeout(() => {
+            //     chatModule.addMessage("system", "채팅방에 입장했습니다!", "시스템");
+            // }, 500);
+        });
+
+        chatModule.on('messageSent', (data) => {
+            console.log("메시지 전송됨:", data);
+        });
+
+        chatModule.on('messageReceived', (data) => {
+            console.log("메시지 수신됨:", data);
+        });
+
+        chatModule.on('error', (error) => {
+            console.error("❌ 탭 ChatModule 오류:", error);
+        });
+
+        console.log("✅ 탭에 ChatModule 로드 완료!");
+
+    } catch (error) {
+        console.error("❌ 탭에 ChatModule 로드 실패:", error);
+
+        // 실패 시 기본 UI 표시
+        tabContentElement.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #666;">
+                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">채팅</div>
+                <div style="font-size: 0.9rem; color: #999;">모듈 로드 중 오류 발생</div>
+                <div style="font-size: 0.8rem; color: #f44336; margin-top: 10px;">${error.message}</div>
+            </div>
+        `;
+    }
 };
-
-
-
-
-
-
-
-
 
 // 탭용 서명 모듈 로더
 scwin.loadSignatureModuleInTab = function (tabContentElement, moduleInfo) {
@@ -2118,71 +2543,6 @@ scwin.loadParticipantsModuleInTab = function (tabContentElement, moduleInfo) {
 
     // 참여자 목록 UI 생성
     tabContentElement.innerHTML = `
-        <div style="padding: 15px; height: 100%; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div style="font-weight: 600; color: #2d3748; font-size: 16px;">참여자 목록</div>
-                <div style="font-size: 14px; color: #666;">4명 참여</div>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <input type="text" placeholder="참여자 검색..." style="width: 100%; padding: 8px 12px; border: 1px solid #e1e5e9; border-radius: 6px; font-size: 14px; outline: none;">
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                <button style="flex: 1; padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">모두 음소거</button>
-                <button style="flex: 1; padding: 6px 12px; background: #f8f9fa; color: #666; border: 1px solid #e1e5e9; border-radius: 4px; font-size: 12px; cursor: pointer;">초대</button>
-            </div>
-
-            <div style="border: 1px solid #e1e5e9; border-radius: 8px; background: white;">
-                <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; background: #f8f9fa;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #4CAF50; color: white; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; font-size: 14px;">나</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; font-size: 14px;">나 (호스트)</div>
-                        <div style="font-size: 12px; color: #666;">마이크 켜짐, 카메라 켜짐</div>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #4CAF50; color: white; cursor: pointer; font-size: 12px;">������</button>
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #2196F3; color: white; cursor: pointer; font-size: 12px;">������</button>
-                    </div>
-                </div>
-
-                <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #3674B5; color: white; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; font-size: 14px;">김</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 500; font-size: 14px;">김대리</div>
-                        <div style="font-size: 12px; color: #666;">마이크 꺼짐, 카메라 켜짐</div>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #f44336; color: white; cursor: pointer; font-size: 12px;">������</button>
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #2196F3; color: white; cursor: pointer; font-size: 12px;">������</button>
-                    </div>
-                </div>
-
-                <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #3674B5; color: white; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; font-size: 14px;">이</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 500; font-size: 14px;">이과장</div>
-                        <div style="font-size: 12px; color: #666;">마이크 켜짐, 카메라 꺼짐</div>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #4CAF50; color: white; cursor: pointer; font-size: 12px;">������</button>
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #f44336; color: white; cursor: pointer; font-size: 12px;">������</button>
-                    </div>
-                </div>
-
-                <div style="padding: 12px; display: flex; align-items: center;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #3674B5; color: white; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; font-size: 14px;">박</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 500; font-size: 14px;">박부장</div>
-                        <div style="font-size: 12px; color: #666;">마이크 켜짐, 카메라 켜짐</div>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #4CAF50; color: white; cursor: pointer; font-size: 12px;">������</button>
-                        <button style="width: 28px; height: 28px; border: none; border-radius: 4px; background: #2196F3; color: white; cursor: pointer; font-size: 12px;">������</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     `;
 
     // 버튼 이벤트 추가
@@ -2202,8 +2562,14 @@ scwin.loadParticipantsModuleInTab = function (tabContentElement, moduleInfo) {
     console.log("참여자 목록 모듈 로드 완료");
 };
 
-// 개별 모듈 버튼 생성
+// 개별 모듈 버튼 생성 (화상회의 영역 제외)
 scwin.createModuleButton = function (areaId, moduleInfo) {
+    // grp_area1은 화상회의 전용 영역이므로 버튼 생성 제외
+    if (areaId === 'mf_grp_area1') {
+        console.log("화상회의 영역(grp_area1)에는 버튼을 생성하지 않습니다.");
+        return;
+    }
+
     var areaElement = document.getElementById(areaId);
     if (!areaElement) {
         console.log("버튼 영역을 찾을 수 없습니다: ", areaId);
@@ -2257,13 +2623,17 @@ scwin.createModuleButton = function (areaId, moduleInfo) {
     areaElement.appendChild(buttonElement);
     areaElement.dataset.moduleInfo = JSON.stringify(moduleInfo);
 
-    console.log("모듈 버튼 생성 완료:", areaId, moduleInfo.name);
+    // 영역을 표시하고 레이아웃에 포함시키기
+    areaElement.style.display = 'flex';
+    areaElement.style.visibility = 'visible';
+
+    console.log("모�ل 버튼 생성 완료:", areaId, moduleInfo.name);
 };
 
-// 모든 버튼 영역 초기화
+// 모든 버튼 영역 초기화 (area1 제외 - 화상회의 전용)
 scwin.clearAllButtonAreas = function () {
     for (var i = 3; i <= 14; i++) { // 하단 버튼 영역들 (grp_area3 ~ grp_area14)
-        var areaId = "grp_area" + i;
+        var areaId = "mf_grp_area" + i;
         var areaElement = document.getElementById(areaId);
 
         if (areaElement) {
@@ -2289,6 +2659,45 @@ scwin.clearAllButtonAreas = function () {
             delete areaElement.dataset.moduleInfo;
         }
     }
+
+    console.log("✅ 버튼 영역 초기화 완료 (화상회의 영역 제외)");
+};
+
+// 모든 버튼 영역을 숨김 처리
+scwin.hideAllButtonAreas = function () {
+    for (var i = 3; i <= 14; i++) {
+        var areaId = "mf_grp_area" + i;
+        var areaElement = document.getElementById(areaId);
+
+        if (areaElement) {
+            // 영역을 숨김 처리하되 레이아웃에서 공간은 차지하지 않음
+            areaElement.style.display = 'none';
+            areaElement.style.visibility = 'hidden';
+        }
+    }
+    console.log("✅ 모든 버튼 영역 숨김 처리 완료");
+};
+
+// 사용된 영역들만 표시
+scwin.showUsedAreas = function (usedAreas) {
+    console.log("사용된 영역들 표시:", usedAreas);
+    
+    usedAreas.forEach(function (areaId) {
+        var areaElement = document.getElementById(areaId);
+        if (areaElement) {
+            // 영역을 다시 표시
+            areaElement.style.display = 'flex';
+            areaElement.style.visibility = 'visible';
+            
+            // 드롭존 스타일 제거 (버튼이 배치된 영역에서)
+            areaElement.classList.remove('drop-zone', 'neon-border');
+            areaElement.style.background = 'transparent';
+            areaElement.style.border = 'none';
+            areaElement.style.cursor = 'default';
+        }
+    });
+    
+    console.log("✅ 사용된 영역들 표시 완료");
 };
 
 /*----------------------------모듈 버튼 클릭 처리----------------------------*/
@@ -2460,20 +2869,6 @@ scwin.renderTabsToUI = function () {
         tabHeader.appendChild(tabName);
         tabHeader.appendChild(tabClose);
 
-        tabHeader.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 12px;
-            background: ${tab.isActive ? 'white' : '#f8f9fa'};
-            border-right: 1px solid #e1e5e9;
-            cursor: pointer;
-            white-space: nowrap;
-            min-width: 120px;
-            transition: all 0.2s ease;
-            ${tab.isActive ? 'border-bottom: 2px solid #667eea;' : ''}
-        `;
-
         // 탭 클릭 이벤트 (닫기 버튼 제외)
         tabHeader.addEventListener('click', function (e) {
             if (e.target !== tabClose) {
@@ -2534,11 +2929,7 @@ scwin.renderTabsToUI = function () {
     rightSidebar.appendChild(tabContainer);
 
     console.log("탭 UI 렌더링 완료. 총 탭 수:", scwin.activeTabs.length, "활성 탭:", activeTab ? activeTab.moduleInfo.name : "없음");
-};
-
-
-
-]]></script>
+};]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<!-- 전체 컨테이너 -->
@@ -2578,8 +2969,8 @@ scwin.renderTabsToUI = function () {
 							<!-- 메인 화상회의 영역 + 하단 모듈들 -->
 							<xf:group class="main-video-area" id="main_area">
 								<!-- 메인 비디오 영역 -->
-								<xf:group class="drop-zone neon-border" id="grp_area1" style="height: 700px;">
-									<w2:span class="drop-zone-label" id="span1" label="메인 화상회의 영역(고정)" style=""></w2:span>
+								<xf:group class="drop-zone neon-border" id="grp_area1" style="height: 900px;">
+									<!-- 화상회의 전용 영역 - 라벨 제거됨 -->
 								</xf:group>
 
 								<!-- 하단 모듈들 (4개) -->
