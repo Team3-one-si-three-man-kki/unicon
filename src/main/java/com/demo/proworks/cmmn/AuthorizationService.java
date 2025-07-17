@@ -1,9 +1,7 @@
 package com.demo.proworks.cmmn;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.demo.proworks.user.dao.UserDAO;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
 import com.inswave.elfw.log.AppLog;
