@@ -52,6 +52,15 @@ public class UserVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "is_active", physicalName = "isActive", type = "boolean", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private boolean isActive;
 
+    @ElDtoField(logicalName = "cud", physicalName = "cud", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String cud;
+
+    @ElDtoField(logicalName = "rowStatus", physicalName = "rowStatus", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String rowStatus;
+
+    @ElDtoField(logicalName = "searchKeyword ", physicalName = "searchKeyword ", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String searchKeyword ;
+
     @ElVoField(physicalName = "userId")
     public String getUserId(){
         String ret = this.userId;
@@ -194,6 +203,39 @@ public class UserVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.isActive = isActive;
     }
 
+    @ElVoField(physicalName = "cud")
+    public String getCud(){
+        String ret = this.cud;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "cud")
+    public void setCud(String cud){
+        this.cud = cud;
+    }
+
+    @ElVoField(physicalName = "rowStatus")
+    public String getRowStatus(){
+        String ret = this.rowStatus;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "rowStatus")
+    public void setRowStatus(String rowStatus){
+        this.rowStatus = rowStatus;
+    }
+
+    @ElVoField(physicalName = "searchKeyword ")
+    public String getSearchKeyword (){
+        String ret = this.searchKeyword ;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "searchKeyword ")
+    public void setSearchKeyword (String searchKeyword ){
+        this.searchKeyword  = searchKeyword ;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -210,7 +252,10 @@ public class UserVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("scEmail").append("=").append(scEmail).append(",");
         sb.append("scRole").append("=").append(scRole).append(",");
         sb.append("scCreatedAt").append("=").append(scCreatedAt).append(",");
-        sb.append("isActive").append("=").append(isActive);
+        sb.append("isActive").append("=").append(isActive).append(",");
+        sb.append("cud").append("=").append(cud).append(",");
+        sb.append("rowStatus").append("=").append(rowStatus).append(",");
+        sb.append("searchKeyword ").append("=").append(searchKeyword );
         sb.append("]");
         return sb.toString();
 

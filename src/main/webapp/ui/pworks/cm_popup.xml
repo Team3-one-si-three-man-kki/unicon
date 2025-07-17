@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+
+			<w2:dataCollection baseNode="map">
+				<!-- 팝업 데이터 DataMap -->
+				<w2:dataMap baseNode="map" id="dm_popup">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="제목" id="title"></w2:key>
+						<w2:key dataType="text" name="메시지" id="message"></w2:key>
+						<w2:key dataType="text" name="타입" id="type"></w2:key>
+						<w2:key dataType="text" name="확인버튼텍스트" id="confirmText"></w2:key>
+						<w2:key dataType="text" name="취소버튼텍스트" id="cancelText"></w2:key>
+						<w2:key dataType="text" name="버튼타입" id="buttonType"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+/**
+ * @description 팝업 초기화 및 데이터 설정
+ */
+scwin.onpageload = function() {
+    // 팝업 데이터 초기 설정
+    var popupData = $p.getParameter("popupData") || {};
+    
+    dm_popup.set("title", popupData.title || "알림");
+    dm_popup.set("message", popupData.message || "메시지가 없습니다.");
+    dm_popup.set("type", popupData.type || "info");
+    dm_popup.set("confirmText", popupData.confirmText || "확인");
+    dm_popup.set("cancelText", popupData.cancelText || "취소");
+    dm_popup.set("buttonType", popupData.buttonType || "single"); // single, double
+    
+    // 타입에 따른 아이콘 및 색상 설정
+    scwin.setPopupStyle(popupData.type || "info");
+    
+    // 버튼 타입에 따른 버튼 표시/숨김
+    if (dm_popup.get("buttonType") === "single") {
+        btn_cancel.hide();
+    } else {
+        btn_cancel.show();
+    }
+    
+    // 메시지 길이에 따른 팝업 크기 조정
+    scwin.adjustPopupSize();
+};
+
+/**
+ * @description 팝업 스타일 설정 (타입별)
+ */
+scwin.setPopupStyle = function(type) {
+    var iconClass = "";
+    var headerClass = "";
+    
+    switch(type) {
+        case "success":
+            iconClass = "icon-success";
+            headerClass = "header-success";
+            break;
+        case "error":
+            iconClass = "icon-error";
+            headerClass = "header-error";
+            break;
+        case "warning":
+            iconClass = "icon-warning";
+            headerClass = "header-warning";
+            break;
+        case "info":
+        default:
+            iconClass = "icon-info";
+            headerClass = "header-info";
+            break;
+    }
+    
+    // 아이콘 설정
+    grp_icon.removeClass("icon-success icon-error icon-warning icon-info");
+    grp_icon.addClass(iconClass);
+    
+    // 헤더 색상 설정
+    grp_header.removeClass("header-success header-error header-warning header-info");
+    grp_header.addClass(headerClass);
+};
+
+/**
+ * @description 메시지 길이에 따른 팝업 크기 조정
+ */
+scwin.adjustPopupSize = function() {
+    var message = dm_popup.get("message");
+    var messageLength = message.length;
+    
+    // 메시지가 길면 팝업 크기 조정
+    if (messageLength > 100) {
+        $p.setPopupSize(450, 280);
+    } else if (messageLength > 50) {
+        $p.setPopupSize(400, 250);
+    }
+};
+
+/**
+ * @description 확인 버튼 클릭
+ */
+scwin.btn_confirm_onclick = function() {
+    $p.closePopup({
+        result: "confirm",
+        data: dm_popup.getJSON()
+    });
+};
+
+/**
+ * @description 취소 버튼 클릭
+ */
+scwin.btn_cancel_onclick = function() {
+    $p.closePopup({
+        result: "cancel",
+        data: dm_popup.getJSON()
+    });
+};
+
+/**
+ * @description X 버튼 클릭 (팝업 닫기)
+ */
+scwin.btn_close_onclick = function() {
+    $p.closePopup({
+        result: "close",
+        data: dm_popup.getJSON()
+    });
+};
+]]></script>
+
+		<style type="text/css">
+			/* 팝업 전체 스타일 */
+			.popup-container {
+			width: 100%;
+			height: 100%;
+			background: #ffffff;
+			border-radius: 12px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+			overflow: hidden;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			}
+
+			/* 헤더 영역 */
+			.popup-header {
+			padding: 20px 24px 16px;
+			border-bottom: 1px solid #e5e7eb;
+			position: relative;
+			background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+			}
+
+			.header-info { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+			.header-success { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); }
+			.header-warning { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+			.header-error { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); }
+
+			.popup-title {
+			font-size: 18px;
+			font-weight: 600;
+			color: #1f2937;
+			margin: 0;
+			padding-right: 40px;
+			}
+
+			.popup-close {
+			position: absolute;
+			top: 16px;
+			right: 16px;
+			width: 32px;
+			height: 32px;
+			border: none;
+			background: rgba(107, 114, 128, 0.1);
+			border-radius: 8px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.2s ease;
+			}
+
+			.popup-close:hover {
+			background: rgba(107, 114, 128, 0.2);
+			transform: scale(1.05);
+			}
+
+			.popup-close::before {
+			content: "✕";
+			font-size: 14px;
+			color: #6b7280;
+			font-weight: 500;
+			}
+
+			/* 컨텐츠 영역 */
+			.popup-content {
+			padding: 24px;
+			display: flex;
+			gap: 16px;
+			align-items: flex-start;
+			min-height: 80px;
+			}
+
+			.popup-icon {
+			width: 48px;
+			height: 48px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+			font-size: 24px;
+			font-weight: bold;
+			}
+
+			.icon-info {
+			background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+			color: white;
+			}
+
+			.icon-success {
+			background: linear-gradient(135deg, #10b981, #059669);
+			color: white;
+			}
+
+			.icon-warning {
+			background: linear-gradient(135deg, #f59e0b, #d97706);
+			color: white;
+			}
+
+			.icon-error {
+			background: linear-gradient(135deg, #ef4444, #dc2626);
+			color: white;
+			}
+
+			.icon-info::before { content: "ℹ"; }
+			.icon-success::before { content: "✓"; }
+			.icon-warning::before { content: "⚠"; }
+			.icon-error::before { content: "✕"; }
+
+			.popup-message {
+			flex: 1;
+			padding-top: 8px;
+			}
+
+			.message-text {
+			font-size: 15px;
+			line-height: 1.6;
+			color: #374151;
+			margin: 0;
+			word-break: keep-all;
+			}
+
+			/* 버튼 영역 */
+			.popup-buttons {
+			padding: 16px 24px 24px;
+			display: flex;
+			gap: 12px;
+			justify-content: flex-end;
+			border-top: 1px solid #f3f4f6;
+			background: #fafbfc;
+			}
+
+			.popup-button {
+			padding: 10px 24px;
+			border-radius: 8px;
+			border: none;
+			font-size: 14px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			min-width: 80px;
+			height: 40px;
+			}
+
+			.btn-confirm {
+			background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+			color: white;
+			box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+			}
+
+			.btn-confirm:hover {
+			background: linear-gradient(135deg, #2563eb, #1e40af);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+			}
+
+			.btn-cancel {
+			background: #f9fafb;
+			color: #6b7280;
+			border: 1px solid #d1d5db;
+			}
+
+			.btn-cancel:hover {
+			background: #f3f4f6;
+			border-color: #9ca3af;
+			transform: translateY(-1px);
+			}
+
+			/* 반응형 */
+			@media (max-width: 480px) {
+			.popup-container {
+			border-radius: 8px;
+			}
+
+			.popup-header {
+			padding: 16px 20px 12px;
+			}
+
+			.popup-title {
+			font-size: 16px;
+			}
+
+			.popup-content {
+			padding: 20px;
+			gap: 12px;
+			}
+
+			.popup-icon {
+			width: 40px;
+			height: 40px;
+			font-size: 20px;
+			}
+
+			.message-text {
+			font-size: 14px;
+			}
+
+			.popup-buttons {
+			padding: 12px 20px 20px;
+			flex-direction: column-reverse;
+			}
+
+			.popup-button {
+			width: 100%;
+			}
+			}
+
+			/* 애니메이션 효과 */
+			@keyframes fadeInScale {
+			from {
+			opacity: 0;
+			transform: scale(0.9);
+			}
+			to {
+			opacity: 1;
+			transform: scale(1);
+			}
+			}
+
+			.popup-container {
+			animation: fadeInScale 0.3s ease-out;
+			}
+		</style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="popup-container">
+
+			<!-- 헤더 영역 -->
+			<xf:group class="popup-header" id="grp_header">
+				<w2:textbox class="popup-title" ref="data:dm_popup.title"></w2:textbox>
+				<xf:trigger class="popup-close" id="btn_close" ev:onclick="scwin.btn_close_onclick" type="button">
+				</xf:trigger>
+			</xf:group>
+
+			<!-- 컨텐츠 영역 -->
+			<xf:group class="popup-content">
+				<xf:group class="popup-icon" id="grp_icon">
+				</xf:group>
+				<xf:group class="popup-message">
+					<w2:textbox class="message-text" ref="data:dm_popup.message"></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<!-- 버튼 영역 -->
+			<xf:group class="popup-buttons">
+				<xf:trigger class="popup-button btn-cancel" id="btn_cancel" ev:onclick="scwin.btn_cancel_onclick" type="button">
+					<xf:label ref="data:dm_popup.cancelText"></xf:label>
+				</xf:trigger>
+				<xf:trigger class="popup-button btn-confirm" id="btn_confirm" ev:onclick="scwin.btn_confirm_onclick" type="button">
+					<xf:label ref="data:dm_popup.confirmText"></xf:label>
+				</xf:trigger>
+			</xf:group>
+
+		</xf:group>
+	</body>
+</html>

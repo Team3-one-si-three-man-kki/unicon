@@ -44,6 +44,7 @@
       this.producers = new Map();
       this.consumers = new Map();
       this.producerIdToConsumer = new Map(); //   producerId -> consumer 맵
+      this.producerToPeerIdMap = new Map(); // producerId -> peerId 맵 추가
       this.actionCallbackMap = new Map();
       this.pendingConsumeList = [];
       this.isAdmin = false; //    관리자 여부
@@ -92,6 +93,9 @@
             this.isAdmin = msg.data.isAdmin;
             this.emit("adminStatus", this.isAdmin); // UI 매니저에게 알림
             break;
+          case "canvas": // 추가된 부분
+            this.emit("canvas", msg.data); // 추가된 부분
+            break; // 추가된 부분
           case "rtpCapabilities":
             await this._handleRtpCapabilities(msg.data);
             break;
@@ -120,12 +124,14 @@
               if (kind === "video")
                 this.emit("remote-producer-pause", { producerId });
               // 필요하다면 오디오 pause 처리도 추가
-              // if (kind === 'audio') this.emit('remote-audio-pause', { producerId });
+              if (kind === "audio")
+                this.emit("remote-audio-pause", { producerId });
             } else if (state === "resume") {
               if (kind === "video")
                 this.emit("remote-producer-resume", { producerId });
               // 필요하다면 오디오 resume 처리도 추가
-              // if (kind === 'audio') this.emit('remote-audio-resume', { producerId });
+              if (kind === "audio")
+                this.emit("remote-audio-resume", { producerId });
             }
             break;
           }
@@ -205,7 +211,7 @@
           video: { width: { ideal: 640 }, height: { ideal: 480 } },
           audio: true,
         });
-        const videoElement = document.getElementById("localVideo");
+        const videoElement = this.uiManager.video; // Use the reference from UIManager
         videoElement.srcObject = this.localStream;
 
         videoElement.oncanplay = () => {
@@ -289,7 +295,7 @@
       const { producerId, kind, appData } = producerInfo;
       const consumeData = { producerId, kind, appData }; // appData도 전달
 
-      //    recvTransport가 없으면 대기열에 추가하고, 있으면 바로 consume을 시도합니다.
+      //    recvTransport가 없으면 대기열에 추가
       if (!this.recvTransport) {
         this.pendingConsumeList.push(consumeData);
       } else {
@@ -328,6 +334,10 @@
         });
         this.consumers.set(consumer.id, consumer);
         this.producerIdToConsumer.set(producerId, consumer); //    새 맵에 추가
+        // peerId를 consumer의 appData에서 가져와 producerIdToPeerIdMap에 저장
+        if (appData && appData.peerId) {
+          this.producerToPeerIdMap.set(producerId, appData.peerId);
+        }
 
         // UI 매니저가 화면에 그릴 수 있도록 이벤트를 발생시킵니다.
         this.emit("new-consumer", consumer);
@@ -353,7 +363,21 @@
         this.consumers.delete(consumer.id);
         this.producerIdToConsumer.delete(producerId);
       }
-      this.emit("producer-closed", producerId);
+
+      // producerIdToPeerIdMap에서 peerId를 찾아 제거
+      const peerId = this.producerToPeerIdMap.get(producerId);
+      if (peerId) {
+        this.producerToPeerIdMap.delete(producerId);
+      }
+
+      // 화면 공유 프로듀서가 닫혔는지 확인하고, 그렇다면 UI에 알림
+      const isScreenShareProducer =
+        this.screenProducer && this.screenProducer.id === producerId;
+      // 로컬 비디오 프로듀서가 닫혔는지 확인
+      const producer = this.producers.get(producerId);
+      const isLocalVideoProducer = producer && producer.kind === 'video' && (producer.appData && !producer.appData.source);
+
+      this.emit("producer-closed", { producerId, isScreenShareProducer, isLocalVideoProducer, peerId });
     }
 
     async _sendRequest(action, data) {
@@ -407,6 +431,9 @@
       } else {
         await videoProducer.pause();
       }
+      // 로컬 비디오의 카메라 상태 변경은 UIManager의 전용 함수를 통해 처리
+      this.emit("localVideoStateChanged", enabled);
+
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(
           JSON.stringify({
@@ -610,7 +637,7 @@
       this.localMediaContainer.id = "localMediaContainer";
       this.localMediaContainer.style.cssText =
         "position: relative; width: 300px; height: 225px; border: 1px solid #ccc; border-radius: 4px; background-color: #000; margin-bottom: 10px;";
-      this.appRootContainer.appendChild(this.localMediaContainer);
+      this.appRootContainer.appendChild(this.localMediaContainer); // Ensure local media container is added to the DOM
 
       this.video = document.createElement("video");
       this.video.id = "localVideo";
@@ -681,7 +708,9 @@
 
     // main.js가 공용 컨테이너에 접근할 수 있도록 getter 제공
     getRemoteMediaContainer() {
-      return this.remoteMediaContainer;
+      // 이 메서드는 더 이상 사용되지 않거나, mainStageContainer를 반환하도록 변경될 수 있습니다.
+      // 현재는 remoteMediaContainer가 존재하지 않으므로 mainStageContainer를 반환합니다.
+      return this.mainStageContainer;
     }
 
     // 칠판 버튼을 표시하는 메서드
@@ -704,10 +733,35 @@
     updateLayoutForScreenShare(isSharing) {
       if (isSharing) {
         this.localMediaContainer.classList.add("small");
-        this.remoteMediaContainer.classList.add("screen-sharing-active");
+        this.mainStageContainer.classList.add("screen-sharing-active"); // Apply to main stage for layout adjustment
       } else {
         this.localMediaContainer.classList.remove("small");
-        this.remoteMediaContainer.classList.remove("screen-sharing-active");
+        this.mainStageContainer.classList.remove("screen-sharing-active"); // Remove from main stage
+        this.resetLayoutAfterScreenShare(); // Call new method to reset layout
+      }
+    }
+
+    resetLayoutAfterScreenShare() {
+      console.log("Resetting layout after screen share.");
+      // 모든 비디오 요소를 mainStageContainer로 이동
+      const allVideoElements = Array.from(document.querySelectorAll("video"));
+      allVideoElements.forEach((videoElement) => {
+        // localVideo는 localMediaContainer에 유지
+        if (videoElement.id === "localVideo") {
+          this.localMediaContainer.appendChild(videoElement);
+        } else {
+          // 다른 모든 비디오는 mainStageContainer로 이동
+          this.mainStageContainer.appendChild(videoElement);
+        }
+      });
+
+      // 로컬 화면 공유 요소가 남아있다면 제거
+      const localScreenShareElement = document.getElementById(
+        "local-screen-share-wrapper"
+      );
+      if (localScreenShareElement) {
+        localScreenShareElement.remove();
+        console.log("Removed local screen share wrapper from UI.");
       }
     }
 
@@ -739,67 +793,48 @@
       }
     }
 
-    // 아래의 트랙 추가/제거 로직은 이제 main.js에서 직접 DOM을 조작하므로 UIManager에서는 제거하거나,
-    // 혹은 main.js에서 호출할 수 있는 더 일반적인 DOM 조작 헬퍼 함수로 남겨둘 수 있습니다.
-    // 여기서는 main.js가 직접 처리하도록 역할을 완전히 분리하기 위해 제거하는 방향으로 진행합니다.
-    // 아래 함수 사용안함 -> 나중에 제거
-
-    addRemoteTrack(track, producerId, appData) {
-      if (!this.remoteMediaContainer) {
-        console.error(
-          "    UIManager.addRemoteTrack: remoteMediaContainer가 유효하지 않습니다. 원격 트랙을 추가할 수 없습니다."
-        );
-        return;
-      }
-
-      // 화면 공유 스트림인 경우 특별 처리
-      if (appData && appData.source === "screen") {
-        this.updateLayoutForScreenShare(true);
-        const screenShareWrapper = document.createElement("div");
-        screenShareWrapper.id = `remote-screen-${producerId}`;
-        screenShareWrapper.classList.add("screen-share-wrapper");
-
-        const element = document.createElement(track.kind);
-        element.autoplay = true;
-        element.playsInline = true;
-        element.srcObject = new MediaStream([track]);
-
-        screenShareWrapper.appendChild(element);
-        // 화면 공유는 보통 컨테이너의 맨 앞에 오도록 prepend 사용
-        this.remoteMediaContainer.prepend(screenShareWrapper);
-        console.log(`     Added screen share for producer ${producerId}`);
-      } else {
-        const element = document.createElement(track.kind);
-        element.id = `remote-${producerId}`;
-        element.autoplay = true;
-        element.playsInline = true;
-        if (track.kind === "video") {
-          element.controls = true;
-        }
-        element.srcObject = new MediaStream([track]);
-
-        this.remoteMediaContainer.appendChild(element);
-        console.log(
-          `     Added remote ${track.kind} element for producer ${producerId}`
-        );
-      }
+    // 로컬 비디오 상태 업데이트 (카메라 on/off에 따른 아바타 표시)
+    updateLocalVideoState(isEnabled) {
+      this.localMediaContainer.classList.toggle('video-paused', !isEnabled);
     }
 
-    removeRemoteTrack(producerId) {
-      // 일반 비디오와 화면 공유 엘리먼트를 모두 찾아 제거
-      const remoteVideo = document.getElementById(`remote-${producerId}`);
-      const screenShare = document.getElementById(`remote-screen-${producerId}`);
+    // 비디오 레이아웃 업데이트 (DOM 조작 최소화)
+    updateVideoLayout(mainStageElements, sidebarElements) {
+      const mainStage = this.mainStageContainer;
+      const sidebar = this.sidebarContainer;
 
-      if (remoteVideo) {
-        remoteVideo.remove();
-        console.log(`     Removed video element for producer ${producerId}`);
-      }
-      if (screenShare) {
-        screenShare.remove();
-        console.log(`     Removed screen share for producer ${producerId}`);
-        // 화면 공유가 종료되었으므로 레이아웃 복원
-        this.updateLayoutForScreenShare(false);
-      }
+      // 현재 DOM 상태를 파악
+      const currentMainChildren = Array.from(mainStage.children);
+      const currentSidebarChildren = Array.from(sidebar.children);
+
+      // 1. 메인 스테이지에 있어야 할 요소들을 처리
+      mainStageElements.forEach(element => {
+        if (element.parentNode !== mainStage) {
+          mainStage.appendChild(element);
+        }
+        element.classList.remove('thumbnail');
+        element.classList.add('main-stage-video');
+      });
+
+      // 2. 사이드바에 있어야 할 요소들을 처리
+      sidebarElements.forEach(element => {
+        if (element.parentNode !== sidebar) {
+          sidebar.appendChild(element);
+        }
+        element.classList.add('thumbnail');
+        element.classList.remove('main-stage-video');
+      });
+
+      // 3. 더 이상 메인 스테이지나 사이드바에 속하지 않는 요소들을 제거 (필요시)
+      // 이 로직은 main.js에서 직접 요소를 관리하므로 여기서는 필요 없을 수 있습니다.
+      // 하지만 혹시 모를 잔여 요소 정리를 위해 남겨둡니다.
+      currentMainChildren.forEach(child => {
+        if (!mainStageElements.includes(child) && !sidebarElements.includes(child)) ;
+      });
+
+      currentSidebarChildren.forEach(child => {
+        if (!mainStageElements.includes(child) && !sidebarElements.includes(child)) ;
+      });
     }
 
     addLocalScreenShare(track) {
@@ -815,7 +850,7 @@
       element.srcObject = new MediaStream([track]);
 
       screenShareWrapper.appendChild(element);
-      this.remoteMediaContainer.prepend(screenShareWrapper);
+      this.mainStageContainer.prepend(screenShareWrapper); // remoteMediaContainer 대신 mainStageContainer 사용
       console.log("     Added local screen share to UI.");
     }
 
