@@ -41,10 +41,18 @@
         				<w2:key dataType="text" name="password" id="password"></w2:key>
         			</w2:keyInfo>
         		</w2:dataMap>
+
+                <!-- tenant_user_dashboard Redirect-->
+                <w2:dataMap baseNode="map" id="dma_loginResponse">
+                    <w2:keyInfo>
+                        <w2:key id="tenant" name="tenant" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+
         	</w2:dataCollection>
             <w2:workflowCollection />
         	<xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
-        		ref='data:json,{"id":"dma_login","key":"elData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
+        		ref='data:json,{"id":"dma_login","key":"elData"}' target='data:json,{"id":"dma_loginResponse"}' encoding="UTF-8" instance="" replace="" errorHandler=""
         		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
         		abortTrigger="">
         	</xf:submission>
@@ -53,12 +61,27 @@
         		customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
         		abortTrigger="">
         	</xf:submission>
+
         </xf:model>
 
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
         
-        <script lazy="false" type="text/javascript"><![CDATA[
+        <script lazy="false" type="text/javascript"><![CDATA[// JWT 토큰을 디코딩하여 payload를 추출하는 함수
+scwin.parseJwt = function(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("JWT 파싱 오류:", e);
+        return null;
+    }
+};
+
 scwin.onpageload = function () {
     // // 저장된 아이디 로드
     scwin.loadSavedUserId();
@@ -318,7 +341,8 @@ scwin.login = function (e) {
 
 scwin.login_submitdone = function (e) {
     console.log("응답 전체:", e);
-    var elHeader = e.responseJSON.elHeader; // 응답 전문 elHeader
+    var responseData = e.responseJSON;
+    var elHeader = e.responseJSON.elHeader; 
 
     if (elHeader && elHeader.resSuc === true) {
         console.log("Response Headers:", e.responseHeadersJSON);
@@ -334,24 +358,43 @@ scwin.login_submitdone = function (e) {
         var refreshToken = headers["refresh-token"];
         console.log("Access Token:", accessToken);
         console.log("Refresh Token:", refreshToken);
-        if (accessToken) sessionStorage.setItem('accessToken', accessToken);
-        if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken);
 
-        // 3. 페이지 이동
-        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
+        if (accessToken) {
+            sessionStorage.setItem('accessToken', accessToken);
+        }
+        if (refreshToken) {
+            sessionStorage.setItem('refreshToken', refreshToken);
+        }
 
+        var tenantId = responseData.elData ? responseData.elData.tenant : null;
+        console.log("추출된 테넌트 ID:", tenantId);
+
+        var tenantId = null;
+        if (accessToken) {
+            const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+            const tokenPayload = scwin.parseJwt(tokenString); // 이 부분이 핵심입니다.
+
+            if (tokenPayload && tokenPayload.tenantId) {
+                tenantId = tokenPayload.tenantId;
+            }
+        }
+        
+        console.log("추출된 테넌트 ID:", tenantId);
+
+        if (tenantId) {
+            // 테넌트 ID와 함께 대시보드 페이지로 이동
+            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+        } else {
+            alert("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
+            // 혹은 기본 페이지로 이동
+            // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/user/User.xml";
+        }
+        
     } else {
         alert(elHeader ? elHeader.resMsg : "로그인 응답이 유효하지 않습니다.");
     }
 };
 
-
-
-
-
-scwin.login_submit = function (e) {
-
-};
 ]]></script>
         
         <style><![CDATA[

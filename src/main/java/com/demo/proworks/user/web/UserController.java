@@ -25,6 +25,7 @@ import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserListVo;
 import com.demo.proworks.user.vo.UserSignupVo;
 import com.demo.proworks.user.vo.UserVo;
+import com.demo.proworks.util.PasswordEncryptUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inswave.elfw.annotation.ElDescription;
@@ -63,6 +64,9 @@ public class UserController {
 
 	@Resource(name = "tokenBlacklistService")
 	private TokenBlacklistService tokenBlacklistService;
+
+	@Resource(name = "passwordEncryptUtil")
+	private PasswordEncryptUtil passwordEncryptUtil;
 
 	@ElService(key = "TNU0000Login")
 	@RequestMapping(value = "TNU0000Login")
@@ -323,15 +327,30 @@ public class UserController {
 	@ElService(key = "selectUserList")
 	@RequestMapping(value = "selectUserList")
 	@ElDescription(sub = "Tenant 사용자 목록 조회", desc = "Tenant별 사용자 목록을 조회합니다.")
-	public UserListVo selectUserList(UserVo vo) throws Exception {
+	public UserListVo selectUserList(HttpServletRequest request) throws Exception {
+
+		BufferedReader reader = request.getReader();
+		StringBuilder sb = new StringBuilder();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			sb.append(line);
+		}
+		String jsonData = sb.toString();
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode rootNode = mapper.readTree(jsonData);
+
+		UserVo vo = new UserVo();
+		JsonNode voNode = rootNode.get("vo");
+		if (voNode != null) {
+			vo = mapper.treeToValue(voNode, UserVo.class);
+		}
+
+		System.out.println("### Controller 최종 수신 데이터: " + vo);
 
 		List<UserVo> resultList = userService.selectUsersByTenant(vo);
-
 		UserListVo returnVo = new UserListVo();
 		returnVo.setUserVoList(resultList);
-
-		// long totalCount = userService.selectListCountUser(vo);
-		// returnVo.setTotalCount(totalCount);
 
 		return returnVo;
 	}
@@ -343,7 +362,6 @@ public class UserController {
 		System.out.println("=== Service 호출 방식 ===");
 
 		try {
-			// JSON 데이터 읽기
 			BufferedReader reader = request.getReader();
 			StringBuilder sb = new StringBuilder();
 			String line;
@@ -368,16 +386,21 @@ public class UserController {
 					String rowStatus = userNode.has("rowStatus") ? userNode.get("rowStatus").asText() : "";
 
 					userVo.setUserId(userId.isEmpty() ? null : userId);
-					userVo.setTenantId("1"); // 예시 테넌트 ID
+
+					if (userNode.has("tenantId")) {
+						userVo.setTenantId(userNode.get("tenantId").asText());
+					}
+
 					userVo.setName(userNode.get("name").asText());
 					userVo.setEmail(userNode.get("email").asText());
 
-					String password = userNode.get("password").asText();
-					// 비밀번호가 변경되지 않았으면(특수값) null로 설정
-					if ("KEEP_EXISTING_PASSWORD".equals(password)) {
-						userVo.setPassword(null);
+					String password = userNode.has("password") ? userNode.get("password").asText() : "";
+
+					if (password != null && !password.isEmpty() && !"KEEP_EXISTING_PASSWORD".equals(password)) {
+						String encryptedPassword = passwordEncryptUtil.encryptPassword(password);
+						userVo.setPassword(encryptedPassword);
 					} else {
-						userVo.setPassword(password); // 비밀번호 암호화는 서비스에서 처리 권장
+						userVo.setPassword(null);
 					}
 
 					userVo.setRole(userNode.get("role").asText());
@@ -387,7 +410,6 @@ public class UserController {
 					userList.add(userVo);
 				}
 
-				// 수정된 서비스 메소드 호출
 				userService.saveUserList(userList);
 
 				System.out.println("=== Service를 통한 처리 완료 ===");

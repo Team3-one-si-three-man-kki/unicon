@@ -58,6 +58,12 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "rowStatus", physicalName = "rowStatus", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String rowStatus;
 
+    @ElDtoField(logicalName = "startRow ", physicalName = "startRow ", type = "int", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private int startRow ;
+
+    @ElDtoField(logicalName = "sortOrder", physicalName = "sortOrder", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String sortOrder;
+
     @ElVoField(physicalName = "recordId")
     public String getRecordId(){
         String ret = this.recordId;
@@ -223,6 +229,27 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.rowStatus = rowStatus;
     }
 
+    @ElVoField(physicalName = "startRow ")
+    public int getStartRow (){
+        return startRow ;
+    }
+
+    @ElVoField(physicalName = "startRow ")
+    public void setStartRow (int startRow ){
+        this.startRow  = startRow ;
+    }
+
+    @ElVoField(physicalName = "sortOrder")
+    public String getSortOrder(){
+        String ret = this.sortOrder;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "sortOrder")
+    public void setSortOrder(String sortOrder){
+        this.sortOrder = sortOrder;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -241,7 +268,9 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("participationMinutes").append("=").append(participationMinutes).append(",");
         sb.append("status").append("=").append(status).append(",");
         sb.append("cud").append("=").append(cud).append(",");
-        sb.append("rowStatus").append("=").append(rowStatus);
+        sb.append("rowStatus").append("=").append(rowStatus).append(",");
+        sb.append("startRow ").append("=").append(startRow ).append(",");
+        sb.append("sortOrder").append("=").append(sortOrder);
         sb.append("]");
         return sb.toString();
 

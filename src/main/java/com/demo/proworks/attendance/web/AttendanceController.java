@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.demo.proworks.attendance.service.AttendanceService;
@@ -16,7 +17,6 @@ import com.demo.proworks.attendance.vo.AttendanceVo;
 import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * @subject : 출석모듈 관련 처리를 담당하는 컨트롤러
@@ -39,7 +39,7 @@ public class AttendanceController {
 	/**
 	 * 출석모듈 목록을 조회합니다.
 	 *
-	 * @param attendanceVo 출석모듈
+	 * @param request HttpServletRequest
 	 * @return 목록조회 결과
 	 * @throws Exception
 	 */
@@ -48,12 +48,59 @@ public class AttendanceController {
 	@ElDescription(sub = "출석모듈 목록조회", desc = "페이징을 처리하여 출석모듈 목록 조회를 한다.")
 	public AttendanceListVo selectListAttendance(AttendanceVo attendanceVo) throws Exception {
 
+		System.out.println("===== 요청 파라미터 자동 바인딩 후 VO =====");
+		System.out.println("scSessionId: [" + attendanceVo.getScSessionId() + "]");
+		System.out.println("scName: [" + attendanceVo.getScName() + "]");
+		System.out.println("scEmail: [" + attendanceVo.getScEmail() + "]");
+		System.out.println("scJoinTime: [" + attendanceVo.getScJoinTime() + "]");
+		System.out.println("pageSize: [" + attendanceVo.getPageSize() + "]");
+		System.out.println("pageIndex: [" + attendanceVo.getPageIndex() + "]");
+
+		if (attendanceVo.getScSessionId() != null && attendanceVo.getScSessionId().trim().isEmpty()) {
+			attendanceVo.setScSessionId(null);
+		}
+		if (attendanceVo.getScName() != null && attendanceVo.getScName().trim().isEmpty()) {
+			attendanceVo.setScName(null);
+		}
+		if (attendanceVo.getScEmail() != null && attendanceVo.getScEmail().trim().isEmpty()) {
+			attendanceVo.setScEmail(null);
+		}
+		if (attendanceVo.getScJoinTime() != null && attendanceVo.getScJoinTime().trim().isEmpty()) {
+			attendanceVo.setScJoinTime(null);
+		}
+
+		// 페이징 설정
+		int pageSizeInt = (attendanceVo.getPageSize() > 0) ? attendanceVo.getPageSize() : 100;
+		int pageIndexInt = (int) ((attendanceVo.getPageIndex() > 0) ? attendanceVo.getPageIndex() : 1);
+		
+		attendanceVo.setPageSize(pageSizeInt);
+		attendanceVo.setPageIndex(pageIndexInt);
+
+		int startRow = (pageIndexInt - 1) * pageSizeInt;
+		attendanceVo.setStartRow(startRow);
+
+		System.out.println("===== 처리된 검색 조건 =====");
+		System.out.println("최종 scSessionId: [" + attendanceVo.getScSessionId() + "]");
+		System.out.println("최종 pageSize: " + attendanceVo.getPageSize());
+		System.out.println("최종 pageIndex: " + attendanceVo.getPageIndex());
+		System.out.println("최종 startRow: " + attendanceVo.getStartRow());
+
+		// 데이터 조회
 		List<AttendanceVo> attendanceList = attendanceService.selectListAttendance(attendanceVo);
-		long totCnt = attendanceService.selectListCountAttendance(attendanceVo);
+		long totalCount = attendanceService.selectListCountAttendance(attendanceVo);
+
+		System.out.println("===== 조회 결과 =====");
+		System.out.println("조회된 데이터 건수: " + (attendanceList != null ? attendanceList.size() : 0));
+		System.out.println("전체 건수: " + totalCount);
+
+		if (attendanceList != null && attendanceList.size() > 0) {
+			System.out.println("첫 번째 데이터 세션ID: " + attendanceList.get(0).getSessionId());
+			System.out.println("첫 번째 데이터 이름: " + attendanceList.get(0).getName());
+		}
 
 		AttendanceListVo retAttendanceList = new AttendanceListVo();
 		retAttendanceList.setAttendanceVoList(attendanceList);
-		retAttendanceList.setTotalCount(totCnt);
+		retAttendanceList.setTotalCount(totalCount);
 		retAttendanceList.setPageSize(attendanceVo.getPageSize());
 		retAttendanceList.setPageIndex(attendanceVo.getPageIndex());
 
@@ -128,7 +175,6 @@ public class AttendanceController {
 		try {
 			attendanceService.downloadAttendanceCSV(attendanceVo, response);
 		} catch (Exception e) {
-			// 오류 발생 시 에러 메시지 반환
 			response.setContentType("text/plain; charset=UTF-8");
 			response.getWriter().write("CSV 다운로드 중 오류가 발생했습니다: " + e.getMessage());
 		}

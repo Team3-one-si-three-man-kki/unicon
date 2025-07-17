@@ -58,6 +58,9 @@ public class UserVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "rowStatus", physicalName = "rowStatus", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String rowStatus;
 
+    @ElDtoField(logicalName = "searchKeyword ", physicalName = "searchKeyword ", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String searchKeyword ;
+
     @ElVoField(physicalName = "userId")
     public String getUserId(){
         String ret = this.userId;
@@ -222,6 +225,17 @@ public class UserVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.rowStatus = rowStatus;
     }
 
+    @ElVoField(physicalName = "searchKeyword ")
+    public String getSearchKeyword (){
+        String ret = this.searchKeyword ;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "searchKeyword ")
+    public void setSearchKeyword (String searchKeyword ){
+        this.searchKeyword  = searchKeyword ;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -240,7 +254,8 @@ public class UserVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("scCreatedAt").append("=").append(scCreatedAt).append(",");
         sb.append("isActive").append("=").append(isActive).append(",");
         sb.append("cud").append("=").append(cud).append(",");
-        sb.append("rowStatus").append("=").append(rowStatus);
+        sb.append("rowStatus").append("=").append(rowStatus).append(",");
+        sb.append("searchKeyword ").append("=").append(searchKeyword );
         sb.append("]");
         return sb.toString();
 
