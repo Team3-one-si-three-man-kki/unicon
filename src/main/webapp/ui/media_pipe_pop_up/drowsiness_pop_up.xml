@@ -133,6 +133,7 @@
 		</style>
 		<script lazy="false" type="text/javascript"><![CDATA[scwin.drowsyStartTime = null;
 scwin.drowsyInterva = null;
+scwin.time = null;
 
 scwin.onpageload = function () {
     drowsyStartTime = new Date();
@@ -143,6 +144,7 @@ scwin.onpageload = function () {
         const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
         const seconds = String(elapsed % 60).padStart(2, '0');
         const display = `졸음 지속 시간: ${minutes}:${seconds}`;
+        scwin.time = {minutes, seconds};
 
         drowsyTimerText.setValue(display);
     }, 1000); // 매초 갱신
