@@ -127,6 +127,7 @@
 		</style>
 		<script lazy="false" type="text/javascript"><![CDATA[scwin.afdStartTime = null;
 scwin.afdInterval = null;
+scwin.time = null;
 
 scwin.onpageload = function () {
     scwin.afdStartTime = new Date();
@@ -137,6 +138,7 @@ scwin.onpageload = function () {
         const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
         const seconds = String(elapsed % 60).padStart(2, '0');
         const display = `자리 비운 시간: ${minutes}:${seconds}`;
+        scwin.time = {minutes, seconds};
 
         afdTimerText.setValue(display);
     }, 1000); // 매초 갱신
