@@ -13,6 +13,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -98,27 +101,26 @@ public class UserController {
 	@ElService(key = "TNU0000CheckEmail")
 	@RequestMapping(value = "TNU0000CheckEmail")
 	@ElDescription(sub = "이메일중복검사", desc = "이메일 사용 가능 여부 확인")
-	public void checkEmailAvailability(UserSignupVo signupVo, HttpServletRequest request) throws Exception {
-		String email = signupVo.getEmail();
+	public ResponseEntity<String> checkEmailAvailability(UserSignupVo signupVo) {
+    String email = signupVo.getEmail();
+    System.out.println("이메일 중복 검사 요청: " + email);
 
-		System.out.println("이메일 중복 검사 요청: " + email);
+    try {
+        boolean available = signupService.isEmailAvailable(email);
+        
+        String message = available 
+                ? "사용 가능한 이메일입니다." 
+                : "이미 사용 중인 이메일입니다.";
 
-		try {
-			boolean available = signupService.isEmailAvailable(email);
+        System.out.println("이메일 중복 검사 결과: " + (available ? "사용가능" : "사용불가"));
+        return ResponseEntity.ok(message);
 
-			request.setAttribute("emailCheckResult", available ? "available" : "unavailable");
-			request.setAttribute("email", email);
-
-			System.out.println("이메일 중복 검사 결과: " + (available ? "사용가능" : "사용불가"));
-
-		} catch (Exception e) {
-			System.err.println("이메일 중복 검사 실패: " + e.getMessage());
-			request.setAttribute("emailCheckResult", "error");
-			request.setAttribute("errorMessage", e.getMessage());
-
-			throw e;
-		}
-	}
+    } catch (Exception e) {
+        System.err.println("이메일 중복 검사 실패: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("이메일 중복 검사 중 오류가 발생했습니다.");
+    }
+}
 
 	@ElService(key = "TNU0000Signup")
 	@RequestMapping(value = "TNU0000Signup")
@@ -324,8 +326,8 @@ public class UserController {
 		}
 	}
 
-	@ElService(key = "selectUserList")
-	@RequestMapping(value = "selectUserList")
+	@ElService(key = "TNU0002selectUserList")
+	@RequestMapping(value = "TNU0002selectUserList")
 	@ElDescription(sub = "Tenant 사용자 목록 조회", desc = "Tenant별 사용자 목록을 조회합니다.")
 	public UserListVo selectUserList(HttpServletRequest request) throws Exception {
 

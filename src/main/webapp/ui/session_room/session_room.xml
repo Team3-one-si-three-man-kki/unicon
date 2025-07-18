@@ -13,6 +13,37 @@
 		<w2:publicInfo method="" />
 		<style type="text/css"><![CDATA[
 /* --- 기본 구조 --- */
+
+/* ✅ 상태 아이콘 관련 스타일 */
+.status-indicator-container {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    display: flex; /* 아이콘들을 가로로 나란히 배치 */
+    gap: 5px;      /* 아이콘 사이의 간격 */
+    z-index: 20;   /* 다른 요소들 위에 보이도록 z-index 설정 */
+}
+
+.audio-muted-indicator,
+.video-paused-indicator {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.audio-muted-indicator {
+    background-image: url('/InsWebApp/images/icons/mic_off.svg'); /* 음소거 이미지 경로 */
+    background-size: 14px; /* 이미지 크기 조절 */
+}
+
+.video-paused-indicator {
+    background-image: url('/InsWebApp/images/icons/camera_off.svg'); /* 카메라 꺼짐 이미지 경로 */
+    background-size: 16px; /* 이미지 크기 조절 */
+}
+
 #remoteSection {
     display: flex;
     width: 80%;
@@ -127,7 +158,6 @@ div.video-paused::after {
 		</style>
 		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
 		<script src="/InsWebApp/media/dist/app.bundle.js" />
-
 		<script lazy="false" type="text/javascript"><![CDATA[
 scwin.updateCanvasBackground = function () {
     if (!scwin.isWhiteboardActive) return;
@@ -200,7 +230,6 @@ scwin.checkAppReady = function () {
 };
 
 scwin.updateVideoLayout = function () {
-    const localVideoWrapper = scwin.uiManager.localMediaContainer;
     const mainStageElements = [];
     const sidebarElements = [];
 
@@ -208,71 +237,51 @@ scwin.updateVideoLayout = function () {
     const screenSharePeer = Array.from(scwin.remotePeers.values()).find(p => p.isScreenShare);
     const screenShareElement = scwin.localScreenShareElement || screenSharePeer?.screenShareElement;
 
-    // 1. 로컬 비디오 위치 결정 로직 수정
-    if (screenShareElement || (scwin.isWhiteboardActive && !scwin.isCanvasOverlayActive)) {
-        // 화면 공유가 있거나, 칠판이 '단독 모드'일 때만 로컬 비디오를 사이드바로 이동
-        sidebarElements.push(localVideoWrapper);
-    } else {
-        // 그 외의 모든 경우(로컬 비디오만 있거나, 칠판이 꺼져있을 때)는 메인에 배치
-        mainStageElements.push(localVideoWrapper);
-    }
-
-    // 2. 메인 스테이지 요소 결정 로직 수정
     let mainElement = null;
-    
-    // 화면 공유를 최우선으로 배치
+
     if (screenShareElement) {
         mainElement = screenShareElement;
-        mainElement.classList.add("screen-share-layer");
-    } 
-    // 화면 공유가 없을 때, 핀 고정된 비디오가 있다면 배치
-    else if (scwin.pinnedProducerId) {
+    } else if (scwin.pinnedProducerId) {
         const pinnedPeer = Array.from(scwin.remotePeers.values()).find(p => p.videoProducerId === scwin.pinnedProducerId);
-        if (pinnedPeer) {
-            mainElement = pinnedPeer.elementWrapper;
-            mainElement.classList.add("pinned-video-layer");
-        }
-    } 
-    // 화면 공유도, 핀 고정도 없을 때 (칠판 단독 모드 포함)
-    else {
-        // 칠판 단독 모드가 아니라면, 첫 번째 원격 사용자를 메인에 배치
-        if (!(scwin.isWhiteboardActive && !scwin.isCanvasOverlayActive)) {
-            const firstRemoteVideo = Array.from(scwin.remotePeers.values())
-                .filter(p => p.elementWrapper && !p.isScreenShare)
-                .map(p => p.elementWrapper)[0];
+        if (pinnedPeer) mainElement = pinnedPeer.elementWrapper;
+    } else {
+        // 원격 사용자 중 첫 번째 사용자를 메인으로 (화면 공유가 아닐 때)
+        const firstRemoteVideo = Array.from(scwin.remotePeers.values())
+            .filter(p => p.elementWrapper && !p.isScreenShare)[0];
 
-            if (firstRemoteVideo) {
-                mainElement = firstRemoteVideo;
-                mainElement.classList.add("pinned-video-layer");
-            } else if (!mainStageElements.includes(localVideoWrapper)) {
-                // 원격 사용자도 없으면 로컬 비디오를 메인에 배치
-                mainElement = localVideoWrapper;
-                mainElement.classList.add("pinned-video-layer");
-            }
+
+        if (firstRemoteVideo) {
+            mainElement = firstRemoteVideo.elementWrapper;
+        } else if (scwin.myPeerId) {
+            const myPeer = scwin.remotePeers.get(scwin.myPeerId);
+            if (myPeer) mainElement = myPeer.elementWrapper;
         }
-        // 칠판 단독 모드라면 mainElement는 null을 유지
     }
 
-    // 메인 요소가 결정되면 mainStageElements에 추가 (중복 방지)
-    if (mainElement && !mainStageElements.includes(mainElement)) {
+    // 메인 요소가 결정되면 mainStageElements에 추가
+    if (mainElement) {
         mainStageElements.push(mainElement);
     }
 
-    // UIManager가 레이아웃을 업데이트할 때 canvasLayer를 제거하지 않도록 목록에 포함시킵니다.
-    mainStageElements.push(scwin.canvasLayer);
-
-
-    // 4. 나머지 모든 비디오들을 사이드바에 추가
+    // 2. 모든 peer(로컬 포함)를 순회하며 사이드바 요소 결정
     Array.from(scwin.remotePeers.values()).forEach(peer => {
-        if (peer.elementWrapper && !mainStageElements.includes(peer.elementWrapper) && !sidebarElements.includes(peer.elementWrapper)) {
+        // 메인에 있지 않은 모든 비디오/로컬 래퍼를 사이드바로 보냄
+        if (peer.elementWrapper && peer.elementWrapper !== mainElement) {
             sidebarElements.push(peer.elementWrapper);
         }
     });
 
-    // 5. UIManager의 updateVideoLayout 함수 호출
-    scwin.uiManager.updateVideoLayout(mainStageElements, sidebarElements);
+    // 3. 칠판 관련 로직
+    mainStageElements.push(scwin.canvasLayer);
+    if (scwin.isWhiteboardActive && !scwin.isCanvasOverlayActive) {
+        // 칠판 단독 모드일 때 메인에 있는 다른 요소들을 사이드바로 이동
+        const elementsToMove = mainStageElements.filter(el => el !== scwin.canvasLayer);
+        sidebarElements.push(...elementsToMove);
+        mainStageElements.splice(0, mainStageElements.length, scwin.canvasLayer);
+    }
 
-    // 캔버스 레이어는 항상 메인 스테이지에 유지 (초기 로드 시 한 번만 추가되므로 이 로직은 제거)
+    // 4. UIManager에 최종 목록 전달
+    scwin.uiManager.updateVideoLayout(mainStageElements, sidebarElements);
 };
 
 scwin.onpageload = async function () {
@@ -294,17 +303,16 @@ scwin.onpageload = async function () {
     let wsInstance = null;
 
     scwin.pinnedProducerId = null;
-    scwin.localVideoElement = scwin.uiManager.localMediaContainer; // localMediaContainer를 참조하도록 수정
     scwin.localScreenShareElement = null;
     scwin.remotePeers = new Map();
+    scwin.myPeerId = null; // 자신의 ID를 저장할 변수
 
     let isAudioEnabled = true;
     let isVideoEnabled = true; // isVideoEnabled는 RoomClient에서 관리되므로, 여기서는 초기 상태만 설정
     scwin.isScreenSharing = false;
     scwin.isWhiteboardActive = false;
-
     scwin.isCanvasOverlayActive = false;
-    let isAdmin = false;
+    scwin.isAdmin = false;
 
     // 해결: 이 변수들을 onpageload 함수의 공용 스코프로 이동합니다.
     const userHasAiModule = true;
@@ -329,14 +337,12 @@ scwin.onpageload = async function () {
     scwin.canvasLayer.style.height = '100%';
     scwin.canvasLayer.style.zIndex = '10';
     scwin.canvasLayer.style.overflow = 'hidden';
-    
+
     // 2. CanvasModule이 사용할 내부 컨테이너를 별도로 생성
     const canvasModuleContainer = document.createElement("div");
     canvasModuleContainer.style.width = "100%";
     canvasModuleContainer.style.height = "100%";
     scwin.canvasLayer.appendChild(canvasModuleContainer); // 칠판 레이어 안에 추가
-
-    // 3. 메인 스테이지에 칠판 레이어 추가 (기존과 동일)
     mainStage.appendChild(scwin.canvasLayer);
 
     try {
@@ -361,11 +367,11 @@ scwin.onpageload = async function () {
         if (data.type === "activate") {
             scwin.isWhiteboardActive = true;
             scwin.canvasLayer.style.display = 'block';
-            scwin.uiManager.whiteboardButton.textContent = "칠판 끄기";
+            //scwin.uiManager.whiteboardButton.textContent = "칠판 끄기";
         } else if (data.type === "deactivate") {
             scwin.isWhiteboardActive = false;
             scwin.canvasLayer.style.display = 'none';
-            scwin.uiManager.whiteboardButton.textContent = "칠판";
+            //scwin.uiManager.whiteboardButton.textContent = "칠판";
         } else if (scwin.canvasModule) {
             scwin.canvasModule.signal(data);
         }
@@ -375,9 +381,11 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("adminStatus", (adminStatus) => {
-        isAdmin = adminStatus;
-        if (isAdmin) {
+    roomClient.on("adminStatus", ({ isAdmin, peerId }) => {
+        scwin.isAdmin = isAdmin;
+        scwin.myPeerId = peerId; // 서버가 알려준 나의 고유 ID 저장
+
+        if (scwin.isAdmin) {
             scwin.uiManager.whiteboardButton.onclick = () => {
                 const activate = !scwin.isWhiteboardActive;
                 wsInstance.send(JSON.stringify({ action: "canvas", data: { type: activate ? "activate" : "deactivate" } }));
@@ -387,15 +395,15 @@ scwin.onpageload = async function () {
                 if (scwin.isScreenSharing) roomClient.stopScreenShare();
                 else roomClient.startScreenShare();
             });
-        } else {
-            scwin.uiManager.hideWhiteboardButton();
-            scwin.uiManager.disableScreenSharing();
         }
     });
 
     roomClient.on("screenShareState", ({ isSharing }) => {
         scwin.isScreenSharing = isSharing;
-        scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
+        //scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
+        // 화면공유 시작시에만 칠판 지우기
+        isSharing ? scwin.canvasModule.clear() : "";
+
         // 순서 변경: 배경 상태를 먼저 업데이트
         scwin.updateCanvasBackground();
         scwin.updateVideoLayout();
@@ -406,24 +414,51 @@ scwin.onpageload = async function () {
         scwin.uiManager.cameraOffButton.onclick = () => {
             isVideoEnabled = !isVideoEnabled;
             roomClient.setVideoEnabled(isVideoEnabled);
-            scwin.uiManager.cameraOffButton.textContent = isVideoEnabled ? "카메라 끄기" : "카메라 켜기";
+            scwin.uiManager.updateCameraButton(isVideoEnabled);
             // 로컬 비디오 컨테이너에 video-paused 클래스 토글
             // scwin.uiManager.localMediaContainer.classList.toggle('video-paused', !isVideoEnabled); // 이 줄을 제거합니다.
         };
         scwin.uiManager.muteButton.onclick = () => {
             isAudioEnabled = !isAudioEnabled;
             roomClient.setAudioEnabled(isAudioEnabled);
-            scwin.uiManager.muteButton.textContent = isAudioEnabled ? "음소거" : "음소거 해제";
+            scwin.uiManager.updateMuteButton(isAudioEnabled);
         };
     });
 
     // RoomClient에서 로컬 비디오 상태 변경 이벤트를 수신하여 UIManager에 전달
     roomClient.on("localVideoStateChanged", (isEnabled) => {
-        scwin.uiManager.updateLocalVideoState(isEnabled);
+        const myPeer = scwin.remotePeers.get(scwin.myPeerId);
+        if (myPeer && myPeer.elementWrapper) {
+            myPeer.elementWrapper.classList.toggle('video-paused', !isEnabled);
+        }
     });
 
     roomClient.on("localStreamReady", (videoElement) => {
-        scwin.localVideoElement = scwin.uiManager.localMediaContainer; // localMediaContainer를 참조하도록 수정
+        if (!scwin.myPeerId) {
+            console.error("My Peer ID is not set yet!");
+            return;
+        }
+
+        const elementWrapper = document.createElement('div');
+        elementWrapper.id = `peer-container-${scwin.myPeerId}`; // ID 명확화
+
+        // AI 렌더링을 위한 캔버스 생성
+        const canvasEl = document.createElement("canvas");
+        canvasEl.style.cssText = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;";
+
+        elementWrapper.appendChild(videoElement);
+        elementWrapper.appendChild(canvasEl);
+
+        // UIManager에 로컬 비디오와 캔버스 요소 전달
+        scwin.uiManager.setLocalMediaElements(videoElement, canvasEl);
+
+        // 자기 자신을 remotePeers 맵에 추가
+        scwin.remotePeers.set(scwin.myPeerId, {
+            videoProducerId: null, // 나중에 채워짐
+            audioProducerId: null, // 나중에 채워짐
+            elementWrapper: elementWrapper,
+            isLocal: true // 로컬 사용자임을 표시
+        });
 
         if (userHasAiModule) {
             try {
@@ -455,7 +490,7 @@ scwin.onpageload = async function () {
 
                     aiModule.on("absenceStarted", (data) => {
                         console.log(" Event: absenceStarted -> Sending status to server.");
-                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/adf_pop_up.xml", 400, 475);
+                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
                         roomClient.sendPeerStatus(data);
                     });
                     aiModule.on("absenceEnded", (data) => {
@@ -474,6 +509,14 @@ scwin.onpageload = async function () {
 
         scwin.updateVideoLayout();
     });
+    // 로컬 프로듀서 생성 시 producerId 업데이트
+    roomClient.on('producer-created', ({ kind, producerId }) => {
+        const myPeer = scwin.remotePeers.get(scwin.myPeerId);
+        if (myPeer) {
+            if (kind === 'video') myPeer.videoProducerId = producerId;
+            if (kind === 'audio') myPeer.audioProducerId = producerId;
+        }
+    });
 
     roomClient.on("new-consumer", async (consumer) => {
         const { track, producerId, appData } = consumer;
@@ -490,7 +533,8 @@ scwin.onpageload = async function () {
                 elementWrapper: null,
                 audioElement: null,
                 screenShareElement: null, // 추가
-                isScreenShare: false
+                isScreenShare: false,
+                isLocal: false // 원격 사용자
             };
             scwin.remotePeers.set(peerId, peer);
         }
@@ -613,6 +657,8 @@ scwin.onpageload = async function () {
         screenShareWrapper.appendChild(element);
 
         scwin.localScreenShareElement = screenShareWrapper;
+
+        scwin.updateCanvasBackground();
         scwin.updateVideoLayout();
     });
 
@@ -624,27 +670,44 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
+    // --- 원격 사용자의 비디오/오디오 상태 변경 처리 ---
     roomClient.on("remote-producer-pause", ({ producerId }) => {
-        for (const [peerId, peer] of scwin.remotePeers.entries()) {
-            if (peer.videoProducerId === producerId && peer.elementWrapper) {
-                peer.elementWrapper.classList.add('video-paused');
-                console.log(`[PAUSE] video-paused class added to peer ${peerId}`, peer.elementWrapper);
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.videoProducerId === producerId) {
+                scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true);
                 break;
             }
         }
     });
 
     roomClient.on("remote-producer-resume", ({ producerId }) => {
-        for (const [peerId, peer] of scwin.remotePeers.entries()) {
-            if (peer.videoProducerId === producerId && peer.elementWrapper) {
-                peer.elementWrapper.classList.remove('video-paused');
-                console.log(`[RESUME] video-paused class removed from peer ${peerId}`, peer.elementWrapper);
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.videoProducerId === producerId) {
+                scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, false);
                 break;
             }
         }
     });
 
-    const roomId = "my-first";
+    roomClient.on("remote-audio-pause", ({ producerId }) => {
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.audioProducerId === producerId) {
+                scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, true);
+                break;
+            }
+        }
+    });
+
+    roomClient.on("remote-audio-resume", ({ producerId }) => {
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.audioProducerId === producerId) {
+                scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, false);
+                break;
+            }
+        }
+    });
+
+    const roomId = "my-fia-rrom";
     roomClient.join(roomId);
 };
 ]]>
