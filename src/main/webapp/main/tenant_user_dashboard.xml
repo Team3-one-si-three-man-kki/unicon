@@ -11,24 +11,118 @@
             </xf:instance>
         </xf:model>
         <w2:publicInfo></w2:publicInfo>
-        <script type="text/javascript" lazy="false"><![CDATA[// 테넌트 정보를 저장할 전역 변수
+        <script type="text/javascript" lazy="false"><![CDATA[// 팝업 레이어 생성 함수
+scwin.createPopupLayer = function () {
+    // 팝업이 이미 존재하면 다시 만들지 않음
+    if (document.getElementById('customAlertPopup')) return;
+    
+    var popupHtml = `
+        <div id="customAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
+            <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;">
+                <div id="popupMessage" style="margin-bottom: 24px; font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap; word-break: break-word;"></div>
+                <div>
+                    <button id="popupConfirm" style="background: #007bff; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">확인</button>
+                    <button id="popupCancel" style="background: #6c757d; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">취소</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', popupHtml);
+};
+
+// 팝업 표시 함수
+scwin.showPopup = function (message, isConfirm, callback) {
+    var popup = document.getElementById('customAlertPopup');
+    if (!popup) {
+        // 혹시 팝업이 없는 경우를 대비해 생성
+        scwin.createPopupLayer();
+        popup = document.getElementById('customAlertPopup');
+    }
+    
+    var messageEl = document.getElementById('popupMessage');
+    var confirmBtn = document.getElementById('popupConfirm');
+    var cancelBtn = document.getElementById('popupCancel');
+
+    // 메시지에 줄바꿈(\n)이 있을 경우 HTML <br> 태그로 변환
+    messageEl.innerHTML = message.replace(/\\n/g, '<br>');
+
+    if (isConfirm) {
+        cancelBtn.style.display = 'inline-block';
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(true);
+        };
+        cancelBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(false);
+        };
+    } else {
+        cancelBtn.style.display = 'none';
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback();
+        };
+    }
+
+    // popup.style.display = 'block'; 을 flex로 변경하여 중앙 정렬
+    popup.style.display = 'flex';
+};
+
+// 테넌트 정보를 저장할 전역 변수
 scwin.tenantName = null;
 
-scwin.onpageload = function () {
-    // WebSquare 전용 API를 사용하여 'tenant' 파라미터를 가져옵니다.
-    scwin.tenantName = $p.getParameter("tenant"); 
+scwin.parseJwt = function(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("JWT 파싱 오류:", e);
+        return null;
+    }
+};
 
-    if (scwin.tenantName) {
-        console.log("URL에서 가져온 테넌트 이름:", scwin.tenantName);
-        // 여기에 테넌트 이름을 기반으로 대시보드 제목 등을 설정하는 로직 추가 가능
-        // 예: header_title.setLabel(scwin.tenantName + " Dashboard");
-    } else {
-        console.error("URL에 'tenant' 파라미터가 없습니다. 로그인 페이지로 리디렉션합니다.");
-        alert("잘못된 접근입니다. 테넌트 정보가 없습니다.");
+scwin.onpageload = function () {
+    // 팝업창의 HTML을 body에 추가하는 함수를 가장 먼저 호출
+    scwin.createPopupLayer();
+
+    const urlTenant = $p.getParameter("tenant");
+    const accessToken = sessionStorage.getItem('accessToken');
+
+    if (!accessToken) {
+        // alert을 showPopup으로 변경
+        scwin.showPopup("인증 정보가 없습니다. 로그인 페이지로 이동합니다.");
         return;
     }
 
-    scwin.switchTab('user'); // 기본으로 사용자 관리 탭을 로드
+    try {
+        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+        const tokenPayload = scwin.parseJwt(tokenString);
+        const tokenTenant = tokenPayload ? tokenPayload.tenantId : null;
+
+        if (!urlTenant || !tokenTenant || urlTenant !== tokenTenant) {
+            console.error("권한 없는 테넌트 접근 시도:", urlTenant);
+            // alert을 showPopup으로 변경
+            scwin.showPopup("잘못된 접근입니다. 권한이 없는 테넌트 정보입니다.");
+            return;
+        }
+
+        // 검증 성공 시, 전역 변수에 테넌트 정보 저장
+        scwin.tenantName = tokenTenant;
+        console.log("인증된 테넌트 이름:", scwin.tenantName);
+
+        // 기본으로 사용자 관리 탭을 로드
+        scwin.switchTab('user');
+
+    } catch (e) {
+        console.error("토큰 처리 중 오류 발생:", e);
+        // alert을 showPopup으로 변경
+        scwin.showPopup("인증 정보를 처리하는 중 오류가 발생했습니다. 다시 로그인해주세요.");
+        return;
+    }
 };
 
 /**
@@ -329,7 +423,7 @@ scwin.showPanel = function (panelType) {
                         <xf:label><![CDATA[이전 미팅 관리]]></xf:label>
                     </xf:trigger>
                     <xf:trigger class="tab-button" id="tab_report" type="button" ev:onclick="scwin.switchTab('report')" data-tab="report">
-                        <xf:label><![CDATA[보고서]]></xf:label>
+                        <xf:label><![CDATA[AI 어쩌고]]></xf:label>
                     </xf:trigger>
                 </xf:group>
             </xf:group>

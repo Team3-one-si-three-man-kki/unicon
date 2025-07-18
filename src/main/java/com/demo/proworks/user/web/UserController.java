@@ -324,8 +324,8 @@ public class UserController {
 		}
 	}
 
-	@ElService(key = "selectUserList")
-	@RequestMapping(value = "selectUserList")
+	@ElService(key = "TNU0002selectUserList")
+	@RequestMapping(value = "TNU0002selectUserList")
 	@ElDescription(sub = "Tenant 사용자 목록 조회", desc = "Tenant별 사용자 목록을 조회합니다.")
 	public UserListVo selectUserList(HttpServletRequest request) throws Exception {
 
