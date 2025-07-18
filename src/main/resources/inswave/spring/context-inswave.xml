@@ -99,9 +99,9 @@
 				// ALWAYS (기본값) : 모든 값을 출력한다.
 				// NON_NULL : null은 제외한다.
 				// NON_ABSENT : null은 제외한다. 참조 유형 (Java 8 'Optional'또는 {link java.utl.concurrent.atomic.AtomicReference})의 "absent"값; 즉, null이 아닌 값은 제외한다.
-				// NON_EMPTY : null은 제외한다. absent는 제외한다. ( 3. NON_ABSENT 참고 ) Collection, Map의 isEmpty()가 true 이면 제외한다.Array의 length가 0이면 제외한다.String의 length()가 
+				// NON_EMPTY : null은 제외한다. absent는 제외한다. ( 3. NON_ABSENT 참고 ) Collection, Map의 isEmpty()가 true 이면 제외한다.Array의 length가 0이면 제외한다.String의 length()가
 				0이면 제외한다
-				// NON_DEFAULT : empty는 제외된다. ( 4. NON_EMPTY 참고 ) primitive 타입이 디폴트 값이면 제외한다. (int / Integer : 0 , boolean / Boolean : false 등) Date의 timestamp가 
+				// NON_DEFAULT : empty는 제외된다. ( 4. NON_EMPTY 참고 ) primitive 타입이 디폴트 값이면 제외한다. (int / Integer : 0 , boolean / Boolean : false 등) Date의 timestamp가
 				0L이면 제외한다.
 			-->
 		</property>
@@ -130,6 +130,16 @@
 	<bean id="jwtAuthenticationFilter" class="com.demo.proworks.jwt.JwtAuthenticationFilter">
 		<property name="jwtUtil" ref="jwtUtil" />
 		<property name="tokenBlacklistService" ref="tokenBlacklistService" />
+	</bean>
+
+	<bean id="kakaoAuthService" class="com.demo.proworks.kakao.service.KakaoAuthService">
+		<property name="kakaoClientId" value="${KAKAO_CLIENT_ID}" />
+		<property name="kakaoClientSecret" value="${KAKAO_CLIENT_SECRET}" />
+		<property name="kakaoRedirectUri" value="${KAKAO_REDIRECT_URI}" />
+	</bean>
+
+	<bean id="kakaoAuthController" class="com.demo.proworks.kakao.web.KakaoAuthController">
+		<property name="kakaoAuthService" ref="kakaoAuthService" />
 	</bean>
 
 
