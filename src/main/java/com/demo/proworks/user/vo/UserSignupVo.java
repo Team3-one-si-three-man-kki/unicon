@@ -31,6 +31,9 @@ public class UserSignupVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "서브도메인", physicalName = "subDomain", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String subDomain;
 
+    @ElDtoField(logicalName = "로그인타입", physicalName = "loginType", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String loginType;
+
     @ElVoField(physicalName = "userName")
     public String getUserName(){
         String ret = this.userName;
@@ -97,6 +100,17 @@ public class UserSignupVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.subDomain = subDomain;
     }
 
+    @ElVoField(physicalName = "loginType")
+    public String getLoginType(){
+        String ret = this.loginType;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "loginType")
+    public void setLoginType(String loginType){
+        this.loginType = loginType;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -106,7 +120,8 @@ public class UserSignupVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("email").append("=").append(email).append(",");
         sb.append("password").append("=").append(password).append(",");
         sb.append("passwordConfirm").append("=").append(passwordConfirm).append(",");
-        sb.append("subDomain").append("=").append(subDomain);
+        sb.append("subDomain").append("=").append(subDomain).append(",");
+        sb.append("loginType").append("=").append(loginType);
         sb.append("]");
         return sb.toString();
 
