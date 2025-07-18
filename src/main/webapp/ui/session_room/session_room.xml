@@ -171,6 +171,17 @@ scwin.updateCanvasBackground = function () {
     scwin.canvasLayer.classList.toggle('standalone', !isScreenShareActive);
 };
 
+scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
+    // argRuntimeID : 팝업의 실행 시점 아이디
+    // argJsnInfo : 팝업의 부가 정보를 담은 JSON 객체
+    // argJsnInfo.isCloseButtonClick : [true, false] 팝업의 닫기 버튼을 클릭해서 호출되었는지의 여부
+
+    //팝업객체 접근
+    var popObj = $p.getPopupWindow(argRuntimeID);
+    scwin.roomClient.sendPeerStatus(popObj.scwin.time);
+
+    return true; //팝업 닫기 (반환 값이 true인 경우만 팝업이 닫힘)
+};
 
 scwin.throttle = function (callback, delay) {
     let lastCall = 0;
@@ -296,7 +307,7 @@ scwin.onpageload = async function () {
     scwin.loadModule = loadModule;
 
     scwin.uiManager = new UIManager();
-    const roomClient = new RoomClient(scwin.uiManager);
+    scwin.roomClient = new RoomClient(scwin.uiManager);
 
     let aiModule = null;
     scwin.canvasModule = null;
@@ -356,14 +367,14 @@ scwin.onpageload = async function () {
         console.error("초기 CanvasModule 로드 실패:", e);
     }
 
-    roomClient.on("connected", (ws) => {
+    scwin.roomClient.on("connected", (ws) => {
         wsInstance = ws;
         if (userHasCanvasModule) {
             scwin.uiManager.showWhiteboardButton();
         }
     });
 
-    roomClient.on("canvas", (data) => {
+    scwin.roomClient.on("canvas", (data) => {
         if (data.type === "activate") {
             scwin.isWhiteboardActive = true;
             scwin.canvasLayer.style.display = 'block';
@@ -381,7 +392,8 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("adminStatus", ({ isAdmin, peerId }) => {
+    scwin.roomClient.on("adminStatus", ({ isAdmin, peerId }) => {
+
         scwin.isAdmin = isAdmin;
         scwin.myPeerId = peerId; // 서버가 알려준 나의 고유 ID 저장
 
@@ -392,13 +404,13 @@ scwin.onpageload = async function () {
             };
             // 화면 공유 버튼 로직은 그대로 유지
             scwin.uiManager.enableScreenSharing(() => {
-                if (scwin.isScreenSharing) roomClient.stopScreenShare();
-                else roomClient.startScreenShare();
+                if (scwin.isScreenSharing) scwin.roomClient.stopScreenShare();
+                else scwin.roomClient.startScreenShare();
             });
         }
     });
 
-    roomClient.on("screenShareState", ({ isSharing }) => {
+    scwin.roomClient.on("screenShareState", ({ isSharing }) => {
         scwin.isScreenSharing = isSharing;
         //scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
         // 화면공유 시작시에만 칠판 지우기
@@ -409,31 +421,31 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("controlsReady", () => {
+    scwin.roomClient.on("controlsReady", () => {
         scwin.uiManager.enableControls();
         scwin.uiManager.cameraOffButton.onclick = () => {
             isVideoEnabled = !isVideoEnabled;
-            roomClient.setVideoEnabled(isVideoEnabled);
+            scwin.roomClient.setVideoEnabled(isVideoEnabled);
             scwin.uiManager.updateCameraButton(isVideoEnabled);
             // 로컬 비디오 컨테이너에 video-paused 클래스 토글
             // scwin.uiManager.localMediaContainer.classList.toggle('video-paused', !isVideoEnabled); // 이 줄을 제거합니다.
         };
         scwin.uiManager.muteButton.onclick = () => {
             isAudioEnabled = !isAudioEnabled;
-            roomClient.setAudioEnabled(isAudioEnabled);
+            scwin.roomClient.setAudioEnabled(isAudioEnabled);
             scwin.uiManager.updateMuteButton(isAudioEnabled);
         };
     });
 
     // RoomClient에서 로컬 비디오 상태 변경 이벤트를 수신하여 UIManager에 전달
-    roomClient.on("localVideoStateChanged", (isEnabled) => {
+    scwin.roomClient.on("localVideoStateChanged", (isEnabled) => {
         const myPeer = scwin.remotePeers.get(scwin.myPeerId);
         if (myPeer && myPeer.elementWrapper) {
             myPeer.elementWrapper.classList.toggle('video-paused', !isEnabled);
         }
     });
 
-    roomClient.on("localStreamReady", (videoElement) => {
+    scwin.roomClient.on("localStreamReady", (videoElement) => {
         if (!scwin.myPeerId) {
             console.error("My Peer ID is not set yet!");
             return;
@@ -481,21 +493,21 @@ scwin.onpageload = async function () {
                     aiModule.on("drowsinessDetected", (data) => {
                         console.log("Event: drowsinessUpdate -> Sending status to server.");
                         scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml", 400, 425);
-                        roomClient.sendPeerStatus(data);
+                        scwin.roomClient.sendPeerStatus(data);
                     });
                     aiModule.on("drowsinessResolved", (data) => {
                         console.log("Event: drowsinessUpdate -> Sending status to server.");
-                        roomClient.sendPeerStatus(data);
+                        scwin.roomClient.sendPeerStatus(data);
                     });
 
                     aiModule.on("absenceStarted", (data) => {
                         console.log(" Event: absenceStarted -> Sending status to server.");
                         scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
-                        roomClient.sendPeerStatus(data);
+                        scwin.roomClient.sendPeerStatus(data);
                     });
                     aiModule.on("absenceEnded", (data) => {
                         console.log(" Event: absenceEnded -> Sending status to server.");
-                        roomClient.sendPeerStatus(data);
+                        scwin.roomClient.sendPeerStatus(data);
                     });
 
                     aiModule.on("error", (error) => {
@@ -510,7 +522,7 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
     // 로컬 프로듀서 생성 시 producerId 업데이트
-    roomClient.on('producer-created', ({ kind, producerId }) => {
+    scwin.roomClient.on('producer-created', ({ kind, producerId }) => {
         const myPeer = scwin.remotePeers.get(scwin.myPeerId);
         if (myPeer) {
             if (kind === 'video') myPeer.videoProducerId = producerId;
@@ -518,7 +530,7 @@ scwin.onpageload = async function () {
         }
     });
 
-    roomClient.on("new-consumer", async (consumer) => {
+    scwin.roomClient.on("new-consumer", async (consumer) => {
         const { track, producerId, appData } = consumer;
         const peerId = appData.peerId;
         if (!peerId) return;
@@ -595,7 +607,7 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("producer-closed", ({ producerId, isScreenShareProducer, isLocalVideoProducer, peerId }) => {
+    scwin.roomClient.on("producer-closed", ({ producerId, isScreenShareProducer, isLocalVideoProducer, peerId }) => {
         if (peerId) {
             const peer = scwin.remotePeers.get(peerId);
             if (peer) {
@@ -646,7 +658,7 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("local-screen-share-started", (track) => {
+    scwin.roomClient.on("local-screen-share-started", (track) => {
         const screenShareWrapper = document.createElement("div");
         screenShareWrapper.id = "local-screen-share-wrapper";
         const element = document.createElement(track.kind);
@@ -662,7 +674,7 @@ scwin.onpageload = async function () {
         scwin.updateVideoLayout();
     });
 
-    roomClient.on("local-screen-share-stopped", () => {
+    scwin.roomClient.on("local-screen-share-stopped", () => {
         if (scwin.localScreenShareElement) {
             scwin.localScreenShareElement.remove();
             scwin.localScreenShareElement = null;
@@ -671,7 +683,7 @@ scwin.onpageload = async function () {
     });
 
     // --- 원격 사용자의 비디오/오디오 상태 변경 처리 ---
-    roomClient.on("remote-producer-pause", ({ producerId }) => {
+    scwin.roomClient.on("remote-producer-pause", ({ producerId }) => {
         for (const peer of scwin.remotePeers.values()) {
             if (peer.videoProducerId === producerId) {
                 scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true);
@@ -680,7 +692,7 @@ scwin.onpageload = async function () {
         }
     });
 
-    roomClient.on("remote-producer-resume", ({ producerId }) => {
+    scwin.roomClient.on("remote-producer-resume", ({ producerId }) => {
         for (const peer of scwin.remotePeers.values()) {
             if (peer.videoProducerId === producerId) {
                 scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, false);
@@ -689,7 +701,7 @@ scwin.onpageload = async function () {
         }
     });
 
-    roomClient.on("remote-audio-pause", ({ producerId }) => {
+    scwin.roomClient.on("remote-audio-pause", ({ producerId }) => {
         for (const peer of scwin.remotePeers.values()) {
             if (peer.audioProducerId === producerId) {
                 scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, true);
@@ -698,7 +710,7 @@ scwin.onpageload = async function () {
         }
     });
 
-    roomClient.on("remote-audio-resume", ({ producerId }) => {
+    scwin.roomClient.on("remote-audio-resume", ({ producerId }) => {
         for (const peer of scwin.remotePeers.values()) {
             if (peer.audioProducerId === producerId) {
                 scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, false);
@@ -708,7 +720,7 @@ scwin.onpageload = async function () {
     });
 
     const roomId = "my-fia-rrom";
-    roomClient.join(roomId);
+    scwin.roomClient.join(roomId);
 };
 ]]>
 		</script>
