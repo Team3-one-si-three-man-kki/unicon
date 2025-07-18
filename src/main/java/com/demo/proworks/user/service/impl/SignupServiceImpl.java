@@ -43,68 +43,66 @@ public class SignupServiceImpl implements SignupService {
     @Override
     @Transactional
     public UserVo processSignup(UserSignupVo signupRequest) throws Exception {
-        try {
-            // 1. 입력 데이터 유효성 검증
-            validateSignupRequest(signupRequest);
-            
-            // 2. 이메일 중복 검사
-            if (!isEmailAvailable(signupRequest.getEmail())) {
-                throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + signupRequest.getEmail());
-            }
-            
-            // 3. 서브도메인 중복 검사
-            if (!isSubDomainAvailable(signupRequest.getSubDomain())) {
-                throw new IllegalArgumentException("이미 사용 중인 서브도메인입니다: " + signupRequest.getSubDomain());
-            }
-            
-            // 4. Tenant 정보 생성 및 저장
-            TenantVo tenant = createTenantInfo(signupRequest);
-            tenantService.insertTenant(tenant); // AUTO_INCREMENT ID가 tenant 객체에 설정됨
-            
-            System.out.println("테넌트 생성 완료 - ID: " + tenant.getTenantId());
-            
-            // 5. User 정보 생성 및 저장 (생성된 tenant_id 사용)
-            signupRequest.setPassword(passwordEncryptUtil.encryptPassword(signupRequest.getPassword()));
-            UserVo user = createUserInfo(signupRequest, tenant.getTenantId());
-            userService.insertUser(user); // AUTO_INCREMENT ID가 user 객체에 설정됨
-            
-            System.out.println("사용자 생성 완료 - ID: " + user.getUserId() + 
-                             ", 테넌트ID: " + user.getTenantId());
-            
-            // 6. 패스워드 정보는 응답에서 제거
-            user.setPassword(null);
-            
-            return user;
-            
-        } catch (Exception e) {
-            System.err.println("회원가입 처리 중 오류 발생: " + e.getMessage());
-            throw new Exception("회원가입 처리 중 오류가 발생했습니다: " + e.getMessage(), e);
+    try {
+        // 1. 유효성 검증
+        validateSignupRequest(signupRequest);
+
+        // 2. 이메일 중복 검사
+        if (!isEmailAvailable(signupRequest.getEmail())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + signupRequest.getEmail());
         }
+
+        // 3. 서브도메인 중복 검사
+        if (!isSubDomainAvailable(signupRequest.getSubDomain())) {
+            throw new IllegalArgumentException("이미 사용 중인 서브도메인입니다: " + signupRequest.getSubDomain());
+        }
+
+        // 4. Tenant 생성
+        TenantVo tenant = createTenantInfo(signupRequest);
+        tenantService.insertTenant(tenant);
+
+        // 5. 비밀번호 처리
+        if ("kakao".equals(signupRequest.getLoginType())) {
+            // NULL 허용 스키마라면 그대로 null 설정
+            signupRequest.setPassword(null);
+        } else {
+            // 일반 회원가입
+            signupRequest.setPassword(passwordEncryptUtil.encryptPassword(signupRequest.getPassword()));
+        }
+
+        // 6. User 생성
+        UserVo user = createUserInfo(signupRequest, tenant.getTenantId());
+        userService.insertUser(user);
+
+        // 7. 응답용 비밀번호 제거
+        user.setPassword(null);
+        return user;
+
+    } catch (Exception e) {
+        throw new Exception("회원가입 처리 중 오류가 발생했습니다: " + e.getMessage(), e);
     }
+}
     
     /**
      * 이메일 사용 가능 여부 검사
      */
     @Override
     public boolean isEmailAvailable(String email) {
-        if (isEmpty(email)) {
-            return false;
-        }
-        
-        try {
-            UserVo searchVo = new UserVo();
-            searchVo.setEmail(email); // 검색 조건 설정
-            
-            UserVo existingUsers = userService.loginUser(searchVo);
-            System.out.println("이메일 사용가능여부 검사: "+existingUsers);
-            
-            return existingUsers == null;
-            
-        } catch (Exception e) {
-            System.err.println("이메일 중복 검사 중 오류: " + e.getMessage());
-            return false; // 오류 시 안전하게 false 반환
-        }
+    if (isEmpty(email)) {
+        return false;
     }
+    
+    try {
+        UserVo existingUser = userService.getUserByEmail(email);
+        System.out.println("이메일 사용가능여부 검사: " + existingUser);
+        
+        return existingUser == null;
+        
+    } catch (Exception e) {
+        System.err.println("이메일 중복 검사 중 오류: " + e.getMessage());
+        return false; // 오류 시 안전하게 false 반환
+    }
+}
     
     /**
      * 서브도메인 사용 가능 여부 검사
@@ -133,56 +131,50 @@ public class SignupServiceImpl implements SignupService {
      * 회원가입 요청 데이터 유효성 검증
      */
     @Override
-    public void validateSignupRequest(UserSignupVo signupRequest) throws IllegalArgumentException {
-        if (signupRequest == null) {
-            throw new IllegalArgumentException("회원가입 요청 정보가 없습니다.");
-        }
-        
-        // 필수 필드 검증
-        if (isEmpty(signupRequest.getTenantName())) {
-            throw new IllegalArgumentException("테넌트명은 필수입니다.");
-        }
-        
-        if (isEmpty(signupRequest.getSubDomain())) {
-            throw new IllegalArgumentException("서브도메인은 필수입니다.");
-        }
-        
-        if (isEmpty(signupRequest.getUserName())) {
-            throw new IllegalArgumentException("사용자명은 필수입니다.");
-        }
-        
-        if (isEmpty(signupRequest.getEmail())) {
-            throw new IllegalArgumentException("이메일은 필수입니다.");
-        }
-        
+   public void validateSignupRequest(UserSignupVo signupRequest) {
+    if (signupRequest == null) {
+        throw new IllegalArgumentException("회원가입 요청 정보가 없습니다.");
+    }
+    // 공통 필수 검증
+    if (isEmpty(signupRequest.getTenantName())) {
+        throw new IllegalArgumentException("테넌트명은 필수입니다.");
+    }
+    if (isEmpty(signupRequest.getSubDomain())) {
+        throw new IllegalArgumentException("서브도메인은 필수입니다.");
+    }
+    if (isEmpty(signupRequest.getUserName())) {
+        throw new IllegalArgumentException("사용자명은 필수입니다.");
+    }
+    if (isEmpty(signupRequest.getEmail())) {
+        throw new IllegalArgumentException("이메일은 필수입니다.");
+    }
+
+    // 카카오 회원가입이면 비밀번호 검증 스킵
+    if (!"kakao".equals(signupRequest.getLoginType())) {
         if (isEmpty(signupRequest.getPassword())) {
             throw new IllegalArgumentException("비밀번호는 필수입니다.");
         }
-        
         if (isEmpty(signupRequest.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호 확인은 필수입니다.");
         }
-        
-        // 비밀번호 일치 검증
         if (!signupRequest.getPassword().equals(signupRequest.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
-        
-        // 이메일 형식 검증
-        if (!isValidEmail(signupRequest.getEmail())) {
-            throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
-        }
-        
-        // 비밀번호 길이 검증
         if (signupRequest.getPassword().length() < 6) {
             throw new IllegalArgumentException("비밀번호는 6자 이상이어야 합니다.");
         }
-        
-        // 서브도메인 형식 검증
-        if (!isValidSubDomain(signupRequest.getSubDomain())) {
-            throw new IllegalArgumentException("서브도메인은 영문자, 숫자, 하이픈만 사용 가능합니다.");
-        }
     }
+
+    // 이메일 형식 검증
+    if (!isValidEmail(signupRequest.getEmail())) {
+        throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+    }
+
+    // 서브도메인 형식 검증
+    if (!isValidSubDomain(signupRequest.getSubDomain())) {
+        throw new IllegalArgumentException("서브도메인은 영문자, 숫자, 하이픈만 사용 가능합니다.");
+    }
+}
     
     /**
      * Tenant 정보 생성 (private 메서드)

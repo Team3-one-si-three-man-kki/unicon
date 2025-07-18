@@ -61,6 +61,7 @@ public class ProworksLoginAdapter extends LoginAdapter {
 			// 파라미터 추출
 			String pw = (String) params[0];
 			String tenantId = (String) params[1];
+			Boolean isSocial   = params.length > 2 && Boolean.TRUE.equals(params[2]);
 
 			AppLog.debug("로그인 시도 - 테넌트 ID: " + tenantId);
 
@@ -95,9 +96,11 @@ public class ProworksLoginAdapter extends LoginAdapter {
 			}
 
 			// 비밀번호 검증
+			if (!isSocial) {
 			String dbPw = loginUser.getPassword();
 			if (pw == null || !passwordEncryptUtil.verifyPassword(pw, dbPw)) {
 				throw new LoginException("EL.ERROR.LOGIN.0002");
+			}
 			}
 
 			// JWT 토큰 생성
