@@ -158,7 +158,6 @@ div.video-paused::after {
 		</style>
 		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
 		<script src="/InsWebApp/media/dist/app.bundle.js" />
-
 		<script lazy="false" type="text/javascript"><![CDATA[
 scwin.updateCanvasBackground = function () {
     if (!scwin.isWhiteboardActive) return;
@@ -368,11 +367,11 @@ scwin.onpageload = async function () {
         if (data.type === "activate") {
             scwin.isWhiteboardActive = true;
             scwin.canvasLayer.style.display = 'block';
-            scwin.uiManager.whiteboardButton.textContent = "칠판 끄기";
+            //scwin.uiManager.whiteboardButton.textContent = "칠판 끄기";
         } else if (data.type === "deactivate") {
             scwin.isWhiteboardActive = false;
             scwin.canvasLayer.style.display = 'none';
-            scwin.uiManager.whiteboardButton.textContent = "칠판";
+            //scwin.uiManager.whiteboardButton.textContent = "칠판";
         } else if (scwin.canvasModule) {
             scwin.canvasModule.signal(data);
         }
@@ -401,7 +400,7 @@ scwin.onpageload = async function () {
 
     roomClient.on("screenShareState", ({ isSharing }) => {
         scwin.isScreenSharing = isSharing;
-        scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
+        //scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
         // 화면공유 시작시에만 칠판 지우기
         isSharing ? scwin.canvasModule.clear() : "";
 
@@ -415,14 +414,14 @@ scwin.onpageload = async function () {
         scwin.uiManager.cameraOffButton.onclick = () => {
             isVideoEnabled = !isVideoEnabled;
             roomClient.setVideoEnabled(isVideoEnabled);
-            scwin.uiManager.cameraOffButton.textContent = isVideoEnabled ? "카메라 끄기" : "카메라 켜기";
+            scwin.uiManager.updateCameraButton(isVideoEnabled);
             // 로컬 비디오 컨테이너에 video-paused 클래스 토글
             // scwin.uiManager.localMediaContainer.classList.toggle('video-paused', !isVideoEnabled); // 이 줄을 제거합니다.
         };
         scwin.uiManager.muteButton.onclick = () => {
             isAudioEnabled = !isAudioEnabled;
             roomClient.setAudioEnabled(isAudioEnabled);
-            scwin.uiManager.muteButton.textContent = isAudioEnabled ? "음소거" : "음소거 해제";
+            scwin.uiManager.updateMuteButton(isAudioEnabled);
         };
     });
 
