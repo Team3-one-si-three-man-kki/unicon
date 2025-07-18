@@ -1,75 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
-	xmlns:xf="http://www.w3.org/2002/xforms">
-	<head>
-		<w2:type>COMPONENT</w2:type>
-		<w2:buildDate />
-		<w2:MSA />
-		<xf:model>
+   xmlns:xf="http://www.w3.org/2002/xforms">
+   <head>
+      <w2:type>COMPONENT</w2:type>
+      <w2:buildDate />
+      <w2:MSA />
+      <xf:model>
 
 
-			<w2:dataCollection baseNode="map">
+         <w2:dataCollection baseNode="map">
 
-				<w2:dataMap id="dm_loginCustomInfo">
-					<w2:keyInfo>
-						<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
-						<w2:key id="logo" name="logo" dataType="text"></w2:key>
-						<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
-						<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
-						<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
-						<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
-						<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
-						<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
-						<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
-						<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
-						<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
-						<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
-						<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
-						<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
-						<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
-						<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
-						<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
-						<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
-						<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
-					</w2:keyInfo>
-				</w2:dataMap>
-				<w2:dataMap baseNode="map" id="dma_login">
-					<w2:keyInfo>
-						<w2:key dataType="text" name="email" id="email"></w2:key>
-						<w2:key dataType="text" name="password" id="password"></w2:key>
-					</w2:keyInfo>
-				</w2:dataMap>
+            <w2:dataMap id="dm_loginCustomInfo">
+               <w2:keyInfo>
+                  <w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
+                  <w2:key id="logo" name="logo" dataType="text"></w2:key>
+                  <w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
+                  <w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
+                  <w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
+                  <w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
+                  <w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
+                  <w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
+                  <w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
+                  <w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
+                  <w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
+                  <w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
+                  <w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
+                  <w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
+                  <w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
+                  <w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
+                  <w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
+                  <w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
+                  <w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+               </w2:keyInfo>
+            </w2:dataMap>
+            <w2:dataMap baseNode="map" id="dma_login">
+               <w2:keyInfo>
+                  <w2:key dataType="text" name="email" id="email"></w2:key>
+                  <w2:key dataType="text" name="password" id="password"></w2:key>
+               </w2:keyInfo>
+            </w2:dataMap>
 
-				<!-- tenant_user_dashboard Redirect -->
-				<w2:dataMap baseNode="map" id="dma_loginResponse">
-					<w2:keyInfo>
-						<w2:key id="tenant" name="tenant" dataType="text"></w2:key>
-					</w2:keyInfo>
-				</w2:dataMap>
+            <!-- tenant_user_dashboard Redirect -->
+            <w2:dataMap baseNode="map" id="dma_loginResponse">
+               <w2:keyInfo>
+                  <w2:key id="tenant" name="tenant" dataType="text"></w2:key>
+               </w2:keyInfo>
+            </w2:dataMap>
 
-			</w2:dataCollection>
-			<w2:workflowCollection />
-			<xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
-				ref='data:json,{"id":"dma_login","key":"elData"}' target='data:json,{"id":"dma_loginResponse"}' encoding="UTF-8" instance="" replace=""
-				errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
-				abortTrigger="">
-			</xf:submission>
-			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
-				target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
-				customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
-				abortTrigger="">
-			</xf:submission>
+         </w2:dataCollection>
+         <w2:workflowCollection />
+         <xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
+            ref='data:json,{"id":"dma_login","key":"elData"}' target='data:json,{"id":"dma_loginResponse"}' encoding="UTF-8" instance="" replace=""
+            errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
+            abortTrigger="">
+         </xf:submission>
+         <xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
+            target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+            customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
+            abortTrigger="">
+         </xf:submission>
 
-			<xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post" mediatype="application/json" ref="" target="" encoding="UTF-8"
-				instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.kakao_login_submitdone"
-				ev:submiterror="" abortTrigger="">
-			</xf:submission>
-		</xf:model>
+         <xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post" mediatype="application/json" ref="" target="" encoding="UTF-8"
+            instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.kakao_login_submitdone"
+            ev:submiterror="" abortTrigger="">
+         </xf:submission>
+      </xf:model>
 
-		<w2:layoutInfo />
-		<w2:publicInfo method="" />
+      <w2:layoutInfo />
+      <w2:publicInfo method="" />
 
-		<script lazy="false" type="text/javascript"><![CDATA[// JWT 토큰을 디코딩하여 payload를 추출하는 함수
+      <script lazy="false" type="text/javascript"><![CDATA[// JWT 토큰을 디코딩하여 payload를 추출하는 함수
 scwin.parseJwt = function(token) {
     try {
         const base64Url = token.split('.')[1];
@@ -413,7 +413,7 @@ if(e.responseStatusCode == 200 && e.responseJSON.success === true && e.responseJ
 };
 ]]></script>
 
-		<style><![CDATA[
+      <style><![CDATA[
             .login_wrapper {
                 display: flex;
                 flex-direction: row;
@@ -466,110 +466,110 @@ if(e.responseStatusCode == 200 && e.responseJSON.success === true && e.responseJ
                 }
             }
         ]]></style>
-	</head>
+   </head>
 
-	<body class="" ev:onpageload="scwin.onpageload">
+   <body class="" ev:onpageload="scwin.onpageload">
 
-		<!-- 로그인 전체 래퍼 -->
-		<xf:group class="login_wrapper" id=""
-			style="display: flex; flex-direction: row; align-items: stretch; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      <!-- 로그인 전체 래퍼 -->
+      <xf:group class="login_wrapper" id=""
+         style="display: flex; flex-direction: row; align-items: stretch; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
 
-			<xf:group id="leftPreview" class="leftPreview"
-				style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;'>
+         <xf:group id="leftPreview" class="leftPreview"
+            style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;'>
 
-				<!-- 가운데 텍스트 콘텐츠 -->
-				<xf:group id="textContent" style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
+            <!-- 가운데 텍스트 콘텐츠 -->
+            <xf:group id="textContent" style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
 
-					<w2:textbox id="mainTitle" label="메인 입니다." style="margin-bottom: 20px; display: block; "
-						ref="data:dm_loginCustomInfo.mainTitle" />
+               <w2:textbox id="mainTitle" label="메인 입니다." style="margin-bottom: 20px; display: block; "
+                  ref="data:dm_loginCustomInfo.mainTitle" />
 
-					<w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle" />
+               <w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle" />
 
-					<w2:textbox id="extraTitle" label="추가입니다." style="display: block;" ref="data:dm_loginCustomInfo.extraTitle" />
-				</xf:group>
-				<xf:image src="" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;'
-					id="logoImage"></xf:image>
-			</xf:group>
+               <w2:textbox id="extraTitle" label="추가입니다." style="display: block;" ref="data:dm_loginCustomInfo.extraTitle" />
+            </xf:group>
+            <xf:image src="" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;'
+               id="logoImage"></xf:image>
+         </xf:group>
 
-			<!-- 오른쪽 로그인 영역 -->
-			<xf:group id="rightLogin" class="rightLogin"
-				style="flex: 1;position: relative;display: flex;justify-content: center;align-items: center;background-color: rgba(255,255,255,0.95);">
+         <!-- 오른쪽 로그인 영역 -->
+         <xf:group id="rightLogin" class="rightLogin"
+            style="flex: 1;position: relative;display: flex;justify-content: center;align-items: center;background-color: rgba(255,255,255,0.95);">
 
-				<!-- 로그인 컨테이너 -->
-				<xf:group class="login_box" id=""
-					style="backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); padding: 50px 40px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); box-sizing: border-box;">
+            <!-- 로그인 컨테이너 -->
+            <xf:group class="login_box" id=""
+               style="backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); padding: 50px 40px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); box-sizing: border-box;">
 
-					<!-- 헤더 -->
-					<xf:group class="login_header" id="" style="margin-bottom: 40px;">
-						<w2:textbox id="" label="WELCOME"
-							style="font-size: 20px; font-weight: 300; color: #2d3748; margin-bottom: 8px; display: block;" />
-						<w2:textbox class="" id="" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 400;" />
-					</xf:group>
+               <!-- 헤더 -->
+               <xf:group class="login_header" id="" style="margin-bottom: 40px;">
+                  <w2:textbox id="" label="WELCOME"
+                     style="font-size: 20px; font-weight: 300; color: #2d3748; margin-bottom: 8px; display: block;" />
+                  <w2:textbox class="" id="" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 400;" />
+               </xf:group>
 
-					<!-- 로그인 폼 -->
-					<xf:group class="login_contents" id="" style="">
-						<xf:group id="" tagname="ul" style="list-style: none; padding: 0; margin: 0;">
+               <!-- 로그인 폼 -->
+               <xf:group class="login_contents" id="" style="">
+                  <xf:group id="" tagname="ul" style="list-style: none; padding: 0; margin: 0;">
 
-							<!-- 아이디 입력 -->
-							<xf:group id="" tagname="li" style="margin-bottom: 24px;">
-								<w2:textbox class="tit" for="inp_userId" id="" label="ID"
-									style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
-								<xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" placeholder="아이디를 입력해주세요."
-									style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;" />
-							</xf:group>
+                     <!-- 아이디 입력 -->
+                     <xf:group id="" tagname="li" style="margin-bottom: 24px;">
+                        <w2:textbox class="tit" for="inp_userId" id="" label="ID"
+                           style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
+                        <xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" placeholder="아이디를 입력해주세요."
+                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;" />
+                     </xf:group>
 
-							<!-- 비밀번호 입력 -->
-							<xf:group id="" tagname="li" style="margin-bottom: 24px;">
-								<w2:textbox class="tit" for="inp_password" id="" label="Password"
-									style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
+                     <!-- 비밀번호 입력 -->
+                     <xf:group id="" tagname="li" style="margin-bottom: 24px;">
+                        <w2:textbox class="tit" for="inp_password" id="" label="Password"
+                           style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
 
-								<!-- 비밀번호 입력 필드와 토글 버튼 -->
-								<xf:group class="login_form" id="" style="position: relative;">
-									<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
-										style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
-										type="password" />
-									<w2:anchor class="btn_login_password" id="btn_password_toggle" outerDiv="false"
-										style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #667eea; text-decoration: none; font-weight: 500; cursor: pointer;"
-										ev:onclick="scwin.togglePasswordVisibility">
-										<xf:label><![CDATA[비밀번호 보기]]></xf:label>
-									</w2:anchor>
-								</xf:group>
+                        <!-- 비밀번호 입력 필드와 토글 버튼 -->
+                        <xf:group class="login_form" id="" style="position: relative;">
+                           <xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
+                              style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
+                              type="password" />
+                           <w2:anchor class="btn_login_password" id="btn_password_toggle" outerDiv="false"
+                              style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #667eea; text-decoration: none; font-weight: 500; cursor: pointer;"
+                              ev:onclick="scwin.togglePasswordVisibility">
+                              <xf:label><![CDATA[비밀번호 보기]]></xf:label>
+                           </w2:anchor>
+                        </xf:group>
 
-								<!-- Remember me -->
-								<xf:group class="grp_password" id=""
-									style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
-									<xf:select appearance="full" cols="" id="" ref="" rows="" selectedindex="-1" style="">
-										<xf:choices>
-											<xf:item>
-												<xf:label><![CDATA[Remember me]]></xf:label>
-												<xf:value><![CDATA[]]>
-												</xf:value>
-											</xf:item>
-										</xf:choices>
-									</xf:select>
-								</xf:group>
-							</xf:group>
-						</xf:group>
+                        <!-- Remember me -->
+                        <xf:group class="grp_password" id=""
+                           style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                           <xf:select appearance="full" cols="" id="" ref="" rows="" selectedindex="-1" style="">
+                              <xf:choices>
+                                 <xf:item>
+                                    <xf:label><![CDATA[Remember me]]></xf:label>
+                                    <xf:value><![CDATA[]]>
+                                    </xf:value>
+                                 </xf:item>
+                              </xf:choices>
+                           </xf:select>
+                        </xf:group>
+                     </xf:group>
+                  </xf:group>
 
-						<!-- 로그인 버튼 -->
-						<xf:group class="login_btn" id="" style="margin: 32px 0 24px 0;">
-							<xf:trigger type="button" id="btn_login" ev:onclick="scwin.login"
-								style="width: 100%; padding: 16px; background: rgba(111,111,200,0.95); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-								<xf:label><![CDATA[Login]]></xf:label>
-							</xf:trigger>
-						</xf:group>
-						<xf:trigger class="btn_kakao" id="btn_kakao" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
-							meta_snippetName="8_01 기본버튼" style="" type="button" ev:onclick="scwin.btn_kakao_onclick">
-							<xf:label><![CDATA[]]></xf:label>
-						</xf:trigger>
-					</xf:group>
-				</xf:group>
-			</xf:group>
-		</xf:group>
+                  <!-- 로그인 버튼 -->
+                  <xf:group class="login_btn" id="" style="margin: 32px 0 24px 0;">
+                     <xf:trigger type="button" id="btn_login" ev:onclick="scwin.login"
+                        style="width: 100%; padding: 16px; background: rgba(111,111,200,0.95); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                        <xf:label><![CDATA[Login]]></xf:label>
+                     </xf:trigger>
+                  </xf:group>
+                  <xf:trigger class="btn_kakao" id="btn_kakao" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
+                     meta_snippetName="8_01 기본버튼" style="" type="button" ev:onclick="scwin.btn_kakao_onclick">
+                     <xf:label><![CDATA[]]></xf:label>
+                  </xf:trigger>
+               </xf:group>
+            </xf:group>
+         </xf:group>
+      </xf:group>
 
-		<!-- 인터랙티브 스타일 -->
-		<style type="text/css">
-    		<![CDATA[
+      <!-- 인터랙티브 스타일 -->
+      <style type="text/css">
+          <![CDATA[
             .login_contents input:focus {
                 outline: none !important;
                 border-color: #667eea !important;
@@ -625,6 +625,6 @@ if(e.responseStatusCode == 200 && e.responseJSON.success === true && e.responseJ
                 }
             }
         ]]>
-		</style>
-	</body>
+      </style>
+   </body>
 </html>
