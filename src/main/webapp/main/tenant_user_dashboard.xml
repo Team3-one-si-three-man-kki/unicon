@@ -3,15 +3,31 @@
 	xmlns:xf="http://www.w3.org/2002/xforms">
 	<head>
 		<w2:type>COMPONENT</w2:type>
-	   <w2:buildDate/>
-        <w2:MSA/>
-        <xf:model>
-            <xf:instance>
-                <data xmlns="" />
-            </xf:instance>
-        </xf:model>
-        <w2:publicInfo></w2:publicInfo>
-        <script type="text/javascript" lazy="false"><![CDATA[// 팝업 레이어 생성 함수
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+		</xf:model>
+		<w2:publicInfo></w2:publicInfo>
+		<script type="text/javascript" lazy="false"><![CDATA[// 역할별 탭 접근 권한 정의
+scwin.rolePermissions = {
+    'ADMIN': {
+        tabs: ['user', 'module', 'login', 'meeting', 'history', 'report'],
+        description: '모든 기능에 접근 가능'
+    },
+    'MANAGER': {
+        tabs: ['user', 'module', 'login', 'meeting', 'history', 'report'],
+        description: '사용자 관리를 제외한 모든 기능에 접근 가능'
+    },
+    'USER': {
+        tabs: ['meeting', 'history'],
+        description: '미팅 관련 기능만 접근 가능'
+    }
+};
+
+// 팝업 레이어 생성 함수
 scwin.createPopupLayer = function () {
     // 팝업이 이미 존재하면 다시 만들지 않음
     if (document.getElementById('customAlertPopup')) return;
@@ -85,19 +101,113 @@ scwin.parseJwt = function(token) {
     }
 };
 
+// 사용자 역할 확인 및 탭 권한 설정
+scwin.initializeTabPermissions = function() {
+    const accessToken = sessionStorage.getItem('accessToken');
+    
+    if (!accessToken) {
+        scwin.showPopup("인증 정보가 없습니다. 로그인 페이지로 이동합니다.");
+        return false;
+    }
+
+    try {
+        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+        const tokenPayload = scwin.parseJwt(tokenString);
+        
+        if (!tokenPayload) {
+            scwin.showPopup("토큰 정보를 읽을 수 없습니다.");
+            return false;
+        }
+
+        const userRole = tokenPayload.role ? tokenPayload.role.trim().toUpperCase() : null;
+        
+        if (!userRole || !scwin.rolePermissions[userRole]) {
+            scwin.showPopup("유효하지 않은 사용자 권한입니다.");
+            return false;
+        }
+
+        // 현재 사용자의 권한 정보 저장
+        scwin.currentUserRole = userRole;
+        scwin.allowedTabs = scwin.rolePermissions[userRole].tabs;
+        
+        console.log("사용자 역할:", userRole);
+        console.log("허용된 탭:", scwin.allowedTabs);
+        
+        // 탭 표시/숨김 처리
+        scwin.applyTabPermissions();
+        
+        return true;
+        
+    } catch (error) {
+        console.error("권한 초기화 중 오류:", error);
+        scwin.showPopup("권한 설정 중 오류가 발생했습니다.");
+        return false;
+    }
+};
+
+// 탭 권한 적용
+scwin.applyTabPermissions = function() {
+    const allTabs = ['user', 'module', 'login', 'meeting', 'history', 'report'];
+    
+    allTabs.forEach(function(tabName) {
+        const tabElement = document.getElementById('tab_' + tabName);
+        
+        if (tabElement) {
+            if (scwin.allowedTabs.indexOf(tabName) > -1) {
+                // 권한이 있는 탭은 표시
+                tabElement.style.display = 'inline-block';
+                tabElement.style.visibility = 'visible';
+            } else {
+                // 권한이 없는 탭은 숨김
+                tabElement.style.display = 'none';
+                tabElement.style.visibility = 'hidden';
+            }
+        }
+    });
+    
+    // 기본적으로 첫 번째 허용된 탭을 활성화
+    if (scwin.allowedTabs.length > 0) {
+        scwin.switchTab(scwin.allowedTabs[0]);
+    }
+};
+
+// 탭 전환 시 권한 체크
+scwin.switchTabWithPermission = function(tabName) {
+    // 권한 체크
+    if (scwin.allowedTabs && scwin.allowedTabs.indexOf(tabName) === -1) {
+        scwin.showPopup("이 기능에 접근할 권한이 없습니다.");
+        return;
+    }
+    
+    // 기존 탭 전환 로직 실행
+    scwin.switchTab(tabName);
+};
+
+// 권한별 메시지 표시
+scwin.showRoleInfo = function() {
+    if (scwin.currentUserRole && scwin.rolePermissions[scwin.currentUserRole]) {
+        const roleInfo = scwin.rolePermissions[scwin.currentUserRole];
+        const message = `현재 권한: ${scwin.currentUserRole}\n` +
+                       `설명: ${roleInfo.description}\n` +
+                       `사용 가능한 기능: ${roleInfo.tabs.join(', ')}`;
+        
+        scwin.showPopup(message);
+    }
+};
+
 scwin.onpageload = function () {
-    // 팝업창의 HTML을 body에 추가하는 함수를 가장 먼저 호출
+  // 팝업창 생성
     scwin.createPopupLayer();
 
     const urlTenant = $p.getParameter("tenant");
-    const accessToken = sessionStorage.getItem('accessToken');
-
-    if (!accessToken) {
-        // alert을 showPopup으로 변경
-        scwin.showPopup("인증 정보가 없습니다. 로그인 페이지로 이동합니다.");
-        return;
+    
+    // 권한 초기화 (새로 추가)
+    if (!scwin.initializeTabPermissions()) {
+        return; // 권한 초기화 실패 시 중단
     }
-
+    
+    // 테넌트 검증
+    const accessToken = sessionStorage.getItem('accessToken');
     try {
         const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
         const tokenPayload = scwin.parseJwt(tokenString);
@@ -105,7 +215,6 @@ scwin.onpageload = function () {
 
         if (!urlTenant || !tokenTenant || urlTenant !== tokenTenant) {
             console.error("권한 없는 테넌트 접근 시도:", urlTenant);
-            // alert을 showPopup으로 변경
             scwin.showPopup("잘못된 접근입니다. 권한이 없는 테넌트 정보입니다.");
             return;
         }
@@ -114,12 +223,13 @@ scwin.onpageload = function () {
         scwin.tenantName = tokenTenant;
         console.log("인증된 테넌트 이름:", scwin.tenantName);
 
-        // 기본으로 사용자 관리 탭을 로드
-        scwin.switchTab('user');
+        // 기본으로 첫 번째 허용된 탭을 로드 (수정됨)
+        if (scwin.allowedTabs && scwin.allowedTabs.length > 0) {
+            scwin.switchTab(scwin.allowedTabs[0]);
+        }
 
     } catch (e) {
         console.error("토큰 처리 중 오류 발생:", e);
-        // alert을 showPopup으로 변경
         scwin.showPopup("인증 정보를 처리하는 중 오류가 발생했습니다. 다시 로그인해주세요.");
         return;
     }
@@ -181,7 +291,7 @@ scwin.showPanel = function (panelType) {
     contentFrame.setSrc(pageUrl);
 };
 ]]></script>
-        <style><![CDATA[
+		<style><![CDATA[
             @import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
             
             /* ========== 기본 리셋 및 레이아웃 ========== */
@@ -395,46 +505,89 @@ scwin.showPanel = function (panelType) {
                     min-width: 120px;
                 }
             }
+
+            /* 권한이 없는 탭 숨김 처리 */
+            .tab-button.hidden-tab {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            /* 역할별 탭 색상 구분 */
+            .tab-button[data-tab="user"] {
+                border-bottom-color: #dc3545 !important; /* 빨강 - ADMIN 전용 */
+            }
+
+            .tab-button[data-tab="user"].active {
+                color: #dc3545 !important;
+                box-shadow: 0 -2px 4px rgba(220, 53, 69, 0.3) !important;
+            }
+
+            .tab-button[data-tab="module"],
+            .tab-button[data-tab="login"],
+            .tab-button[data-tab="report"] {
+                border-bottom-color: #fd7e14 !important; /* 주황 - ADMIN, MANAGER */
+            }
+
+            .tab-button[data-tab="module"].active,
+            .tab-button[data-tab="login"].active,
+            .tab-button[data-tab="report"].active {
+                color: #fd7e14 !important;
+                box-shadow: 0 -2px 4px rgba(253, 126, 20, 0.3) !important;
+            }
+
+            .tab-button[data-tab="meeting"],
+            .tab-button[data-tab="history"] {
+                border-bottom-color: #198754 !important; /* 녹색 - 모든 역할 */
+            }
+
+            .tab-button[data-tab="meeting"].active,
+            .tab-button[data-tab="history"].active {
+                color: #198754 !important;
+                box-shadow: 0 -2px 4px rgba(25, 135, 84, 0.3) !important;
+            }
         ]]></style>
-    </head>
-    <body ev:onpageload="scwin.onpageload">
-        <xf:group class="wrap" id="wrap">
-            <!-- 헤더 영역 -->
-            <xf:group class="header" id="header">
-                <w2:textbox tagname="h1" label="인스웨이브 Dashboard" />
-            </xf:group>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="wrap" id="wrap">
+			<!-- 헤더 영역 -->
+			<xf:group class="header" id="header">
+				<w2:textbox tagname="h1" label="인스웨이브 Dashboard" />
+			</xf:group>
 
-            <!-- 탭 네비게이션 -->
-            <xf:group class="tab-container" id="tab_container">
-                <xf:group class="tab-nav" id="tab_nav">
-                    <xf:trigger class="tab-button active" id="tab_user" type="button" ev:onclick="scwin.switchTab('user')" data-tab="user">
-                        <xf:label><![CDATA[사용자 관리]]></xf:label>
-                    </xf:trigger>
-                    <xf:trigger class="tab-button" id="tab_module" type="button" ev:onclick="scwin.switchTab('module')" data-tab="module">
-                        <xf:label><![CDATA[모듈 구매]]></xf:label>
-                    </xf:trigger>
-                    <xf:trigger class="tab-button" id="tab_login" type="button" ev:onclick="scwin.switchTab('login')" data-tab="login">
-                        <xf:label><![CDATA[로그인 페이지 관리]]></xf:label>
-                    </xf:trigger>
-                    <xf:trigger class="tab-button" id="tab_meeting" type="button" ev:onclick="scwin.switchTab('meeting')" data-tab="meeting">
-                        <xf:label><![CDATA[미팅 생성]]></xf:label>
-                    </xf:trigger>
-                    <xf:trigger class="tab-button" id="tab_history" type="button" ev:onclick="scwin.switchTab('history')" data-tab="history">
-                        <xf:label><![CDATA[이전 미팅 관리]]></xf:label>
-                    </xf:trigger>
-                    <xf:trigger class="tab-button" id="tab_report" type="button" ev:onclick="scwin.switchTab('report')" data-tab="report">
-                        <xf:label><![CDATA[AI 어쩌고]]></xf:label>
-                    </xf:trigger>
-                </xf:group>
-            </xf:group>
+			<!-- 탭 네비게이션 -->
+			<xf:group class="tab-container" id="tab_container">
+				<xf:group class="tab-nav" id="tab_nav">
+					<xf:trigger class="tab-button active" id="tab_user" type="button" ev:onclick="scwin.switchTabWithPermission('user')"
+						data-tab="user">
+						<xf:label><![CDATA[사용자 관리]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="tab-button" id="tab_module" type="button" ev:onclick="scwin.switchTabWithPermission('module')"
+						data-tab="module">
+						<xf:label><![CDATA[모듈 구매]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="tab-button" id="tab_login" type="button" ev:onclick="scwin.switchTabWithPermission('login')"
+						data-tab="login">
+						<xf:label><![CDATA[로그인 페이지 관리]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="tab-button" id="tab_meeting" type="button" ev:onclick="scwin.switchTabWithPermission('meeting')"
+						data-tab="meeting">
+						<xf:label><![CDATA[미팅 생성]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="tab-button" id="tab_history" type="button" ev:onclick="scwin.switchTabWithPermission('history')"
+						data-tab="history">
+						<xf:label><![CDATA[이전 미팅 관리]]></xf:label>
+					</xf:trigger>
 
-            <!-- 탭 컨텐츠 영역 -->
-            <xf:group class="tab-content" id="tab_content">
-                <xf:group class="container_wrap" id="container_wrap">
-                    <!-- 동적으로 로드되는 컨텐츠 영역 -->
-                    <w2:wframe id="contentFrame" style="width:100%; height:100%; border:none;" src=""></w2:wframe>
-                </xf:group>
-            </xf:group>
-        </xf:group>
-    </body>
+				</xf:group>
+			</xf:group>
+
+			<!-- 탭 컨텐츠 영역 -->
+			<xf:group class="tab-content" id="tab_content">
+				<xf:group class="container_wrap" id="container_wrap">
+					<!-- 동적으로 로드되는 컨텐츠 영역 -->
+					<w2:wframe id="contentFrame" style="width:100%; height:100%; border:none;" src=""></w2:wframe>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
 </html>
