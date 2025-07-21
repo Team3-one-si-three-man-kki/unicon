@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_login">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="email" id="email"></w2:key>
+						<w2:key dataType="text" name="password" id="password"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+
+				<w2:dataMap baseNode="map" id="dma_loginResponse">
+					<w2:keyInfo>
+						<w2:key id="tenant" name="tenant" dataType="text"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+
+			<xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dma_login","key":"elData"}' target='data:json,{"id":"dma_loginResponse"}' encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="로그인 중입니다." ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
+		</xf:model>
+
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+// 모바일 팝업 생성 함수
+scwin.createPopupLayer = function () {
+    if (document.getElementById('mobileAlertPopup')) return;
+
+    var popupHtml = `
+        <div id="mobileAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
+            <div style="background: white; padding: 24px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); min-width: 280px; max-width: 90%; text-align: center; box-sizing: border-box;">
+                <div id="mobilePopupMessage" style="margin-bottom: 24px; font-size: 16px; line-height: 1.5; color: #333; white-space: pre-wrap; word-break: break-word;"></div>
+                <div>
+                    <button id="mobilePopupConfirm" style="background: #667eea; color: white; border: none; padding: 12px 24px; margin: 0 8px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; min-width: 80px;">확인</button>
+                    <button id="mobilePopupCancel" style="background: #6c757d; color: white; border: none; padding: 12px 24px; margin: 0 8px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; min-width: 80px;">취소</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', popupHtml);
+};
+
+// 모바일 팝업 표시 함수
+scwin.showPopup = function (message, isConfirm, callback) {
+    var popup = document.getElementById('mobileAlertPopup');
+    if (!popup) {
+        scwin.createPopupLayer();
+        popup = document.getElementById('mobileAlertPopup');
+    }
+
+    var messageEl = document.getElementById('mobilePopupMessage');
+    var confirmBtn = document.getElementById('mobilePopupConfirm');
+    var cancelBtn = document.getElementById('mobilePopupCancel');
+
+    messageEl.innerHTML = message.replace(/\\n/g, '<br>');
+
+    if (isConfirm) {
+        cancelBtn.style.display = 'inline-block';
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(true);
+        };
+        cancelBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(false);
+        };
+    } else {
+        cancelBtn.style.display = 'none';
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback();
+        };
+    }
+
+    popup.style.display = 'flex';
+};
+
+// JWT 파싱 함수
+scwin.parseJwt = function (token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("JWT 파싱 오류:", e);
+        return null;
+    }
+};
+
+scwin.onpageload = function () {
+    // 모바일 팝업 레이어 생성
+    scwin.createPopupLayer();
+    
+    // 저장된 아이디 로드
+    scwin.loadSavedUserId();
+    
+    // 엔터키 이벤트 바인딩
+    scwin.bindEnterKeyEvents();
+};
+
+// 저장된 아이디 로드
+scwin.loadSavedUserId = function () {
+    try {
+        var savedUserId = localStorage.getItem("savedUserId");
+        if (savedUserId) {
+            inp_userId.setValue(savedUserId);
+            chk_remember.setChecked(true);
+        }
+    } catch (e) {
+        console.warn("로컬 스토리지 접근 실패:", e);
+    }
+};
+
+// 엔터키 이벤트 바인딩
+scwin.bindEnterKeyEvents = function () {
+    // 아이디 입력 필드에서 엔터키
+    inp_userId.bind("keypress", function (e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            inp_password.focus();
+        }
+    });
+
+    // 비밀번호 입력 필드에서 엔터키
+    inp_password.bind("keypress", function (e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            scwin.login();
+        }
+    });
+};
+
+// 로그인 함수
+scwin.login = function () {
+    var userId = inp_userId.getValue();
+    var password = inp_password.getValue();
+    
+    // 입력값 검증
+    if (!scwin.validateLogin(userId, password)) {
+        return;
+    }
+    
+    // 로그인 버튼 상태 변경
+    scwin.setLoginButtonState(true);
+    
+    // 서버 통신
+    $c.sbm.execute(login);
+};
+
+// 입력값 검증
+scwin.validateLogin = function (userId, password) {
+    if (!userId || userId.trim() === "") {
+        scwin.showPopup("아이디를 입력해주세요.", false, function () {
+            inp_userId.focus();
+        });
+        return false;
+    }
+
+    if (!password || password.trim() === "") {
+        scwin.showPopup("비밀번호를 입력해주세요.", false, function () {
+            inp_password.focus();
+        });
+        return false;
+    }
+    
+    if (userId.length < 3) {
+        scwin.showPopup("아이디는 3글자 이상 입력해주세요.", false, function () {
+            inp_userId.focus();
+        });
+        return false;
+    }
+
+    return true;
+};
+
+// 로그인 버튼 상태 변경
+scwin.setLoginButtonState = function (isLoading) {
+    if (isLoading) {
+        btn_login.setDisabled(true);
+        btn_login.setText("로그인 중...");
+    } else {
+        btn_login.setDisabled(false);
+        btn_login.setText("로그인");
+    }
+};
+
+// 로그인 성공 처리
+scwin.onLoginSuccess = function () {
+    scwin.setLoginButtonState(false);
+
+    var userId = inp_userId.getValue();
+    var rememberMe = chk_remember.getChecked();
+
+    try {
+        // 아이디 저장 처리
+        if (rememberMe) {
+            localStorage.setItem("savedUserId", userId);
+        } else {
+            localStorage.removeItem("savedUserId");
+        }
+
+        // 사용자 정보 저장
+        sessionStorage.setItem("loggedInUser", userId);
+
+    } catch (e) {
+        console.warn("스토리지 저장 실패:", e);
+    }
+
+    scwin.showPopup("로그인되었습니다.", false, function () {
+        // 성공 시 모바일 대시보드로 이동하도록 수정
+        scwin.redirectToMobileDashboard();
+    });
+};
+
+// 로그인 실패 처리
+scwin.onLoginFailure = function () {
+    scwin.setLoginButtonState(false);
+
+    scwin.showPopup("아이디 또는 비밀번호가 올바르지 않습니다.", false, function () {
+        inp_password.setValue("");
+        inp_password.focus();
+    });
+};
+
+// 모바일 대시보드로 리다이렉트
+scwin.redirectToMobileDashboard = function () {
+    try {
+        // 모바일 대시보드로 이동
+        console.log("모바일 대시보드로 이동합니다.");
+        // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_tenant_dashboard.xml";
+    } catch (e) {
+        console.log("모바일 대시보드 이동 처리");
+    }
+};
+
+// 비밀번호 보기/숨기기 토글
+scwin.togglePasswordVisibility = function () {
+    if (inp_password.getInputType() === "password") {
+        inp_password.setInputType("text");
+        btn_password_toggle.setText("숨기기");
+    } else {
+        inp_password.setInputType("password");
+        btn_password_toggle.setText("보기");
+    }
+};
+
+// 로그인 응답 처리
+scwin.login_submitdone = function (e) {
+    console.log("모바일 로그인 응답:", e);
+    var responseData = e.responseJSON;
+    var elHeader = e.responseJSON.elHeader;
+
+    if (elHeader && elHeader.resSuc === true) {
+        console.log("Response Headers:", e.responseHeadersJSON);
+        var headers = {};
+        try {
+            headers = JSON.parse(e.responseHeadersJSON);
+        } catch (err) {
+            console.error("헤더 JSON 파싱 오류:", err);
+        }
+
+        // 토큰 추출 및 저장
+        var accessToken = headers.authorization;
+        var refreshToken = headers["refresh-token"];
+        console.log("Access Token:", accessToken);
+        console.log("Refresh Token:", refreshToken);
+
+        if (accessToken) {
+            sessionStorage.setItem('accessToken', accessToken);
+        }
+        if (refreshToken) {
+            sessionStorage.setItem('refreshToken', refreshToken);
+        }
+
+        var tenantId = null;
+        if (accessToken) {
+            const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+            const tokenPayload = scwin.parseJwt(tokenString);
+
+            if (tokenPayload && tokenPayload.tenantId) {
+                tenantId = tokenPayload.tenantId;
+            }
+        }
+
+        console.log("추출된 테넌트 ID:", tenantId);
+
+        if (tenantId) {
+            // 테넌트 ID와 함께 모바일 대시보드 페이지로 이동
+            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_tenant_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+        } else {
+            scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
+        }
+
+    } else {
+        scwin.onLoginFailure();
+    }
+};
+]]></script>
+
+		<style><![CDATA[
+@import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
+
+/* ========== 모바일 로그인 기본 스타일 ========== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Pretendard Variable', sans-serif;
+    background: linear-gradient(135deg, #3674B5 0%, #578FCA 100%);
+    overflow: hidden;
+}
+
+.mobile-login-wrapper {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+/* ========== 로그인 카드 ========== */
+.mobile-login-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+}
+
+/* ========== 헤더 영역 ========== */
+.mobile-login-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.mobile-login-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.mobile-login-subtitle {
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
+}
+
+/* ========== 입력 필드 ========== */
+.mobile-input-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.mobile-input-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.mobile-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e8ecf0;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.mobile-input:focus {
+    outline: none;
+    border-color: #578FCA;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.mobile-input::placeholder {
+    color: #9ca3af;
+}
+
+/* ========== 비밀번호 토글 ========== */
+.mobile-password-wrapper {
+    position: relative;
+}
+
+.mobile-password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #578FCA;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.mobile-password-toggle:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* ========== 기억하기 체크박스 ========== */
+.mobile-remember-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.mobile-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    accent-color: #578FCA;
+}
+
+.mobile-remember-label {
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+}
+
+/* ========== 로그인 버튼 ========== */
+.mobile-login-button {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #578FCA 0%, #3674B5 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    margin-bottom: 16px;
+}
+
+.mobile-login-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+}
+
+.mobile-login-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+/* ========== 반응형 처리 ========== */
+@media (max-width: 480px) {
+    .mobile-login-wrapper {
+        padding: 16px;
+    }
+    
+    .mobile-login-card {
+        padding: 32px 24px;
+        border-radius: 20px;
+    }
+    
+    .mobile-login-title {
+        font-size: 22px;
+    }
+    
+    .mobile-input {
+        padding: 14px 16px;
+        font-size: 16px; /* iOS에서 줌 방지 */
+    }
+    
+    .mobile-password-toggle {
+        right: 12px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 360px) {
+    .mobile-login-card {
+        padding: 28px 20px;
+    }
+    
+    .mobile-login-title {
+        font-size: 20px;
+    }
+}
+
+/* ========== 접근성 및 포커스 개선 ========== */
+.mobile-input:focus,
+.mobile-login-button:focus,
+.mobile-password-toggle:focus {
+    outline: 2px solid #3674B5;
+    outline-offset: 2px;
+}
+
+/* ========== 터치 인터랙션 개선 ========== */
+.mobile-login-button,
+.mobile-password-toggle,
+.mobile-remember-label {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    touch-action: manipulation;
+}
+
+/* ========== 로딩 애니메이션 ========== */
+.mobile-login-button.loading {
+    position: relative;
+    color: transparent;
+}
+
+.mobile-login-button.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== 배경 장식 ========== */
+.mobile-login-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: float 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-30px, -30px) rotate(360deg); }
+}
+]]></style>
+	</head>
+
+	<body class="" ev:onpageload="scwin.onpageload">
+		<xf:group class="mobile-login-wrapper">
+			<xf:group class="mobile-login-card">
+				<!-- 로그인 헤더 -->
+				<xf:group class="mobile-login-header">
+					<w2:textbox class="mobile-login-title" label="Developer Dashboard" />
+					<w2:textbox class="mobile-login-subtitle" label="서비스 접속을 위해 로그인하세요" />
+				</xf:group>
+
+				<!-- 로그인 폼 -->
+				<xf:group class="mobile-login-form">
+					<!-- 아이디 입력 -->
+					<xf:group class="mobile-input-group">
+						<w2:textbox class="mobile-input-label" for="inp_userId" label="아이디" tagname="label" />
+						<xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" 
+							placeholder="admin@example.com" class="mobile-input" />
+					</xf:group>
+
+					<!-- 비밀번호 입력 -->
+					<xf:group class="mobile-input-group">
+						<w2:textbox class="mobile-input-label" for="inp_password" label="비밀번호" tagname="label" />
+						<xf:group class="mobile-password-wrapper">
+							<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" 
+								placeholder="비밀번호를 입력하세요" class="mobile-input" type="password" />
+							<w2:anchor class="mobile-password-toggle" id="btn_password_toggle" 
+								ev:onclick="scwin.togglePasswordVisibility" outerDiv="false">
+								<xf:label><![CDATA[보기]]></xf:label>
+							</w2:anchor>
+						</xf:group>
+					</xf:group>
+
+					<!-- 로그인 기억하기 -->
+					<xf:group class="mobile-remember-group">
+						<xf:input class="mobile-checkbox" id="chk_remember" type="checkbox" />
+						<w2:textbox class="mobile-remember-label" label="로그인 상태 유지" tagname="label" for="chk_remember" />
+					</xf:group>
+
+					<!-- 로그인 버튼 -->
+					<xf:trigger type="button" id="btn_login" ev:onclick="scwin.login" class="mobile-login-button">
+						<xf:label><![CDATA[로그인]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>
