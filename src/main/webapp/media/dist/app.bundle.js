@@ -50,7 +50,7 @@
       this.myPeerId = null; // ✅ 자신의 peerId를 저장할 속성 추가
     }
 
-    join(roomId) {
+    join(roomId, userName, userEmail, tenantId) {
       //    roomId를 인자로 받습니다.
       if (!roomId) {
         throw new Error("roomId is required to join a room");
@@ -59,7 +59,7 @@
       // WebSocket 접속 주소를 현재 페이지의 호스트 주소(IP 또는 도메인)를 동적으로 사용하도록 수정합니다.
       // 이렇게 하면 서버 주소가 변경되어도 클라이언트 코드를 수정할 필요가 없습니다.
       // 포트는 3000으로 고정합니다.
-      const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}`;
+      const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
       console.log(`Connecting to WebSocket: ${wsUrl}`);
       this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
@@ -861,10 +861,10 @@
     `;
 
       // Create control buttons
-      this.muteButton = this.createControlButton("🎤", "음소거", "audio", true);
-      this.cameraOffButton = this.createControlButton("📹", "카메라 끄기", "video", true);
-      this.screenShareButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M528 0H48C21.5 0 0 21.5 0 48v320c0 26.5 21.5 48 48 48h192l-16 48h-72c-13.3 0-24 10.7-24 24s10.7 24 24 24h272c13.3 0 24-10.7 24-24s-10.7-24-24-24h-72l-16-48h192c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48zm-16 352H64V64h448v288z"/></svg>`, "화면공유", "screen", true);
-      this.whiteboardButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M109.5 244l134.6-134.6-44.1-44.1-61.7 61.7a7.9 7.9 0 0 1 -11.2 0l-11.2-11.2c-3.1-3.1-3.1-8.1 0-11.2l61.7-61.7-33.6-33.7C131.5-3.1 111.4-3.1 99 9.3L9.3 99c-12.4 12.4-12.4 32.5 0 44.9l100.2 100.2zm388.5-116.8c18.8-18.8 18.8-49.2 0-67.9l-45.3-45.3c-18.8-18.8-49.2-18.8-68 0l-46 46 113.2 113.2 46-46zM316.1 82.7l-297 297L.3 487.1c-2.5 14.5 10.1 27.1 24.6 24.6l107.5-18.8L429.3 195.9 316.1 82.7zm186.6 285.4l-33.6-33.6-61.7 61.7c-3.1 3.1-8.1 3.1-11.2 0l-11.2-11.2c-3.1-3.1-3.1-8.1 0-11.2l61.7-61.7-44.1-44.1L267.9 402.5l100.2 100.2c12.4 12.4 32.5 12.4 44.9 0l89.7-89.7c12.4-12.4 12.4-32.5 0-44.9z"/></svg>`, "칠판", "whiteboard", false);
+      this.muteButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 352 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M176 352c53 0 96-43 96-96V96c0-53-43-96-96-96S80 43 80 96v160c0 53 43 96 96 96zm160-160h-16c-8.8 0-16 7.2-16 16v48c0 74.8-64.5 134.8-140.8 127.4C96.7 376.9 48 317.1 48 250.3V208c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40.2c0 89.6 64 169.6 152 181.7V464H96c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16h-56v-33.8C285.7 418.5 352 344.9 352 256v-48c0-8.8-7.2-16-16-16z"/></svg>`, "음소거", "audio", true);
+      this.cameraOffButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M633.8 458.1l-55-42.5c15.4-1.4 29.2-13.7 29.2-31.1v-257c0-25.5-29.1-40.4-50.4-25.8L448 177.3v137.2l-32-24.7v-178c0-26.4-21.4-47.8-47.8-47.8H123.9L45.5 3.4C38.5-2 28.5-.8 23 6.2L3.4 31.4c-5.4 7-4.2 17 2.8 22.4L42.7 82 416 370.6l178.5 138c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.5-6.9 4.2-17-2.8-22.4zM32 400.2c0 26.4 21.4 47.8 47.8 47.8h288.4c11.2 0 21.4-4 29.6-10.5L32 154.7v245.5z"/></svg>`, "카메라 끄기", "video", true);
+      this.screenShareButton = this.createControlButton(`< svg xmlns = "http://www.w3.org/2000/svg" width="28" height="28" viewBox = "0 0 576 512" >< !--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M528 0H48C21.5 0 0 21.5 0 48v320c0 26.5 21.5 48 48 48h192l-16 48h-72c-13.3 0-24 10.7-24 24s10.7 24 24 24h272c13.3 0 24-10.7 24-24s-10.7-24-24-24h-72l-16-48h192c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48zm-16 352H64V64h448v288z"/></svg>`, "화면공유", "screen", true);
+      this.whiteboardButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M109.5 244l134.6-134.6-44.1-44.1-61.7 61.7a7.9 7.9 0 0 1 -11.2 0l-11.2-11.2c-3.1-3.1-3.1-8.1 0-11.2l61.7-61.7-33.6-33.7C131.5-3.1 111.4-3.1 99 9.3L9.3 99c-12.4 12.4-12.4 32.5 0 44.9l100.2 100.2zm388.5-116.8c18.8-18.8 18.8-49.2 0-67.9l-45.3-45.3c-18.8-18.8-49.2-18.8-68 0l-46 46 113.2 113.2 46-46zM316.1 82.7l-297 297L.3 487.1c-2.5 14.5 10.1 27.1 24.6 24.6l107.5-18.8L429.3 195.9 316.1 82.7zm186.6 285.4l-33.6-33.6-61.7 61.7c-3.1 3.1-8.1 3.1-11.2 0l-11.2-11.2c-3.1-3.1-3.1-8.1 0-11.2l61.7-61.7-44.1-44.1L267.9 402.5l100.2 100.2c12.4 12.4 32.5 12.4 44.9 0l89.7-89.7c12.4-12.4 12.4-32.5 0-44.9z"/></svg>`, "칠판", "whiteboard", false);
 
       // End call button
       this.endCallButton = this.createControlButton("📞", "통화 종료", "end-call", false);
@@ -1354,10 +1354,10 @@
 
     updateMuteButton(isMuted) {
       if (isMuted) {
-        this.muteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M633.8 458.1l-157.8-122C488.6 312.1 496 285 496 256v-48c0-8.8-7.2-16-16-16h-16c-8.8 0-16 7.2-16 16v48c0 17.9-4 34.8-10.7 50.2l-26.6-20.5c3.1-9.4 5.3-19.2 5.3-29.7V96c0-53-43-96-96-96s-96 43-96 96v45.4L45.5 3.4C38.5-2.1 28.4-.8 23 6.2L3.4 31.5C-2.1 38.4-.8 48.5 6.2 53.9l588.4 454.7c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.4-7 4.2-17-2.8-22.5zM400 464h-56v-33.8c11.7-1.6 22.9-4.5 33.7-8.3l-50.1-38.7c-6.7 .4-13.4 .9-20.4 .2-55.9-5.5-98.7-48.6-111.2-101.9L144 241.3v6.9c0 89.6 64 169.6 152 181.7V464h-56c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16z"/></svg>`;
+        this.muteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M633.8 458.1l-157.8-122C488.6 312.1 496 285 496 256v-48c0-8.8-7.2-16-16-16h-16c-8.8 0-16 7.2-16 16v48c0 17.9-4 34.8-10.7 50.2l-26.6-20.5c3.1-9.4 5.3-19.2 5.3-29.7V96c0-53-43-96-96-96s-96 43-96 96v45.4L45.5 3.4C38.5-2.1 28.4-.8 23 6.2L3.4 31.5C-2.1 38.4-.8 48.5 6.2 53.9l588.4 454.7c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.4-7 4.2-17-2.8-22.5zM400 464h-56v-33.8c11.7-1.6 22.9-4.5 33.7-8.3l-50.1-38.7c-6.7 .4-13.4 .9-20.4 .2-55.9-5.5-98.7-48.6-111.2-101.9L144 241.3v6.9c0 89.6 64 169.6 152 181.7V464h-56c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16z"/></svg>`;
         this.muteButton.classList.add('muted');
       } else {
-        this.muteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M176 352c53 0 96-43 96-96V96c0-53-43-96-96-96S80 43 80 96v160c0 53 43 96 96 96zm160-160h-16c-8.8 0-16 7.2-16 16v48c0 74.8-64.5 134.8-140.8 127.4C96.7 376.9 48 317.1 48 250.3V208c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40.2c0 89.6 64 169.6 152 181.7V464H96c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16h-56v-33.8C285.7 418.5 352 344.9 352 256v-48c0-8.8-7.2-16-16-16z"/></svg>`;
+        this.muteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 352 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M176 352c53 0 96-43 96-96V96c0-53-43-96-96-96S80 43 80 96v160c0 53 43 96 96 96zm160-160h-16c-8.8 0-16 7.2-16 16v48c0 74.8-64.5 134.8-140.8 127.4C96.7 376.9 48 317.1 48 250.3V208c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40.2c0 89.6 64 169.6 152 181.7V464H96c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16h-56v-33.8C285.7 418.5 352 344.9 352 256v-48c0-8.8-7.2-16-16-16z"/></svg>`;
         this.muteButton.classList.remove('muted');
       }
     }
