@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <xf:instance>
+                <data xmlns=""/>
+            </xf:instance>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap baseNode="map" id="dma_meetingInfo">
+                    <w2:keyInfo>
+                        <w2:key dataType="text" name="참석자수" id="attendeeCount"/>
+                        <w2:key dataType="text" name="회의제목" id="meetingTitle"/>
+                    </w2:keyInfo>
+                    <w2:data use="true">
+                        <attendeeCount>8</attendeeCount>
+                        <meetingTitle>미팅 참석자 목록</meetingTitle>
+                    </w2:data>
+                </w2:dataMap>
+                <w2:dataList baseNode="list" repeatNode="row" id="dlt_attendeeList" saveRemovedData="true">
+                    <w2:columnInfo>
+                        <w2:column dataType="text" name="이름" id="name"/>
+                        <w2:column dataType="text" name="참여시간" id="joinTime"/>
+                        <w2:column dataType="text" name="상태" id="status"/>
+                        <w2:column dataType="text" name="아바타색상" id="avatarColor"/>
+                        <w2:column dataType="text" name="이니셜" id="initial"/>
+                    </w2:columnInfo>
+                    <w2:data use="true">
+                        <w2:row>
+                            <name>김민수님이 출석하였습니다</name>
+                            <joinTime>오후 2:30에 참여</joinTime>
+                            <status>online</status>
+                            <avatarColor>#FF6B6B</avatarColor>
+                            <initial>김</initial>
+                        </w2:row>
+                        <w2:row>
+                            <name>이지영님이 출석하였습니다</name>
+                            <joinTime>오후 2:32에 참여</joinTime>
+                            <status>online</status>
+                            <avatarColor>#4ECDC4</avatarColor>
+                            <initial>이</initial>
+                        </w2:row>
+                        <w2:row>
+                            <name>박정우님이 출석하였습니다</name>
+                            <joinTime>오후 2:35에 참여</joinTime>
+                            <status>online</status>
+                            <avatarColor>#45B7D1</avatarColor>
+                            <initial>박</initial>
+                        </w2:row>
+                        <w2:row>
+                            <name>최서영님이 출석하였습니다</name>
+                            <joinTime>오후 2:38에 참여</joinTime>
+                            <status>online</status>
+                            <avatarColor>#96CEB4</avatarColor>
+                            <initial>최</initial>
+                        </w2:row>
+                        <w2:row>
+                            <name>정현호님이 출석하였습니다</name>
+                            <joinTime>오후 2:40에 참여</joinTime>
+                            <status>online</status>
+                            <avatarColor>#FFEAA7</avatarColor>
+                            <initial>정</initial>
+                        </w2:row>
+                        <w2:row>
+                            <name>한소희님이 출석하였습니다</name>
+                            <joinTime>오후 2:42에 참여</joinTime>
+                            <status>online</status>
+                            <avatarColor>#DDA0DD</avatarColor>
+                            <initial>한</initial>
+                        </w2:row>
+                    </w2:data>
+                </w2:dataList>
+            </w2:dataCollection>
+            <w2:workflowCollection/>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        <script type="text/javascript" lazy="false"><![CDATA[
+scwin.onpageload = function() {
+    // 헤더 제목 설정
+    var attendeeCount = dma_meetingInfo.get("attendeeCount");
+    var headerTitle = "참석자 (" + attendeeCount + "명)";
+    txt_headerTitle.setValue(headerTitle);
+    
+    // 실시간 업데이트 메시지 설정
+    txt_updateMsg.setValue("실시간으로 업데이트됩니다");
+};
+
+scwin.closePopup = function() {
+    $p.closePopup();
+};
+
+scwin.refreshAttendeeList = function() {
+    // 참석자 목록 새로고침 로직
+    console.log("참석자 목록 새로고침");
+    // 실제로는 서버에서 최신 데이터를 가져와야 함
+};
+]]></script>
+        <style type="text/css">
+            .attendee-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 20px;
+                border-bottom: 1px solid #f0f0f0;
+                background-color: white;
+            }
+            .attendee-item:hover {
+                background-color: #f8f9fa;
+            }
+            .avatar {
+                width: 50px;
+                height: 50px;
+                border-radius: 25px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 18px;
+                margin-right: 15px;
+                flex-shrink: 0;
+            }
+            .attendee-info {
+                flex: 1;
+            }
+            .attendee-name {
+                font-size: 16px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 4px;
+            }
+            .attendee-time {
+                font-size: 14px;
+                color: #666;
+            }
+            .status-indicator {
+                width: 12px;
+                height: 12px;
+                border-radius: 6px;
+                background-color: #4CAF50;
+                margin-left: 10px;
+                flex-shrink: 0;
+            }
+        </style>
+    </head>
+    <body ev:onpageload="scwin.onpageload">
+        <!-- 팝업 헤더 -->
+        <xf:group class="" id="grp_header"
+        	style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);height:60px;padding:15px 20px;position:relative;display:flex;align-items:center;justify-content:space-between;">
+        	<w2:textbox class="" id="txt_headerTitle" style="color:white;font-size:18px;font-weight:bold;" label="참석자 (8명)" />
+        	<w2:anchor class="" ev:onclick="scwin.closePopup()" id="anc_close"
+        		style="display:inline-block;width:30px;height:30px;background-color:rgba(255,255,255,0.2);border-radius:15px;text-align:center;line-height:30px;color:white;cursor:pointer;font-size:18px;font-weight:bolder;">
+        		<xf:label>X</xf:label>
+        	</w2:anchor>
+        </xf:group>
+
+        <!-- 서브 헤더 -->
+        <xf:group class="" id="grp_subHeader" style="padding:15px 20px;background-color:#f8f9fa;border-bottom:1px solid #e9ecef;">
+            <w2:textbox class="" id="txt_meetingTitle" ref="data:dma_meetingInfo.meetingTitle" style="font-size:16px;color:#495057;font-weight:500;" label=""/>
+        </xf:group>
+        
+        <!-- 참석자 목록 -->
+        <xf:group class="" id="grp_attendeeList" style="max-height:400px;overflow-y:auto;background-color:white;">
+            <!-- 김민수 -->
+            <xf:group class="" id="attendee1" style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid #f0f0f0;background-color:white;">
+                <w2:textbox class="" id="avatar1" style="width:50px;height:50px;border-radius:25px;background-color:#FF6B6B;color:white;font-weight:bold;font-size:18px;margin-right:15px;display:flex;align-items:center;justify-content:center;" label="이"/>
+                <xf:group class="" style="flex:1;">
+                    <w2:textbox class="" id="name1" style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;display:block;" label="이재원님이 출석하였습니다"/>
+                    <w2:textbox class="" id="time1" style="font-size:14px;color:#666;" label="오후 2:30에 참여"/>
+                </xf:group>
+                <w2:textbox class="" id="status1" style="width:12px;height:12px;border-radius:6px;background-color:#4CAF50;margin-left:10px;" label=""/>
+            </xf:group>
+            
+            <!-- 이지영 -->
+            <xf:group class="" id="attendee2" style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid #f0f0f0;background-color:white;">
+                <w2:textbox class="" id="avatar2" style="width:50px;height:50px;border-radius:25px;background-color:#4ECDC4;color:white;font-weight:bold;font-size:18px;margin-right:15px;display:flex;align-items:center;justify-content:center;" label="김"/>
+                <xf:group class="" style="flex:1;">
+                    <w2:textbox class="" id="name2" style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;display:block;" label="김시연님이 출석하였습니다"/>
+                    <w2:textbox class="" id="time2" style="font-size:14px;color:#666;" label="오후 2:32에 참여"/>
+                </xf:group>
+                <w2:textbox class="" id="status2" style="width:12px;height:12px;border-radius:6px;background-color:#4CAF50;margin-left:10px;" label=""/>
+            </xf:group>
+            
+            <!-- 박정우 -->
+            <xf:group class="" id="attendee3" style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid #f0f0f0;background-color:white;">
+                <w2:textbox class="" id="avatar3" style="width:50px;height:50px;border-radius:25px;background-color:#45B7D1;color:white;font-weight:bold;font-size:18px;margin-right:15px;display:flex;align-items:center;justify-content:center;" label="여"/>
+                <xf:group class="" style="flex:1;">
+                    <w2:textbox class="" id="name3" style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;display:block;" label="여경원님이 출석하였습니다"/>
+                    <w2:textbox class="" id="time3" style="font-size:14px;color:#666;" label="오후 2:35에 참여"/>
+                </xf:group>
+                <w2:textbox class="" id="status3" style="width:12px;height:12px;border-radius:6px;background-color:#4CAF50;margin-left:10px;" label=""/>
+            </xf:group>
+            
+            <!-- 최서영 -->
+            <xf:group class="" id="attendee4" style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid #f0f0f0;background-color:white;">
+                <w2:textbox class="" id="avatar4" style="width:50px;height:50px;border-radius:25px;background-color:#96CEB4;color:white;font-weight:bold;font-size:18px;margin-right:15px;display:flex;align-items:center;justify-content:center;" label="이"/>
+                <xf:group class="" style="flex:1;">
+                    <w2:textbox class="" id="name4" style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;display:block;" label="이병욱님이 출석하였습니다"/>
+                    <w2:textbox class="" id="time4" style="font-size:14px;color:#666;" label="오후 2:38에 참여"/>
+                </xf:group>
+                <w2:textbox class="" id="status4" style="width:12px;height:12px;border-radius:6px;background-color:#4CAF50;margin-left:10px;" label=""/>
+            </xf:group>
+            
+            <!-- 정현호 -->
+            <xf:group class="" id="attendee5" style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid #f0f0f0;background-color:white;">
+                <w2:textbox class="" id="avatar5" style="width:50px;height:50px;border-radius:25px;background-color:#FFEAA7;color:white;font-weight:bold;font-size:18px;margin-right:15px;display:flex;align-items:center;justify-content:center;" label="정"/>
+                <xf:group class="" style="flex:1;">
+                    <w2:textbox class="" id="name5" style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;display:block;" label="정현호님이 출석하였습니다"/>
+                    <w2:textbox class="" id="time5" style="font-size:14px;color:#666;" label="오후 2:40에 참여"/>
+                </xf:group>
+                <w2:textbox class="" id="status5" style="width:12px;height:12px;border-radius:6px;background-color:#4CAF50;margin-left:10px;" label=""/>
+            </xf:group>
+            
+            <!-- 한소희 -->
+            <xf:group class="" id="attendee6" style="display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid #f0f0f0;background-color:white;">
+                <w2:textbox class="" id="avatar6" style="width:50px;height:50px;border-radius:25px;background-color:#DDA0DD;color:white;font-weight:bold;font-size:18px;margin-right:15px;display:flex;align-items:center;justify-content:center;" label="한"/>
+                <xf:group class="" style="flex:1;">
+                    <w2:textbox class="" id="name6" style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;display:block;" label="한소희님이 출석하였습니다"/>
+                    <w2:textbox class="" id="time6" style="font-size:14px;color:#666;" label="오후 2:42에 참여"/>
+                </xf:group>
+                <w2:textbox class="" id="status6" style="width:12px;height:12px;border-radius:6px;background-color:#4CAF50;margin-left:10px;" label=""/>
+            </xf:group>
+        </xf:group>
+        
+        <!-- 하단 메시지 -->
+        <xf:group class="" id="grp_footer" style="padding:15px 20px;background-color:#f8f9fa;text-align:center;border-top:1px solid #e9ecef;">
+            <w2:textbox class="" id="txt_updateMsg" style="font-size:14px;color:#6c757d;" label=""/>
+        </xf:group>
+    </body>
+</html>

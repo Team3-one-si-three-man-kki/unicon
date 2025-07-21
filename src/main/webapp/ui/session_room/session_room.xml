@@ -720,7 +720,11 @@ scwin.onpageload = async function () {
     });
 
     const roomId = "my-fia-rrom";
-    scwin.roomClient.join(roomId);
+    const userName = "test1";
+    const userEmail = "test1@test.com"
+    const tenantId= "2"
+
+    scwin.roomClient.join(roomId,userName, userEmail, tenantId);
 };
 ]]>
 		</script>
