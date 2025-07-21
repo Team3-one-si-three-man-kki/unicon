@@ -11,15 +11,15 @@
 			</xf:instance>
 		</xf:model>
 		<w2:publicInfo></w2:publicInfo>
-		<script type="text/javascript" lazy="false"><![CDATA[// 역할별 탭 접근 권한 정의
+		<script type="text/javascript" lazy="false"><![CDATA[// 역할별 탭 접근 권한 정의 
 scwin.rolePermissions = {
     'ADMIN': {
-        tabs: ['user', 'module', 'login', 'meeting', 'history', 'report'],
+        tabs: ['user', 'module', 'login', 'meeting', 'history'], // report 제거
         description: '모든 기능에 접근 가능'
     },
     'MANAGER': {
-        tabs: ['user', 'module', 'login', 'meeting', 'history', 'report'],
-        description: '사용자 관리를 제외한 모든 기능에 접근 가능'
+        tabs: ['user', 'module', 'login', 'meeting', 'history'], // report 제거
+        description: '모든 기능에 접근 가능'
     },
     'USER': {
         tabs: ['meeting', 'history'],
@@ -31,7 +31,7 @@ scwin.rolePermissions = {
 scwin.createPopupLayer = function () {
     // 팝업이 이미 존재하면 다시 만들지 않음
     if (document.getElementById('customAlertPopup')) return;
-    
+
     var popupHtml = `
         <div id="customAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
             <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;">
@@ -46,6 +46,7 @@ scwin.createPopupLayer = function () {
     document.body.insertAdjacentHTML('beforeend', popupHtml);
 };
 
+
 // 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
     var popup = document.getElementById('customAlertPopup');
@@ -54,12 +55,11 @@ scwin.showPopup = function (message, isConfirm, callback) {
         scwin.createPopupLayer();
         popup = document.getElementById('customAlertPopup');
     }
-    
+
     var messageEl = document.getElementById('popupMessage');
     var confirmBtn = document.getElementById('popupConfirm');
     var cancelBtn = document.getElementById('popupCancel');
 
-    // 메시지에 줄바꿈(\n)이 있을 경우 HTML <br> 태그로 변환
     messageEl.innerHTML = message.replace(/\\n/g, '<br>');
 
     if (isConfirm) {
@@ -80,18 +80,17 @@ scwin.showPopup = function (message, isConfirm, callback) {
         };
     }
 
-    // popup.style.display = 'block'; 을 flex로 변경하여 중앙 정렬
     popup.style.display = 'flex';
 };
 
 // 테넌트 정보를 저장할 전역 변수
 scwin.tenantName = null;
 
-scwin.parseJwt = function(token) {
+scwin.parseJwt = function (token) {
     try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         return JSON.parse(jsonPayload);
@@ -101,139 +100,216 @@ scwin.parseJwt = function(token) {
     }
 };
 
-// 사용자 역할 확인 및 탭 권한 설정
-scwin.initializeTabPermissions = function() {
+// 올바른 ID로 수정된 탭 권한 처리
+scwin.initializeTabPermissions = function () {
+    console.log("=== 탭 권한 초기화 시작 ===");
+
     const accessToken = sessionStorage.getItem('accessToken');
-    
+
     if (!accessToken) {
-        scwin.showPopup("인증 정보가 없습니다. 로그인 페이지로 이동합니다.");
-        return false;
+        console.warn("액세스 토큰 없음, 기본 USER 권한 부여");
+        scwin.currentUserRole = 'USER';
+        scwin.allowedTabs = ['meeting', 'history'];
+        scwin.applyTabPermissions();
+        return true;
     }
 
     try {
         const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
         const tokenPayload = scwin.parseJwt(tokenString);
-        
+
         if (!tokenPayload) {
-            scwin.showPopup("토큰 정보를 읽을 수 없습니다.");
-            return false;
+            console.warn("토큰 파싱 실패, 기본 USER 권한 부여");
+            scwin.currentUserRole = 'USER';
+            scwin.allowedTabs = ['meeting', 'history'];
+            scwin.applyTabPermissions();
+            return true;
         }
 
-        const userRole = tokenPayload.role ? tokenPayload.role.trim().toUpperCase() : null;
-        
+        // 역할 정보 추출 및 정규화
+        let userRole = tokenPayload.role;
+        if (userRole) {
+            userRole = userRole.toString().trim().toUpperCase();
+        }
+
+        console.log("정규화된 사용자 역할:", userRole);
+
+        // 유효하지 않은 역할이면 기본 USER 권한 부여
         if (!userRole || !scwin.rolePermissions[userRole]) {
-            scwin.showPopup("유효하지 않은 사용자 권한입니다.");
-            return false;
+            console.warn("유효하지 않은 역할, USER 권한 부여:", userRole);
+            scwin.currentUserRole = 'USER';
+            scwin.allowedTabs = ['meeting', 'history'];
+        } else {
+            scwin.currentUserRole = userRole;
+            scwin.allowedTabs = scwin.rolePermissions[userRole].tabs;
         }
 
-        // 현재 사용자의 권한 정보 저장
-        scwin.currentUserRole = userRole;
-        scwin.allowedTabs = scwin.rolePermissions[userRole].tabs;
-        
-        console.log("사용자 역할:", userRole);
-        console.log("허용된 탭:", scwin.allowedTabs);
-        
-        // 탭 표시/숨김 처리
+        console.log("최종 사용자 역할:", scwin.currentUserRole);
+        console.log("허용된 탭 목록:", scwin.allowedTabs);
+
+        // 탭 권한 적용
         scwin.applyTabPermissions();
-        
+
         return true;
-        
+
     } catch (error) {
         console.error("권한 초기화 중 오류:", error);
-        scwin.showPopup("권한 설정 중 오류가 발생했습니다.");
-        return false;
+        // 오류 시에도 기본 권한 부여
+        scwin.currentUserRole = 'USER';
+        scwin.allowedTabs = ['meeting', 'history'];
+        scwin.applyTabPermissions();
+        return true;
     }
 };
 
-// 탭 권한 적용
-scwin.applyTabPermissions = function() {
-    const allTabs = ['user', 'module', 'login', 'meeting', 'history', 'report'];
-    
-    allTabs.forEach(function(tabName) {
-        const tabElement = document.getElementById('tab_' + tabName);
-        
-        if (tabElement) {
-            if (scwin.allowedTabs.indexOf(tabName) > -1) {
-                // 권한이 있는 탭은 표시
-                tabElement.style.display = 'inline-block';
-                tabElement.style.visibility = 'visible';
+// 탭 권한 적용 (올바른 ID 사용)
+scwin.applyTabPermissions = function () {
+    console.log("=== 탭 권한 적용 시작 ===");
+
+    const allTabs = ['user', 'module', 'login', 'meeting', 'history'];
+    let visibleTabCount = 0;
+    let firstVisibleTab = null;
+
+    setTimeout(function () {
+        allTabs.forEach(function (tabName) {
+            const tabElement = document.getElementById('mf_tab_' + tabName);
+
+            if (tabElement) {
+                const hasPermission = scwin.allowedTabs && scwin.allowedTabs.indexOf(tabName) > -1;
+
+                if (hasPermission) {
+                    // 권한이 있는 탭은 표시
+                    tabElement.style.display = 'inline-block';
+                    tabElement.style.visibility = 'visible';
+                    tabElement.classList.remove('hidden-tab');
+
+                    visibleTabCount++;
+                    if (!firstVisibleTab) {
+                        firstVisibleTab = tabName;
+                    }
+
+                    console.log(`탭 [${tabName}] 표시됨`);
+                } else {
+                    // 권한이 없는 탭은 완전히 숨김
+                    tabElement.style.display = 'none';
+                    tabElement.style.visibility = 'hidden';
+                    tabElement.classList.add('hidden-tab');
+
+                    console.log(`탭 [${tabName}] 숨김 처리됨`);
+                }
             } else {
-                // 권한이 없는 탭은 숨김
-                tabElement.style.display = 'none';
-                tabElement.style.visibility = 'hidden';
+                console.warn(`탭 요소를 찾을 수 없음: mf_tab_${tabName}`);
+            }
+        });
+
+        // USER 역할일 때 탭 네비게이션 중앙 정렬 적용
+        const tabNav = document.getElementById('mf_tab_nav');
+        if (tabNav) {
+            if (scwin.currentUserRole === 'USER' && visibleTabCount <= 2) {
+                tabNav.classList.add('user-role');
+                console.log('USER 역할 - 탭 네비게이션 중앙 정렬 적용');
+            } else {
+                tabNav.classList.remove('user-role');
             }
         }
-    });
-    
-    // 기본적으로 첫 번째 허용된 탭을 활성화
-    if (scwin.allowedTabs.length > 0) {
-        scwin.switchTab(scwin.allowedTabs[0]);
-    }
+
+        console.log(`총 ${visibleTabCount}개 탭이 표시됨`);
+
+        // 첫 번째 허용된 탭을 활성화
+        if (firstVisibleTab) {
+            console.log(`기본 활성 탭: ${firstVisibleTab}`);
+
+            // 기존 active 클래스 모두 제거
+            allTabs.forEach(function (tabName) {
+                const tabElement = document.getElementById('mf_tab_' + tabName);
+                if (tabElement) {
+                    tabElement.classList.remove('active');
+                }
+            });
+
+            setTimeout(function () {
+                scwin.switchTab(firstVisibleTab);
+            }, 100);
+        } else {
+            console.warn("표시할 수 있는 탭이 없습니다.");
+        }
+    }, 50);
 };
 
-// 탭 전환 시 권한 체크
-scwin.switchTabWithPermission = function(tabName) {
+scwin.switchTabWithPermission = function (tabName) {
+    console.log(`탭 전환 요청: ${tabName}`);
+
     // 권한 체크
-    if (scwin.allowedTabs && scwin.allowedTabs.indexOf(tabName) === -1) {
-        scwin.showPopup("이 기능에 접근할 권한이 없습니다.");
+    if (!scwin.allowedTabs || scwin.allowedTabs.indexOf(tabName) === -1) {
+        console.warn(`탭 [${tabName}]에 대한 권한 없음`);
         return;
     }
-    
+
+    console.log(`탭 [${tabName}] 권한 확인됨 - 전환 진행`);
+
     // 기존 탭 전환 로직 실행
     scwin.switchTab(tabName);
 };
 
 // 권한별 메시지 표시
-scwin.showRoleInfo = function() {
+scwin.showRoleInfo = function () {
     if (scwin.currentUserRole && scwin.rolePermissions[scwin.currentUserRole]) {
         const roleInfo = scwin.rolePermissions[scwin.currentUserRole];
         const message = `현재 권한: ${scwin.currentUserRole}\n` +
-                       `설명: ${roleInfo.description}\n` +
-                       `사용 가능한 기능: ${roleInfo.tabs.join(', ')}`;
-        
+            `설명: ${roleInfo.description}\n` +
+            `사용 가능한 기능: ${roleInfo.tabs.join(', ')}`;
+
         scwin.showPopup(message);
     }
 };
 
+
 scwin.onpageload = function () {
-  // 팝업창 생성
+    console.log("=== Dashboard 페이지 로드 시작 ===");
+
+    // 팝업창 생성
     scwin.createPopupLayer();
 
     const urlTenant = $p.getParameter("tenant");
-    
-    // 권한 초기화 (새로 추가)
-    if (!scwin.initializeTabPermissions()) {
-        return; // 권한 초기화 실패 시 중단
-    }
-    
-    // 테넌트 검증
-    const accessToken = sessionStorage.getItem('accessToken');
-    try {
-        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
-        const tokenPayload = scwin.parseJwt(tokenString);
-        const tokenTenant = tokenPayload ? tokenPayload.tenantId : null;
+    console.log("URL에서 추출한 테넌트:", urlTenant);
 
-        if (!urlTenant || !tokenTenant || urlTenant !== tokenTenant) {
-            console.error("권한 없는 테넌트 접근 시도:", urlTenant);
-            scwin.showPopup("잘못된 접근입니다. 권한이 없는 테넌트 정보입니다.");
-            return;
+    // DOM 로드 완료 후 권한 초기화 실행
+    setTimeout(function () {
+        try {
+            // 권한 초기화
+            scwin.initializeTabPermissions();
+
+            // 테넌트 검증
+            const accessToken = sessionStorage.getItem('accessToken');
+            
+            if (accessToken) {
+                const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+                const tokenPayload = scwin.parseJwt(tokenString);
+                const tokenTenant = tokenPayload ? tokenPayload.tenantId : null;
+
+                console.log("토큰에서 추출한 테넌트:", tokenTenant);
+
+                if (urlTenant && tokenTenant && urlTenant === tokenTenant) {
+                    scwin.tenantName = tokenTenant;
+                    console.log("인증된 테넌트 이름:", scwin.tenantName);
+                } else {
+                    console.warn("테넌트 검증 실패, 기본값 사용");
+                    scwin.tenantName = urlTenant || "default";
+                }
+            } else {
+                scwin.tenantName = urlTenant || "default";
+            }
+
+            console.log("=== Dashboard 초기화 완료 ===");
+            
+        } catch (e) {
+            console.warn("초기화 중 오류, 기본값 사용:", e);
+            scwin.tenantName = urlTenant || "default";
+            console.log("=== Dashboard 초기화 완료 (오류 복구) ===");
         }
-
-        // 검증 성공 시, 전역 변수에 테넌트 정보 저장
-        scwin.tenantName = tokenTenant;
-        console.log("인증된 테넌트 이름:", scwin.tenantName);
-
-        // 기본으로 첫 번째 허용된 탭을 로드 (수정됨)
-        if (scwin.allowedTabs && scwin.allowedTabs.length > 0) {
-            scwin.switchTab(scwin.allowedTabs[0]);
-        }
-
-    } catch (e) {
-        console.error("토큰 처리 중 오류 발생:", e);
-        scwin.showPopup("인증 정보를 처리하는 중 오류가 발생했습니다. 다시 로그인해주세요.");
-        return;
-    }
+    }, 200);
 };
+
 
 /**
  * 탭 전환 함수
@@ -266,7 +342,6 @@ scwin.showPanel = function (panelType) {
         return;
     }
 
-    // WFrame에 페이지를 로드할 때 테넌트 정보를 파라미터로 전달
     let pageUrl = "";
     const tenantParam = scwin.tenantName ? "?tenant=" + encodeURIComponent(scwin.tenantName) : "";
 
@@ -283,16 +358,82 @@ scwin.showPanel = function (panelType) {
         console.log("미팅 생성 페이지 로드 시도");
         pageUrl = "make_session_progress.xml" + tenantParam;
     } else {
-        alert(panelType + " 메뉴입니다.");
+        // alert 제거 - 콘솔 로그만 남김
+        console.log(panelType + " 메뉴입니다.");
         return;
     }
 
     console.log("로드할 페이지 URL:", pageUrl);
     contentFrame.setSrc(pageUrl);
 };
-]]></script>
-		<style><![CDATA[
-            @import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
+
+scwin.validateUserAccess = function () {
+    console.log("=== 사용자 액세스 검증 ===");
+
+    const accessToken = sessionStorage.getItem('accessToken');
+    if (!accessToken) {
+        console.error("액세스 토큰이 없습니다.");
+        return false;
+    }
+
+    try {
+        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+        const tokenPayload = scwin.parseJwt(tokenString);
+
+        if (!tokenPayload) {
+            console.error("토큰 파싱 실패");
+            return false;
+        }
+
+        // 토큰 만료 체크
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (tokenPayload.exp && tokenPayload.exp < currentTime) {
+            console.error("토큰이 만료되었습니다.");
+            return false;
+        }
+
+        console.log("사용자 액세스 검증 성공");
+        return true;
+
+    } catch (error) {
+        console.error("액세스 검증 중 오류:", error);
+        return false;
+    }
+};
+
+scwin.updateHeaderWithRoleInfo = function () {
+    console.log("=== 헤더 역할 정보 업데이트 ===");
+
+    if (!scwin.currentUserRole) {
+        console.warn("사용자 역할 정보가 없습니다.");
+        return;
+    }
+
+    try {
+        const headerElement = document.querySelector('.header h1');
+        if (headerElement) {
+            const existingBadge = headerElement.querySelector('.role-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+
+            const roleBadge = document.createElement('span');
+            roleBadge.className = `role-badge ${scwin.currentUserRole.toLowerCase()}`;
+            roleBadge.textContent = scwin.currentUserRole;
+            roleBadge.style.marginLeft = '10px';
+            roleBadge.style.fontSize = '12px';
+            roleBadge.style.padding = '4px 8px';
+            roleBadge.style.borderRadius = '4px';
+
+            headerElement.appendChild(roleBadge);
+
+            console.log(`헤더에 역할 정보 추가: ${scwin.currentUserRole}`);
+        }
+    } catch (error) {
+        console.error("헤더 업데이트 중 오류:", error);
+    }
+};]]></script>
+		<style><![CDATA[@import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
             
             /* ========== 기본 리셋 및 레이아웃 ========== */
             * {
@@ -506,10 +647,56 @@ scwin.showPanel = function (panelType) {
                 }
             }
 
-            /* 권한이 없는 탭 숨김 처리 */
+            /* ========== 권한이 없는 탭 완전 숨김 처리 (강화됨) ========== */
             .tab-button.hidden-tab {
                 display: none !important;
                 visibility: hidden !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                min-width: 0 !important;
+                max-width: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                z-index: -1 !important;
+            }
+
+            /* 강제로 숨김 처리된 탭들을 위한 추가 규칙 */
+            .tab-button[style*="display: none"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                min-width: 0 !important;
+                max-width: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                z-index: -1 !important; 
+                transition: none !important;
+            }
+
+            .tab-nav .tab-button {
+                transition: none !important; /* 애니메이션 제거 */
+            }
+
+            /* 페이지 로딩 중 탭 깜빡임 방지 */
+            .tab-nav.loading .tab-button {
+                visibility: hidden !important;
+            }
+
+            .tab-nav.loaded .tab-button {
+                visibility: visible !important;
             }
 
             /* 역할별 탭 색상 구분 */
@@ -545,7 +732,57 @@ scwin.showPanel = function (panelType) {
                 color: #198754 !important;
                 box-shadow: 0 -2px 4px rgba(25, 135, 84, 0.3) !important;
             }
-        ]]></style>
+
+            .tab-nav.user-role {
+                justify-content: flex-start !important; /* 왼쪽 정렬 */
+            }
+
+            /* 반응형: 모바일에서도 숨김 처리 확실히 */
+            @media (max-width: 768px) {
+                .tab-button.hidden-tab,
+                .tab-button[style*="display: none"] {
+                    display: none !important;
+                    width: 0 !important;
+                    height: 0 !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    overflow: hidden !important;
+                    position: absolute !important;
+                    left: -9999px !important;
+                }
+            }
+
+            /* 권한 표시용 배지 (선택사항) */
+            .role-badge {
+                display: inline-block;
+                padding: 2px 6px;
+                font-size: 10px;
+                font-weight: bold;
+                border-radius: 3px;
+                margin-left: 5px;
+                text-transform: uppercase;
+            }
+
+            .role-badge.admin {
+                background-color: #dc3545;
+                color: white;
+            }
+
+            .role-badge.manager {
+                background-color: #fd7e14;
+                color: white;
+            }
+
+            .role-badge.user {
+                background-color: #198754;
+                color: white;
+            }
+
+            /* 추가: 중복 행 하이라이트 스타일 */
+            .duplicate-row {
+                background-color: #fff3cd !important;
+                border-left: 3px solid #ffc107 !important;
+            }]]></style>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="wrap" id="wrap">

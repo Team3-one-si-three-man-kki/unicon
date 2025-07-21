@@ -1,76 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
-   xmlns:xf="http://www.w3.org/2002/xforms">
-   <head>
-      <w2:type>COMPONENT</w2:type>
-      <w2:buildDate />
-      <w2:MSA />
-      <xf:model>
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap id="dm_loginCustomInfo">
+					<w2:keyInfo>
+						<w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
+						<w2:key id="logo" name="logo" dataType="text"></w2:key>
+						<w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
+						<w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
+						<w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
+						<w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
+						<w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
+						<w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
+						<w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
+						<w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
+						<w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
+						<w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
+						<w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
+						<w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
+						<w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
+						<w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
+						<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
+						<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
+						<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dma_login">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="email" id="email"></w2:key>
+						<w2:key dataType="text" name="password" id="password"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
 
+			<w2:workflowCollection />
 
-         <w2:dataCollection baseNode="map">
+			<xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dma_login","key":"elData"}' target='data:json,{"id":"dma_loginResponse"}' encoding="UTF-8" instance="" replace=""
+				errorHandler="" customHandler="" mode="asynchronous" processMsg="로그인 중입니다." ev:submit="" ev:submitdone="scwin.login_submitdone"
+				ev:submiterror="" abortTrigger="">
+			</xf:submission>
 
-            <w2:dataMap id="dm_loginCustomInfo">
-               <w2:keyInfo>
-                  <w2:key id="backgroundImage" name="backgroundImage" dataType="text"></w2:key>
-                  <w2:key id="logo" name="logo" dataType="text"></w2:key>
-                  <w2:key id="logoSize" name="logoSize" dataType="text"></w2:key>
-                  <w2:key id="mainTitle" name="mainTitle" dataType="text"></w2:key>
-                  <w2:key id="mainTitleColor" name="mainTitleColor" dataType="text"></w2:key>
-                  <w2:key id="mainTitleSize" name="mainTitleSize" dataType="text"></w2:key>
-                  <w2:key id="mainTitleFont" name="mainTitleFont" dataType="text"></w2:key>
-                  <w2:key id="subTitle" name="subTitle" dataType="text"></w2:key>
-                  <w2:key id="subTitleColor" name="subTitleColor" dataType="text"></w2:key>
-                  <w2:key id="subTitleSize" name="subTitleSize" dataType="text"></w2:key>
-                  <w2:key id="subTitleFont" name="subTitleFont" dataType="text"></w2:key>
-                  <w2:key id="extraTitle" name="extraTitle" dataType="text"></w2:key>
-                  <w2:key id="extraTitleColor" name="extraTitleColor" dataType="text"></w2:key>
-                  <w2:key id="extraTitleSize" name="extraTitleSize" dataType="text"></w2:key>
-                  <w2:key id="extraTitleFont" name="extraTitleFont" dataType="text"></w2:key>
-                  <w2:key id="overlayOpacity" name="overlayOpacity" dataType="text"></w2:key>
-                  <w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
-                  <w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
-                  <w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
-               </w2:keyInfo>
-            </w2:dataMap>
-            <w2:dataMap baseNode="map" id="dma_login">
-               <w2:keyInfo>
-                  <w2:key dataType="text" name="email" id="email"></w2:key>
-                  <w2:key dataType="text" name="password" id="password"></w2:key>
-               </w2:keyInfo>
-            </w2:dataMap>
+			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
+				target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
+				customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
 
-            <!-- tenant_user_dashboard Redirect -->
-            <w2:dataMap baseNode="map" id="dma_loginResponse">
-               <w2:keyInfo>
-                  <w2:key id="tenant" name="tenant" dataType="text"></w2:key>
-               </w2:keyInfo>
-            </w2:dataMap>
+			<xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post"
+				mediatype="application/json" ref="" target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
+				mode="asynchronous" processMsg="카카오 로그인 중입니다." ev:submit="" ev:submitdone="scwin.kakao_login_submitdone" ev:submiterror=""
+				abortTrigger="">
+			</xf:submission>
+		</xf:model>
 
-         </w2:dataCollection>
-         <w2:workflowCollection />
-         <xf:submission id="login" action="/InsWebApp/TNU0000Login.pwkjson" method="post" mediatype="application/json"
-            ref='data:json,{"id":"dma_login","key":"elData"}' target='data:json,{"id":"dma_loginResponse"}' encoding="UTF-8" instance="" replace=""
-            errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.login_submitdone" ev:submiterror=""
-            abortTrigger="">
-         </xf:submission>
-         <xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
-            target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
-            customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
-            abortTrigger="">
-         </xf:submission>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
 
-         <xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post" mediatype="application/json" ref="" target="" encoding="UTF-8"
-            instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.kakao_login_submitdone"
-            ev:submiterror="" abortTrigger="">
-         </xf:submission>
-      </xf:model>
-
-      <w2:layoutInfo />
-      <w2:publicInfo method="" />
-
-      <script lazy="false" type="text/javascript"><![CDATA[scwin.createPopupLayer = function () {
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.createPopupLayer = function () {
     if (document.getElementById('customAlertPopup')) return;
+
     var popupHtml = `
         <div id="customAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
             <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;">
@@ -87,25 +82,39 @@
 
 scwin.showPopup = function (message, isConfirm, callback) {
     var popup = document.getElementById('customAlertPopup');
+    if (!popup) {
+        scwin.createPopupLayer();
+        popup = document.getElementById('customAlertPopup');
+    }
+
     var messageEl = document.getElementById('popupMessage');
     var confirmBtn = document.getElementById('popupConfirm');
     var cancelBtn = document.getElementById('popupCancel');
-    if (!popup) return;
-    messageEl.innerHTML = message.replace(/\n/g, '<br>');
+
+    messageEl.innerHTML = message.replace(/\\n/g, '<br>');
+
     if (isConfirm) {
         cancelBtn.style.display = 'inline-block';
-        confirmBtn.onclick = function () { popup.style.display = 'none'; if (callback) callback(true); };
-        cancelBtn.onclick = function () { popup.style.display = 'none'; if (callback) callback(false); };
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(true);
+        };
+        cancelBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(false);
+        };
     } else {
         cancelBtn.style.display = 'none';
-        confirmBtn.onclick = function () { popup.style.display = 'none'; if (callback) callback(); };
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback();
+        };
     }
+
     popup.style.display = 'flex';
 };
 
-
-
-// JWT 토큰을 디코딩하여 payload를 추출하는 함수
+// JWT 토큰 파싱 함수
 scwin.parseJwt = function (token) {
     try {
         const base64Url = token.split('.')[1];
@@ -120,15 +129,9 @@ scwin.parseJwt = function (token) {
     }
 };
 
+// 페이지 로드 시 초기화
 scwin.onpageload = function () {
     scwin.createPopupLayer();
-
-    // // 저장된 아이디 로드
-    scwin.loadSavedUserId();
-
-    // // 엔터키 이벤트 바인딩
-
-    scwin.bindEnterKeyEvents();
 
     var mode = $p.getParameter("mode");
     console.log("mode", mode);
@@ -137,12 +140,12 @@ scwin.onpageload = function () {
     }
 };
 
-//미리보기' 모드일 때 부모가 호출할 함수
+// 미리보기 모드용 함수
 scwin.applyCustomization = function (data) {
-    // 부모로부터 받은 데이터로 자신의 로컬 데이터맵을 업데이트
     scwin.loadCustomization(data);
 };
 
+// 커스터마이징 적용 함수
 scwin.overlayElement = null;
 
 scwin.loadCustomization = function (c) {
@@ -163,7 +166,6 @@ scwin.loadCustomization = function (c) {
         btn_login.setStyle("color", c.accentColor);
     }
 
-    // 텍스트들
     const setLabelStyle = function (id, text, color, size, weight) {
         if (!id) return;
         id.setLabel(text);
@@ -195,257 +197,84 @@ scwin.loadCustomization = function (c) {
     scwin.overlayElement.style.opacity = (parseInt(c.overlayOpacity) || 0) / 100;
 };
 
-// 저장된 아이디 로드
-scwin.loadSavedUserId = function () {
-    try {
-        var savedUserId = localStorage.getItem("savedUserId");
-        if (savedUserId) {
-            // 데이터 바인딩을 통해 값 설정
-            $p.setValueByID("data:loginInfo.userId", savedUserId);
-            $p.setValueByID("data:loginInfo.rememberMe", "Y");
-        }
-    } catch (e) {
-        console.warn("로컬 스토리지 접근 실패:", e);
-    }
-};
-
-// 엔터키 이벤트 바인딩
-scwin.bindEnterKeyEvents = function () {
-    // 아이디 입력 필드에서 엔터키
-    inp_userId.bind("keypress", function (e) {
-        if (e.keyCode === 13) {
-            e.preventDefault();
-            inp_password.focus();
-        }
-    });
-
-    // 비밀번호 입력 필드에서 엔터키
-    inp_password.bind("keypress", function (e) {
-        if (e.keyCode === 13) {
-            e.preventDefault();
-            scwin.login();
-        }
-    });
-};
-
-
-
-// 입력값 검증
-scwin.validateLogin = function (userId, password) {
-    if (!userId || userId.trim() === "") {
-        $p.alert("아이디를 입력해주세요.", function () {
-            inp_userId.focus();
-        });
-        return false;
-    }
-
-    if (!password || password.trim() === "") {
-        $p.alert("비밀번호를 입력해주세요.", function () {
-            inp_password.focus();
-        });
-        return false;
-    }
-    if (userId.length < 3) {
-        $p.alert("아이디는 3글자 이상 입력해주세요.", function () {
-            inp_userId.focus();
-        });
-        return false;
-    }
-
-    return true;
-};
-
-// 데모용 목업 로그인
-scwin.mockLogin = function (userId, password) {
-    var validAccounts = [
-        { userId: "admin", password: "admin123" },
-        { userId: "user", password: "user123" },
-        { userId: "test", password: "test123" }
-    ];
-
-    setTimeout(function () {
-        var isValid = validAccounts.some(function (account) {
-            return account.userId === userId && account.password === password;
-        });
-
-        if (isValid) {
-            scwin.onLoginSuccess();
-        } else {
-            scwin.onLoginFailure();
-        }
-    }, 1000);
-};
-
-// 로그인 성공 처리
-scwin.onLoginSuccess = function () {
-    scwin.setLoginButtonState(false);
-
-    var userId = $p.getValueByID("data:loginInfo.userId");
-    var rememberMe = $p.getValueByID("data:loginInfo.rememberMe");
-
-    try {
-        // 아이디 저장 처리
-        if (rememberMe === "Y") {
-            localStorage.setItem("savedUserId", userId);
-        } else {
-            localStorage.removeItem("savedUserId");
-        }
-
-        // 사용자 정보 저장
-        sessionStorage.setItem("loggedInUser", userId);
-
-    } catch (e) {
-        console.warn("스토리지 저장 실패:", e);
-    }
-
-    $p.alert("로그인되었습니다.", function () {
-        scwin.redirectToMainPage();
-    });
-};
-
-// 로그인 실패 처리
-scwin.onLoginFailure = function () {
-    scwin.setLoginButtonState(false);
-
-    $p.alert("아이디 또는 비밀번호가 올바르지 않습니다.", function () {
-        $p.setValueByID("data:loginInfo.password", "");
-        inp_password.focus();
-    });
-};
-
-// 로그인 버튼 상태 변경
-scwin.setLoginButtonState = function (isLoading) {
-    // var btn_login = $p.getComponentById("btn_login");
-    if (isLoading) {
-        btn_login.setDisabled(true);
-        btn_login.setText("로그인 중...");
-    } else {
-        btn_login.setDisabled(false);
-        btn_login.setText("Login");
-    }
-};
-
-// 메인 페이지로 리다이렉트
-scwin.redirectToMainPage = function () {
-    try {
-        if (parent && parent.scwin && parent.scwin.goToMain) {
-            parent.scwin.goToMain();
-        } else {
-            console.log("메인 페이지로 이동합니다.");
-            // window.location.href = "/main.xml";
-        }
-    } catch (e) {
-        console.log("메인 페이지 이동 처리");
-    }
-};
-
-// 비밀번호 보기/숨기기 토글
-scwin.togglePasswordVisibility = function () {
-    if (inp_password.getInputType() === "password") {
-        inp_password.setInputType("text");
-        btn_password_toggle.setText("비밀번호 숨기기");
-    } else {
-        inp_password.setInputType("password");
-        btn_password_toggle.setText("비밀번호 보기");
-    }
-};
-
-// 실제 서버 통신 완료 후 콜백
-scwin.loginSubmitHandler = function (e) {
-    if (e.retCode === "0" || e.responseStatusCode === 200) {
-        scwin.onLoginSuccess();
-    } else {
-        scwin.onLoginFailure();
-    }
-};
-
+// 서버 응답 처리 함수들
 scwin.loadCustom_submitdone = function (e) {
     console.log(e);
-    // error 수신시
-
     var elData = e.responseJSON;
-    console.log("받아온데이터입니다", elData)
-    /*
-    var elHeader  = e.responseJSON.elHeader;
-    if(elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-        $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-        return false;
-    }
-*/
+    console.log("받아온데이터입니다", elData);
     scwin.loadCustomization(elData);
 };
 
+// 로그인 함수
 scwin.login = function (e) {
     $c.sbm.execute(login);
 };
 
-scwin.login_submitdone = function(e) {
+// 로그인 응답 처리
+scwin.login_submitdone = function (e) {
+    console.log("응답 전체:", e);
     var responseData = e.responseJSON;
-    if (!responseData || !responseData.elHeader) {
-        scwin.showPopup("서버로부터 유효하지 않은 응답을 받았습니다.");
-        return;
-    }
+    var elHeader = e.responseJSON.elHeader;
 
-    var elHeader = responseData.elHeader;
+    if (elHeader && elHeader.resSuc === true) {
+        console.log("Response Headers:", e.responseHeadersJSON);
+        var headers = {};
+        try {
+            headers = JSON.parse(e.responseHeadersJSON);
+        } catch (err) {
+            console.error("헤더 JSON 파싱 오류:", err);
+        }
 
-    if (elHeader.resSuc !== true) {
-        scwin.showPopup(elHeader.resMsg || "아이디 또는 비밀번호가 올바르지 않습니다.");
-        return;
-    }
-
-    try {
-        var headers = JSON.parse(e.responseHeadersJSON || '{}');
         var accessToken = headers.authorization;
         var refreshToken = headers["refresh-token"];
+        console.log("Access Token:", accessToken);
+        console.log("Refresh Token:", refreshToken);
 
-        if (!accessToken) {
-            scwin.showPopup("로그인은 성공했으나, 인증 토큰을 받지 못했습니다.\n관리자에게 문의하세요.");
-            return;
+        if (accessToken) {
+            sessionStorage.setItem('accessToken', accessToken);
+        }
+        if (refreshToken) {
+            sessionStorage.setItem('refreshToken', refreshToken);
         }
 
-        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
-        const tokenPayload = scwin.parseJwt(tokenString);
+        var tenantId = null;
+        if (accessToken) {
+            const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+            const tokenPayload = scwin.parseJwt(tokenString);
 
-        if (!tokenPayload) {
-            scwin.showPopup("토큰 정보를 읽을 수 없습니다.\n관리자에게 문의하세요.");
-            return;
+            if (tokenPayload && tokenPayload.tenantId) {
+                tenantId = tokenPayload.tenantId;
+            }
         }
 
-        var userRole = tokenPayload.role;
-        var tenantId = tokenPayload.tenantId;
-        console.log("실제 토큰에 저장된 역할(Role) 값:", userRole);
-
-        sessionStorage.setItem('accessToken', accessToken);
-        if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken);
+        console.log("추출된 테넌트 ID:", tenantId);
 
         if (tenantId) {
             location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
         } else {
-            scwin.showPopup("토큰에서 테넌트 정보를 찾을 수 없습니다.\n관리자에게 문의하세요.");
+            scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
         }
 
-    } catch (err) {
-        console.error("로그인 처리 중 오류 발생:", err);
-        scwin.showPopup("로그인 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.");
+    } else {
+        scwin.showPopup(elHeader ? elHeader.resMsg : "로그인 응답이 유효하지 않습니다.");
     }
-}
+};
 
+// 카카오 로그인 함수들
 scwin.btn_kakao_onclick = function (e) {
     $c.sbm.execute(kakao_login);
 };
 
 scwin.kakao_login_submitdone = function (e) {
     if (e.responseStatusCode == 200 && e.responseJSON.success === true && e.responseJSON.loginUrl) {
-        // 받은 loginUrl로 이동 (리다이렉트)
         location.href = e.responseJSON.loginUrl;
     } else {
-        // 실패 시 처리
-        $p.alert(e.responseJSON.message || "카카오 로그인 URL 호출 실패");
+        scwin.showPopup(e.responseJSON.message || "카카오 로그인 URL 호출 실패");
     }
 };
 ]]></script>
 
-      <style><![CDATA[
+		<style><![CDATA[
             .login_wrapper {
                 display: flex;
                 flex-direction: row;
@@ -470,18 +299,17 @@ scwin.kakao_login_submitdone = function (e) {
                 min-width:500px
             }
             .btn_kakao {
-    background-image: url('/InsWebApp/images/icons/kakao_btn2.png');
-     background-size: 100% 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    height: 48px;          /* 버튼 세로 높이 지정 */
-    width: 100%;           /* 필요한 경우 너비 조정 */
-    border: none;
-    cursor: pointer;
-    margin: 0 auto;
-    /* 라벨에 텍스트가 없으므로 아이콘만 노출됨 */
-}
+                background-image: url('/InsWebApp/images/icons/kakao_btn2.png');
+                background-size: 100% 100%;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                height: 48px;
+                width: 100%;
+                border: none;
+                cursor: pointer;
+                margin: 0 auto;
+            }
 
             @media (max-width: 900px) {
                 .login_wrapper {
@@ -498,110 +326,104 @@ scwin.kakao_login_submitdone = function (e) {
                 }
             }
         ]]></style>
-   </head>
+	</head>
 
-   <body class="" ev:onpageload="scwin.onpageload">
+	<body class="" ev:onpageload="scwin.onpageload">
+		<!-- 로그인 전체 래퍼 -->
+		<xf:group class="login_wrapper" id=""
+			style="display: flex; flex-direction: row; align-items: stretch; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
 
-      <!-- 로그인 전체 래퍼 -->
-      <xf:group class="login_wrapper" id=""
-         style="display: flex; flex-direction: row; align-items: stretch; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+			<xf:group id="leftPreview" class="leftPreview"
+				style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;'>
 
-         <xf:group id="leftPreview" class="leftPreview"
-            style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;'>
+				<!-- 가운데 텍스트 콘텐츠 -->
+				<xf:group id="textContent" style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
+					<w2:textbox id="mainTitle" label="메인 입니다." style="margin-bottom: 20px; display: block; "
+						ref="data:dm_loginCustomInfo.mainTitle" />
+					<w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle" />
+					<w2:textbox id="extraTitle" label="추가입니다." style="display: block;" ref="data:dm_loginCustomInfo.extraTitle" />
+				</xf:group>
+				<xf:image src="" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;'
+					id="logoImage"></xf:image>
+			</xf:group>
 
-            <!-- 가운데 텍스트 콘텐츠 -->
-            <xf:group id="textContent" style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
+			<!-- 오른쪽 로그인 영역 -->
+			<xf:group id="rightLogin" class="rightLogin"
+				style="flex: 1;position: relative;display: flex;justify-content: center;align-items: center;background-color: rgba(255,255,255,0.95);">
 
-               <w2:textbox id="mainTitle" label="메인 입니다." style="margin-bottom: 20px; display: block; "
-                  ref="data:dm_loginCustomInfo.mainTitle" />
+				<!-- 로그인 컨테이너 -->
+				<xf:group class="login_box" id=""
+					style="backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); padding: 50px 40px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); box-sizing: border-box;">
 
-               <w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle" />
+					<!-- 헤더 -->
+					<xf:group class="login_header" id="" style="margin-bottom: 40px;">
+						<w2:textbox id="" label="WELCOME"
+							style="font-size: 20px; font-weight: 300; color: #2d3748; margin-bottom: 8px; display: block;" />
+						<w2:textbox class="" id="" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 400;" />
+					</xf:group>
 
-               <w2:textbox id="extraTitle" label="추가입니다." style="display: block;" ref="data:dm_loginCustomInfo.extraTitle" />
-            </xf:group>
-            <xf:image src="" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;'
-               id="logoImage"></xf:image>
-         </xf:group>
+					<!-- 로그인 폼 -->
+					<xf:group class="login_contents" id="" style="">
+						<xf:group id="" tagname="ul" style="list-style: none; padding: 0; margin: 0;">
 
-         <!-- 오른쪽 로그인 영역 -->
-         <xf:group id="rightLogin" class="rightLogin"
-            style="flex: 1;position: relative;display: flex;justify-content: center;align-items: center;background-color: rgba(255,255,255,0.95);">
+							<!-- 아이디 입력 -->
+							<xf:group id="" tagname="li" style="margin-bottom: 24px;">
+								<w2:textbox class="tit" for="inp_userId" id="" label="ID"
+									style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
+								<xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" placeholder="아이디를 입력해주세요."
+									style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;" />
+							</xf:group>
 
-            <!-- 로그인 컨테이너 -->
-            <xf:group class="login_box" id=""
-               style="backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); padding: 50px 40px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); box-sizing: border-box;">
+							<!-- 비밀번호 입력 -->
+							<xf:group id="" tagname="li" style="margin-bottom: 24px;">
+								<w2:textbox class="tit" for="inp_password" id="" label="Password"
+									style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
 
-               <!-- 헤더 -->
-               <xf:group class="login_header" id="" style="margin-bottom: 40px;">
-                  <w2:textbox id="" label="WELCOME"
-                     style="font-size: 20px; font-weight: 300; color: #2d3748; margin-bottom: 8px; display: block;" />
-                  <w2:textbox class="" id="" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 400;" />
-               </xf:group>
+								<!-- 비밀번호 입력 필드 -->
+								<xf:group class="login_form" id="" style="position: relative;">
+									<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
+										style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;"
+										type="password" />
+								</xf:group>
 
-               <!-- 로그인 폼 -->
-               <xf:group class="login_contents" id="" style="">
-                  <xf:group id="" tagname="ul" style="list-style: none; padding: 0; margin: 0;">
+								<!-- Remember me (현재 기능 미구현이므로 주석 처리) -->
+								<!--
+									<xf:group class="grp_password" id=""
+									style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+									<xf:select appearance="full" cols="" id="" ref="" rows="" selectedindex="-1" style="">
+									<xf:choices>
+									<xf:item>
+									<xf:label><![CDATA[Remember me]]></xf:label>
+									<xf:value><![CDATA[]]></xf:value>
+									</xf:item>
+									</xf:choices>
+									</xf:select>
+									</xf:group>
+								-->
+							</xf:group>
+						</xf:group>
 
-                     <!-- 아이디 입력 -->
-                     <xf:group id="" tagname="li" style="margin-bottom: 24px;">
-                        <w2:textbox class="tit" for="inp_userId" id="" label="ID"
-                           style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
-                        <xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" placeholder="아이디를 입력해주세요."
-                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;" />
-                     </xf:group>
+						<!-- 로그인 버튼 -->
+						<xf:group class="login_btn" id="" style="margin: 32px 0 24px 0;">
+							<xf:trigger type="button" id="btn_login" ev:onclick="scwin.login"
+								style="width: 100%; padding: 12px; background: rgba(111,111,200,0.95); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+								<xf:label><![CDATA[Login]]></xf:label>
+							</xf:trigger>
+						</xf:group>
 
-                     <!-- 비밀번호 입력 -->
-                     <xf:group id="" tagname="li" style="margin-bottom: 24px;">
-                        <w2:textbox class="tit" for="inp_password" id="" label="Password"
-                           style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
+						<!-- 카카오 로그인 버튼 -->
+						<xf:trigger class="btn_kakao" id="btn_kakao" style="" type="button" ev:onclick="scwin.btn_kakao_onclick">
+							<xf:label><![CDATA[]]>
+							</xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+		</xf:group>
 
-                        <!-- 비밀번호 입력 필드와 토글 버튼 -->
-                        <xf:group class="login_form" id="" style="position: relative;">
-                           <xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
-                              style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
-                              type="password" />
-                           <w2:anchor class="btn_login_password" id="btn_password_toggle" outerDiv="false"
-                              style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #667eea; text-decoration: none; font-weight: 500; cursor: pointer;"
-                              ev:onclick="scwin.togglePasswordVisibility">
-                              <xf:label><![CDATA[비밀번호 보기]]></xf:label>
-                           </w2:anchor>
-                        </xf:group>
-
-                        <!-- Remember me -->
-                        <xf:group class="grp_password" id=""
-                           style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
-                           <xf:select appearance="full" cols="" id="" ref="" rows="" selectedindex="-1" style="">
-                              <xf:choices>
-                                 <xf:item>
-                                    <xf:label><![CDATA[Remember me]]></xf:label>
-                                    <xf:value><![CDATA[]]>
-                                    </xf:value>
-                                 </xf:item>
-                              </xf:choices>
-                           </xf:select>
-                        </xf:group>
-                     </xf:group>
-                  </xf:group>
-
-                  <!-- 로그인 버튼 -->
-                  <xf:group class="login_btn" id="" style="margin: 32px 0 24px 0;">
-                     <xf:trigger type="button" id="btn_login" ev:onclick="scwin.login"
-                        style="width: 100%; padding: 10px; background: rgba(111,111,200,0.95); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-                        <xf:label><![CDATA[Login]]></xf:label>
-                     </xf:trigger>
-                  </xf:group>
-                  <xf:trigger class="btn_kakao" id="btn_kakao" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
-                     meta_snippetName="8_01 기본버튼" style="" type="button" ev:onclick="scwin.btn_kakao_onclick">
-                     <xf:label><![CDATA[]]></xf:label>
-                  </xf:trigger>
-               </xf:group>
-            </xf:group>
-         </xf:group>
-      </xf:group>
-
-      <!-- 인터랙티브 스타일 -->
-      <style type="text/css">
-          <![CDATA[
+		<!-- 인터랙티브 스타일 -->
+		<style type="text/css">
+    		<![CDATA[
             .login_contents input:focus {
                 outline: none !important;
                 border-color: #667eea !important;
@@ -611,10 +433,6 @@ scwin.kakao_login_submitdone = function (e) {
             
             .login_contents input:hover {
                 border-color: #cbd5e0 !important;
-            }
-            
-            .btn_login_password:hover {
-                color: #5a67d8 !important;
             }
             
             #btn_login:hover:not(:disabled) {
@@ -628,18 +446,6 @@ scwin.kakao_login_submitdone = function (e) {
                 transform: none !important;
             }
             
-            .grp_password input[type="checkbox"] {
-                width: auto !important;
-                margin-right: 8px !important;
-                transform: scale(1.2) !important;
-            }
-            
-            .grp_password label {
-                font-size: 14px !important;
-                color: #4a5568 !important;
-                cursor: pointer !important;
-            }
-            
             @media (max-width: 480px) {
                 .login_box {
                     margin: 20px !important;
@@ -650,13 +456,8 @@ scwin.kakao_login_submitdone = function (e) {
                     padding: 12px 14px !important;
                     font-size: 14px !important;
                 }
-                
-                .btn_login_password {
-                    right: 14px !important;
-                    font-size: 11px !important;
-                }
             }
         ]]>
-      </style>
-   </body>
+		</style>
+	</body>
 </html>
