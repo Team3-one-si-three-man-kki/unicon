@@ -77,7 +77,7 @@ public class UserController {
 	public void login(com.demo.proworks.user.vo.UserLoginVo loginVo, HttpServletRequest request) throws Exception {
 		String email = loginVo.getEmail();
 		String password = loginVo.getPassword();
-		String tenantId = "2";
+		String tenantId = loginVo.getTenantId();
 
 		try {
 			// 1. 로그인 처리 (ProworksLoginAdapter + ProworksSessionDataAdapter 호출)

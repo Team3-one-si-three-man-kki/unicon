@@ -34,6 +34,7 @@
 					<w2:keyInfo>
 						<w2:key dataType="text" name="email" id="email"></w2:key>
 						<w2:key dataType="text" name="password" id="password"></w2:key>
+						<w2:key dataType="text" name="tenantId" id="tenantId"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
 			</w2:dataCollection>
@@ -131,6 +132,16 @@ scwin.parseJwt = function (token) {
 
 // 페이지 로드 시 초기화
 scwin.onpageload = function () {
+    const tenantId = scwin.getQueryParam('tenantId');
+    const tenantIdNum = tenantId !== null ? Number(tenantId) : null;
+    console.log('tenantId:', tenantId);
+    console.log('tenantId (number):', tenantIdNum);
+    const dm =  dma_login;
+    console.log(dm);
+     if (dm && typeof dm.set === 'function') {
+    dm.set('tenantId', tenantId !== null ? tenantId : '');
+    console.log('DataMap에 tenantId 저장:', dm.get('tenantId'));
+  };
     scwin.createPopupLayer();
 
     var mode = $p.getParameter("mode");
@@ -278,6 +289,13 @@ scwin.mockLogin = function (userId, password) {
     }, 1000);
 };
 
+scwin.getQueryParam = function (name) {
+    const params = new URLSearchParams(window.location.search);
+    console.log(params.get("tenantId"));
+    return params.get(name);
+};
+
+
 // 로그인 성공 처리
 scwin.onLoginSuccess = function () {
     scwin.setLoginButtonState(false);
@@ -345,11 +363,11 @@ scwin.redirectToMainPage = function () {
 scwin.togglePasswordVisibility = function () {
     const passwordField = document.getElementById('mf_inp_password');
     if (inp_password.hasClass("show")) {
-        passwordField.type="text";
+        passwordField.type = "text";
         inp_password.toggleClass("show")
         btn_password_toggle.setLabel("비밀번호 숨기기");
     } else {
-        passwordField.type ="password";
+        passwordField.type = "password";
         inp_password.toggleClass("show")
         btn_password_toggle.setLabel("비밀번호 보기");
     }
