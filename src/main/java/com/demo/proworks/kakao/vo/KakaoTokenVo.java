@@ -86,12 +86,10 @@ public class KakaoTokenVo {
         return false;
     }
 
-    @Override
     public void _xStreamEnc() {
     }
 
 
-    @Override
     public void _xStreamDec() {
     }
 
