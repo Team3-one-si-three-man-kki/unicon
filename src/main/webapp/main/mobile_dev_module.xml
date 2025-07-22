@@ -1,0 +1,1222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="">
+					<moduleStats>
+						<totalModules>0</totalModules>
+						<monthlyRevenue>0</monthlyRevenue>
+						<freeModules>0</freeModules>
+						<paidModules>0</paidModules>
+					</moduleStats>
+					<searchCondition>
+						<searchType></searchType>
+						<searchKeyword></searchKeyword>
+						<moduleType>all</moduleType>
+						<sortBy>popular</sortBy>
+					</searchCondition>
+				</data>
+			</xf:instance>
+
+			<!-- 모듈 목록 조회 Submission -->
+			<xf:submission id="sbm_selectModuleList" action="/InsWebApp/MarketplaceModuleList.pwkjson" method="post"
+				mediatype="application/json" replace="" mode="asynchronous" instance="" ref='data:json,{"id":"dmp_moduleSearch","key":"moduleVo"}'
+				ev:handler="scwin.sbm_selectModuleList_submitdone" ev:errorHandler="scwin.sbm_selectModuleList_submiterror"
+				target='data:json,{"id":"dlt_moduleList","key":"elData.moduleVoList"}' processMsg="모듈 목록을 조회 중입니다."
+				ev:submitdone="scwin.sbm_selectModuleList_submitdone">
+				<xf:request>
+					<xf:header>
+						<xf:name><![CDATA[Content-Type]]></xf:name>
+						<xf:value><![CDATA[application/json]]></xf:value>
+					</xf:header>
+				</xf:request>
+			</xf:submission>
+
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="map" id="dlt_moduleList" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="module_id" id="moduleId"></w2:column>
+						<w2:column dataType="text" name="code" id="code"></w2:column>
+						<w2:column dataType="text" name="name" id="name"></w2:column>
+						<w2:column dataType="text" name="description" id="description"></w2:column>
+						<w2:column dataType="text" name="price" id="price"></w2:column>
+						<w2:column dataType="text" name="icon" id="icon"></w2:column>
+						<w2:column dataType="text" name="category" id="category"></w2:column>
+						<w2:column dataType="text" name="sales_count" id="salesCount"></w2:column>
+						<w2:column dataType="text" name="module_type" id="moduleType"></w2:column>
+						<w2:column dataType="text" name="is_popular" id="isPopular"></w2:column>
+						<w2:column dataType="text" name="created_at" id="createdAt"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+
+				<w2:dataMap baseNode="map" id="dmp_moduleSearch">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="search_name" id="scName"></w2:key>
+						<w2:key dataType="text" name="search_description" id="scDescription"></w2:key>
+						<w2:key dataType="text" name="search_price" id="scPrice"></w2:key>
+						<w2:key dataType="text" name="module_type" id="moduleType"></w2:key>
+						<w2:key dataType="text" name="sort_by" id="sortBy"></w2:key>
+						<w2:key dataType="text" name="페이지_번호" id="pageIndex" defaultValue="1"></w2:key>
+						<w2:key dataType="text" name="페이지_건수" id="pageSize" defaultValue="20"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+		</xf:model>
+
+		<script type="text/javascript"><![CDATA[
+let currentModuleList = [];
+let filteredModuleList = [];
+let currentFilter = 'all';
+let currentSort = 'popular';
+
+scwin.createSampleData = function() {
+    return [
+        {
+            moduleId: "1",
+            code: "ATT001",
+            name: "출석체크",
+            description: "실시간 출석 관리 시스템",
+            price: "$29.99",
+            icon: "attendance",
+            category: "관리도구",
+            salesCount: "89",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-01-15T10:00:00"
+        },
+        {
+            moduleId: "2",
+            code: "AI001",
+            name: "AI 졸음감지",
+            description: "AI 기반 집중도 모니터링",
+            price: "$49.99",
+            icon: "ai",
+            category: "AI 도구",
+            salesCount: "76",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-02-01T10:00:00"
+        },
+        {
+            moduleId: "3",
+            code: "SIG001",
+            name: "전자서명",
+            description: "디지털 서명 및 계약 관리",
+            price: "$39.99",
+            icon: "signature",
+            category: "비즈니스",
+            salesCount: "65",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-01-20T10:00:00"
+        }
+    ];
+};
+
+scwin.populateDataListManually = function(moduleArray) {
+    try {
+        const moduleDataList = $p.getComponentById("dlt_moduleList");
+        
+        moduleDataList.removeAll();
+        
+        moduleArray.forEach(module => {
+            const rowIndex = moduleDataList.insertRow();
+            moduleDataList.setCellData(rowIndex, "moduleId", module.moduleId || module.module_id || '');
+            moduleDataList.setCellData(rowIndex, "code", module.code || '');
+            moduleDataList.setCellData(rowIndex, "name", module.name || '');
+            moduleDataList.setCellData(rowIndex, "description", module.description || '');
+            moduleDataList.setCellData(rowIndex, "price", module.price || '');
+            moduleDataList.setCellData(rowIndex, "icon", module.icon || '');
+            
+            const category = scwin.inferCategoryFromName(module.name);
+            moduleDataList.setCellData(rowIndex, "category", category);
+            
+            const salesCount = scwin.calculateSalesCount(module.price);
+            moduleDataList.setCellData(rowIndex, "salesCount", salesCount.toString());
+            
+            const moduleType = (module.price === "0.00" || !module.price) ? "free" : "paid";
+            moduleDataList.setCellData(rowIndex, "moduleType", moduleType);
+            
+            const isPopular = salesCount > 80 ? "Y" : "N";
+            moduleDataList.setCellData(rowIndex, "isPopular", isPopular);
+            
+            moduleDataList.setCellData(rowIndex, "createdAt", new Date().toISOString());
+        });
+        
+        console.log(`DataList에 ${moduleArray.length}개 모듈 데이터 수동 추가 완료`);
+        
+    } catch (error) {
+        console.error("DataList 수동 채우기 오류:", error);
+    }
+};
+
+scwin.inferCategoryFromName = function(name) {
+    const lowerName = (name || '').toLowerCase();
+    
+    if (lowerName.includes('채팅') || lowerName.includes('chat')) return '커뮤니케이션';
+    if (lowerName.includes('화상') || lowerName.includes('video') || lowerName.includes('카메라') || lowerName.includes('camera')) return '미디어';
+    if (lowerName.includes('캔버스') || lowerName.includes('canvas')) return '교육도구';
+    if (lowerName.includes('퀴즈') || lowerName.includes('quiz')) return '교육도구';
+    if (lowerName.includes('ai') || lowerName.includes('집중도')) return 'AI 도구';
+    if (lowerName.includes('참여자') || lowerName.includes('participants')) return '관리도구';
+    if (lowerName.includes('자리비움') || lowerName.includes('absent') || lowerName.includes('출석')) return '관리도구';
+    if (lowerName.includes('화면공유') || lowerName.includes('screen')) return '미디어';
+    if (lowerName.includes('마이크') || lowerName.includes('mic')) return '미디어';
+    
+    return '기타';
+};
+
+scwin.calculateSalesCount = function(price) {
+    const numPrice = parseFloat(price) || 0;
+    
+    if (numPrice === 0) return Math.floor(Math.random() * 50) + 100; // 무료는 많이 판매
+    if (numPrice < 5000) return Math.floor(Math.random() * 30) + 70;
+    if (numPrice < 50000) return Math.floor(Math.random() * 20) + 50;
+    if (numPrice < 100000) return Math.floor(Math.random() * 15) + 30;
+    return Math.floor(Math.random() * 10) + 20; // 비싼 것은 적게 판매
+};
+
+scwin.onpageload = function() {
+    console.log("=== 동적 모듈 관리 페이지 로드 ===");
+    
+    scwin.loadModuleList();
+};
+
+scwin.loadModuleList = function() {
+    console.log("모듈 목록 로드 시작");
+    
+    const searchMap = $p.getComponentById("dmp_moduleSearch");
+    searchMap.set("moduleType", currentFilter === 'all' ? '' : currentFilter);
+    searchMap.set("sortBy", currentSort);
+    
+    $p.executeSubmission("sbm_selectModuleList");
+};
+
+scwin.sbm_selectModuleList_submitdone = function(e) {
+    console.log("=== 모듈 목록 조회 성공 ===");
+    console.log("전체 응답 데이터:", e);
+    console.log("응답 텍스트:", e.responseText);
+    
+    try {
+        let responseData = null;
+        if (e.responseText) {
+            try {
+                responseData = JSON.parse(e.responseText);
+                console.log("파싱된 응답 데이터:", responseData);
+            } catch (parseError) {
+                console.error("JSON 파싱 오류:", parseError);
+            }
+        }
+        
+        const moduleDataList = $p.getComponentById("dlt_moduleList");
+        let moduleCount = moduleDataList.getRowCount();
+        
+        console.log(`DataList에서 조회된 모듈 개수: ${moduleCount}개`);
+        
+        if (moduleCount === 0 && responseData) {
+            if (responseData.moduleVoList && Array.isArray(responseData.moduleVoList)) {
+                console.log("responseData에서 모듈 목록 발견:", responseData.moduleVoList.length + "개");
+                scwin.populateDataListManually(responseData.moduleVoList);
+                moduleCount = moduleDataList.getRowCount();
+            } else if (Array.isArray(responseData)) {
+                console.log("responseData가 배열 형태:", responseData.length + "개");
+                scwin.populateDataListManually(responseData);
+                moduleCount = moduleDataList.getRowCount();
+            }
+        }
+        
+        // 현재 모듈 리스트 업데이트
+        currentModuleList = [];
+        for (let i = 0; i < moduleCount; i++) {
+            currentModuleList.push(moduleDataList.getRowJSON(i));
+        }
+        
+        console.log("현재 모듈 리스트:", currentModuleList);
+        
+        if (currentModuleList.length === 0) {
+            console.log("데이터가 없어서 샘플 데이터를 생성합니다.");
+            currentModuleList = scwin.createSampleData();
+        }
+        
+scwin.populateDataListManually = function(moduleArray) {
+    try {
+        const moduleDataList = $p.getComponentById("dlt_moduleList");
+        
+        // 기존 데이터 제거
+        moduleDataList.removeAll();
+        
+        // 새 데이터 추가
+        moduleArray.forEach(module => {
+            const rowIndex = moduleDataList.insertRow();
+            moduleDataList.setCellData(rowIndex, "moduleId", module.moduleId || module.module_id || '');
+            moduleDataList.setCellData(rowIndex, "code", module.code || '');
+            moduleDataList.setCellData(rowIndex, "name", module.name || '');
+            moduleDataList.setCellData(rowIndex, "description", module.description || '');
+            moduleDataList.setCellData(rowIndex, "price", module.price || '');
+            moduleDataList.setCellData(rowIndex, "icon", module.icon || '');
+            moduleDataList.setCellData(rowIndex, "category", module.category || '기타');
+            moduleDataList.setCellData(rowIndex, "salesCount", module.salesCount || module.sales_count || '0');
+            moduleDataList.setCellData(rowIndex, "moduleType", module.moduleType || module.module_type || 'paid');
+            moduleDataList.setCellData(rowIndex, "isPopular", module.isPopular || module.is_popular || 'N');
+            moduleDataList.setCellData(rowIndex, "createdAt", module.createdAt || module.created_at || new Date().toISOString());
+        });
+        
+        console.log(`DataList에 ${moduleArray.length}개 모듈 데이터 수동 추가 완료`);
+        
+    } catch (error) {
+        console.error("DataList 수동 채우기 오류:", error);
+    }
+};
+
+scwin.createSampleData = function() {
+    return [
+        {
+            moduleId: "1",
+            code: "ATT001",
+            name: "출석체크",
+            description: "실시간 출석 관리 시스템",
+            price: "$29.99",
+            icon: "attendance",
+            category: "관리도구",
+            salesCount: "89",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-01-15T10:00:00"
+        },
+        {
+            moduleId: "2",
+            code: "AI001",
+            name: "AI 졸음감지",
+            description: "AI 기반 집중도 모니터링",
+            price: "$49.99",
+            icon: "ai",
+            category: "AI 도구",
+            salesCount: "76",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-02-01T10:00:00"
+        },
+        {
+            moduleId: "3",
+            code: "SIG001",
+            name: "전자서명",
+            description: "디지털 서명 및 계약 관리",
+            price: "$39.99",
+            icon: "signature",
+            category: "비즈니스",
+            salesCount: "65",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-01-20T10:00:00"
+        },
+        {
+            moduleId: "4",
+            code: "REC001",
+            name: "화면녹화",
+            description: "세션 화면 녹화 및 저장",
+            price: "$34.99",
+            icon: "record",
+            category: "미디어",
+            salesCount: "58",
+            moduleType: "paid",
+            isPopular: "N",
+            createdAt: "2024-01-25T10:00:00"
+        },
+        {
+            moduleId: "5",
+            code: "QUZ001",
+            name: "실시간퀴즈",
+            description: "인터랙티브 퀴즈 시스템",
+            price: "$24.99",
+            icon: "quiz",
+            category: "교육도구",
+            salesCount: "45",
+            moduleType: "paid",
+            isPopular: "N",
+            createdAt: "2024-02-10T10:00:00"
+        },
+        {
+            moduleId: "6",
+            code: "CHT001",
+            name: "고급채팅",
+            description: "파일 공유 및 채팅 기능",
+            price: "무료",
+            icon: "chat",
+            category: "커뮤니케이션",
+            salesCount: "120",
+            moduleType: "free",
+            isPopular: "Y",
+            createdAt: "2024-01-10T10:00:00"
+        },
+        {
+            moduleId: "7",
+            code: "SCR001",
+            name: "화면공유 Pro",
+            description: "프리미엄 화면 공유 기능",
+            price: "$19.99",
+            icon: "screen",
+            category: "미디어",
+            salesCount: "92",
+            moduleType: "paid",
+            isPopular: "Y",
+            createdAt: "2024-03-01T10:00:00"
+        }
+    ];
+};
+        scwin.calculateAndUpdateStats();
+        
+        // 모듈 목록 UI 업데이트
+        scwin.renderModuleList();
+        
+    } catch (error) {
+        console.error("모듈 목록 처리 중 오류:", error);
+        // 에러 발생 시 샘플 데이터로 폴백
+        console.log("오류 발생으로 인한 샘플 데이터 생성");
+        currentModuleList = scwin.createSampleData();
+        scwin.calculateAndUpdateStats();
+        scwin.renderModuleList();
+    }
+};
+
+scwin.sbm_selectModuleList_submiterror = function(e) {
+    console.error("=== 모듈 목록 조회 실패 ===");
+    console.error("오류:", e);
+    
+    console.log("API 오류로 인한 샘플 데이터 생성");
+    currentModuleList = scwin.createSampleData();
+    scwin.calculateAndUpdateStats();
+    scwin.renderModuleList();
+    
+    setTimeout(() => {
+        alert("모듈 목록 조회에 실패했습니다. 샘플 데이터를 표시합니다.");
+    }, 1000);
+};
+
+scwin.calculateAndUpdateStats = function() {
+    const stats = {
+        totalModules: currentModuleList.length,
+        freeModules: currentModuleList.filter(m => !m.price || m.price === '0.00' || m.price === '0' || m.moduleType === 'free').length,
+        paidModules: currentModuleList.filter(m => m.price && m.price !== '0.00' && m.price !== '0' && m.moduleType !== 'free').length,
+        monthlyRevenue: scwin.calculateMonthlyRevenue()
+    };
+    
+    console.log("계산된 통계:", stats);
+    
+    // UI 업데이트
+    scwin.updateStatsUI(stats);
+};
+
+scwin.calculateMonthlyRevenue = function() {
+    let revenue = 0;
+    currentModuleList.forEach(module => {
+        if (module.price && module.salesCount) {
+            const price = parseFloat(module.price) || 0;
+            const sales = parseInt(module.salesCount) || 0;
+            revenue += price * sales * 0.01; // 월간 매출의 1%로 가정 (한국 원화)
+        }
+    });
+    return Math.round(revenue);
+};
+
+scwin.updateStatsUI = function(stats) {
+    try {
+        setTimeout(() => {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = stats.totalModules;
+                statNumbers[1].textContent = `₩${stats.monthlyRevenue.toLocaleString()}`;
+                statNumbers[2].textContent = stats.freeModules;
+                statNumbers[3].textContent = stats.paidModules;
+                console.log("통계 UI 업데이트 완료");
+            }
+        }, 100);
+    } catch (error) {
+        console.error("통계 UI 업데이트 오류:", error);
+    }
+};
+
+// 모듈 목록 렌더링
+scwin.renderModuleList = function() {
+    console.log("모듈 목록 렌더링 시작");
+    
+    try {
+        // 필터링 적용
+        filteredModuleList = scwin.applyFilter(currentModuleList);
+        
+        // 정렬 적용
+        filteredModuleList = scwin.applySorting(filteredModuleList);
+        
+        // 상위 5개만 표시 (인기 모듈 TOP 5)
+        const topModules = filteredModuleList.slice(0, 5);
+        
+        // UI 업데이트
+        scwin.updateModuleListUI(topModules);
+        
+        console.log(`${topModules.length}개 모듈 렌더링 완료`);
+        
+    } catch (error) {
+        console.error("모듈 목록 렌더링 오류:", error);
+    }
+};
+
+// 필터 적용
+scwin.applyFilter = function(moduleList) {
+    if (currentFilter === 'all') {
+        return [...moduleList];
+    }
+    
+    return moduleList.filter(module => {
+        switch (currentFilter) {
+            case 'free':
+                return !module.price || module.price === '0.00' || module.price === '0' || module.moduleType === 'free';
+            case 'paid':
+                return module.price && module.price !== '0.00' && module.price !== '0' && module.moduleType === 'paid';
+            case 'new':
+                // 최근 30일 내 생성된 모듈
+                if (module.createdAt) {
+                    const created = new Date(module.createdAt);
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    return created > thirtyDaysAgo;
+                }
+                return false;
+            case 'popular':
+                return module.isPopular === 'Y' || (module.salesCount && parseInt(module.salesCount) > 80);
+            default:
+                return true;
+        }
+    });
+};
+
+// 정렬 적용
+scwin.applySorting = function(moduleList) {
+    return [...moduleList].sort((a, b) => {
+        switch (currentSort) {
+            case 'popular':
+                return (parseInt(b.salesCount) || 0) - (parseInt(a.salesCount) || 0);
+            case 'price_low':
+                return (parseFloat(a.price?.replace(/[^0-9.]/g, '')) || 0) - (parseFloat(b.price?.replace(/[^0-9.]/g, '')) || 0);
+            case 'price_high':
+                return (parseFloat(b.price?.replace(/[^0-9.]/g, '')) || 0) - (parseFloat(a.price?.replace(/[^0-9.]/g, '')) || 0);
+            case 'name':
+                return (a.name || '').localeCompare(b.name || '');
+            case 'newest':
+                return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            default:
+                return 0;
+        }
+    });
+};
+
+// 모듈 목록 UI 업데이트
+scwin.updateModuleListUI = function(modules) {
+    try {
+        const moduleListContainer = document.querySelector('.module-list');
+        if (!moduleListContainer) {
+            console.error("모듈 리스트 컨테이너를 찾을 수 없음");
+            return;
+        }
+        
+        // 기존 모듈 아이템 제거
+        moduleListContainer.innerHTML = '';
+        
+        if (modules.length === 0) {
+            moduleListContainer.innerHTML = '<div class="no-modules">표시할 모듈이 없습니다.</div>';
+            return;
+        }
+        
+        // 모듈 아이템 생성
+        modules.forEach((module, index) => {
+            const moduleItem = scwin.createModuleItemElement(module, index + 1);
+            moduleListContainer.appendChild(moduleItem);
+        });
+        
+    } catch (error) {
+        console.error("모듈 목록 UI 업데이트 오류:", error);
+    }
+};
+
+// 모듈 아이템 요소 생성
+scwin.createModuleItemElement = function(module, rank) {
+    const moduleItem = document.createElement('div');
+    moduleItem.className = 'module-item';
+    moduleItem.onclick = () => scwin.showModuleDetail(module);
+    
+    // 아이콘 클래스 결정
+    const iconClass = scwin.getModuleIconClass(module.name, module.category);
+    const iconText = scwin.getModuleIconText(module.name);
+    
+    // 가격 표시 처리
+    const priceDisplay = scwin.formatPrice(module.price);
+    const categoryDisplay = module.category || '기타';
+    const salesDisplay = module.salesCount ? `${module.salesCount}구매` : '신규';
+    
+    moduleItem.innerHTML = `
+        <div class="module-icon ${iconClass}">
+            ${iconText}
+        </div>
+        <div class="module-info">
+            <div class="module-name">${module.name || 'Unknown Module'}</div>
+            <div class="module-details">${priceDisplay} | ${categoryDisplay}</div>
+        </div>
+        <div class="module-sales">${salesDisplay}</div>
+        <div class="module-rank">#${rank}</div>
+    `;
+    
+    return moduleItem;
+};
+
+// 모듈 아이콘 클래스 결정
+scwin.getModuleIconClass = function(name, category) {
+    const lowerName = (name || '').toLowerCase();
+    const lowerCategory = (category || '').toLowerCase();
+    
+    if (lowerName.includes('출석') || lowerName.includes('attendance')) return 'icon-attendance';
+    if (lowerName.includes('ai') || lowerName.includes('졸음')) return 'icon-ai';
+    if (lowerName.includes('서명') || lowerName.includes('sign')) return 'icon-signature';
+    if (lowerName.includes('녹화') || lowerName.includes('record')) return 'icon-record';
+    if (lowerName.includes('퀴즈') || lowerName.includes('quiz')) return 'icon-quiz';
+    if (lowerName.includes('채팅') || lowerName.includes('chat')) return 'icon-chat';
+    if (lowerName.includes('화면') || lowerName.includes('screen')) return 'icon-screen';
+    if (lowerCategory.includes('교육')) return 'icon-education';
+    if (lowerCategory.includes('비즈니스')) return 'icon-business';
+    if (lowerCategory.includes('미디어')) return 'icon-media';
+    
+    return 'icon-default';
+};
+
+// 모듈 아이콘 텍스트 결정
+scwin.getModuleIconText = function(name) {
+    const lowerName = (name || '').toLowerCase();
+    
+    if (lowerName.includes('출석')) return '출석';
+    if (lowerName.includes('ai')) return 'AI';
+    if (lowerName.includes('서명')) return '서명';
+    if (lowerName.includes('녹화')) return '녹화';
+    if (lowerName.includes('퀴즈')) return '퀴즈';
+    if (lowerName.includes('채팅')) return '채팅';
+    if (lowerName.includes('화면')) return '화면';
+    
+    return (name || 'M').charAt(0).toUpperCase();
+};
+
+// 가격 포맷팅
+scwin.formatPrice = function(price) {
+    if (!price || price === '0.00' || price === '0') {
+        return '무료';
+    }
+    
+    const numPrice = parseFloat(price);
+    if (!isNaN(numPrice)) {
+        if (numPrice >= 1000) {
+            return `₩${numPrice.toLocaleString()}`;
+        } else {
+            return `₩${numPrice}`;
+        }
+    }
+    
+    return price;
+};
+
+// 필터 버튼 클릭 이벤트
+scwin.filterNew = function() {
+    scwin.setActiveFilter('new');
+    currentFilter = 'new';
+    currentSort = 'newest';
+    scwin.loadModuleList();
+};
+
+scwin.filterPopular = function() {
+    scwin.setActiveFilter('popular');
+    currentFilter = 'popular';
+    currentSort = 'popular';
+    scwin.loadModuleList();
+};
+
+scwin.filterPrice = function() {
+    scwin.setActiveFilter('price');
+    currentFilter = 'all';
+    currentSort = 'price_high';
+    scwin.loadModuleList();
+};
+
+scwin.filterFree = function() {
+    scwin.setActiveFilter('free');
+    currentFilter = 'free';
+    currentSort = 'popular';
+    scwin.loadModuleList();
+};
+
+scwin.filterPaid = function() {
+    scwin.setActiveFilter('paid');
+    currentFilter = 'paid';
+    currentSort = 'popular';
+    scwin.loadModuleList();
+};
+
+scwin.setActiveFilter = function(filterType) {
+    try {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        const activeBtn = document.querySelector(`[data-filter="${filterType}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    } catch (error) {
+        console.error("필터 버튼 활성화 오류:", error);
+    }
+};
+
+scwin.showModuleDetail = function(module) {
+    const detailInfo = `모듈 상세 정보:
+    
+이름: ${module.name || 'N/A'}
+설명: ${module.description || 'N/A'}
+가격: ${scwin.formatPrice(module.price)}
+카테고리: ${module.category || 'N/A'}
+판매수: ${module.salesCount || 0}구매
+모듈ID: ${module.moduleId || 'N/A'}
+코드: ${module.code || 'N/A'}`;
+
+    alert(detailInfo);
+};
+
+scwin.showDetail = function() {
+    alert(`전체 모듈 목록
+    
+총 ${currentModuleList.length}개의 모듈이 있습니다.
+    
+- 무료 모듈: ${currentModuleList.filter(m => !m.price || m.price === '0' || m.price.toLowerCase() === 'free').length}개
+- 유료 모듈: ${currentModuleList.filter(m => m.price && m.price !== '0' && m.price.toLowerCase() !== 'free').length}개
+- 인기 모듈: ${currentModuleList.filter(m => m.isPopular === 'Y' || (m.salesCount && parseInt(m.salesCount) > 50)).length}개`);
+};
+
+// 모듈 새로고침
+scwin.refreshModules = function() {
+    console.log("모듈 목록 새로고침");
+    scwin.loadModuleList();
+};
+
+// 에러 메시지 표시
+scwin.showErrorMessage = function(message) {
+    try {
+        // 통계 카드를 기본값으로 리셋
+        setTimeout(() => {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = '0';
+                statNumbers[1].textContent = '₩0';
+                statNumbers[2].textContent = '0';
+                statNumbers[3].textContent = '0';
+            }
+        }, 100);
+        
+        // 모듈 리스트에 에러 메시지 표시
+        const moduleListContainer = document.querySelector('.module-list');
+        if (moduleListContainer) {
+            moduleListContainer.innerHTML = `
+                <div class="error-message">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-text">${message}</div>
+                    <button class="retry-btn" onclick="scwin.refreshModules()">다시 시도</button>
+                </div>
+            `;
+        }
+        
+        console.error("에러 메시지 표시:", message);
+    } catch (error) {
+        console.error("에러 메시지 표시 중 오류:", error);
+    }
+};
+
+// 네비게이션 이벤트들
+scwin.btn_home_onclick = function() {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
+};
+
+scwin.btn_tenant_onclick = function() {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/moblie_dev_tenant.xml";
+};
+
+scwin.btn_module_onclick = function() {
+    console.log("현재 모듈 페이지입니다.");
+};
+
+scwin.btn_stats_onclick = function() {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+};
+]]></script>
+
+		<style type="text/css">
+			.mobile-container {
+			max-width: 400px;
+			margin: 0 auto;
+			background-color: #f5f6fa;
+			padding: 20px;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			}
+
+			.page-title {
+			font-size: 20px;
+			font-weight: bold;
+			color: #333;
+			margin-bottom: 20px;
+			padding: 0 4px;
+			}
+
+			.stats-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 16px;
+			margin-bottom: 30px;
+			}
+
+			.stat-card {
+			background: white;
+			border-radius: 16px;
+			padding: 24px;
+			text-align: center;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			transition: transform 0.2s ease;
+			}
+
+			.stat-card:hover {
+			transform: translateY(-2px);
+			}
+
+			.stat-number {
+			font-size: 32px;
+			font-weight: bold;
+			margin: 12px 0 8px 0;
+			transition: color 0.3s ease;
+			}
+
+			.stat-label {
+			font-size: 14px;
+			color: #8e8e93;
+			font-weight: 500;
+			}
+
+			.blue { color: #4a90e2; }
+			.orange { color: #ff9500; }
+			.gray { color: #666; }
+			.diamond { color: #00d4ff; }
+
+			.filter-section {
+			background: white;
+			border-radius: 16px;
+			padding: 16px 20px;
+			margin-bottom: 20px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+
+			.filter-row {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			}
+
+			.filter-btn {
+			padding: 8px 16px;
+			border: 1px solid #e0e0e0;
+			border-radius: 20px;
+			font-size: 12px;
+			background-color: white;
+			color: #666;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			}
+
+			.filter-btn.active {
+			background-color: #007aff;
+			color: white;
+			border-color: #007aff;
+			}
+
+			.filter-btn:hover {
+			background-color: #f0f0f0;
+			}
+
+			.filter-btn.active:hover {
+			background-color: #0056b3;
+			}
+
+			.section-header {
+			background: white;
+			border-radius: 16px;
+			padding: 16px 20px;
+			margin-bottom: 20px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			}
+
+			.section-title {
+			font-size: 16px;
+			font-weight: bold;
+			color: #333;
+			}
+
+			.detail-btn {
+			background: none;
+			border: none;
+			color: #007aff;
+			font-size: 14px;
+			cursor: pointer;
+			transition: color 0.2s ease;
+			}
+
+			.detail-btn:hover {
+			color: #0056b3;
+			}
+
+			.module-list {
+			background: white;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			margin-bottom: 30px;
+			min-height: 200px;
+			}
+
+			.module-item {
+			display: flex;
+			align-items: center;
+			padding: 16px 20px;
+			border-bottom: 1px solid #f8f8f8;
+			cursor: pointer;
+			transition: background-color 0.2s ease;
+			position: relative;
+			}
+
+			.module-item:hover {
+			background-color: #f8f9fa;
+			}
+
+			.module-item:last-child {
+			border-bottom: none;
+			}
+
+			.module-icon {
+			width: 40px;
+			height: 40px;
+			border-radius: 8px;
+			margin-right: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			color: white;
+			font-size: 12px;
+			flex-shrink: 0;
+			}
+
+			.icon-attendance { background: #ff6b6b; }
+			.icon-ai { background: #ffa726; }
+			.icon-signature { background: #42a5f5; }
+			.icon-record {
+			background: #ab47bc; }
+			.icon-quiz { background: #ef5350; }
+			.icon-chat { background: #66bb6a; }
+			.icon-screen { background: #26c6da; }
+			.icon-education { background: #ff7043; }
+			.icon-business { background: #5c6bc0; }
+			.icon-media { background: #ec407a; }
+			.icon-default {
+			background: #78909c; }
+
+			.module-info {
+			flex: 1;
+			min-width: 0;
+			}
+
+			.module-name {
+			font-size: 16px;
+			font-weight: bold;
+			color: #333;
+			margin-bottom: 4px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			}
+
+			.module-details {
+			font-size: 12px;
+			color: #8e8e93;
+			margin-bottom: 2px;
+			}
+
+			.module-sales {
+			font-size: 14px;
+			font-weight: bold;
+			color: #007aff;
+			text-align: right;
+			margin-right: 8px;
+			}
+
+			.module-rank {
+			font-size: 12px;
+			font-weight: bold;
+			color: #ff9500;
+			background: #fff3e0;
+			border-radius: 12px;
+			padding: 4px 8px;
+			min-width: 32px;
+			text-align: center;
+			}
+
+			.no-modules,
+			.error-message {
+			text-align: center;
+			padding: 40px 20px;
+			color: #8e8e93;
+			}
+
+			.error-message {
+			background: #fff5f5;
+			border: 1px solid #fed7d7;
+			border-radius: 8px;
+			margin: 20px;
+			}
+
+			.error-icon {
+			font-size: 24px;
+			margin-bottom: 8px;
+			}
+
+			.error-text {
+			font-size: 14px;
+			margin-bottom: 12px;
+			color: #e53e3e;
+			}
+
+			.retry-btn {
+			background: #007aff;
+			color: white;
+			border: none;
+			border-radius: 6px;
+			padding: 8px 16px;
+			font-size: 12px;
+			cursor: pointer;
+			transition: background-color 0.2s ease;
+			}
+
+			.retry-btn:hover {
+			background: #0056b3;
+			}
+
+			.loading {
+			background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+			background-size: 200% 100%;
+			animation: loading 1.5s infinite;
+			color: transparent !important;
+			border-radius: 4px;
+			}
+
+			@keyframes loading {
+			0% { background-position: 200% 0; }
+			100% { background-position: -200% 0; }
+			}
+
+			.refresh-btn {
+			background: #f0f0f0;
+			color: #666;
+			border: none;
+			border-radius: 6px;
+			padding: 6px 12px;
+			font-size: 11px;
+			cursor: pointer;
+			transition: background-color 0.2s ease;
+			}
+
+			.refresh-btn:hover {
+			background: #e0e0e0;
+			}
+
+			.bottom-nav {
+			display: flex;
+			justify-content: space-around;
+			background: white;
+			border-radius: 16px;
+			padding: 16px 0;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+
+			.nav-item {
+			text-align: center;
+			flex: 1;
+			}
+
+			.nav-active {
+			color: #007aff !important;
+			font-weight: 600 !important;
+			background: none !important;
+			border: none !important;
+			}
+
+			.nav-inactive {
+			color: #8e8e93 !important;
+			font-weight: 500 !important;
+			background: none !important;
+			border: none !important;
+			}
+
+			/* 반응형 디자인 */
+			@media (max-width: 380px) {
+			.mobile-container {
+			padding: 16px;
+			}
+
+			.stats-grid {
+			gap: 12px;
+			}
+
+			.stat-card {
+			padding: 20px;
+			}
+
+			.stat-number {
+			font-size: 28px;
+			}
+
+			.filter-row {
+			gap: 6px;
+			}
+
+			.filter-btn {
+			padding: 6px 12px;
+			font-size: 11px;
+			}
+
+			.module-item {
+			padding: 12px 16px;
+			}
+
+			.module-icon {
+			width: 36px;
+			height: 36px;
+			margin-right: 12px;
+			}
+
+			.module-name {
+			font-size: 15px;
+			}
+			}
+		</style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+
+		<xf:group class="mobile-container">
+
+			<!-- 페이지 타이틀 -->
+			<xf:group style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+				<w2:textbox label="모듈 관리" class="page-title"></w2:textbox>
+				<xf:trigger class="refresh-btn" ev:onclick="scwin.refreshModules" type="button">
+					<xf:label><![CDATA[새로고침]]></xf:label>
+				</xf:trigger>
+			</xf:group>
+
+			<!-- 통계 카드 영역 (2x2 그리드) -->
+			<xf:group class="stats-grid">
+
+				<!-- 총 모듈 -->
+				<xf:group class="stat-card">
+					<w2:textbox label="총 모듈" class="stat-label"></w2:textbox>
+					<w2:textbox label="0" class="stat-number blue"></w2:textbox>
+				</xf:group>
+
+				<!-- 이번 달 수익 -->
+				<xf:group class="stat-card">
+					<w2:textbox label="이번 달 수익" class="stat-label"></w2:textbox>
+					<w2:textbox label="₩0" class="stat-number orange"></w2:textbox>
+				</xf:group>
+
+				<!-- 무료 모듈 -->
+				<xf:group class="stat-card">
+					<w2:textbox label="무료 모듈" class="stat-label"></w2:textbox>
+					<w2:textbox label="0" class="stat-number gray"></w2:textbox>
+				</xf:group>
+
+				<!-- 유료 모듈 -->
+				<xf:group class="stat-card">
+					<w2:textbox label="유료 모듈" class="stat-label"></w2:textbox>
+					<w2:textbox label="0" class="stat-number diamond"></w2:textbox>
+				</xf:group>
+
+			</xf:group>
+
+			<!-- 필터 섹션 -->
+			<xf:group class="filter-section">
+				<xf:group class="filter-row">
+					<xf:trigger class="filter-btn active" data-filter="popular" ev:onclick="scwin.filterPopular" type="button">
+						<xf:label><![CDATA[인기]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="filter-btn" data-filter="new" ev:onclick="scwin.filterNew" type="button">
+						<xf:label><![CDATA[신모듈]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="filter-btn" data-filter="price" ev:onclick="scwin.filterPrice" type="button">
+						<xf:label><![CDATA[가격순]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="filter-btn" data-filter="free" ev:onclick="scwin.filterFree" type="button">
+						<xf:label><![CDATA[무료]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="filter-btn" data-filter="paid" ev:onclick="scwin.filterPaid" type="button">
+						<xf:label><![CDATA[유료]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+			<!-- 인기 모듈 TOP 5 헤더 -->
+			<xf:group class="section-header">
+				<w2:textbox label="인기 모듈 TOP 5" class="section-title"></w2:textbox>
+				<xf:trigger class="detail-btn" ev:onclick="scwin.showDetail" type="button">
+					<xf:label><![CDATA[전체보기]]></xf:label>
+				</xf:trigger>
+			</xf:group>
+
+			<!-- 모듈 리스트 (동적 생성) -->
+			<xf:group class="module-list">
+				<!-- 초기 로딩 상태 -->
+				<xf:group style="text-align: center; padding: 40px 20px; color: #8e8e93;">
+					<w2:textbox label="모듈 목록을 불러오는 중..."></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<!-- 하단 네비게이션 -->
+			<xf:group class="bottom-nav">
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_home_onclick" type="button">
+						<xf:label><![CDATA[홈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_tenant_onclick" type="button">
+						<xf:label><![CDATA[테넌트]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-active" ev:onclick="scwin.btn_module_onclick" type="button">
+						<xf:label><![CDATA[모듈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_stats_onclick" type="button">
+						<xf:label><![CDATA[서버현황]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+		</xf:group>
+
+	</body>
+</html>
