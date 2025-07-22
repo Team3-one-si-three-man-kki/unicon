@@ -267,17 +267,18 @@ window.alert("이메일 중복검사 중 오류가 발생했습니다.");
 <w2:span style="font-size:12px;color:#666;margin-top:3px;" label="도메인에 사용될 값"></w2:span>
 </xf:group>
 
-
-<xf:group style="margin-top:10px;display:flex;align-items:center;gap:6px;" id="grp_agree">
-<xf:select ref="" appearance="full" meta_snippetCategory="10_입력폼" meta_snippetName="10_06 Checkbox" meta_snippetKeyComponent="true" disabled="" style="" id="" renderType="checkboxgroup" rows="" selectedindex="1" cols="">
-<xf:choices>
-<xf:item>
-<xf:label><![CDATA[개인정보수집이용동의]]></xf:label>
-<xf:value><![CDATA[Y]]></xf:value>
-</xf:item>
-</xf:choices>
-</xf:select>
-</xf:group>
+			<!-- 개인정보 동의 -->
+			<xf:group id="grp_agree" style="margin-top:10px;display:flex;align-items:center;gap:6px;">
+				<xf:select appearance="full" cols="" disabled="" id="chk_agree" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+					meta_snippetName="10_06 Checkbox" ref="" renderType="checkboxgroup" rows="" selectedindex="1" style="">
+					<xf:choices>
+						<xf:item>
+							<xf:label><![CDATA[개인정보수집이용동의]]></xf:label>
+							<xf:value><![CDATA[Y]]></xf:value>
+						</xf:item>
+					</xf:choices>
+				</xf:select>
+			</xf:group>
 
 
 <xf:group style="text-align:center;margin-top:30px;">

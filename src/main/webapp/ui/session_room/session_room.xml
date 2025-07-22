@@ -224,7 +224,8 @@ scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeig
         popupName: _name,
         modal: true,
         closeAction: "scwin.popup_closeAction",
-        dataObject: _jsnData
+        showTitleBar : false,
+        dataObject: _jsnData,
     };
     $p.openPopup(url, options);
 }
@@ -299,6 +300,8 @@ scwin.onpageload = async function () {
     top.window.onresize = scwin.throttle(function () {
         scwin.centerPopup("drowsinessPopUp", 0);
         scwin.centerPopup("adfPopUp", 50);
+        scwin.centerPopup("checkIn", 50);
+        scwin.centerPopup("checkout", 50);
     }, 200);
 
     await scwin.checkAppReady();
@@ -372,6 +375,8 @@ scwin.onpageload = async function () {
         if (userHasCanvasModule) {
             scwin.uiManager.showWhiteboardButton();
         }
+        scwin.createPopUp("checkIn", " ", null, "/InsWebApp/main/attendance_confirmation_pop_up.xml", 400, 350);
+        //입장시 출석 완료
     });
 
     scwin.roomClient.on("canvas", (data) => {
@@ -719,7 +724,7 @@ scwin.onpageload = async function () {
         }
     });
 
-    const roomId = "my-fia-rrom";
+    const roomId = 1004;
     const userName = "test1";
     const userEmail = "test1@test.com"
     const tenantId= "2"
