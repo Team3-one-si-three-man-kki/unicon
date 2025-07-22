@@ -29,14 +29,47 @@
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
         <script lazy="false" type="text/javascript"><![CDATA[
-scwin.onpageload = function() {
+scwin.onpageload = function () {
     // 메시지 설정
-    var userName = dma_attendance.get("userName");
-    var checkTime = dma_attendance.get("checkTime");
-    var message = userName + "님 " + checkTime + "에 출석체크되었습니다";
-    
+    const userName = dma_attendance.get("userName");
+    scwin.now = new Date();
+    const message = userName + "님 " + scwin.currentTime() + "에 출석체크되었습니다";
+    const yearAndMonthAndDateAndHour = scwin.currentDate();
+
+    spn_date.setValue(yearAndMonthAndDateAndHour)
     spn_mainMsg.setValue(message);
 };
+
+scwin.currentTime = function () {
+    const now = scwin.now;
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const display = `${hours}시 ${minutes}분 ${seconds}초`;
+    return display;
+};
+
+scwin.currentDate = function () {
+    const now = scwin.now;
+
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // 0부터 시작
+    const day = now.getDate();
+
+    let hour = now.getHours();
+    const minute = String(now.getMinutes()).padStart(2, '0');
+
+    const ampm = hour < 12 ? '오전' : '오후';
+
+    // 12시간제로 변환
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    const hourStr = String(hour).padStart(2, '0');
+
+    const display = `${year}년 ${month}월 ${day}일 ${ampm} ${hourStr}:${minute}`;
+    return display;
+}
 ]]></script>
     </head>
     <body ev:onpageload="scwin.onpageload">
