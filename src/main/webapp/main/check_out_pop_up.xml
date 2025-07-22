@@ -26,22 +26,62 @@
         </xf:model>
         <w2:layoutInfo/>
         <w2:publicInfo method=""/>
-        <script type="text/javascript" lazy="false"><![CDATA[
-scwin.onpageload = function() {
-    // 메시지 설정
-    var checkTime = dma_checkout.get("checkTime");
-    var message = checkTime + "에 퇴근처리됩니다.";
+        <script type="text/javascript" lazy="false"><![CDATA[scwin.checkoutInterval = null;
+scwin.now = new Date();
+
+scwin.onpageload = function () {
+    scwin.checkoutInterval = setInterval(function () {
+        const now = new Date();
+
+        let hour = now.getHours();
+        const minute = String(now.getMinutes()).padStart(2, '0');
+        const second = String(now.getSeconds()).padStart(2, '0');
+
+        const ampm = hour < 12 ? '오전' : '오후';
+        hour = hour % 12;
+        if (hour === 0) hour = 12;
+        const hourStr = String(hour).padStart(2, '0');
+
+        const currentTimeStr = `${ampm} ${hourStr}:${minute}:${second}에 퇴근처리 됩니다.`;
+
+        spn_checkoutMsg.setValue(currentTimeStr);
+    }, 1000);
+
+    spn_date.setValue(scwin.currentDate());
+};
+
+
+scwin.currentDate = function () {
+    const now = scwin.now;
     
-    spn_checkoutMsg.setValue(message);
-    spn_question.setValue("퇴장하시겠습니까?");
-};]]></script>
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    let hour = now.getHours();
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const second = String(now.getSeconds()).padStart(2, '0');
+
+    const ampm = hour < 12 ? '오전' : '오후';
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    const hourStr = String(hour).padStart(2, '0');
+    return `${year}년 ${month}월 ${day}일 ${ampm} ${hourStr}:${minute}:${second}`;
+};
+
+scwin.confirmBtn_onclick = function (e) {
+    clearInterval(scwin.checkoutInterval);
+    $p.closePopup();
+};
+]]></script>
     </head>
     <body ev:onpageload="scwin.onpageload">
         <!-- 팝업 헤더 -->
         
         <!-- 팝업 내용 -->
         <xf:group class="" id="grp_content" style="padding:0px 40px;text-align:center;background-color:white;min-height:200px;">
-            <w2:textbox class="" id="spn_checkoutMsg" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:10px;" label="16:54에 퇴근처리됩니다."/>
+            <w2:textbox class="" id="spn_checkoutMsg" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:10px;" label="오후 00:00:00에 퇴근처리됩니다."/>
             <w2:textbox class="" id="spn_question" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:30px;" label="퇴장하시겠습니까?"/>
             <w2:textbox class="" id="spn_date" ref="data:dma_checkout.checkDate" style="font-size:16px;color:#666;display:block;margin-bottom:40px;" label="2025년 6월 20일 오후 4:54"/>
             
