@@ -11,6 +11,7 @@
 					<w2:keyInfo>
 						<w2:key dataType="text" name="email" id="email"></w2:key>
 						<w2:key dataType="text" name="password" id="password"></w2:key>
+						<w2:key id="tenantId" name="tenantId" dataType="text" defaultValue="1"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
 
@@ -190,10 +191,10 @@ scwin.validateLogin = function (userId, password) {
 scwin.setLoginButtonState = function (isLoading) {
     if (isLoading) {
         btn_login.setDisabled(true);
-        btn_login.setText("로그인 중...");
+        btn_login.setLabel("로그인 중...");    // ← setText → setLabel 변경
     } else {
         btn_login.setDisabled(false);
-        btn_login.setText("로그인");
+        btn_login.setLabel("로그인");         // ← setText → setLabel 변경
     }
 };
 
