@@ -66,9 +66,6 @@ scwin.onpageload = function () {
         currentLoginType = "normal";
         isKakaoAuthenticated = false;
     }
-    var popupID = "signUpCompletePopup";
-    var src = "/InsWebApp/main/sign_up_success.xml"; // 팝업으로 띄울 파일의 실제 경로로 수정해주세요.
-    scwin.createPopUp(popupID, "회원가입성공", null, src, 550, 1000);
     scwin.refreshUI();
 };
 
@@ -180,9 +177,22 @@ scwin.validateKakao = function () {
 scwin.signupProcess_submitdone = function (e) {
     if (e.responseStatusCode === 200) {
         console.log("회원가입 완료");
+        var popupID = "signUpCompletePopup";
+        var src = "/InsWebApp/main/sign_up_success.xml"; // 팝업으로 띄울 파일의 실제 경로로 수정해주세요.
+        var jsnPopupData = {
+            "type": "json",
+            "name": "admin_param",
+            "data": {
+                "email": email_input.getValue(),
+                "name": name_input.getValue(),
+                "company": company_input.getValue(),
+                "tenant": tenant_input.getValue(),
+            }
+        };
+        $p.op
+        scwin.createPopUp(popupID, "회원가입성공", jsnPopupData, src, 550, 900);
 
         // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_main.xml";
-
 
     } else {
         console.log("회원가입 처리 중 오류 발생");
@@ -212,9 +222,6 @@ scwin.centerPopup = function (popupId, offsetY = 0) {
         pop.popupWin.setPosition(left1, top1);
     }
 };
-
-
-
 
 scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
     if ($p.getPopup(_id)) {
@@ -260,10 +267,10 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
 
     // 팝업객체 접근
     // var popObj = $p.getPopupWindow(argRuntimeID);
-    
+
     console.log("메인페이지로 이동")
     location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_main.xml";
-    
+
 
     return true; //팝업 닫기 (반환 값이 true인 경우만 팝업이 닫힘)
 };]]></script>

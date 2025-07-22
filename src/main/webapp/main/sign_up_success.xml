@@ -10,8 +10,9 @@
 				<w2:dataMap id="dma_managerInfo">
 					<w2:keyInfo>
 						<w2:key id="adminId" name="관리자 ID" dataType="text"></w2:key>
-						<w2:key id="tempPw" name="임시 비밀번호" dataType="text"></w2:key>
-						<w2:key id="adminUrl" name="접속 주소" dataType="text"></w2:key>
+						<w2:key id="adminName" name="관리자이름" dataType="text"></w2:key>
+						<w2:key id="tenant" name="서브도메인" dataType="text"></w2:key>
+						<w2:key dataType="text" name="회사이름" id="company"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
 			</w2:dataCollection>
@@ -48,35 +49,42 @@
 		<script lazy="false" type="text/javascript">
             <![CDATA[
 scwin.onpageload = function () {
+    var jsnParamData = $p.getParameter("admin_param");
     var initialData = {
-        adminId: "admin@techcompany",
-        tempPw: "Techmd24f6@",
-        adminUrl: "https://techcompany.ourservice.com/admin"
+        adminId: jsnParamData.email,
+        adminName : jsnParamData.name,
+        tenant : jsnParamData.tenant,
+        company : jsnParamData.company
     };
     dma_managerInfo.setJSON(initialData);
-};
+    welcomeText.setValue(dma_managerInfo.get("adminName")+"님, 회원가입을 환영합니다.");
 
-scwin.copyToClipboard = function (targetRef, triggerObj) {
-    var textToCopy = $p.data.get(targetRef);
-    $p.util.copyToClipboard(textToCopy, function () {
-        var originalLabel = triggerObj.getLabel();
-        triggerObj.setLabel("복사됨");
-        setTimeout(function () {
-            triggerObj.setLabel(originalLabel);
-        }, 2000);
-    });
+    const origin = window.location.origin;
+    const tenantUrl = origin+"/"+"tenant/"+dma_managerInfo.get("tenant")
+    tbx_adminUrl.setValue(tenantUrl)
+    tenantServiceUrl.setValue(tenantUrl)
 };
 
 scwin.goToDashboard = function () {
     alert("관리자 대시보드로 이동합니다!");
 };
 
-scwin.downloadSettings = function () {
-    alert("설정 파일을 다운로드합니다!");
-};
-
 scwin.moveToHomeBtn_onclick = function (e) {
     $p.closePopup();
+};
+
+
+scwin.idCopy_onclick = function (e) {
+    console.log("복사되었다링고")
+    $c.util.copyClipboard(tbx_adminId);
+    idCopy.setLabel("복사됨");
+
+};
+
+scwin.urlCopy_onclick = function (e) {
+    console.log("복사되었다링고2")
+    $c.util.copyClipboard(tbx_adminUrl);
+    urlCopy.setValue("복사됨");
 };
 ]]>
 		</script>
@@ -94,13 +102,13 @@ scwin.moveToHomeBtn_onclick = function (e) {
 			</xf:group>
 			<xf:group style="padding: 30px 30px 0px 30px;">
 				<xf:group style="text-align: center; margin-bottom: 30px;">
-					<w2:textbox label="테크컴퍼니 주식회사" tagname="h1" style="font-size: 18px;margin : 10px 0px;"></w2:textbox>
+					<w2:textbox label="테크컴퍼니 주식회사" tagname="h1" style="font-size: 18px;margin : 10px 0px;" ref="data:dma_managerInfo.company"></w2:textbox>
 					<w2:anchor outerDiv="false" href="#"
 						style="color: #667eea;  font-size: 14px;  text-decoration: none;  margin-bottom: 8px;  display: inline-block;font-weight: bolder;  border-radius: 9999px;  padding: 10px 15px;  background-color: #e6edff;"
 						label="https://techcompany.ourservice.com" id="tenantServiceUrl">
 						<w2:label>https://techcompany.ourservice.com</w2:label>
 					</w2:anchor>
-					<w2:textbox label="000님, 회원가입을 환영합니다." tagname="p"></w2:textbox>
+					<w2:textbox label="000님, 회원가입을 환영합니다." tagname="p" id="welcomeText"></w2:textbox>
 				</xf:group>
 				<xf:group style="height: 1px; background: #e0e0e0; margin: 30px 0;"></xf:group>
 				<xf:group style="background: #f5f7ff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
@@ -116,13 +124,12 @@ scwin.moveToHomeBtn_onclick = function (e) {
 						<xf:group tagname="div" style="flex: 1; font-size: 13px; color: #333; margin-left: 20px;">
 							<w2:textbox id="tbx_adminId" ref="data:dma_managerInfo.adminId" tagname="span" label="test@naver.com"></w2:textbox>
 						</xf:group>
-						<xf:trigger ev:onclick="scwin.copyToClipboard('data:dma_managerInfo.adminId', this)"
-							style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+						<xf:trigger style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;" id="idCopy" ev:onclick="scwin.idCopy_onclick">
 							<xf:label>복사</xf:label>
 						</xf:trigger>
 					</xf:group>
 					<xf:group
-						style="display: flex; align-items: center; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+						style="display: flex; align-items: center; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;" id="">
 						<xf:group class="info-label-url" tagname="div"
 							style="display: flex; align-items: center; min-width: 80px; font-size: 13px; color: #666;">
 							<w2:textbox label="접속 주소" tagname="span"></w2:textbox>
@@ -130,8 +137,7 @@ scwin.moveToHomeBtn_onclick = function (e) {
 						<xf:group tagname="div" style="flex: 1; font-size: 13px; color: #333; margin-left: 20px;">
 							<w2:textbox id="tbx_adminUrl" ref="data:dma_managerInfo.adminUrl" tagname="span" label="https://test4.ourservice.com"></w2:textbox>
 						</xf:group>
-						<xf:trigger ev:onclick="scwin.copyToClipboard('data:dma_managerInfo.adminUrl', this)"
-							style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+						<xf:trigger style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;" class="" id="urlCopy" ev:onclick="scwin.urlCopy_onclick">
 							<xf:label>복사</xf:label>
 						</xf:trigger>
 					</xf:group>
