@@ -39,7 +39,7 @@ window.UniconWS = {
 			return;
 		}
 
-		var wsUrl = 'ws://localhost:9093/InsWebApp/chat/' + this.roomId;
+		var wsUrl = 'wss://'+location.host+'/InsWebApp/chat/' + this.roomId;
 		console.log("WebSocket 연결 시도:", wsUrl);
 
 		this.socket = new WebSocket(wsUrl);

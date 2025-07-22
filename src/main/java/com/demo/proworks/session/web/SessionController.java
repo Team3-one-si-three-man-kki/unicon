@@ -17,6 +17,7 @@ import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
 import com.inswave.elfw.util.ControllerContextUtil;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * @subject : 세션정보 관련 처리를 담당하는 컨트롤러
@@ -83,8 +84,8 @@ public class SessionController {
 	 * @param sessionVo 세션정보
 	 * @throws Exception
 	 */
-	@ElService(key = "TNU0002SessionIns")
-	@RequestMapping(value = "TNU0002SessionIns")
+	@ElService(key = "TNU0001SessionIns")
+	@RequestMapping(value = "TNU0001SessionIns")
 	@ElDescription(sub = "세션정보 등록처리", desc = "세션정보를 등록 처리 한다.")
 	public Map<String, Object> insertSession(SessionVo sessionVo) throws Exception {
 		// 세션 저장 후 생성된 ID 받기

@@ -26,12 +26,12 @@
 				</w2:dataList>
 			</w2:dataCollection>
 			<w2:workflowCollection />
-			<xf:submission id="sbm_createSession" action="/InsWebApp/TNU0002SessionIns.pwkjson" method="post"
+			<xf:submission id="sbm_createSession" action="/InsWebApp/TNU0001SessionIns.pwkjson" method="post"
 				mediatype="application/json" ref='data:json,{"id":"dma_sessionData","key":"sessionVo"}' target="" encoding="UTF-8" instance=""
 				replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
 				ev:submitdone="scwin.sbm_createSession_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
-			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/TNU0002SessionModuleListIns.pwkjson" method="post"
+			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/TNU0001SessionModuleListIns.pwkjson" method="post"
 				mediatype="application/json" ref='data:json,{"id":"dlt_sessionModules","key":"sessionModuleVoList.sessionModuleVoList"}' target=""
 				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_createSessionModules_submitdone"
 				ev:submiterror="scwin.sbm_createSessionModules_submiterror" abortTrigger="">
@@ -107,7 +107,7 @@ scwin.setScreen = function (idx) {
         step2.addClass("on");
         step3.removeClass("on");
         step4.removeClass("on");
-        fr_session_making_process.setSrc("/InsWebApp/main/layout-designer2.xml");
+        fr_session_making_process.setSrc("/InsWebApp/main/layout-designer.xml");
     } else if (idx == 3) {
         step1.removeClass("on");
         step2.removeClass("on");
@@ -170,7 +170,7 @@ scwin.navigateToLayout = function (sessionId) {
     try {
         // sessionId 없이 페이지 이동 (넘어가는 페이지에서 sessionId를 localStorage에서 읽어옴)
         if (typeof $p !== 'undefined' && typeof $p.url === 'function') {
-            $p.url("/InsWebApp/main/layout-load2.xml");
+            $p.url("/InsWebApp/main/layout-load.xml");
             return;
         }
     } catch (error) {

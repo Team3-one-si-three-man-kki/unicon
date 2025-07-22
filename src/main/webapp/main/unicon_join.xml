@@ -1,283 +1,271 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
-	xmlns:xf="http://www.w3.org/2002/xforms">
-	<head>
-		<w2:type>COMPONENT</w2:type>
+xmlns:xf="http://www.w3.org/2002/xforms">
+<head>
+<w2:type>COMPONENT</w2:type>
 
-		<xf:model>
-			<w2:dataCollection baseNode="map">
-				<w2:dataMap id="signup_dma" baseNode="map">
-					<w2:keyInfo>
-						<w2:key id="loginType" name="로그인타입" dataType="text" />
-						<w2:key id="userName" name="사용자명" dataType="text" />
-						<w2:key id="email" name="이메일" dataType="text" />
-						<w2:key id="tenantName" name="회사명" dataType="text" />
-						<w2:key id="password" name="비밀번호" dataType="text" />
-						<w2:key id="passwordConfirm" name="비밀번호확인" dataType="text" />
-						<w2:key id="subDomain" name="테넌트ID" dataType="text" />
-					</w2:keyInfo>
-				</w2:dataMap>
-			</w2:dataCollection>
+<xf:model>
+<w2:dataCollection baseNode="map">
+<w2:dataMap id="signup_dma" baseNode="map">
+<w2:keyInfo>
+<w2:key id="loginType" name="로그인타입" dataType="text" />
+<w2:key id="userName" name="사용자명" dataType="text" />
+<w2:key id="email" name="이메일" dataType="text" />
+<w2:key id="tenantName" name="회사명" dataType="text" />
+<w2:key id="password" name="비밀번호" dataType="text" />
+<w2:key id="passwordConfirm" name="비밀번호확인" dataType="text" />
+<w2:key id="subDomain" name="테넌트ID" dataType="text" />
+</w2:keyInfo>
+</w2:dataMap>
+</w2:dataCollection>
 
-			<xf:submission id="signupProcess" action="/InsWebApp/TNU0000Signup.pwkjson" method="post" mediatype="application/json"
-				ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" ev:submitdone="scwin.signupProcess_submitdone" />
+<xf:submission id="signupProcess" action="/InsWebApp/TNU0000Signup.pwkjson" method="post" mediatype="application/json"
+ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" ev:submitdone="scwin.signupProcess_submitdone" />
 
-			<xf:submission id="emailCheck" action="/InsWebApp/TNU0000CheckEmail.pwkjson" method="post" mediatype="application/json"
-				accept="text/plain" ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" ev:submitdone="scwin.emailCheck_submitdone" />
-			<xf:submission id="kakaoAuthProcess" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KSIGN" method="get"
-				mediatype="application/x-www-form-urlencoded" mode="asynchronous" ev:submitdone="scwin.kakaoAuthProcess_submitdone" />
-		</xf:model>
+<xf:submission id="emailCheck" action="/InsWebApp/TNU0000CheckEmail.pwkjson" method="post" mediatype="application/json"
+accept="text/plain" ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" ev:submitdone="scwin.emailCheck_submitdone" />
+<xf:submission id="kakaoAuthProcess" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KSIGN" method="get"
+mediatype="application/x-www-form-urlencoded" mode="asynchronous" ev:submitdone="scwin.kakaoAuthProcess_submitdone" />
+</xf:model>
 
-		<script type="text/javascript"><![CDATA[
-var currentLoginType     = "normal";
+<script type="text/javascript"><![CDATA[
+var currentLoginType = "normal";
 var isKakaoAuthenticated = false;
 
 scwin.onpageload = function() {
-    var mode     = $p.getParameter("mode");
-    var email    = $p.getParameter("email");
-    var nickname = $p.getParameter("nickname");
+var mode = $p.getParameter("mode");
+var email = $p.getParameter("email");
+var nickname = $p.getParameter("nickname");
 
-    console.log("onpageload - mode:", mode);
+console.log("onpageload - mode:", mode);
 
-    if (mode === "kakao" && email && nickname) {
-        currentLoginType     = "kakao";
-        isKakaoAuthenticated = true;
-        
-        var decodedEmail = decodeURIComponent(email);
-        var decodedNickname = decodeURIComponent(nickname);
-        
-        // 데이터맵 설정
-        signup_dma.set("userName", decodedNickname);
-        signup_dma.set("email", decodedEmail);
-        
-        // 직접 input 값도 설정 (강제)
-        setTimeout(function() {
-            name_input.setValue(decodedNickname);
-            email_input.setValue(decodedEmail);
-            loginTypeSelect.setValue("kakao");
-            scwin.refreshUI();
-        }, 100);
-        
-    } else {
-        currentLoginType     = "normal";
-        isKakaoAuthenticated = false;
-    }
+if (mode === "kakao" && email && nickname) {
+currentLoginType = "kakao";
+isKakaoAuthenticated = true;
 
-    scwin.refreshUI();
+var decodedEmail = decodeURIComponent(email);
+var decodedNickname = decodeURIComponent(nickname);
+
+// 데이터맵 설정
+signup_dma.set("userName", decodedNickname);
+signup_dma.set("email", decodedEmail);
+
+// 직접 input 값도 설정 (강제)
+setTimeout(function() {
+name_input.setValue(decodedNickname);
+email_input.setValue(decodedEmail);
+loginTypeSelect.setValue("kakao");
+scwin.refreshUI();
+}, 100);
+
+} else {
+currentLoginType = "normal";
+isKakaoAuthenticated = false;
+}
+
+scwin.refreshUI();
 };
 
 scwin.loginTypeSelect_onchange = function() {
-    currentLoginType = loginTypeSelect.getValue();
-    isKakaoAuthenticated = false;
+currentLoginType = loginTypeSelect.getValue();
+isKakaoAuthenticated = false;
 
-    if (currentLoginType === "kakao") {
-        signup_dma.set("userName", "");
-        signup_dma.set("email", "");
-        signup_dma.set("password", "");
-        signup_dma.set("passwordConfirm", "");
-    }
+if (currentLoginType === "kakao") {
+signup_dma.set("userName", "");
+signup_dma.set("email", "");
+signup_dma.set("password", "");
+signup_dma.set("passwordConfirm", "");
+}
 
-    scwin.refreshUI();
+scwin.refreshUI();
 };
 
 scwin.refreshUI = function() {
-    console.log("refreshUI - currentLoginType:", currentLoginType);
-    
-    // 라디오 버튼 강제 설정
-    loginTypeSelect.setValue(currentLoginType);
-    
-    var isNormal = (currentLoginType==="normal");
+console.log("refreshUI - currentLoginType:", currentLoginType);
 
-    // UI 표시/숨김
-    grp_kakao_info.setStyle("display", isNormal ? "none" : "block");
-    grp_kakao_auth.setStyle("display", (!isNormal && !isKakaoAuthenticated) ? "block" : "none");
-    grp_kakao_user_info.setStyle("display", (!isNormal && isKakaoAuthenticated) ? "block" : "none");
+// 라디오 버튼 강제 설정
+loginTypeSelect.setValue(currentLoginType);
 
-    // 읽기전용 설정 - 다시 한번 강제 적용
-    setTimeout(function() {
-        name_input.setReadOnly(!isNormal);
-        email_input.setReadOnly(!isNormal);
-    }, 50);
+var isNormal = (currentLoginType==="normal");
 
-    btn_check.setStyle("display", isNormal ? "inline-block" : "none");
-    grp_pwd.setStyle("display", isNormal ? "block" : "none");
-    grp_pwd_confirm.setStyle("display", isNormal ? "block" : "none");
-    grp_agree.setStyle("display", isNormal ? "block" : "none");
+// UI 표시/숨김
+grp_kakao_info.setStyle("display", isNormal ? "none" : "block");
+grp_kakao_auth.setStyle("display", (!isNormal && !isKakaoAuthenticated) ? "block" : "none");
+grp_kakao_user_info.setStyle("display", (!isNormal && isKakaoAuthenticated) ? "block" : "none");
 
-    if(isNormal) {
-        trigger1.setLabel("회원가입");
-    } else {
-        trigger1.setLabel("카카오 회원가입");
-    }
+// 읽기전용 설정 - 다시 한번 강제 적용
+setTimeout(function() {
+name_input.setReadOnly(!isNormal);
+email_input.setReadOnly(!isNormal);
+}, 50);
+
+btn_check.setStyle("display", isNormal ? "inline-block" : "none");
+grp_pwd.setStyle("display", isNormal ? "block" : "none");
+grp_pwd_confirm.setStyle("display", isNormal ? "block" : "none");
+grp_agree.setStyle("display", isNormal ? "block" : "none");
+
+if(isNormal) {
+trigger1.setLabel("회원가입");
+} else {
+trigger1.setLabel("카카오 회원가입");
+}
 };
 
 scwin.btn_kakao_auth_onclick = function() {
-    $c.sbm.execute(kakaoAuthProcess);
+$c.sbm.execute(kakaoAuthProcess);
 };
 
 scwin.kakaoAuthProcess_submitdone = function(e) {
-    if(e.responseStatusCode===200 && e.responseJSON.success && e.responseJSON.loginUrl) {
-        location.href = e.responseJSON.loginUrl;
-    } else {
-        console.log("카카오 인증 URL 호출 실패");
-    }
+if(e.responseStatusCode===200 && e.responseJSON.success && e.responseJSON.loginUrl) {
+location.href = e.responseJSON.loginUrl;
+} else {
+console.log("카카오 인증 URL 호출 실패");
+}
 };
 
 scwin.trigger1_onclick = function() {
-    if(currentLoginType==="normal") {
-        // 일반 회원가입
-        signup_dma.set("loginType", "normal");
-        if(!scwin.validateNormal()) return;
-        $c.sbm.execute(signupProcess);
-    } else {
-            // 카카오 회원가입
-            signup_dma.set("loginType", "kakao");
-            if(!scwin.validateKakao()) return;
-            $c.sbm.execute(signupProcess);   
-    }
+if(currentLoginType==="normal") {
+// 일반 회원가입
+signup_dma.set("loginType", "normal");
+if(!scwin.validateNormal()) return;
+$c.sbm.execute(signupProcess);
+} else {
+// 카카오 회원가입
+signup_dma.set("loginType", "kakao");
+if(!scwin.validateKakao()) return;
+$c.sbm.execute(signupProcess);
+}
 };
 
 scwin.btn_check_onclick = function() {
-    if(currentLoginType === "normal") {
-        console.log("이메일 중복검사 전 데이터:");
-        console.log("email:", signup_dma.get("email"));
-        $c.sbm.execute(emailCheck);
-    } else {
-        console.log("카카오 회원가입에서는 이메일 중복검사가 필요하지 않습니다.");
-    }
+if(currentLoginType === "normal") {
+console.log("이메일 중복검사 전 데이터:");
+console.log("email:", signup_dma.get("email"));
+$c.sbm.execute(emailCheck);
+} else {
+console.log("카카오 회원가입에서는 이메일 중복검사가 필요하지 않습니다.");
+}
 };
 
 scwin.validateNormal = function() {
-    var u = signup_dma.get("userName"),
-        m = signup_dma.get("email"),
-        p = signup_dma.get("password"),
-        pc= signup_dma.get("passwordConfirm"),
-        d = signup_dma.get("subDomain");
-    if(!u||u.trim()===""){ console.log("이름을 입력해주세요"); return false; }
-    if(!m||m.trim()===""){ console.log("이메일을 입력해주세요"); return false; }
-    if(!p||p.trim()===""){ console.log("비밀번호를 입력해주세요"); return false; }
-    if(p.length<8){ console.log("비밀번호는 8자 이상이어야 합니다"); return false; }
-    if(p!==pc){ console.log("비밀번호가 일치하지 않습니다"); return false; }
-    if(!d||d.trim()===""){ console.log("테넌트ID를 입력해주세요"); return false; }
-    if(chk_agree.getValue()!=="Y"){ console.log("개인정보 동의가 필요합니다"); return false; }
-    return true;
+var u = signup_dma.get("userName"),
+m = signup_dma.get("email"),
+p = signup_dma.get("password"),
+pc= signup_dma.get("passwordConfirm"),
+d = signup_dma.get("subDomain");
+if(!u||u.trim()===""){ console.log("이름을 입력해주세요"); return false; }
+if(!m||m.trim()===""){ console.log("이메일을 입력해주세요"); return false; }
+if(!p||p.trim()===""){ console.log("비밀번호를 입력해주세요"); return false; }
+if(p.length<8){ console.log("비밀번호는 8자 이상이어야 합니다"); return false; }
+if(p!==pc){ console.log("비밀번호가 일치하지 않습니다"); return false; }
+if(!d||d.trim()===""){ console.log("테넌트ID를 입력해주세요"); return false; }
+if(chk_agree.getValue()!=="Y"){ console.log("개인정보 동의가 필요합니다"); return false; }
+return true;
 };
 
 scwin.validateKakao = function() {
-    var t = signup_dma.get("tenantName"),
-        d = signup_dma.get("subDomain");
-    if(!t||t.trim()===""){ console.log("회사명을 입력해주세요"); return false; }
-    if(!d||d.trim()===""){ console.log("테넌트ID를 입력해주세요"); return false; }
-    return true;
+var t = signup_dma.get("tenantName"),
+d = signup_dma.get("subDomain");
+if(!t||t.trim()===""){ console.log("회사명을 입력해주세요"); return false; }
+if(!d||d.trim()===""){ console.log("테넌트ID를 입력해주세요"); return false; }
+return true;
 };
 
 scwin.signupProcess_submitdone = function(e) {
-    if(e.responseStatusCode===200) {
-        console.log("회원가입 완료");
-        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_main.xml";
-    } else {
-        console.log("회원가입 처리 중 오류 발생");
-    }
+if(e.responseStatusCode===200) {
+console.log("회원가입 완료");
+location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_main.xml";
+} else {
+console.log("회원가입 처리 중 오류 발생");
+}
 };
 
 /* 이메일 중복검사 완료 */
 scwin.emailCheck_submitdone = function(e) {
-    console.log("이메일 중복검사 응답:", e);
-    
-    if (e.responseStatusCode === 200) {
-        // 서버에서 온 문자열 메시지를 바로 alert로 표시
-        window.alert(e.responseText);
-    } else {
-        window.alert("이메일 중복검사 중 오류가 발생했습니다.");
-    }
+console.log("이메일 중복검사 응답:", e);
+
+if (e.responseStatusCode === 200) {
+// 서버에서 온 문자열 메시지를 바로 alert로 표시
+window.alert(e.responseText);
+} else {
+window.alert("이메일 중복검사 중 오류가 발생했습니다.");
+}
 };
 
 ]]></script>
-	</head>
+</head>
 
-	<body ev:onpageload="scwin.onpageload">
-		<xf:group style="width:450px;margin:30px auto;background:#fff;padding:30px;border-radius:12px;">
+<body ev:onpageload="scwin.onpageload">
+<xf:group id="main_join" style='background: linear-gradient(135deg, #578FCA 0%, #3674B5 50%);height: 100%;'><xf:group style="width:450px;height:100%;margin:30px auto;background:#fff;padding:30px;border-radius:12px;">
 
-			<w2:span label="가입 방법을 선택하고, 해당 방식으로 회원가입을 진행하세요."
-				style="display:block;text-align:center;font-size:16px;font-weight:600;margin-bottom:20px;" />
+<w2:span style="display:block;text-align:center;font-size:16px;font-weight:600;margin-bottom:20px;" label="가입 방법을 선택하고, 해당 방식으로 회원가입을 진행하세요."></w2:span>
 
-			<xf:group style="display:flex;justify-content:center;gap:40px;margin-bottom:25px;">
-				<xf:select1 id="loginTypeSelect" renderType="radiogroup" selectedindex="0" style="display:flex;gap:20px;font-size:15px;"
-					ev:onchange="scwin.loginTypeSelect_onchange">
-					<xf:choices>
-						<xf:item>
-							<xf:label>일반 로그인</xf:label>
-							<xf:value>normal</xf:value>
-						</xf:item>
-						<xf:item>
-							<xf:label>카카오톡 로그인</xf:label>
-							<xf:value>kakao</xf:value>
-						</xf:item>
-					</xf:choices>
-				</xf:select1>
-			</xf:group>
+<xf:group style="display:flex;justify-content:center;gap:40px;margin-bottom:25px;">
+<xf:select1 ev:onchange="scwin.loginTypeSelect_onchange" style="display:flex;gap:20px;font-size:15px;" id="loginTypeSelect" renderType="radiogroup" selectedindex="0">
+<xf:choices>
+<xf:item>
+<xf:label>일반 로그인</xf:label>
+<xf:value>normal</xf:value>
+</xf:item>
+<xf:item>
+<xf:label>카카오톡 로그인</xf:label>
+<xf:value>kakao</xf:value>
+</xf:item>
+</xf:choices>
+</xf:select1>
+</xf:group>
 
-			<xf:group id="grp_kakao_info" style="display:none;margin-bottom:20px;padding:12px;border:1px solid #ffeaa7;background:#fff8dc;">
-				<w2:span label="카카오 인증 후 이메일·이름이 자동 입력됩니다." style="font-size:13px;color:#856404;" />
-			</xf:group>
+<xf:group style="display:none;margin-bottom:20px;padding:12px;border:1px solid #ffeaa7;background:#fff8dc;" id="grp_kakao_info">
+<w2:span style="font-size:13px;color:#856404;" label="카카오 인증 후 이메일·이름이 자동 입력됩니다."></w2:span>
+</xf:group>
 
-			<xf:group id="grp_kakao_auth" style="display:none;text-align:center;margin-bottom:20px;">
-				<xf:trigger id="btn_kakao_auth" type="button"
-					style="width:60%;height:48px;background:#FEE500;border:none;border-radius:8px;font-size:16px;font-weight:bold;color:#000;"
-					ev:onclick="scwin.btn_kakao_auth_onclick">
-					<xf:label>카카오 인증하기</xf:label>
-				</xf:trigger>
-			</xf:group>
+<xf:group style="display:none;text-align:center;margin-bottom:20px;" id="grp_kakao_auth">
+<xf:trigger ev:onclick="scwin.btn_kakao_auth_onclick" style="width:60%;height:48px;background:#FEE500;border:none;border-radius:8px;font-size:16px;font-weight:bold;color:#000;" id="btn_kakao_auth" type="button">
+<xf:label>카카오 인증하기</xf:label>
+</xf:trigger>
+</xf:group>
 
-			<xf:group id="grp_kakao_user_info"
-				style="display:none;margin-bottom:20px;padding:12px;border:1px solid #4caf50;background:#e8f5e8;">
-				<w2:span label="✅ 인증 완료: 이름·이메일이 자동 입력되었습니다." style="font-size:13px;color:#2e7d32;" />
-			</xf:group>
+<xf:group style="display:none;margin-bottom:20px;padding:12px;border:1px solid #4caf50;background:#e8f5e8;" id="grp_kakao_user_info">
+<w2:span style="font-size:13px;color:#2e7d32;" label="✅ 인증 완료: 이름·이메일이 자동 입력되었습니다."></w2:span>
+</xf:group>
 
-			<xf:group id="grp_name" style="margin-bottom:20px;">
-				<w2:span label="이름 *" style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" />
-				<xf:input id="name_input" ref="data:signup_dma.userName" placeholder="이름 입력"
-					style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" />
-			</xf:group>
+<xf:group style="margin-bottom:20px;" id="grp_name">
+<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="이름 *"></w2:span>
+<xf:input ref="data:signup_dma.userName" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" id="name_input" placeholder="이름 입력"></xf:input>
+</xf:group>
 
-			<xf:group id="grp_email" style="margin-bottom:20px;">
-				<w2:span label="이메일 *" style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" />
-				<xf:input id="email_input" ref="data:signup_dma.email" type="email" placeholder="이메일 입력"
-					style="width:80%;padding:12px;border:1px solid #ddd;border-radius:6px;" />
-				<xf:trigger id="btn_check" type="button"
-					style="width:18%;margin-left:8px;background:#667eea;color:#fff;border:none;border-radius:4px;" ev:onclick="scwin.btn_check_onclick">
-					<xf:label>중복검사</xf:label>
-				</xf:trigger>
-			</xf:group>
+<xf:group style="margin-bottom:20px;" id="grp_email">
+<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="이메일 *"></w2:span>
+<xf:input ref="data:signup_dma.email" style="width:75%;padding:12px;border:1px solid #ddd;border-radius:6px;" id="email_input" placeholder="이메일 입력" type="email"></xf:input>
+<xf:trigger ev:onclick="scwin.btn_check_onclick" style="width:20.55%;height: 30px;margin-left:8px;background:#667eea;color:#fff;border:none;border-radius:4px;" id="btn_check" type="button">
+<xf:label>중복검사</xf:label>
+</xf:trigger>
+</xf:group>
 
-			<xf:group id="grp_company" style="margin-bottom:20px;">
-				<w2:span label="회사명 *" style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" />
-				<xf:input id="company_input" ref="data:signup_dma.tenantName" placeholder="회사명 입력"
-					style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" />
-			</xf:group>
+<xf:group style="margin-bottom:20px;" id="grp_company">
+<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="회사명 *"></w2:span>
+<xf:input ref="data:signup_dma.tenantName" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" id="company_input" placeholder="회사명 입력"></xf:input>
+</xf:group>
 
-			<xf:group id="grp_pwd" style="margin-bottom:20px;">
-				<w2:span label="비밀번호 *" style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" />
-				<xf:input id="password_input" ref="data:signup_dma.password" type="password" placeholder="8자 이상"
-					style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" />
-			</xf:group>
+<xf:group style="margin-bottom:20px;" id="grp_pwd">
+<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="비밀번호 *"></w2:span>
+<xf:input ref="data:signup_dma.password" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" id="password_input" placeholder="8자 이상" type="password"></xf:input>
+</xf:group>
 
-			<xf:group id="grp_pwd_confirm" style="margin-bottom:20px;">
-				<w2:span label="비밀번호 확인 *" style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" />
-				<xf:input id="password_chk_input" ref="data:signup_dma.passwordConfirm" type="password" placeholder="비밀번호 재입력"
-					style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" />
-			</xf:group>
+<xf:group style="margin-bottom:20px;" id="grp_pwd_confirm">
+<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="비밀번호 확인 *"></w2:span>
+<xf:input ref="data:signup_dma.passwordConfirm" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;" id="password_chk_input" placeholder="비밀번호 재입력" type="password"></xf:input>
+</xf:group>
 
-			<xf:group id="grp_tenant" style="margin-bottom:20px;">
-				<w2:span label="테넌트ID *" style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" />
-				<xf:group style="display:flex;align-items:center;gap:5px;">
-					<w2:span label="www." style="font-size:13px;" />
-					<xf:input id="tenant_input" ref="data:signup_dma.subDomain" placeholder="서브도메인 입력"
-						style="width:170px;padding:10px;border:1px solid #ddd;border-radius:6px;" />
-					<w2:span label=".unicon.com" style="font-size:13px;" />
-				</xf:group>
-				<w2:span label="도메인에 사용될 값" style="font-size:12px;color:#666;margin-top:3px;" />
-			</xf:group>
+<xf:group style="margin-bottom:20px;" id="grp_tenant">
+<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="테넌트ID *"></w2:span>
+<xf:group style="display:flex;align-items:center;gap:5px;">
+<w2:span style="font-size:13px;" label="www."></w2:span>
+<xf:input ref="data:signup_dma.subDomain" style="width:170px;padding:10px;border:1px solid #ddd;border-radius:6px;" id="tenant_input" placeholder="서브도메인 입력"></xf:input>
+<w2:span style="font-size:13px;" label=".unicon.com"></w2:span>
+</xf:group>
+<w2:span style="font-size:12px;color:#666;margin-top:3px;" label="도메인에 사용될 값"></w2:span>
+</xf:group>
 
 			<!-- 개인정보 동의 -->
 			<xf:group id="grp_agree" style="margin-top:10px;display:flex;align-items:center;gap:6px;">
@@ -293,12 +281,10 @@ scwin.emailCheck_submitdone = function(e) {
 			</xf:group>
 
 
-			<xf:group style="text-align:center;margin-top:30px;">
-			<xf:trigger id="trigger1" type="button" ev:onclick="scwin.trigger1_onclick"
-				style="width:30%;height:40px;background:#667eea;color:#fff;border:none;border-radius:8px;">
-				<xf:label>회원가입</xf:label>
-			</xf:trigger>
-		</xf:group>
-	</xf:group>
-	</body>
-</html>
+<xf:group style="text-align:center;margin-top:30px;">
+<xf:trigger ev:onclick="scwin.trigger1_onclick" style="width:30%;height:40px;background:#667eea;color:#fff;border:none;border-radius:8px;" id="trigger1" type="button">
+<xf:label>회원가입</xf:label>
+</xf:trigger>
+</xf:group>
+</xf:group></xf:group></body>
+</html> 
