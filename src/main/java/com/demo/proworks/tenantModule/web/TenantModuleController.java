@@ -132,30 +132,30 @@ public class TenantModuleController {
     @ElDescription(sub="테넌트보유모듈 상세목록조회",desc="현재 로그인한 사용자의 테넌트가 보유한 모듈 상세 정보를 조회한다.")               
     public TenantModuleDetailVoList selectTenantModuleDetailList() throws Exception {
         
-        System.out.println("🚀 TenantModuleDetailList 컨트롤러 호출됨!");
+        System.out.println("TenantModuleDetailList 컨트롤러 호출됨!");
         
         // 현재 로그인한 사용자의 테넌트 ID 가져오기
         HttpServletRequest request = ((ServletRequestAttributes) 
             RequestContextHolder.currentRequestAttributes()).getRequest();
         String tenantId = (String) request.getAttribute("tenantId");
         
-        System.out.println("📋 테넌트 ID: " + tenantId);
+        System.out.println("테넌트 ID: " + tenantId);
         
         if (tenantId == null || tenantId.isEmpty()) {
-            System.out.println("❌ 테넌트 정보를 찾을 수 없습니다.");
+            System.out.println("테넌트 정보를 찾을 수 없습니다.");
             // 테스트용으로 임시 테넌트 ID 사용
             tenantId = "test-tenant-001";
-            System.out.println("🧪 테스트용 테넌트 ID 사용: " + tenantId);
+            System.out.println("테스트용 테넌트 ID 사용: " + tenantId);
         }
         
         // 테넌트가 보유한 모듈 상세 정보 조회
         List<TenantModuleDetailVo> tenantModuleDetailList = 
             tenantModuleService.selectTenantModuleDetails(tenantId);
         
-        System.out.println("📊 조회된 모듈 수: " + tenantModuleDetailList.size());
+        System.out.println("조회된 모듈 수: " + tenantModuleDetailList.size());
         
         for (TenantModuleDetailVo vo : tenantModuleDetailList) {
-            System.out.println("🧩 모듈: " + vo.getModuleId() + " - " + vo.getName() + " (" + vo.getIcon() + ")");
+            System.out.println("모듈: " + vo.getModuleId() + " - " + vo.getName() + " (" + vo.getIcon() + ")");
         }
         
         // 응답 객체 생성
@@ -163,7 +163,7 @@ public class TenantModuleController {
         retTenantModuleDetailList.setTenantModuleDetailVoList(tenantModuleDetailList);
         retTenantModuleDetailList.setTotalCount(tenantModuleDetailList.size());
         
-        System.out.println("✅ 응답 데이터 생성 완료 - 총 " + tenantModuleDetailList.size() + "개 모듈");
+        System.out.println("응답 데이터 생성 완료 - 총 " + tenantModuleDetailList.size() + "개 모듈");
         
         return retTenantModuleDetailList;
     }
