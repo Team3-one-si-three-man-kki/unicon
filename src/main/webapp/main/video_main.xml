@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate/>
+        <w2:MSA/>
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+            	<w2:dataMap baseNode="map" id="meetingSettings">
+            		<w2:keyInfo>
+            			<w2:key dataType="text" name="비디오상태" id="videoEnabled" encYN="" defaultValue="true"></w2:key>
+            			<w2:key dataType="text" name="오디오상태" id="audioEnabled" defaultValue="true"></w2:key>
+            			<w2:key dataType="text" name="참여자명" id="participantName"></w2:key>
+            			<w2:key dataType="text" name="참여자이메일" id="participantEmail"></w2:key>
+            		</w2:keyInfo>
+            	</w2:dataMap>
+            </w2:dataCollection>
+            <w2:workflowCollection/>
+        </xf:model>
+        <w2:layoutInfo/>
+        <w2:publicInfo method=""/>
+        <script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function() {
+	
+};
+]]></script>
+    </head>
+    <body ev:onpageload="scwin.onpageload">
+    	<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+    		style="">
+    		<w2:wframe style="" id="" src="/InsWebApp/ui/client/meeting_waiting_room.xml"></w2:wframe>
+    	</xf:group>
+    </body>
+</html>
