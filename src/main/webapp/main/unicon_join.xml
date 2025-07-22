@@ -281,7 +281,7 @@ scwin.emailCheck_submitdone = function(e) {
 
 			<!-- 개인정보 동의 -->
 			<xf:group id="grp_agree" style="margin-top:10px;display:flex;align-items:center;gap:6px;">
-				<xf:select appearance="full" cols="" disabled="" id="" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+				<xf:select appearance="full" cols="" disabled="" id="chk_agree" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
 					meta_snippetName="10_06 Checkbox" ref="" renderType="checkboxgroup" rows="" selectedindex="1" style="">
 					<xf:choices>
 						<xf:item>
