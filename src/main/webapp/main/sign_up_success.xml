@@ -24,15 +24,12 @@
                 * {
                     margin: 0;
                     padding: 0;
-                    box-sizing: border-box;
+                }
+                html, body{
+                    height: 100%;
+                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Malgun Gothic', sans-serif;
                 }
                 
-                .websquare-body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Malgun Gothic', sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    /* display:flex 와 정렬 속성 제거 */
-                }
-
                 h1 { font-size: 24px; font-weight: bold; }
                 h2 { font-size: 20px; color: #333; }
                 h3 { font-size: 16px; color: #333;}
@@ -80,12 +77,12 @@
             ]]>
         </script>
     </head>
-    <body ev:onpageload="scwin.onpageload" class="websquare-body">
-        <xf:group style="background: white; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 550px; width: 95%; overflow: hidden; margin: 40px auto;">
+    <body ev:onpageload="scwin.onpageload">
+        <xf:group style="background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 550px; width: 100%;overflow: hidden;">
             <xf:group style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; color: white;">
                 <xf:group style="width: 60px; height: 60px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 30px; color: white; font-weight: bold;">
                     <w2:textbox label="✓" tagname="span"></w2:textbox>
-                </xf:group>
+                </xf:group> 
                 <w2:textbox label="가입이 완료되었습니다!" tagname="h1" style="font-size: 26px;margin-bottom: 10px;"></w2:textbox>
                 <w2:textbox label="계정이 정상적으로 설정되었습니다." tagname="p" style="color: #eeeeee;"></w2:textbox>
             </xf:group>
