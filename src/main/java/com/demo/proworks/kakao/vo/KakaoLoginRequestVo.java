@@ -56,12 +56,10 @@ public class KakaoLoginRequestVo {
         return false;
     }
 
-    @Override
     public void _xStreamEnc() {
     }
 
 
-    @Override
     public void _xStreamDec() {
     }
 

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper      
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"      
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+	@subject     : 테넌트모듈정보 관련 처리를 담당하는 Sql Mapper
+	@description : 테넌트모듈정보 관련 처리를 담당하는 Sql Mapper
+	@author      : 여경원
+	@since       : 2025/07/14
+	@modification
+	===========================================================
+	DATE              AUTHOR             DESC
+	===========================================================
+	2025/07/14              여경원             최초 생성
+ -->
+<mapper namespace="com.demo.proworks.tenantModule">
+    <insert id="insertTenantModule" parameterType="com.demo.proworks.tenantModule.vo.TenantModuleVo">
+    	<!-- 테넌트모듈정보를 등록한다. -->	
+    		
+        INSERT INTO TENANT_MODULE   /* QueryID : com.demo.proworks.tenantModule.insertTenantModule */
+        ( 
+            TENANT_ID
+            , MODULE_ID
+            <if test="purchasedAt!= null"> , PURCHASED_AT </if>
+        )
+        VALUES  
+        ( 
+            #{tenantId}
+            , #{moduleId}
+            <if test="purchasedAt!= null"> , #{purchasedAt} </if>
+ 
+        )          
+    </insert>	
+	
+    <update id="updateTenantModule" parameterType="com.demo.proworks.tenantModule.vo.TenantModuleVo">
+    	<!-- 테넌트모듈정보를 갱신한다. -->
+    	
+        UPDATE TENANT_MODULE    /* QueryID : com.demo.proworks.tenantModule.updateTenantModule */      
+      	  SET  
+                TENANT_ID    = #{tenantId}   
+         ,  MODULE_ID    = #{moduleId}   
+        	                       
+            <if test="purchasedAt!= null"> , PURCHASED_AT = #{purchasedAt} </if>
+                 
+        WHERE   
+                TENANT_ID    = #{tenantId}   
+         AND MODULE_ID    = #{moduleId}   
+    </update>
+	
+    <delete id="deleteTenantModule" parameterType="com.demo.proworks.tenantModule.vo.TenantModuleVo">
+    	<!-- 테넌트모듈정보를 삭제한다. -->
+    	
+        DELETE FROM TENANT_MODULE   /* QueryID : com.demo.proworks.tenantModule.deleteTenantModule */ 
+        WHERE   
+                TENANT_ID    = #{tenantId}   
+         AND MODULE_ID    = #{moduleId}   
+        
+    </delete>
+	
+    <select id="selectTenantModule" parameterType="com.demo.proworks.tenantModule.vo.TenantModuleVo" resultType="com.demo.proworks.tenantModule.vo.TenantModuleVo">
+    	<!-- 테넌트모듈정보를 상세 조회한다. -->	
+        SELECT     /* QueryID : com.demo.proworks.tenantModule.selectTenantModule */
+            TENANT_ID as tenantId, MODULE_ID as moduleId, PURCHASED_AT as purchasedAt
+        FROM TENANT_MODULE 
+        WHERE 
+                TENANT_ID    = #{tenantId}   
+         AND MODULE_ID    = #{moduleId}   
+			
+    </select>
+	
+    <select id="selectListTenantModule" parameterType="com.demo.proworks.tenantModule.vo.TenantModuleVo" resultType="com.demo.proworks.tenantModule.vo.TenantModuleVo">
+    	<!-- 테넌트모듈정보 목록을 조회한다. -->
+           SELECT    /* QueryID : com.demo.proworks.tenantModule.selectListTenantModule */
+               TENANT_ID as tenantId, MODULE_ID as moduleId, PURCHASED_AT as purchasedAt		       
+           FROM (
+               SELECT  S.*, CEIL( (@ROWNUM:=@ROWNUM+1) / #{pageSize} ) AS PAGE
+               FROM (				
+                   SELECT 
+                       *  		                  
+                   FROM TENANT_MODULE
+                   WHERE  1=1    		
+                        <if test="scTenantId != null and scTenantId != ''">
+                             AND TENANT_ID like '%${scTenantId}%'
+                        </if>
+                        <if test="scModuleId != null and scModuleId != ''">
+                             AND MODULE_ID like '%${scModuleId}%'
+                        </if>
+                        <if test="scPurchasedAt != null and scPurchasedAt != ''">
+                             AND PURCHASED_AT like '%${scPurchasedAt}%'
+                        </if>
+	     																														
+               ) S, (SELECT @ROWNUM := 0) TMP
+           ) A
+            WHERE PAGE = #{pageIndex}
+    </select>
+	
+    <select id="selectListCountTenantModule" parameterType="com.demo.proworks.tenantModule.vo.TenantModuleVo" resultType="long">
+    <!-- 테넌트모듈정보 목록의 카운트를 조회한다. -->
+    
+         SELECT    /* QueryID : com.demo.proworks.tenantModule.selectListCountTenantModule */
+             COUNT(*) totcnt  		                  
+         FROM TENANT_MODULE
+         WHERE  1=1    		
+            <if test="scTenantId != null and scTenantId != ''">
+                 AND TENANT_ID like '%${scTenantId}%'
+            </if>
+            <if test="scModuleId != null and scModuleId != ''">
+                 AND MODULE_ID like '%${scModuleId}%'
+            </if>
+            <if test="scPurchasedAt != null and scPurchasedAt != ''">
+                 AND PURCHASED_AT like '%${scPurchasedAt}%'
+            </if>
+    </select>
+
+    <!-- 테넌트가 보유한 모듈 상세 정보 조회 (MODULE과 JOIN) -->
+    <select id="selectTenantModuleDetails" parameterType="string" resultType="com.demo.proworks.tenantModule.vo.TenantModuleDetailVo">
+        SELECT /* QueryID : com.demo.proworks.tenantModule.selectTenantModuleDetails */
+            tm.tenant_id as tenantId,
+            tm.module_id as moduleId,
+            tm.purchased_at as purchasedAt,
+            m.code as code,
+            m.name as name,
+            m.description as description,
+            m.icon as icon
+        FROM TENANT_MODULE tm
+        INNER JOIN MODULE m ON tm.module_id = m.module_id
+        WHERE tm.tenant_id = #{tenantId}
+        ORDER BY tm.purchased_at DESC, m.name
+    </select>
+
+</mapper>

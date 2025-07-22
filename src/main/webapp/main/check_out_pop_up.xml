@@ -34,40 +34,16 @@ scwin.onpageload = function() {
     
     spn_checkoutMsg.setValue(message);
     spn_question.setValue("퇴장하시겠습니까?");
-};
-
-scwin.closePopup = function() {
-    $p.closePopup();
-};
-
-scwin.processCheckout = function() {
-    $p.closePopup({
-        result: "checkout",
-        message: "퇴근 처리가 완료되었습니다."
-    });
-};
-]]></script>
+};]]></script>
     </head>
     <body ev:onpageload="scwin.onpageload">
         <!-- 팝업 헤더 -->
-        <xf:group class="" id="grp_header" style="background-color:#F44336;height:60px;padding:15px 20px;position:relative;">
-            <xf:group class="" id="grp_headerLeft" style="float:left;">
-                <w2:textbox class="" id="txt_icon" style="display:inline-block;width:30px;height:30px;background-color:white;border-radius:15px;text-align:center;line-height:30px;color:#F44336;font-weight:bold;margin-right:15px;font-size:16px;" label=">"/>
-                <w2:textbox class="" id="txt_title" style="color:white;font-size:18px;font-weight:bold;line-height:30px;" label="퇴근 처리"/>
-            </xf:group>
-            <xf:group class="" id="grp_headerRight" style="float:right;">
-                <w2:anchor class="" id="anc_close" style="display:inline-block;width:30px;height:30px;background-color:rgba(255,255,255,0.2);border-radius:15px;text-align:center;line-height:30px;color:white;cursor:pointer;font-size:18px;" ev:onclick="scwin.closePopup()">
-                    <xf:label>X</xf:label>
-                </w2:anchor>
-            </xf:group>
-            <w2:textbox class="" id="txt_clear" style="clear:both;" label=""/>
-        </xf:group>
         
         <!-- 팝업 내용 -->
-        <xf:group class="" id="grp_content" style="padding:60px 40px;text-align:center;background-color:white;min-height:200px;">
-            <w2:textbox class="" id="spn_checkoutMsg" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:10px;" label=""/>
-            <w2:textbox class="" id="spn_question" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:30px;" label=""/>
-            <w2:textbox class="" id="spn_date" ref="data:dma_checkout.checkDate" style="font-size:16px;color:#666;display:block;margin-bottom:40px;" label=""/>
+        <xf:group class="" id="grp_content" style="padding:0px 40px;text-align:center;background-color:white;min-height:200px;">
+            <w2:textbox class="" id="spn_checkoutMsg" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:10px;" label="16:54에 퇴근처리됩니다."/>
+            <w2:textbox class="" id="spn_question" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:30px;" label="퇴장하시겠습니까?"/>
+            <w2:textbox class="" id="spn_date" ref="data:dma_checkout.checkDate" style="font-size:16px;color:#666;display:block;margin-bottom:40px;" label="2025년 6월 20일 오후 4:54"/>
             
             <!-- 버튼 그룹 -->
             <xf:trigger class="" id="btn_checkout" style="background-color:#F44336;color:white;padding:12px 30px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;margin-right:15px;" ev:onclick="scwin.processCheckout()" type="button">

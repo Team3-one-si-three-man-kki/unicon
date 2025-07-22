@@ -37,11 +37,6 @@
 
 	<dependencies>
 		
-		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-messaging</artifactId>
-		    <version>${spring.maven.artifact.version}</version>
-		</dependency>
 		
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -385,13 +380,7 @@
 			<artifactId>xstream</artifactId>
             <version>1.4.20</version>
 		</dependency>
-		
-		<dependency>
-		    <groupId>io.jsonwebtoken</groupId>
-		    <artifactId>jjwt-api</artifactId>
-		    <version>0.10.8</version>
-		</dependency>
-		
+
 		<!-- Castor -->
 		<dependency>
 			<groupId>org.codehaus.castor</groupId>

@@ -1,0 +1,1744 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="">
+					<serverStats>
+						<activeSessions>0</activeSessions>
+						<connectedUsers>0</connectedUsers>
+						<activeWorkers>0</activeWorkers>
+						<uptime>0</uptime>
+						<serverStatus>정상</serverStatus>
+						<cpuUsage>0</cpuUsage>
+						<memoryUsage>0</memoryUsage>
+						<networkUsage>0</networkUsage>
+					</serverStats>
+					<tenantStats>
+						<tenantId></tenantId>
+						<sessions>0</sessions>
+						<users>0</users>
+					</tenantStats>
+					<sessionInfo>
+						<roomId></roomId>
+						<participants>0</participants>
+						<status></status>
+						<duration></duration>
+						<quality></quality>
+					</sessionInfo>
+				</data>
+			</xf:instance>
+
+			<xf:submission id="serverStatsSubmission" action="https://13.125.229.206:3000/api/admin/server-stats" method="get"
+				mediatype="application/json" replace="none" mode="asynchronous" instance="data" ref="/data/serverStats"
+				ev:errorHandler="scwin.submissionError">
+				<xf:request>
+					<xf:header>
+						<xf:name><![CDATA[Authorization]]></xf:name>
+						<xf:value><![CDATA[javascript:return 'Bearer ' + scwin.getApiToken();]]></xf:value>
+					</xf:header>
+				</xf:request>
+			</xf:submission>
+
+			<xf:submission id="sbm_selectTenantVoList" action="/InsWebApp/TNT0001List.pwkjson" method="post"
+				mediatype="application/json" replace="" mode="asynchronous" instance="" ref='data:json,{"id":"dmp_tenantVo","key":"tenantVo"}'
+				ev:errorHandler="scwin.sbm_selectTenantVoList_submiterror" target='data:json,{"id":"dlt_tenantVoList","key":"elData.tenantVoList"}'
+				processMsg="" processMsgType="none" ev:submitdone="scwin.sbm_selectTenantVoList_submitdone">
+				<xf:request>
+					<xf:header>
+						<xf:name><![CDATA[Authorization]]></xf:name>
+						<xf:value><![CDATA[javascript:return 'Bearer ' + scwin.getApiToken();]]></xf:value>
+					</xf:header>
+				</xf:request>
+			</xf:submission>
+
+			<xf:submission id="tenantStatsSubmission" action="" method="get" mediatype="application/json" replace="none"
+				mode="asynchronous" instance="data" ref="/data/tenantStats" ev:handler="scwin.tenantStatsSuccess"
+				ev:errorHandler="scwin.submissionError">
+				<xf:request>
+					<xf:header>
+						<xf:name><![CDATA[Authorization]]></xf:name>
+						<xf:value><![CDATA[javascript:return 'Bearer ' + scwin.getApiToken();]]></xf:value>
+					</xf:header>
+				</xf:request>
+			</xf:submission>
+
+			<xf:submission id="sessionInfoSubmission" action="" method="get" mediatype="application/json" replace="none"
+				mode="asynchronous" instance="data" ref="/data/sessionInfo" ev:handler="scwin.sessionInfoSuccess"
+				ev:errorHandler="scwin.submissionError">
+				<xf:request>
+					<xf:header>
+						<xf:name><![CDATA[Authorization]]></xf:name>
+						<xf:value><![CDATA[javascript:return 'Bearer ' + scwin.getApiToken();]]></xf:value>
+					</xf:header>
+				</xf:request>
+			</xf:submission>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList baseNode="list" repeatNode="map" id="dlt_tenantVoList" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="tenantId" id="tenantId"></w2:column>
+						<w2:column dataType="text" name="createdAt" id="createdAt"></w2:column>
+						<w2:column dataType="text" name="name" id="name"></w2:column>
+						<w2:column dataType="text" name="subDomain" id="subDomain"></w2:column>
+
+						<w2:column dataType="text" name="isActive" id="isActive"></w2:column>
+
+						<w2:column dataType="text" name="user_count" id="userCount"></w2:column>
+						<w2:column dataType="text" name="module_count" id="moduleCount"></w2:column>
+						<w2:column dataType="number" name="active_sessions" id="activeSessions"></w2:column>
+						<w2:column dataType="number" name="connected_users" id="connectedUsers"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap baseNode="map" id="dmp_tenantVo">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="search_tenant_id" id="scTenantId"></w2:key>
+						<w2:key dataType="text" name="search_name" id="scName"></w2:key>
+						<w2:key dataType="text" name="search_status" id="scStatus"></w2:key>
+						<w2:key dataType="text" name="페이지_번호" id="pageIndex" defaultValue="1"></w2:key>
+						<w2:key dataType="text" name="페이지_건수" id="pageSize" defaultValue="5"></w2:key>
+						<w2:key dataType="number" name="총_건수" id="totalRowCount" defaultValue="0"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+		</xf:model>
+
+		<script type="text/javascript"><![CDATA[
+// 전역 변수
+let refreshInterval;
+
+scwin.getApiToken = function () {
+    return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzZWNyZXRAdGVzdC5jb20iLCJ0ZW5hbnRJZCI6IjIiLCJyb2xlIjoibWFuYWdlciIsInR5cGUiOiJhY2Nlc3MiLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzUzMDgzNzkyLCJleHAiOjE3NTMwODU1OTJ9.Zsw_SY5QwbGtmskKF97ZrvFdumxA1si0ZJTmzyOf9yyMbG6A2AsMlAZRWlcztCgLFqaBz3hslb_Q3rlm4zNRqg";
+};
+
+scwin.onpageload = function () {
+    console.log("향상된 서버 현황 페이지 로드");
+    scwin.showDefaultData();
+
+    scwin.loadTenantList();
+
+    scwin.testConnection();
+
+    setTimeout(function () {
+        scwin.loadServerData();
+    }, 1000);
+
+    refreshInterval = setInterval(function () {
+        scwin.loadServerData();
+    }, 30000);
+
+};
+
+scwin.onpageunload = function () {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+};
+
+scwin.loadTenantList = function () {
+    console.log("=== 테넌트 목록 로드 시작 ===");
+    $p.executeSubmission("sbm_selectTenantVoList");
+};
+
+scwin.sbm_selectTenantVoList_submitdone = function (e) {
+    console.log("=== 테넌트 목록 조회 성공 ===");
+
+    const totalCount = e.responseJSON.elData.totalCount || 0;
+    dmp_tenantVo.set("totalRowCount", totalCount);
+
+    scwin.updatePagination(); 
+
+    if (dlt_tenantVoList.getRowCount() > 0) {
+        const firstTenantId = dlt_tenantVoList.getCellData(0, "tenantId");
+        grd_tenantList.setFocusedCell(0, "name");
+        scwin.loadTenantData(firstTenantId);
+    } else {
+        scwin.updateTenantStats({ sessions: "-", users: "-" });
+    }
+};
+
+scwin.formatActiveStatus = function (data) {
+    if (data === true || data === 'true' || data === 1 || data === '1') {
+        return "활성";
+    }
+    return "비활성";
+};
+
+scwin.sbm_selectTenantVoList_submiterror = function (e) {
+    console.error("=== 테넌트 목록 조회 실패 ===", e);
+};
+
+scwin.testConnection = function () {
+    console.log("네트워크 연결 테스트 중...");
+
+    try {
+        fetch('https://13.125.229.206:3000/api/admin/server-stats', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + scwin.getApiToken(),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            timeout: 10000
+        })
+            .then(response => {
+                console.log("연결 테스트 응답:", response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("연결 테스트 성공:", data);
+                scwin.handleApiSuccess(data);
+            })
+            .catch(error => {
+                console.error("연결 테스트 실패:", error);
+                scwin.handleConnectionError(error);
+            });
+    } catch (error) {
+        console.error("Fetch 지원 불가:", error);
+        scwin.fallbackToXMLHttpRequest();
+    }
+};
+
+scwin.fallbackToXMLHttpRequest = function () {
+    console.log("XMLHttpRequest 사용하여 API 호출...");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://13.125.229.206:3000/api/admin/server-stats', true);
+
+    xhr.setRequestHeader('Authorization', 'Bearer ' + scwin.getApiToken());
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Accept', 'application/json');
+
+    xhr.timeout = 10000;
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    console.log("XMLHttpRequest 성공:", data);
+                    scwin.handleApiSuccess(data);
+                } catch (parseError) {
+                    console.error("JSON 파싱 오류:", parseError);
+                    scwin.handleApiError("응답 데이터 파싱 실패");
+                }
+            } else {
+                console.error("XMLHttpRequest 오류:", xhr.status, xhr.statusText);
+                scwin.handleHttpError(xhr.status, xhr.statusText);
+            }
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error("XMLHttpRequest 네트워크 오류");
+        scwin.handleApiError("네트워크 연결 오류");
+    };
+
+    xhr.ontimeout = function () {
+        console.error("XMLHttpRequest 타임아웃");
+        scwin.handleApiError("요청 시간 초과");
+    };
+
+    try {
+        xhr.send();
+    } catch (sendError) {
+        console.error("XMLHttpRequest 전송 오류:", sendError);
+        scwin.handleApiError("요청 전송 실패");
+    }
+};
+
+scwin.handleConnectionError = function (error) {
+    let errorMessage = "서버 연결 실패";
+
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage = "네트워크 오류 또는 CORS 정책으로 인한 차단";
+    } else if (error.message.includes('403')) {
+        errorMessage = "인증 실패 - API 토큰을 확인해주세요";
+    } else if (error.message.includes('404')) {
+        errorMessage = "API 엔드포인트를 찾을 수 없습니다";
+    } else if (error.message.includes('500')) {
+        errorMessage = "서버 내부 오류";
+    }
+
+    scwin.handleApiError(errorMessage);
+    console.log("Fetch 실패, XMLHttpRequest로 재시도...");
+    setTimeout(scwin.fallbackToXMLHttpRequest, 1000);
+};
+
+scwin.handleHttpError = function (status, statusText) {
+    let errorMessage = `HTTP ${status} 오류`;
+
+    switch (status) {
+        case 0:
+            errorMessage = "네트워크 연결 불가 또는 CORS 차단";
+            break;
+        case 401:
+            errorMessage = "인증 실패 - 로그인이 필요합니다";
+            break;
+        case 403:
+            errorMessage = "접근 권한이 없습니다 - 토큰을 확인해주세요";
+            break;
+        case 404:
+            errorMessage = "API 엔드포인트를 찾을 수 없습니다";
+            break;
+        case 500:
+            errorMessage = "서버 내부 오류";
+            break;
+        case 502:
+            errorMessage = "서버가 응답하지 않습니다";
+            break;
+        case 503:
+            errorMessage = "서비스를 사용할 수 없습니다";
+            break;
+        default:
+            errorMessage = `HTTP ${status}: ${statusText}`;
+    }
+
+    scwin.handleApiError(errorMessage);
+};
+
+scwin.handleApiSuccess = function (data) {
+    console.log("=== API 응답 성공 ===");
+    console.log("실제 API 데이터:", data);
+
+    try {
+        if (!data || !data.summary) {
+            throw new Error("API 응답에 summary 데이터가 없습니다.");
+        }
+
+        const formattedData = {
+            activeSessions: data.summary.activeRoomCount || 0,
+            connectedUsers: data.summary.totalConnectedPeers || 0,
+            activeWorkers: data.workers ? data.workers.length : 0,
+            uptime: data.summary.uptime || 0,
+            serverStatus: "정상",
+
+            memoryUsage: scwin.parseMemoryPercentage(data.summary.memoryUsage?.rssPercentOfSystem),
+            cpuUsage: scwin.calculateCpuFromWorkers(data.workers),
+            networkUsage: scwin.calculateNetworkFromActivity(data.summary),
+
+            workers: data.workers ? data.workers.map((worker, index) => ({
+                pid: worker.pid,
+                status: 'running',
+                memoryMb: worker.memoryUsage?.maxRssMb || 'N/A',
+                cpuUser: worker.cpuTime?.user || 0,
+                cpuSystem: worker.cpuTime?.system || 0
+            })) : [],
+
+            sessions: data.rooms ? data.rooms.map(room => ({
+                roomName: room.id || 'Unknown Room',
+                sessionId: room.id,
+                participantCount: room.peersCount || 0,
+                duration: scwin.getRandomDuration(),
+                quality: scwin.getQualityByParticipants(room.peersCount || 0)
+            })) : [],
+
+            systemMemoryMB: data.summary.memoryUsage?.totalSystemMemoryMB || 'N/A',
+            processMemoryMB: data.summary.memoryUsage?.rssMB || 'N/A',
+            totalTransports: data.summary.totalTransports || 0,
+            totalProducers: data.summary.totalProducers || 0,
+            totalConsumers: data.summary.totalConsumers || 0
+        };
+
+        console.log("UI에 맞게 변환된 데이터:", formattedData);
+
+        scwin.updateServerStats(formattedData);
+        scwin.updatePerformanceIndicators(formattedData);
+        scwin.updateSystemInfo(formattedData);
+        scwin.updateWorkerProcesses(formattedData.workers);
+        scwin.updateLiveSessions(formattedData.sessions);
+
+        scwin.showLoading(false);
+        console.log("=== 실제 데이터로 UI 업데이트 완료 ===");
+
+    } catch (error) {
+        console.error("데이터 처리 오류:", error);
+        scwin.handleApiError("데이터 처리 중 오류가 발생했습니다: " + error.message);
+    }
+};
+
+
+scwin.parseMemoryPercentage = function (percentString) {
+    // "8.31%" -> 8.31 (숫자로 변환)
+    if (!percentString) return 0;
+    return parseFloat(percentString.replace('%', '')) || 0;
+};
+
+scwin.calculateCpuFromWorkers = function (workers) {
+    if (!workers || workers.length === 0) return 0;
+
+    let totalCpuTime = 0;
+    workers.forEach(worker => {
+        if (worker.cpuTime) {
+            totalCpuTime += (worker.cpuTime.user || 0) + (worker.cpuTime.system || 0);
+        }
+    });
+
+    return Math.min(Math.floor(totalCpuTime / 1000), 100);
+};
+
+scwin.calculateNetworkFromActivity = function (summary) {
+    const transports = summary.totalTransports || 0;
+    const producers = summary.totalProducers || 0;
+    const consumers = summary.totalConsumers || 0;
+
+    const transportLoad = transports * 2; // Transport당 2%
+    const producerLoad = producers * 5;   // Producer당 5%
+    const consumerLoad = consumers * 3;   // Consumer당 3%
+
+    return Math.min(transportLoad + producerLoad + consumerLoad, 100);
+};
+
+scwin.updateSystemInfo = function (data) {
+    try {
+        console.log("시스템 정보 업데이트:", data);
+
+        // 시스템 정보 로그 출력
+        console.log(`시스템 메모리: ${data.systemMemoryMB}MB`);
+        console.log(`프로세스 메모리: ${data.processMemoryMB}MB`);
+        console.log(`메모리 사용률: ${data.memoryUsage}%`);
+        console.log(`총 Transport: ${data.totalTransports}`);
+        console.log(`총 Producer: ${data.totalProducers}`);
+        console.log(`총 Consumer: ${data.totalConsumers}`);
+
+    } catch (error) {
+        console.error("시스템 정보 업데이트 오류:", error);
+    }
+};
+
+scwin.updateWorkerProcesses = function (workers) {
+    try {
+        console.log("Worker 프로세스 업데이트:", workers);
+
+        const workerSection = document.getElementById("worker_process_section");
+        if (workerSection) {
+            const existingItems = workerSection.querySelectorAll('.worker-item');
+            existingItems.forEach(item => item.remove());
+
+            workers.forEach((worker, index) => {
+                const workerItem = document.createElement('div');
+                workerItem.className = 'worker-item';
+                workerItem.innerHTML = `
+                    <div class="worker-icon icon-worker">W${index + 1}</div>
+                    <div class="worker-info">
+                        <div class="worker-name">Worker #${index + 1}</div>
+                        <div class="worker-details">PID: ${worker.pid} | 메모리: ${worker.memoryMb}MB</div>
+                    </div>
+                    <div class="worker-metrics">
+                        <div class="worker-load">CPU: ${worker.cpuUser + worker.cpuSystem}ms</div>
+                        <div class="worker-sessions">실행중</div>
+                    </div>
+                `;
+                workerSection.appendChild(workerItem);
+            });
+
+            // Worker가 없는 경우 메시지 표시
+            if (workers.length === 0) {
+                const noWorkerItem = document.createElement('div');
+                noWorkerItem.className = 'worker-item';
+                noWorkerItem.innerHTML = `
+                    <div class="worker-info">
+                        <div class="worker-name">활성 Worker가 없습니다</div>
+                    </div>
+                `;
+                workerSection.appendChild(noWorkerItem);
+            }
+        }
+    } catch (error) {
+        console.error("Worker 프로세스 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.showDefaultData = function () {
+    console.log("기본 데이터 표시");
+    const defaultData = {
+        activeSessions: 0,
+        connectedUsers: 0,
+        activeWorkers: 0,
+        uptime: 0,
+        serverStatus: "로딩중",
+        cpuUsage: 0,
+        memoryUsage: 0,
+        networkUsage: 0,
+        workers: [],
+        sessions: []
+    };
+    scwin.updateServerStats(defaultData);
+    scwin.updatePerformanceIndicators(defaultData);
+    scwin.updateWorkerProcesses(defaultData.workers);
+    scwin.updateLiveSessions(defaultData.sessions);
+    scwin.updateTenantStats({ sessions: 0, users: 0 });
+};
+
+scwin.loadServerData = function () {
+    console.log("서버 데이터 로드 시도...");
+    scwin.showLoading(true);
+    scwin.testConnection();
+};
+
+scwin.loadTenantData = function (tenantId) {
+    if (!tenantId) {
+        scwin.updateTenantStats({ sessions: "전체", users: "전체" });
+        return;
+    }
+
+    console.log(`테넌트 ${tenantId} 데이터 로드 시도`);
+    const url = `https://13.125.229.206:3000/api/admin/tenant-stats?tenantId=${tenantId}`;
+    scwin.updateTenantStats({ sessions: "로딩중...", users: "로딩중..." });
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + scwin.getApiToken(),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        mode: 'cors'
+    })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log("테넌트 데이터 로드 성공:", data);
+
+            // (수정) API 응답 키인 activeRooms와 connectedPeers를 사용하도록 변경합니다.
+            const tenantData = {
+                sessions: data.activeRooms || 0,
+                users: data.connectedPeers || 0
+            };
+
+            scwin.updateTenantStats(tenantData);
+        })
+        .catch(error => {
+            console.error("테넌트 데이터 로드 실패:", error);
+            scwin.updateTenantStats({ sessions: "오류", users: "오류" });
+            // 에러 발생 시 XHR 폴백 로직은 그대로 유지합니다.
+            scwin.loadTenantDataXHR(tenantId);
+        });
+};
+
+scwin.loadTenantDataXHR = function (tenantId) {
+    console.log("XMLHttpRequest로 테넌트 데이터 재시도...");
+
+    const xhr = new XMLHttpRequest();
+    const url = `https://13.125.229.206:3000/api/admin/tenant-stats?tenantId=${tenantId}`;
+
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + scwin.getApiToken());
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 10000;
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    console.log("테넌트 XHR 성공:", data);
+                    const tenantData = {
+                        sessions: data.activeSessions || data.summary?.activeRoomCount || 0,
+                        users: data.connectedUsers || data.summary?.totalConnectedPeers || 0
+                    };
+                    scwin.updateTenantStats(tenantData);
+                } catch (parseError) {
+                    console.error("테넌트 데이터 파싱 오류:", parseError);
+                    scwin.updateTenantStats({ sessions: "파싱오류", users: "파싱오류" });
+                }
+            } else {
+                console.error("테넌트 XHR 오류:", xhr.status, xhr.statusText);
+                scwin.updateTenantStats({ sessions: `HTTP ${xhr.status}`, users: "오류" });
+            }
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error("테넌트 XHR 네트워크 오류");
+        scwin.updateTenantStats({ sessions: "네트워크오류", users: "네트워크오류" });
+    };
+
+    xhr.ontimeout = function () {
+        console.error("테넌트 XHR 타임아웃");
+        scwin.updateTenantStats({ sessions: "타임아웃", users: "타임아웃" });
+    };
+
+    try {
+        xhr.send();
+    } catch (sendError) {
+        console.error("테넌트 XHR 전송 오류:", sendError);
+        scwin.updateTenantStats({ sessions: "전송오류", users: "전송오류" });
+    }
+};
+
+scwin.loadSessionInfo = function (roomId) {
+    console.log(`${roomId} 세션의 상세 정보를 요청합니다.`);
+
+    const url = `https://13.125.229.206:3000/api/admin/session-info?roomId=${roomId}`;
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + scwin.getApiToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("세션 상세 정보:", data);
+            const detailInfo = `세션 상세 정보:
+룸 ID: ${data.roomId || roomId}
+참여자 수: ${data.participants || 0}명
+지속 시간: ${data.duration || 'N/A'}
+상태: ${data.status || '활성'}
+품질 지표: ${data.quality || '정상'}
+비트레이트: ${data.bitrate || 'N/A'} kbps
+패킷 손실률: ${data.packetLoss || 'N/A'}%`;
+
+            alert(detailInfo);
+        })
+        .catch(error => {
+            console.error("세션 정보 로드 실패:", error);
+            alert("세션 정보를 불러올 수 없습니다: " + error.message);
+        });
+};
+
+scwin.updateServerStats = function (data) {
+    try {
+        // 주요 통계 업데이트
+        const sessionsEl = document.querySelector('.card-sessions .stat-number');
+        if (sessionsEl) sessionsEl.textContent = data.activeSessions || "0";
+
+        const usersEl = document.querySelector('.card-users .stat-number');
+        if (usersEl) usersEl.textContent = data.connectedUsers || "0";
+
+        const workersEl = document.querySelector('.card-workers .stat-number');
+        if (workersEl) workersEl.textContent = data.activeWorkers || "0";
+
+        const uptimeEl = document.querySelector('.card-uptime .stat-number');
+        if (uptimeEl) uptimeEl.textContent = scwin.formatUptime(data.uptime);
+
+        // 서버 상태 업데이트
+        const statusTextEl = document.querySelector('.status-text');
+        if (statusTextEl) statusTextEl.textContent = data.serverStatus || "정상";
+
+        const statusDotEl = document.querySelector('.status-dot');
+        if (statusDotEl) {
+            const isHealthy = data.serverStatus === "정상";
+            statusDotEl.style.backgroundColor = isHealthy ? "#34c759" : "#ff3b30";
+        }
+    } catch (error) {
+        console.error("서버 통계 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.updatePerformanceIndicators = function (data) {
+    try {
+        console.log("성능 지표 업데이트:", data);
+
+        const cpuUsage = Math.round(data.cpuUsage || 0);
+        const memoryUsage = Math.round(data.memoryUsage || 0);
+        const networkUsage = Math.round(data.networkUsage || 0);
+
+        console.log(`계산된 값들 - CPU: ${cpuUsage}%, 메모리: ${memoryUsage}%, 네트워크: ${networkUsage}%`);
+
+        try {
+            const cpuTextComp = $p.getComponentById("cpuText");
+            if (cpuTextComp) {
+                cpuTextComp.setValue(cpuUsage + '%');
+                console.log("CPU 텍스트 웹스퀘어 컴포넌트 업데이트 성공:", cpuUsage + '%');
+            }
+        } catch (e) {
+            console.log("CPU 텍스트 웹스퀘어 컴포넌트 접근 실패:", e);
+        }
+
+        try {
+            const memoryTextComp = $p.getComponentById("memoryText");
+            if (memoryTextComp) {
+                memoryTextComp.setValue(memoryUsage + '%');
+                console.log("메모리 텍스트 웹스퀘어 컴포넌트 업데이트 성공:", memoryUsage + '%');
+            }
+        } catch (e) {
+            console.log("메모리 텍스트 웹스퀘어 컴포넌트 접근 실패:", e);
+        }
+
+        try {
+            const networkTextComp = $p.getComponentById("networkText");
+            if (networkTextComp) {
+                networkTextComp.setValue(networkUsage + '%');
+                console.log("네트워크 텍스트 웹스퀘어 컴포넌트 업데이트 성공:", networkUsage + '%');
+            }
+        } catch (e) {
+            console.log("네트워크 텍스트 웹스퀘어 컴포넌트 접근 실패:", e);
+        }
+
+        setTimeout(() => {
+            try {
+                // CSS 선택자로 찾기
+                const cpuBar = document.querySelector('#cpuBar, [id*="cpuBar"]');
+                const memoryBar = document.querySelector('#memoryBar, [id*="memoryBar"]');
+                const networkBar = document.querySelector('#networkBar, [id*="networkBar"]');
+
+                if (cpuBar) {
+                    cpuBar.style.width = cpuUsage + '%';
+                    console.log("CPU 바 직접 업데이트 성공");
+                }
+                if (memoryBar) {
+                    memoryBar.style.width = memoryUsage + '%';
+                    console.log("메모리 바 직접 업데이트 성공");
+                }
+                if (networkBar) {
+                    networkBar.style.width = networkUsage + '%';
+                    console.log("네트워크 바 직접 업데이트 성공");
+                }
+
+                // 클래스 선택자로도 시도
+                const performanceTexts = document.querySelectorAll('.performance-text');
+                console.log("performance-text 요소들:", performanceTexts.length);
+
+                if (performanceTexts.length >= 3) {
+                    performanceTexts[0].textContent = cpuUsage + '%';
+                    performanceTexts[1].textContent = memoryUsage + '%';
+                    performanceTexts[2].textContent = networkUsage + '%';
+                    console.log("클래스 선택자로 텍스트 업데이트 성공");
+                }
+
+            } catch (domError) {
+                console.error("DOM 직접 접근 오류:", domError);
+            }
+        }, 100);
+
+        try {
+            const totalTransportsComp = $p.getComponentById('totalTransports');
+            const totalProducersComp = $p.getComponentById('totalProducers');
+            const totalConsumersComp = $p.getComponentById('totalConsumers');
+
+            if (totalTransportsComp) totalTransportsComp.setValue(data.totalTransports || 0);
+            if (totalProducersComp) totalProducersComp.setValue(data.totalProducers || 0);
+            if (totalConsumersComp) totalConsumersComp.setValue(data.totalConsumers || 0);
+
+            console.log("시스템 정보 웹스퀘어 컴포넌트 업데이트 완료");
+        } catch (e) {
+            console.log("시스템 정보 웹스퀘어 컴포넌트 접근 실패:", e);
+        }
+
+    } catch (error) {
+        console.error("성능 지표 업데이트 오류:", error);
+    }
+};
+
+scwin.updateTenantStats = function (data) {
+    try {
+        console.log("테넌트 통계 업데이트:", data);
+
+        const sessionValue = data.activeSessions || data.sessions || "0";
+        const userValue = data.connectedUsers || data.users || "0";
+
+        // 웹스퀘어 컴포넌트로 접근
+        try {
+            const sessionsComp = $p.getComponentById('tenantSessions');
+            if (sessionsComp) {
+                sessionsComp.setValue(sessionValue);
+                console.log("테넌트 세션 웹스퀘어 컴포넌트 업데이트:", sessionValue);
+            }
+        } catch (e) {
+            console.log("테넌트 세션 웹스퀘어 컴포넌트 접근 실패:", e);
+        }
+
+        try {
+            const usersComp = $p.getComponentById('tenantUsers');
+            if (usersComp) {
+                usersComp.setValue(userValue);
+                console.log("테넌트 사용자 웹스퀘어 컴포넌트 업데이트:", userValue);
+            }
+        } catch (e) {
+            console.log("테넌트 사용자 웹스퀘어 컴포넌트 접근 실패:", e);
+        }
+
+        setTimeout(() => {
+            const tenantStatNumbers = document.querySelectorAll('.tenant-stat-number');
+            if (tenantStatNumbers.length >= 2) {
+                tenantStatNumbers[0].textContent = sessionValue;
+                tenantStatNumbers[1].textContent = userValue;
+                console.log("클래스 선택자로 테넌트 통계 업데이트 성공");
+            }
+        }, 50);
+
+    } catch (error) {
+        console.error("테넌트 통계 업데이트 오류:", error);
+    }
+};
+
+scwin.updateServerStats = function (data) {
+    try {
+        console.log("서버 통계 업데이트:", data);
+
+        setTimeout(() => {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            console.log("stat-number 요소들:", statNumbers.length);
+
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = data.activeSessions || "0";
+                statNumbers[1].textContent = data.connectedUsers || "0";
+                statNumbers[2].textContent = data.activeWorkers || "0";
+                statNumbers[3].textContent = scwin.formatUptime(data.uptime);
+                console.log("클래스 선택자로 서버 통계 업데이트 성공");
+            }
+
+            const statusTextEl = document.querySelector('.status-text');
+            if (statusTextEl) {
+                statusTextEl.textContent = data.serverStatus || "정상";
+            }
+
+            const statusDotEl = document.querySelector('.status-dot');
+            if (statusDotEl) {
+                const isHealthy = data.serverStatus === "정상";
+                statusDotEl.style.backgroundColor = isHealthy ? "#34c759" : "#ff3b30";
+            }
+
+        }, 50);
+
+    } catch (error) {
+        console.error("서버 통계 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.updateWorkerProcesses = function (workers) {
+    try {
+        const workerSection = document.getElementById("worker_process_section");
+        if (workerSection) {
+            const existingItems = workerSection.querySelectorAll('.worker-item');
+            existingItems.forEach(item => item.remove());
+
+            workers.forEach((worker, index) => {
+                const workerItem = document.createElement('div');
+                workerItem.className = 'worker-item';
+                workerItem.innerHTML = `
+                    <div class="worker-icon icon-worker">W${index + 1}</div>
+                    <div class="worker-info">
+                        <div class="worker-name">Worker #${index + 1}</div>
+                        <div class="worker-details">PID: ${worker.pid || 'N/A'} | 가동시간: ${scwin.getRandomUptime()}</div>
+                    </div>
+                    <div class="worker-metrics">
+                        <div class="worker-load">부하: ${worker.load || 0}%</div>
+                        <div class="worker-sessions">세션: ${worker.sessions || 0}개</div>
+                    </div>
+                `;
+                workerSection.appendChild(workerItem);
+            });
+        }
+    } catch (error) {
+        console.error("Worker 프로세스 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.updateLiveSessions = function (sessions) {
+    try {
+        const sessionSection = document.getElementById("live_session_section");
+        if (sessionSection) {
+            const existingItems = sessionSection.querySelectorAll('.worker-item');
+            existingItems.forEach(item => item.remove());
+
+            sessions.forEach(session => {
+                const sessionItem = document.createElement('div');
+                sessionItem.className = 'worker-item';
+                sessionItem.style.cursor = 'pointer';
+                sessionItem.onclick = function () {
+                    scwin.loadSessionInfo(session.sessionId);
+                };
+
+                // 세션 타입에 따른 아이콘 결정
+                const iconClass = scwin.getSessionIconClass(session.roomName);
+                const iconText = scwin.getSessionIconText(session.roomName);
+
+                sessionItem.innerHTML = `
+                    <div class="worker-icon ${iconClass}">${iconText}</div>
+                    <div class="worker-info">
+                        <div class="worker-name">${session.roomName || 'Unknown Room'}</div>
+                        <div class="worker-details">지속시간: ${session.duration} | 품질: ${session.quality}</div>
+                    </div>
+                    <div class="worker-metrics">
+                        <div class="worker-load">${session.participantCount || 0}명</div>
+                        <div class="worker-sessions">참여중</div>
+                    </div>
+                `;
+                sessionSection.appendChild(sessionItem);
+            });
+        }
+    } catch (error) {
+        console.error("라이브 세션 UI 업데이트 오류:", error);
+    }
+};
+
+// 유틸리티 함수들
+scwin.formatUptime = function (seconds) {
+    if (!seconds || seconds < 60) return `${Math.floor(seconds || 0)}초`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}분`;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}시간 ${minutes}분`;
+};
+
+scwin.getRandomDuration = function () {
+    const minutes = Math.floor(Math.random() * 120 + 10); // 10-130분
+    if (minutes < 60) return `${minutes}분`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}시간 ${remainingMinutes}분`;
+};
+
+scwin.getRandomUptime = function () {
+    const hours = Math.floor(Math.random() * 72 + 1); // 1-72시간
+    return `${hours}시간`;
+};
+
+scwin.getQualityByParticipants = function (count) {
+    if (count > 30) return "보통";
+    if (count > 15) return "우수";
+    return "최고";
+};
+
+scwin.getSessionIconClass = function (roomName) {
+    if (roomName.includes('회의') || roomName.includes('meeting')) return 'icon-meeting';
+    if (roomName.includes('수업') || roomName.includes('class')) return 'icon-class';
+    if (roomName.includes('세미나') || roomName.includes('seminar')) return 'icon-seminar';
+    return 'icon-session';
+};
+
+scwin.getSessionIconText = function (roomName) {
+    if (roomName.includes('회의') || roomName.includes('meeting')) return 'M';
+    if (roomName.includes('수업') || roomName.includes('class')) return 'C';
+    if (roomName.includes('세미나') || roomName.includes('seminar')) return 'S';
+    return 'S';
+};
+
+scwin.showLoading = function (show) {
+    try {
+        document.querySelectorAll('.worker-refresh-btn').forEach(btn => {
+            btn.disabled = show;
+            btn.textContent = show ? '로딩중...' : '새로고침';
+        });
+        document.querySelectorAll('.stat-card').forEach(card => {
+            if (show) card.classList.add('loading');
+            else card.classList.remove('loading');
+        });
+    } catch (error) {
+        console.error("로딩 상태 표시 오류:", error);
+    }
+};
+
+scwin.handleApiError = function (message) {
+    console.error("API 오류:", message);
+    scwin.showLoading(false);
+
+    // 에러 발생 시 서버 상태를 '오류'로 표시
+    const statusEl = document.querySelector('.status-text');
+    if (statusEl) statusEl.textContent = "오류";
+    const statusDotEl = document.querySelector('.status-dot');
+    if (statusDotEl) statusDotEl.style.backgroundColor = "#ff3b30";
+
+    alert("오류: " + message);
+};
+
+// WebSquare submission 관련 함수들 (호환성을 위해 유지)
+scwin.serverStatsSuccess = function (e) {
+    console.log("WebSquare submission 성공:", e);
+    try {
+        const realData = e.responseJSON || JSON.parse(e.responseText);
+        scwin.handleApiSuccess(realData);
+    } catch (error) {
+        console.error("WebSquare submission 데이터 처리 오류:", error);
+        scwin.handleApiError("WebSquare submission 데이터 처리 실패");
+    }
+};
+
+scwin.tenantStatsSuccess = function (e) {
+    console.log("테넌트 통계 WebSquare submission 성공:", e);
+    try {
+        const data = e.responseJSON || JSON.parse(e.responseText);
+        scwin.updateTenantStats(data);
+    } catch (error) {
+        console.error("테넌트 통계 데이터 처리 오류:", error);
+    }
+};
+
+scwin.sessionInfoSuccess = function (e) {
+    console.log("세션 정보 WebSquare submission 성공:", e);
+    try {
+        const data = e.responseJSON || JSON.parse(e.responseText);
+        alert("세션 상세 정보:\n" + JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error("세션 정보 데이터 처리 오류:", error);
+    }
+};
+
+scwin.submissionError = function (e) {
+    console.error("=== WebSquare Submission 오류 ===", e);
+    scwin.handleHttpError(e.status || 0, e.statusText || 'Unknown Error');
+};
+
+scwin.onTenantSelectChange = function (row, col) {
+    // dlt_tenantVoList (DataList)에서 클릭된 행의 "tenantId" 값을 가져옵니다.
+    const tenantId = dlt_tenantVoList.getCellData(row, "tenantId");
+
+    console.log(`=== GridView 행 클릭: ${row}번째 행, tenantId: ${tenantId} ===`);
+
+    if (tenantId) {
+        // 가져온 ID로 테넌트 상세 데이터를 로드하는 함수를 호출합니다.
+        scwin.loadTenantData(tenantId);
+    } else {
+        console.error("클릭된 행의 tenantId를 찾을 수 없습니다.");
+    }
+};
+
+
+scwin.testAllAPIs = function () {
+    console.log("=== 모든 API 엔드포인트 테스트 ===");
+
+    console.log("1. 서버 통계 API 테스트");
+    scwin.testConnection();
+
+    setTimeout(() => {
+        console.log("2. 테넌트 통계 API 테스트");
+        scwin.loadTenantData("2");
+    }, 2000);
+
+    setTimeout(() => {
+        console.log("3. 세션 정보 API 테스트");
+        scwin.loadSessionInfo("test-room");
+    }, 4000);
+};
+
+scwin.testUIUpdate = function () {
+    console.log("=== UI 업데이트 수동 테스트 ===");
+
+    const testData = {
+        cpuUsage: 36,
+        memoryUsage: 8.37,
+        networkUsage: 15,
+        totalTransports: 0,
+        totalProducers: 0,
+        totalConsumers: 0
+    };
+
+    scwin.updatePerformanceIndicators(testData);
+};
+
+scwin.refreshServerData = function () {
+    console.log("서버 데이터 수동 새로고침");
+    scwin.loadServerData();
+};
+
+scwin.btn_home_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
+};
+
+scwin.btn_tenant_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/moblie_dev_tenant.xml";
+};
+
+scwin.btn_module_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
+};
+
+scwin.btn_stats_onclick = function () {
+    console.log("현재 서버현황 페이지입니다.");
+};
+
+
+scwin.searchTenants = function () {
+    console.log("테넌트 검색 실행");
+    dmp_tenantVo.set("pageIndex", 1); 
+    scwin.loadTenantList();
+};
+
+scwin.handleSearchKeyup = function (e) {
+    if (e.keyCode === 13) {
+        scwin.searchTenants();
+    }
+};
+
+scwin.updatePagination = function () {
+    const txt_pageInfo = $p.getComponentById("txt_pageInfo");
+    const btn_prevPage = $p.getComponentById("btn_prevPage");
+    const btn_nextPage = $p.getComponentById("btn_nextPage");
+
+    const currentPage = parseInt(dmp_tenantVo.get("pageIndex"), 10);
+    const totalRows = parseInt(dmp_tenantVo.get("totalRowCount"), 10);
+    const pageSize = parseInt(dmp_tenantVo.get("pageSize"), 10);
+    const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+    txt_pageInfo.setValue(`${currentPage} / ${totalPages}`);
+
+    btn_prevPage.setDisabled(currentPage <= 1);
+    btn_nextPage.setDisabled(currentPage >= totalPages);
+};
+
+scwin.changeTenantPage = function (direction) {
+    let currentPage = parseInt(dmp_tenantVo.get("pageIndex"), 10);
+    const totalPages = Math.ceil(parseInt(dmp_tenantVo.get("totalRowCount"), 10) / parseInt(dmp_tenantVo.get("pageSize"), 10)) || 1;
+
+    if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+    } else if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+    } else {
+        return;
+    }
+
+    dmp_tenantVo.set("pageIndex", currentPage);
+    scwin.loadTenantList();
+};]]></script>
+
+		<style type="text/css"><![CDATA[.mobile-container {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: #f5f6fa;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.header-section {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #34c759;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.status-text {
+    font-size: 14px;
+    color: #34c759;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-top: 4px solid;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-sessions {
+    border-top-color: #6c5ce7;
+}
+
+.card-users {
+    border-top-color: #a29bfe;
+}
+
+.card-workers {
+    border-top-color: #fd79a8;
+}
+
+.card-uptime {
+    border-top-color: #f0932b;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 8px 0;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #8e8e93;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.performance-section {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.performance-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.performance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.performance-item:last-child {
+    margin-bottom: 0;
+}
+
+.performance-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.performance-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.performance-bar {
+    width: 60px;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.performance-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.fill-cpu {
+    background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+}
+
+.fill-memory {
+    background: linear-gradient(90deg, #fd79a8, #fdcb6e);
+}
+
+.fill-network {
+    background: linear-gradient(90deg, #00b894, #00cec9);
+}
+
+.performance-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    min-width: 40px;
+    text-align: right;
+}
+
+.tenant-section {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tenant-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.tenant-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.tenant-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.tenant-stat {
+    text-align: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.tenant-stat-number {
+    font-size: 18px;
+    font-weight: bold;
+    color: #6c5ce7;
+    margin-bottom: 2px;
+}
+
+.tenant-stat-label {
+    font-size: 11px;
+    color: #8e8e93;
+}
+
+.worker-section {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.worker-header {
+    background: linear-gradient(135deg, #3674B5, #578FCA);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.worker-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.worker-refresh-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.worker-refresh-btn:hover {
+    background: IIIIIIIIIIIIIIII rgba(255, 255, 255, 0.3);
+}
+
+.worker-refresh-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
+.worker-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f8f8f8;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.worker-item:hover {
+    background-color: #f8f9fa;
+}
+
+.worker-item:last-child {
+    border-bottom: none;
+}
+
+.worker-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 12px;
+}
+
+.icon-worker {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+}
+
+.icon-session {
+    background: linear-gradient(135deg, #fd79a8, #fdcb6e);
+}
+
+.icon-meeting {
+    background: linear-gradient(135deg, #4a90e2, #7bb3f0);
+}
+
+.icon-class {
+    background: linear-gradient(135deg, #f39c12, #f7c52d);
+}
+
+.icon-seminar {
+    background: linear-gradient(135deg, #e74c3c, #ec7063);
+}
+
+.worker-info {
+    flex: 1;
+}
+
+.worker-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.worker-details {
+    font-size: 11px;
+    color: #8e8e93;
+}
+
+.worker-metrics {
+    text-align: right;
+    font-size: 11px;
+}
+
+.worker-load {
+    color: #6c5ce7;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.worker-sessions {
+    color: #8e8e93;
+}
+
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    background: white;
+    border-radius: 16px;
+    padding: 16px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item {
+    text-align: center;
+    flex: 1;
+}
+
+.nav-active {
+    color: #007aff !important;
+    font-weight: 600 !important;
+    background: none !important;
+    border: none !important;
+}
+
+.nav-inactive {
+    color: #8e8e93 !important;
+    font-weight: 500 !important;
+    background: none !important;
+    border: none !important;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading .stat-number {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    color: transparent;
+    border-radius: 4px;
+}
+
+
+/* 기존 CSS 코드 아래에 이어서 추가 */
+.btn_search {
+    background-color: #6c5ce7;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+}
+
+.btn_search:hover {
+    background-color: #5849c4;
+}
+
+.cell_name {
+    font-weight: 600;
+    color: #333;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.page-info {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+.btn-page {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #555;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    font-weight: bold;
+}
+
+.btn-page:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-page:disabled {
+    background-color: #f9f9f9;
+    color: #ccc;
+    cursor: not-allowed;
+}]]></style>
+	</head>
+
+	<body ev:onpageload="scwin.onpageload" ev:onpageunload="scwin.onpageunload">
+		<xf:group class="mobile-container">
+
+			<!-- 헤더 섹션 -->
+			<xf:group class="header-section">
+				<w2:textbox label="Media Server Monitor" class="page-title"></w2:textbox>
+				<xf:group class="status-indicator">
+					<xf:group class="status-dot"></xf:group>
+					<w2:textbox label="정상" class="status-text"></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<!-- 주요 통계 -->
+			<xf:group class="stats-grid">
+				<xf:group class="stat-card card-sessions">
+					<w2:textbox label="활성 세션" class="stat-label"></w2:textbox>
+					<w2:textbox label="0" class="stat-number"></w2:textbox>
+				</xf:group>
+				<xf:group class="stat-card card-users">
+					<w2:textbox label="접속 사용자" class="stat-label"></w2:textbox>
+					<w2:textbox label="0" class="stat-number"></w2:textbox>
+				</xf:group>
+				<xf:group class="stat-card card-workers">
+					<w2:textbox label="활성 Worker" class="stat-label"></w2:textbox>
+					<w2:textbox label="0" class="stat-number"></w2:textbox>
+				</xf:group>
+				<xf:group class="stat-card card-uptime">
+					<w2:textbox label="서버 가동시간" class="stat-label"></w2:textbox>
+					<w2:textbox label="0초" class="stat-number"></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<!-- 성능 지표 -->
+			<xf:group class="performance-section">
+				<w2:textbox label="실시간 성능 지표" class="performance-title"></w2:textbox>
+				<xf:group class="performance-item">
+					<w2:textbox label="CPU 사용률" class="performance-label"></w2:textbox>
+					<xf:group class="performance-value">
+						<xf:group class="performance-bar">
+							<xf:group id="cpuBar" class="performance-fill fill-cpu" style="width: 0%"></xf:group>
+						</xf:group>
+						<w2:textbox id="cpuText" label="0%" class="performance-text"></w2:textbox>
+					</xf:group>
+				</xf:group>
+				<xf:group class="performance-item">
+					<w2:textbox label="메모리 사용률" class="performance-label"></w2:textbox>
+					<xf:group class="performance-value">
+						<xf:group class="performance-bar">
+							<xf:group id="memoryBar" class="performance-fill fill-memory" style="width: 0%"></xf:group>
+						</xf:group>
+						<w2:textbox id="memoryText" label="0%" class="performance-text"></w2:textbox>
+					</xf:group>
+				</xf:group>
+				<xf:group class="performance-item">
+					<w2:textbox label="네트워크 사용량" class="performance-label"></w2:textbox>
+					<xf:group class="performance-value">
+						<xf:group class="performance-bar">
+							<xf:group id="networkBar" class="performance-fill fill-network" style="width: 0%"></xf:group>
+						</xf:group>
+						<w2:textbox id="networkText" label="0%" class="performance-text"></w2:textbox>
+					</xf:group>
+				</xf:group>
+				<!-- 추가 시스템 정보 -->
+				<xf:group style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
+					<xf:group style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+						<w2:textbox label="총 Transport:" style="font-size: 11px; color: #666;"></w2:textbox>
+						<w2:textbox id="totalTransports" label="0" style="font-size: 11px; font-weight: 600; color: #333;"></w2:textbox>
+					</xf:group>
+					<xf:group style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+						<w2:textbox label="총 Producer:" style="font-size: 11px; color: #666;"></w2:textbox>
+						<w2:textbox id="totalProducers" label="0" style="font-size: 11px; font-weight: 600; color: #333;"></w2:textbox>
+					</xf:group>
+					<xf:group style="display: flex; justify-content: space-between;">
+						<w2:textbox label="총 Consumer:" style="font-size: 11px; color: #666;"></w2:textbox>
+						<w2:textbox id="totalConsumers" label="0" style="font-size: 11px; font-weight: 600; color: #333;"></w2:textbox>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+			<!-- 테넌트 선택 및 정보 -->
+			<xf:group class="tenant-section">
+				<w2:textbox label="테넌트별 현황" class="performance-title"></w2:textbox>
+
+				<xf:group style="display:flex; gap: 8px; margin-bottom: 12px;">
+					<w2:dataMap id="dmp_search" baseNode="map">
+						<w2:keyInfo>
+							<w2:key id="searchKeyword" name="검색어" dataType="text"></w2:key>
+						</w2:keyInfo>
+					</w2:dataMap>
+					<xf:input id="ipt_searchTenant" placeholder="테넌트 이름으로 검색" style="flex:1;width:30px;" ref="data:dmp_search.searchKeyword"
+						ev:onkeyup="scwin.handleSearchKeyup"></xf:input>
+					<xf:trigger id="btn_searchTenant" type="button" ev:onclick="scwin.searchTenants" class="btn_search" style=";width:70px;">
+						<xf:label><![CDATA[검색]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<w2:gridView id="grd_tenantList" style="height: 160px; margin-bottom: 12px;" autoFit="allColumn" dataList="dlt_tenantVoList"
+					rowNumVisible="false" ev:oncellclick="scwin.onTenantSelectChange" fixedColumn="1" emptyMessage="조회된 테넌트가 없습니다."
+					selectedRowColor="#f0f6ff">
+					<w2:caption id="caption1" value="this is a gridView" T-Direction="Top"></w2:caption>
+					<w2:header id="header1">
+						<w2:row id="row1">
+							<w2:column id="column_name" inputType="text" value="이름" width="100"></w2:column>
+							<w2:column id="column_id" inputType="text" value="ID" width="58" textAlign="center"></w2:column>
+							<w2:column id="column_status" inputType="select" value="상태" width="87" textAlign="center"></w2:column>
+						</w2:row>
+					</w2:header>
+					<w2:gBody id="gBody1">
+						<w2:row id="row2">
+							<w2:column id="name" inputType="text" width="100" readOnly="true" class="cell_name"></w2:column>
+							<w2:column id="tenantId" inputType="text" width="58" readOnly="true" textAlign="center"></w2:column>
+							<w2:column id="isActive" inputType="switch" width="87" textAlign="center">
+								<w2:switch id="sw_status" ev:onviewchange="scwin.updateTenantStatus" trueValue="1" falseValue="0" displayTrueText="활성"
+									displayFalseText="비활성">
+								</w2:switch>
+							</w2:column>
+						</w2:row>
+					</w2:gBody>
+				</w2:gridView>
+
+				<xf:group id="pagination_controls" class="pagination">
+					<xf:trigger id="btn_prevPage" ev:onclick="scwin.changeTenantPage('prev')" type="button" class="btn-page">
+						<xf:label>◀</xf:label>
+					</xf:trigger>
+					<w2:textbox id="txt_pageInfo" label="1 / 1" class="page-info" />
+					<xf:trigger id="btn_nextPage" ev:onclick="scwin.changeTenantPage('next')" type="button" class="btn-page">
+						<xf:label>▶</xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="tenant-info" style="margin-top: 16px;">
+					<xf:group class="tenant-stat">
+						<w2:textbox id="tenantSessions" label="-" class="tenant-stat-number"></w2:textbox>
+						<w2:textbox label="활성 세션" class="tenant-stat-label"></w2:textbox>
+					</xf:group>
+					<xf:group class="tenant-stat">
+						<w2:textbox id="tenantUsers" label="-" class="tenant-stat-number"></w2:textbox>
+						<w2:textbox label="접속 사용자" class="tenant-stat-label"></w2:textbox>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+			<!-- Worker 프로세스 -->
+			<xf:group id="worker_process_section" class="worker-section">
+				<xf:group class="worker-header">
+					<w2:textbox label="Worker 프로세스" class="worker-title"></w2:textbox>
+					<xf:trigger class="worker-refresh-btn" ev:onclick="scwin.refreshServerData" type="button">
+						<xf:label><![CDATA[새로고침]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+			<!-- 라이브 세션 -->
+			<xf:group id="live_session_section" class="worker-section">
+				<xf:group class="worker-header">
+					<w2:textbox label="라이브 세션" class="worker-title"></w2:textbox>
+					<xf:trigger class="worker-refresh-btn" ev:onclick="scwin.refreshServerData" type="button">
+						<xf:label><![CDATA[새로고침]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+			<!-- 하단 네비게이션 -->
+			<xf:group class="bottom-nav">
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_home_onclick" type="button">
+						<xf:label><![CDATA[홈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_tenant_onclick" type="button">
+						<xf:label><![CDATA[테넌트]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_module_onclick" type="button">
+						<xf:label><![CDATA[모듈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-active" ev:onclick="scwin.btn_stats_onclick" type="button">
+						<xf:label><![CDATA[서버현황]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+		</xf:group>
+	</body>
+</html>

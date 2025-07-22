@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+		</xf:model>
+		<script type="text/javascript"><![CDATA[
+scwin.onpageload = function() {
+    console.log("대시보드 로드");
+};
+
+scwin.btn_home_onclick = function() {
+    console.log("현재 홈(대시보드) 페이지입니다.");
+};
+
+scwin.btn_tenant_onclick = function() {
+    console.log("테넌트 관리 페이지로 이동");
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/moblie_dev_tenant.xml";
+};
+
+scwin.btn_module_onclick = function() {
+    console.log("모듈 관리 페이지로 이동");
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
+};
+
+scwin.btn_stats_onclick = function() {
+    console.log("서버 현황 페이지로 이동");
+    try {
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+    } catch(e) {
+        try {
+            $p.navigate("/InsWebApp/main/mobile_dev_server_info.xml");
+        } catch(e2) {
+            $p.openFrame("serverInfo", "/InsWebApp/main/mobile_dev_server_info.xml");
+        }
+    }
+};
+]]></script>
+		<style type="text/css">
+			.dashboard-container {
+			max-width: 400px;
+			margin: 0 auto;
+			background-color: #f5f6fa;
+			padding: 20px;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			}
+
+			.stats-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 16px;
+			margin-bottom: 30px;
+			}
+
+			.stat-card {
+			background: white;
+			border-radius: 16px;
+			padding: 24px;
+			text-align: center;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+
+			.stat-number {
+			font-size: 32px;
+			font-weight: bold;
+			margin: 12px 0 8px 0;
+			}
+
+			.stat-label {
+			font-size: 14px;
+			color: #8e8e93;
+			font-weight: 500;
+			}
+
+			.blue { color: #4a90e2; }
+			.green { color: #34c759; }
+			.purple { color: #af52de; }
+			.orange { color: #ff9500; }
+
+			.realtime-section {
+			background: white;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			margin-bottom: 30px;
+			}
+
+			.section-header {
+			padding: 20px 20px 16px 20px;
+			border-bottom: 1px solid #f1f1f1;
+			font-size: 18px;
+			font-weight: bold;
+			color: #333;
+			}
+
+			.realtime-item {
+			display: flex;
+			align-items: center;
+			padding: 16px 20px;
+			border-bottom: 1px solid #f8f8f8;
+			}
+
+			.realtime-item:last-child {
+			border-bottom: none;
+			}
+
+			.item-info {
+			flex: 1;
+			margin-left: 16px;
+			}
+
+			.item-title {
+			font-size: 16px;
+			font-weight: 600;
+			color: #333;
+			margin-bottom: 2px;
+			}
+
+			.item-desc {
+			font-size: 13px;
+			color: #8e8e93;
+			}
+
+			.item-count {
+			font-size: 16px;
+			font-weight: bold;
+			color: #4a90e2;
+			}
+
+			.status-badge {
+			background: #34c759;
+			color: white;
+			padding: 4px 12px;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: 600;
+			}
+
+			.bottom-nav {
+			display: flex;
+			justify-content: space-around;
+			background: white;
+			border-radius: 16px;
+			padding: 16px 0;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+
+			.nav-item {
+			text-align: center;
+			flex: 1;
+			}
+
+			.nav-active {
+			color: #007aff !important;
+			font-weight: 600 !important;
+			background: none !important;
+			border: none !important;
+			}
+
+			.nav-inactive {
+			color: #8e8e93 !important;
+			font-weight: 500 !important;
+			background: none !important;
+			border: none !important;
+			}
+		</style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+
+		<xf:group class="dashboard-container">
+
+			<xf:group class="pgtbox">
+				<w2:textbox class="pgt_tit" label="대시보드" tagname=""></w2:textbox>
+			</xf:group>
+
+			<xf:group class="stats-grid">
+				<xf:group class="stat-card">
+					<w2:textbox label="총 템플릿" class="stat-label"></w2:textbox>
+					<w2:textbox label="128" class="stat-number blue"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="stat-card">
+					<w2:textbox label="완성 테넌트" class="stat-label"></w2:textbox>
+					<w2:textbox label="95" class="stat-number green"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="stat-card">
+					<w2:textbox label="총 사용자" class="stat-label"></w2:textbox>
+					<w2:textbox label="1,205" class="stat-number purple"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="stat-card">
+					<w2:textbox label="오늘 매출" class="stat-label"></w2:textbox>
+					<w2:textbox label="$2,450" class="stat-number orange"></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<xf:group class="realtime-section">
+				<xf:group class="section-header">
+					<w2:textbox label="실시간 현황"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="realtime-item">
+					<xf:group class="item-info">
+						<w2:textbox label="오늘 신규 가입" class="item-title"></w2:textbox>
+						<w2:textbox label="새로운 테넌트" class="item-desc"></w2:textbox>
+					</xf:group>
+					<w2:textbox label="3개" class="item-count"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="realtime-item">
+					<xf:group class="item-info">
+						<w2:textbox label="오늘 모듈 구매" class="item-title"></w2:textbox>
+						<w2:textbox label="구매 건수" class="item-desc"></w2:textbox>
+					</xf:group>
+					<w2:textbox label="8건" class="item-count"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="realtime-item">
+					<xf:group class="item-info">
+						<w2:textbox label="활성 세션" class="item-title"></w2:textbox>
+						<w2:textbox label="현재 진행중" class="item-desc"></w2:textbox>
+					</xf:group>
+					<w2:textbox label="24개" class="item-count"></w2:textbox>
+				</xf:group>
+
+				<xf:group class="realtime-item">
+					<xf:group class="item-info">
+						<w2:textbox label="서버 상태" class="item-title"></w2:textbox>
+						<w2:textbox label="시스템 모니터링" class="item-desc"></w2:textbox>
+					</xf:group>
+					<w2:textbox label="정상" class="status-badge"></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<xf:group class="bottom-nav">
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-active" ev:onclick="scwin.btn_home_onclick" type="button">
+						<xf:label><![CDATA[홈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_tenant_onclick" type="button">
+						<xf:label><![CDATA[테넌트]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_module_onclick" type="button">
+						<xf:label><![CDATA[모듈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_stats_onclick" type="button">
+						<xf:label><![CDATA[서버현황]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+		</xf:group>
+
+	</body>
+</html>
