@@ -430,24 +430,28 @@ var ChatModule = (function (exports) {
      */
     _initializeWebSocket() {
       // UniconWS가 전역에서 사용 가능한지 확인
-      if (typeof UniconWS !== 'undefined') {
-        try {
+      try {
+        if (typeof UniconWS !== 'undefined' && UniconWS.init) {
           UniconWS.init(this.config.roomId, this.config.currentUser);
           
           // 채팅 메시지 리스너 등록
-          UniconWS.addListener('chat', (data) => {
-            console.log('채팅 메시지 수신:', data);
-            this.addMessage("other", data.message, data.sender);
-            this.emit('messageReceived', data);
-          });
+          if (typeof UniconWS.addListener === 'function') {
+            UniconWS.addListener('chat', (data) => {
+              console.log('채팅 메시지 수신:', data);
+              this.addMessage("other", data.message, data.sender);
+              this.emit('messageReceived', data);
+            });
+          }
           
           this.isWebSocketReady = true;
           console.log('WebSocket 초기화 완료');
-        } catch (error) {
-          console.warn('WebSocket 초기화 실패:', error);
+        } else {
+          console.warn('UniconWS가 로드되지 않음. WebSocket 기능이 제한됩니다.');
+          this.isWebSocketReady = false;
         }
-      } else {
-        console.warn('UniconWS가 로드되지 않음. WebSocket 기능이 제한됩니다.');
+      } catch (error) {
+        console.warn('WebSocket 초기화 실패:', error);
+        this.isWebSocketReady = false;
       }
     }
 
@@ -473,14 +477,20 @@ var ChatModule = (function (exports) {
       // UniconWS로 메시지 전송
       if (this.isWebSocketReady && typeof UniconWS !== 'undefined') {
         try {
-          UniconWS.send('chat', {
-            message: message,
-            sender: this.config.currentUser,
-            timestamp: this._getCurrentTime()
-          });
+          if (typeof UniconWS.send === 'function') {
+            UniconWS.send('chat', {
+              message: message,
+              sender: this.config.currentUser,
+              timestamp: this._getCurrentTime()
+            });
+          } else {
+            console.warn('UniconWS.send 메서드를 찾을 수 없습니다.');
+          }
         } catch (error) {
           console.warn('WebSocket 메시지 전송 실패:', error);
         }
+      } else {
+        console.log('WebSocket이 준비되지 않음. 로컬에서만 메시지 처리됩니다.');
       }
 
       // 입력창 초기화

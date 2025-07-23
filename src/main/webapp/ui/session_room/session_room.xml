@@ -158,6 +158,11 @@ div.video-paused::after {
 		</style>
 		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
 		<script src="/InsWebApp/media/dist/app.bundle.js" />
+		<script src="/InsWebApp/media/dist/modules/chat.bundle.js" />
+		<script src="ai_monitoring_stats.js" />
+		<script src="ai_dashboard_controller.js" />
+		<script src="personal_dashboard_controller.js" />
+
 		<script lazy="false" type="text/javascript"><![CDATA[
 scwin.updateCanvasBackground = function () {
     if (!scwin.isWhiteboardActive) return;
@@ -315,6 +320,7 @@ scwin.onpageload = async function () {
     let aiModule = null;
     scwin.canvasModule = null;
     let wsInstance = null;
+    let chatModule = null;
 
     scwin.pinnedProducerId = null;
     scwin.localScreenShareElement = null;
@@ -332,6 +338,7 @@ scwin.onpageload = async function () {
     const userHasAiModule = true;
     const userHasCanvasModule = true;
     const userHasScreenShareModule = true;
+    const userHasChatModule = true;
 
     const CANVAS_WEBSOCKET_URL = 'wss://' + location.host + '/InsWebApp/signal.do';
     const CANVAS_WORKER_URL = '/InsWebApp/js/canvas/canvas-worker.js';
@@ -377,6 +384,62 @@ scwin.onpageload = async function () {
         }
         scwin.createPopUp("checkIn", " ", null, "/InsWebApp/main/attendance_confirmation_pop_up.xml", 400, 350);
         //입장시 출석 완료
+
+        if (userHasChatModule) {
+            scwin.uiManager.showChatButton();
+        }
+
+        // 모든 사용자에게 개인 대시보드 초기화 (관리자 여부와 상관없이)
+        if (window.PersonalDashboardController) {
+            setTimeout(() => {
+                const currentUserId = scwin.myPeerId || roomClient.peerId || 'local-user';
+                window.PersonalDashboardController.init(currentUserId);
+                console.log('[Personal Dashboard] 개인 대시보드 사전 초기화:', currentUserId);
+            }, 2000); // 시간을 늘려서 peerId 설정을 기다림
+        }
+
+        // AI 모니터링 통계를 위한 WebSocket 메시지 가로채기
+        const originalSend = ws.send;
+        ws.send = function (data) {
+            try {
+                const message = JSON.parse(data);
+                // peerStatusUpdated 이벤트를 감지하여 통계 업데이트
+                if (message.action === 'peerStatusUpdated' && message.data) {
+                    const { peerId, status } = message.data;
+                    if (peerId && status && window.aiMonitoringStats) {
+                        window.aiMonitoringStats.updateParticipantStatus(peerId, status);
+                        console.log('[AI Stats] 로컬 상태 업데이트:', peerId, status);
+                    }
+                }
+            } catch (e) {
+                // JSON 파싱 실패 시 무시
+            }
+            return originalSend.call(this, data);
+        };
+
+        // WebSocket 수신 메시지도 가로채기 (다른 참여자들의 상태 업데이트)
+        ws.addEventListener('message', function (event) {
+            try {
+                const message = JSON.parse(event.data);
+                if (message.action === 'peerStatusUpdated' && message.data) {
+                    const { peerId, status } = message.data;
+                    if (peerId && status && window.aiMonitoringStats) {
+                        // 참여자 이름을 remotePeers에서 찾거나 기본값 사용
+                        let peerName = `참여자_${peerId.slice(-4)}`;
+                        if (scwin.remotePeers && scwin.remotePeers.has(peerId)) {
+                            // 실제 참여자 정보가 있다면 더 나은 이름 사용
+                            peerName = `참여자_${peerId.slice(-4)}`;
+                        }
+
+                        window.aiMonitoringStats.initializeParticipant(peerId, peerName);
+                        window.aiMonitoringStats.updateParticipantStatus(peerId, status);
+                        console.log('[AI Stats] 원격 상태 업데이트:', peerId, status);
+                    }
+                }
+            } catch (e) {
+                // JSON 파싱 실패 시 무시
+            }
+        });
     });
 
     scwin.roomClient.on("canvas", (data) => {
@@ -412,6 +475,75 @@ scwin.onpageload = async function () {
                 if (scwin.isScreenSharing) scwin.roomClient.stopScreenShare();
                 else scwin.roomClient.startScreenShare();
             });
+
+            // 관리자용 AI 모니터링 대시보드 버튼 추가
+            if (window.AIDashboardController) {
+                window.AIDashboardController.init();
+
+                setTimeout(() => {
+                    let controlsContainer = document.querySelector('.controls-container') ||
+                                           document.querySelector('.control-buttons') ||
+                                           document.querySelector('[class*="control"]') ||
+                                           document.body;
+
+                    const adminAiButton = document.createElement('button');
+                    adminAiButton.textContent = '전체 집중도';
+                    adminAiButton.id = 'adminDashboardButton';
+                    adminAiButton.style.cssText = `
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white; border: none; padding: 0.5rem 1rem;
+                        border-radius: 6px; cursor: pointer; margin: 0.5rem;
+                        font-size: 0.9rem; font-weight: 500;
+                        position: fixed; top: 20px; right: 20px; z-index: 999;
+                    `;
+                    adminAiButton.onclick = function () {
+                        if (window.AIDashboardController) {
+                            window.AIDashboardController.toggle();
+                        }
+                    };
+
+                    // 중복 방지
+                    if (!document.getElementById('adminDashboardButton')) {
+                        controlsContainer.appendChild(adminAiButton);
+                        console.log('[AI Dashboard] 관리자 모니터링 버튼 추가됨');
+                    }
+                }, 500);
+            }
+        } else {
+            // 일반 사용자용
+            scwin.uiManager.hideWhiteboardButton();
+            scwin.uiManager.disableScreenSharing();
+
+            // 개인 대시보드 버튼 추가
+            setTimeout(() => {
+                // 여러 방법으로 컨트롤 컨테이너 찾기
+                let controlsContainer = document.querySelector('.controls-container') ||
+                                       document.querySelector('.control-buttons') ||
+                                       document.querySelector('[class*="control"]') ||
+                                       document.body;
+
+                const personalAiButton = document.createElement('button');
+                personalAiButton.textContent = '내 집중도';
+                personalAiButton.id = 'personalDashboardButton';
+                personalAiButton.style.cssText = `
+                    background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+                    color: white; border: none; padding: 0.5rem 1rem;
+                    border-radius: 6px; cursor: pointer; margin: 0.5rem;
+                    font-size: 0.9rem; font-weight: 500;
+                    position: fixed; top: 20px; right: 20px; z-index: 999;
+                `;
+                personalAiButton.onclick = function () {
+                    if (window.PersonalDashboardController) {
+                        window.PersonalDashboardController.toggle();
+                    }
+                };
+
+                // 중복 방지
+                if (!document.getElementById('personalDashboardButton')) {
+                    controlsContainer.appendChild(personalAiButton);
+                    console.log('[Personal Dashboard] 개인 대시보드 버튼 추가됨');
+                }
+            }, 500);
         }
     });
 
@@ -440,6 +572,14 @@ scwin.onpageload = async function () {
             scwin.roomClient.setAudioEnabled(isAudioEnabled);
             scwin.uiManager.updateMuteButton(isAudioEnabled);
         };
+
+        // adminStatus 이벤트가 발생하지 않을 경우 대비해서 개인 대시보드 버튼 생성
+        setTimeout(() => {
+            if (!document.getElementById('personalDashboardButton') && !document.getElementById('adminDashboardButton')) {
+                console.log('controlsReady에서 개인 대시보드 버튼 생성');
+                window.createPersonalDashboardButton();
+            }
+        }, 1000);
     });
 
     // RoomClient에서 로컬 비디오 상태 변경 이벤트를 수신하여 UIManager에 전달
@@ -499,20 +639,40 @@ scwin.onpageload = async function () {
                         console.log("Event: drowsinessUpdate -> Sending status to server.");
                         scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml", 400, 425);
                         scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleDrowsinessDetected();
+                        }
                     });
                     aiModule.on("drowsinessResolved", (data) => {
                         console.log("Event: drowsinessUpdate -> Sending status to server.");
                         scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleDrowsinessResolved();
+                        }
                     });
 
                     aiModule.on("absenceStarted", (data) => {
                         console.log(" Event: absenceStarted -> Sending status to server.");
                         scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
                         scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleAbsenceDetected();
+                        }
                     });
                     aiModule.on("absenceEnded", (data) => {
                         console.log(" Event: absenceEnded -> Sending status to server.");
                         scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleAbsenceResolved();
+                        }
                     });
 
                     aiModule.on("error", (error) => {
@@ -554,6 +714,13 @@ scwin.onpageload = async function () {
                 isLocal: false // 원격 사용자
             };
             scwin.remotePeers.set(peerId, peer);
+
+            // AI 통계 시스템에 새 참여자 초기화
+            if (window.aiMonitoringStats) {
+                const peerName = `참여자_${peerId.slice(-4)}`;
+                window.aiMonitoringStats.initializeParticipant(peerId, peerName);
+                console.log('[AI Stats] 새 참여자 초기화:', peerId, peerName);
+            }
         }
 
         if (appData && appData.source === 'screen') {
@@ -642,8 +809,16 @@ scwin.onpageload = async function () {
                     peer.audioProducerId = null;
                 }
 
+                // 참여자의 모든 스트림이 종료되었을 때 완전히 제거
                 if (!peer.videoProducerId && !peer.audioProducerId && !peer.screenShareProducerId) {
                     scwin.remotePeers.delete(peerId);
+
+                    // AI 통계 시스템에서도 참여자 제거는 하지 않음 (통계 유지를 위해)
+                    // 대신 마지막 상태를 자리비움으로 설정
+                    if (window.aiMonitoringStats) {
+                        window.aiMonitoringStats.updateParticipantStatus(peerId, { isPresent: false });
+                        console.log('[AI Stats] 참여자 연결 종료:', peerId);
+                    }
                 }
             }
         }
@@ -730,6 +905,139 @@ scwin.onpageload = async function () {
     const tenantId= "2"
 
     scwin.roomClient.join(roomId,userName, userEmail, tenantId);
+
+    // 로컬 사용자를 AI 통계 시스템에 초기화
+    if (window.aiMonitoringStats) {
+        // roomClient.join() 후 peerId가 설정되기를 기다림
+        setTimeout(() => {
+            const localPeerId = roomClient.peerId || 'local-user';
+            scwin.myPeerId = localPeerId; // 전역 변수에 저장
+            window.aiMonitoringStats.initializeParticipant(localPeerId, '관리자(나)');
+            console.log('[AI Stats] 로컬 사용자 초기화:', localPeerId);
+        }, 1000);
+    }
+
+    // 수동으로 개인 대시보드 버튼 생성 함수 (디버그용)
+    window.createPersonalDashboardButton = function() {
+        if (document.getElementById('personalDashboardButton')) {
+            console.log('개인 대시보드 버튼이 이미 존재합니다.');
+            return;
+        }
+
+        const personalAiButton = document.createElement('button');
+        personalAiButton.textContent = '내 집중도';
+        personalAiButton.id = 'personalDashboardButton';
+        personalAiButton.style.cssText = `
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white; border: none; padding: 0.5rem 1rem;
+            border-radius: 6px; cursor: pointer; margin: 0.5rem;
+            font-size: 0.9rem; font-weight: 500;
+            position: fixed; top: 20px; right: 20px; z-index: 999;
+        `;
+        personalAiButton.onclick = function () {
+            if (window.PersonalDashboardController) {
+                window.PersonalDashboardController.toggle();
+            }
+        };
+
+        document.body.appendChild(personalAiButton);
+        console.log('개인 대시보드 버튼이 수동으로 생성되었습니다.');
+    };
+
+    // 테스트용 상태 업데이트 함수
+    window.testAIStatus = function() {
+        if (!window.aiMonitoringStats) {
+            console.log('AI 통계 시스템이 없습니다.');
+            return;
+        }
+
+        const localUserId = scwin.myPeerId || 'local-user';
+        console.log('테스트용 AI 상태 업데이트:', localUserId);
+
+        // 자리비움 상태 시뮬레이션
+        window.aiMonitoringStats.updateParticipantStatus(localUserId, { isPresent: false });
+
+        setTimeout(() => {
+            window.aiMonitoringStats.updateParticipantStatus(localUserId, { isPresent: true });
+        }, 2000);
+
+        setTimeout(() => {
+            window.aiMonitoringStats.updateParticipantStatus(localUserId, { isDrowsy: true });
+        }, 4000);
+
+        setTimeout(() => {
+            window.aiMonitoringStats.updateParticipantStatus(localUserId, { isDrowsy: false });
+        }, 6000);
+    };
+
+    // 5초 후에 버튼이 없으면 수동으로 생성
+    setTimeout(() => {
+        if (!document.getElementById('personalDashboardButton') && !document.getElementById('adminDashboardButton')) {
+            console.log('대시보드 버튼이 없습니다. 수동으로 생성합니다.');
+            window.createPersonalDashboardButton();
+        }
+    }, 5000);
+
+    // 채팅 버튼 클릭 시 모듈 로드 및 토글
+    scwin.uiManager.chatButton.onclick = async () => {
+        if (!wsInstance) {
+            console.error("WebSocket is not connected. Cannot toggle chat.");
+            return;
+        }
+
+        const containerId = "chatModuleContainer";
+        const chatContainer = document.getElementById(containerId);
+
+        // 채팅 열기
+        if (!chatModule) {
+            try {
+                let ChatModule = await loadModule("/InsWebApp/media/dist/modules/chat.bundle.js", "ChatModule");
+
+                if (!ChatModule) {
+                    throw new Error("ChatModule not found in window.");
+                }
+
+                const container = document.createElement("div");
+                container.id = containerId;
+                container.style.cssText = `
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 360px;
+                height: 500px;
+                background-color: white;
+                z-index: 999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+                document.body.appendChild(container);
+
+                chatModule = new ChatModule(container, {
+                    roomId: "my-first-room",
+                    currentUser: "사용자"
+                });
+
+                chatModule.on("close", () => {
+                    chatModule.destroy();
+                    document.getElementById(containerId)?.remove();
+                    chatModule = null;
+                    scwin.uiManager.chatButton.textContent = "채팅 열기";
+                });
+
+                scwin.uiManager.chatButton.textContent = "채팅 닫기";
+            } catch (error) {
+                console.error("ChatModule 로딩 실패:", error);
+            }
+        } else {
+            // 채팅 닫기
+            chatModule.destroy();
+            chatModule = null;
+            if (chatContainer) chatContainer.remove();
+            scwin.uiManager.chatButton.textContent = "채팅 열기";
+        }
+    };
+
+
 };
 ]]>
 		</script>
