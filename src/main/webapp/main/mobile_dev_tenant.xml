@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dmp_tenantVo" style="">
+					<w2:keyInfo>
+						<w2:key dataType="text" id="scTenantId" name="search_tenant_id"></w2:key>
+						<w2:key dataType="text" id="scName" name="search_name"></w2:key>
+						<w2:key dataType="text" id="scStatus" name="search_status"></w2:key>
+						<w2:key dataType="text" id="pageIndex" name="페이지_번호" defaultValue="1"></w2:key>
+						<w2:key dataType="text" id="pageSize" name="페이지_건수" defaultValue="50"></w2:key>
+					</w2:keyInfo>
+					<w2:data use="false"></w2:data>
+				</w2:dataMap>
+
+				<w2:dataList baseNode="list" id="dlt_tenantVoList" repeatNode="map" saveRemovedData="true" style="">
+					<w2:columnInfo>
+						<w2:column dataType="text" id="tenantId" name="tenant_id"></w2:column>
+						<w2:column dataType="text" id="createdAt" name="created_at"></w2:column>
+						<w2:column dataType="text" id="name" name="name"></w2:column>
+						<w2:column dataType="text" id="subDomain" name="sub_domain"></w2:column>
+						<w2:column dataType="text" id="isActive" name="is_active"></w2:column>
+						<w2:column dataType="text" id="userCount" name="user_count"></w2:column>
+						<w2:column dataType="text" id="moduleCount" name="module_count"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+			</w2:dataCollection>
+
+			<xf:submission id="sbm_selectTenantVoList" ref='data:json,{"id":"dmp_tenantVo","key":"tenantVo"}'
+				target='data:json,{"id":"dlt_tenantVoList","key":"elData.tenantVoList"}' action="/InsWebApp/TNT0001List.pwkjson" method="post"
+				mediatype="application/json" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous"
+				processMsg="테넌트 리스트를 조회 중입니다." ev:submit="" ev:submitdone="scwin.sbm_tenantList_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<script type="text/javascript"><![CDATA[scwin.onpageload = function () {
+    console.log("테넌트 관리 페이지 로드");
+    scwin.loadTenantData();
+};
+
+scwin.loadTenantData = function () {
+    dmp_tenantVo.set("pageIndex", "1");
+    dmp_tenantVo.set("pageSize", "50");
+
+    $c.sbm.execute($p, sbm_selectTenantVoList);
+};
+
+scwin.sbm_tenantList_submitdone = function (e) {
+    var elData = e.responseJSON.elData;
+    var elHeader = e.responseJSON.elHeader;
+
+    if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
+        alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+        return false;
+    }
+
+    console.log("테넌트 데이터 로드 완료:", elData);
+
+    if (elData && elData.tenantVoList) {
+        var filteredData = scwin.applyClientSideFilter(elData.tenantVoList);
+        dlt_tenantVoList.setJSON(filteredData);
+        var totalCount = filteredData.length;
+        scwin.updateTenantCount(totalCount);
+        scwin.updateTenantDisplay();
+    }
+};
+
+scwin.applyClientSideFilter = function (dataList) {
+    var filterStatus = dmp_tenantVo.get("scStatus");
+    if (!filterStatus || filterStatus === "") {
+        return dataList; 
+    }
+
+    var filteredList = [];
+    for (var i = 0; i < dataList.length; i++) {
+        var item = dataList[i];
+        var itemStatus = String(item.isActive).trim();
+        if (filterStatus === "1" && (itemStatus === "1" || itemStatus === "Y")) {
+            filteredList.push(item);
+        } else if (filterStatus === "0" && (itemStatus === "0" || itemStatus === "N")) {
+            filteredList.push(item);
+        }
+    }
+    console.log("필터링 결과:", filterStatus + " 상태로 필터링하여 " + filteredList.length + "개 / " + dataList.length + "개");
+    return filteredList;
+};
+
+scwin.updateTenantCount = function (count) {
+    var countElement = $p.getComponentById("tenant_count");
+    if (countElement) {
+        countElement.setLabel("테넌트 목록 (" + count + "개)");
+    }
+};
+
+scwin.updateTenantDisplay = function () {
+    try {
+        var loadingElement = $p.getComponentById("loading_state");
+        if (loadingElement) {
+            loadingElement.hide();
+        }
+
+        var rowCount = dlt_tenantVoList.getRowCount();
+        console.log("총 테넌트 개수:", rowCount);
+
+        scwin.createAllTenantItems(rowCount);
+
+    } catch (e) {
+        console.error("테넌트 목록 표시 중 오류:", e);
+    }
+};
+
+scwin.findContainerElement = function() {
+    var possibleSelectors = [
+        '#tenant_list_container',
+        '#mf_tenant_list_container', 
+        '[id$="tenant_list_container"]',
+        '.tenant-list',
+        '[class*="tenant-list"]'
+    ];
+    
+    for (var i = 0; i < possibleSelectors.length; i++) {
+        var element = document.querySelector(possibleSelectors[i]);
+        if (element) {
+            console.log("컨테이너 찾음:", possibleSelectors[i], element);
+            return element;
+        }
+    }
+    
+    console.error("컨테이너를 찾을 수 없습니다!");
+    return null;
+};
+
+scwin.createAllTenantItems = function (totalCount) {
+    try {
+        var containerElement = scwin.findContainerElement();
+        if (!containerElement) {
+            console.error("컨테이너 요소를 찾을 수 없습니다.");
+            return;
+        }
+
+        scwin.clearDynamicItems(containerElement);
+
+        containerElement.style.height = 'auto';
+        containerElement.style.minHeight = '200px';
+
+        if (totalCount > 0) {
+            for (var i = 0; i < totalCount; i++) {
+                var tenantData = dlt_tenantVoList.getRowJSON(i);
+                scwin.createTenantItemWithDOM(containerElement, tenantData, i);
+            }
+            console.log(totalCount + "개 테넌트 아이템 생성 완료");
+            
+            // 생성 완료 후 컨테이너 높이 재조정
+            setTimeout(function() {
+                scwin.adjustContainerHeight(containerElement);
+            }, 100);
+        } else {
+            scwin.showNoDataMessage(containerElement);
+        }
+    } catch (e) {
+        console.error("테넌트 아이템 생성 중 오류:", e);
+    }
+};
+
+scwin.adjustContainerHeight = function(containerElement) {
+    try {
+        if (containerElement) {
+            var totalHeight = 0;
+            var children = containerElement.children;
+            
+            for (var i = 0; i < children.length; i++) {
+                if (children[i].offsetHeight) {
+                    totalHeight += children[i].offsetHeight;
+                }
+            }
+            
+            var finalHeight = Math.max(totalHeight + 20, 200); // 20px 여백 추가
+            containerElement.style.height = finalHeight + 'px';
+            
+            console.log("컨테이너 높이 조정:", finalHeight + 'px');
+        }
+    } catch (e) {
+        console.error("높이 조정 중 오류:", e);
+    }
+};
+
+scwin.createTenantItemWithDOM = function (containerElement, tenantData, index) {
+    try {
+        var isActiveValue = String(tenantData.isActive).trim();
+        var statusText, statusClass;
+        if (isActiveValue === "1" || isActiveValue === "Y" || isActiveValue === "true") {
+            statusText = "활성";
+            statusClass = "status-active";
+        } else {
+            statusText = "비활성";
+            statusClass = "status-inactive";
+        }
+
+        var createdDate = tenantData.createdAt ? tenantData.createdAt.split(' ')[0] : "";
+        
+        var userCount = tenantData.userCount || 0;
+        var moduleCount = tenantData.moduleCount || 0;
+        
+        if (isNaN(userCount)) userCount = 0;
+        if (isNaN(moduleCount)) moduleCount = 0;
+
+        var tenantDiv = document.createElement('div');
+        tenantDiv.className = 'tenant-item';
+        tenantDiv.id = 'dynamic_tenant_' + index;
+        
+        tenantDiv.style.cssText = `
+            padding: 16px 20px;
+            border-bottom: 1px solid #f8f8f8;
+            display: block;
+            visibility: visible;
+            background: white;
+            margin-bottom: 2px;
+        `;
+        
+        tenantDiv.innerHTML = `
+            <div class="tenant-name" style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 8px;">
+                ${tenantData.name || 'Unknown'}
+            </div>
+            <div class="tenant-info" style="font-size: 13px; color: #8e8e93; margin-bottom: 4px;">
+                사용자: ${userCount}명 | 모듈: ${moduleCount}개
+            </div>
+            <div class="tenant-info" style="font-size: 13px; color: #8e8e93; margin-bottom: 4px;">
+                서브도메인: ${tenantData.subDomain || 'N/A'} | 생성일: ${createdDate}
+            </div>
+            <div class="tenant-status ${statusClass}" style="display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-top: 8px; ${statusClass === 'status-active' ? 'background-color: #e6f7e6; color: #34c759;' : 'background-color: #ffe6e6; color: #ff3b30;'}">
+                ${statusText}
+            </div>
+        `;
+        
+        containerElement.appendChild(tenantDiv);
+        console.log("아이템 생성 성공:", index, tenantData.name, "사용자:", userCount, "모듈:", moduleCount);
+
+    } catch (e) {
+        console.error(`DOM 테넌트 아이템 생성 중 오류 발생 (index: ${index})`, e);
+    }
+};
+
+scwin.clearDynamicItems = function (containerElement) {
+    try {
+        if (containerElement) {
+            var dynamicItems = containerElement.querySelectorAll('[id^="dynamic_tenant_"], #no_data_item, .no-data-message');
+            for (var i = 0; i < dynamicItems.length; i++) {
+                dynamicItems[i].remove();
+            }
+            console.log("동적 요소 제거 완료:", dynamicItems.length + "개");
+        }
+    } catch (e) {
+        console.error("동적 요소 제거 중 오류:", e);
+    }
+};
+
+scwin.showNoDataMessage = function (containerElement) {
+    try {
+        if (!containerElement) {
+            containerElement = scwin.findContainerElement();
+        }
+        
+        if (containerElement) {
+            var existingNoData = containerElement.querySelector('#no_data_item, .no-data-message');
+            if (existingNoData) {
+                console.log("이미 '데이터 없음' 메시지가 표시되어 있습니다.");
+                return;
+            }
+            
+            var noDataDiv = document.createElement('div');
+            noDataDiv.className = 'tenant-item no-data-message';
+            noDataDiv.id = 'no_data_item';
+            noDataDiv.style.cssText = `
+                padding: 40px 20px;
+                text-align: center;
+                color: #8e8e93;
+                font-style: italic;
+                display: block;
+                visibility: visible;
+            `;
+            noDataDiv.innerHTML = '<div class="tenant-name">조회된 테넌트가 없습니다.</div>';
+            
+            containerElement.appendChild(noDataDiv);
+            
+            // 컨테이너 높이 조정
+            containerElement.style.height = 'auto';
+            containerElement.style.minHeight = '200px';
+            
+            console.log("'데이터 없음' 메시지 표시됨");
+        }
+    } catch (e) {
+        console.error("데이터 없음 메시지 표시 중 오류:", e);
+    }
+};
+
+// 검색 기능
+scwin.searchTenant = function () {
+    var searchValue = $p.getComponentById("searchInput").getValue().trim();
+    dmp_tenantVo.set("scTenantId", "");
+    dmp_tenantVo.set("scName", searchValue);
+    scwin.loadTenantData();
+};
+
+// 필터 기능들
+scwin.filterAll = function () {
+    dmp_tenantVo.set("scStatus", "");
+    scwin.updateFilterButtons("all");
+    scwin.loadTenantData();
+};
+
+scwin.filterActive = function () {
+    dmp_tenantVo.set("scStatus", "1");
+    scwin.updateFilterButtons("active");
+    scwin.loadTenantData();
+};
+
+scwin.filterInactive = function () {
+    dmp_tenantVo.set("scStatus", "0");
+    scwin.updateFilterButtons("inactive");
+    scwin.loadTenantData();
+};
+
+// 필터 버튼 상태 업데이트
+scwin.updateFilterButtons = function (activeFilter) {
+    var allBtn = $p.getComponentById("filter_all");
+    var activeBtn = $p.getComponentById("filter_active");
+    var inactiveBtn = $p.getComponentById("filter_inactive");
+
+    if (allBtn) allBtn.removeClass("active");
+    if (activeBtn) activeBtn.removeClass("active");
+    if (inactiveBtn) inactiveBtn.removeClass("active");
+
+    switch (activeFilter) {
+        case "all":
+            if (allBtn) allBtn.addClass("active");
+            break;
+        case "active":
+            if (activeBtn) activeBtn.addClass("active");
+            break;
+        case "inactive":
+            if (inactiveBtn) inactiveBtn.addClass("active");
+            break;
+    }
+};
+
+// 네비게이션 이벤트들
+scwin.btn_home_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
+};
+
+scwin.btn_tenant_onclick = function () {
+    console.log("현재 테넌트 페이지");
+};
+
+scwin.btn_module_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
+};
+
+scwin.btn_stats_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+};
+
+// 새로고침 기능
+scwin.refreshData = function () {
+    scwin.loadTenantData();
+};]]></script>
+		<style type="text/css">
+			/* CSS 스타일은 이전과 동일하게 유지됩니다. */
+			.mobile-container { max-width: 400px; margin: 0 auto; background-color: #f5f6fa; padding:
+			20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+			.header-section { background: white; border-radius: 16px;
+			padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+			.page-title { font-size: 20px; font-weight: bold; color:
+			#333; margin-bottom: 16px; }
+			.search-row { display: flex; gap: 12px; margin-bottom: 16px; }
+			.search-input { flex: 1; padding: 12px 16px;
+			border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; background-color: #f8f9fa; }
+			.search-btn { background: #3674B5; color:
+			white; border: none; border-radius: 8px;
+			padding: 8px 16px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+			.filter-row { display:
+			flex; gap: 8px; }
+			.filter-btn { padding: 8px 16px; border: 1px solid #e0e0e0; border-radius: 20px; font-size: 12px; background-color:
+			white; color: #666; }
+			.filter-btn.active { background-color: #3674B5; color: white; border-color: #3674B5; }
+			.count-section { background:
+			white; border-radius:
+			16px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 16px; font-weight:
+			bold; color: #333; }
+			.tenant-list { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			margin-bottom: 30px;
+			max-height: 500px; overflow-y: auto; }
+			.tenant-item { padding: 16px 20px; border-bottom: 1px solid #f8f8f8; }
+			.tenant-item:last-child {
+			border-bottom: none; }
+			.tenant-name { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 8px; }
+			.tenant-info { font-size:
+			13px; color: #8e8e93; margin-bottom: 4px; }
+			.tenant-status { display: inline-block; padding: 4px 12px;
+			border-radius: 12px; font-size:
+			12px; font-weight: 600; margin-top: 8px; }
+			.status-active { background-color: #e6f7e6; color: #34c759; }
+			.status-inactive {
+			background-color: #ffe6e6; color: #ff3b30; }
+			.bottom-nav { display: flex; justify-content: space-around; background:
+			white; border-radius:
+			16px; padding: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+			.nav-item { text-align: center; flex: 1; }
+			.nav-active { color: #007aff
+			!important; font-weight: 600 !important; background: none !important; border: none !important; }
+			.nav-inactive { color: #8e8e93
+			!important; font-weight: 500 !important; background: none !important; border: none !important; }
+			.loading-state { text-align: center;
+			padding: 40px 20px; color: #8e8e93; font-size: 14px; }
+			.refresh-btn { background: #34c759; color:
+			white; border: none; border-radius: 8px;
+			padding: 8px 16px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+			.no-data-message {
+			text-align: center; color: #8e8e93;
+			font-style: italic; font-weight: normal; }
+		</style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+
+		<xf:group class="mobile-container">
+
+			<xf:group class="header-section">
+				<xf:group style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+					<w2:textbox label="테넌트 관리" class="page-title"></w2:textbox>
+					<xf:trigger class="refresh-btn" ev:onclick="scwin.refreshData" type="button">
+						<xf:label><![CDATA[새로고침]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="search-row">
+					<w2:input id="searchInput" class="search-input" placeholder="테넌트 이름 또는 ID 검색..."></w2:input>
+					<xf:trigger class="search-btn" ev:onclick="scwin.searchTenant" type="button" style="height: 30px;">
+						<xf:label><![CDATA[검색]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="filter-row">
+					<xf:trigger id="filter_all" class="filter-btn active" ev:onclick="scwin.filterAll" type="button">
+						<xf:label><![CDATA[전체]]></xf:label>
+					</xf:trigger>
+					<xf:trigger id="filter_active" class="filter-btn" ev:onclick="scwin.filterActive" type="button">
+						<xf:label><![CDATA[활성]]></xf:label>
+					</xf:trigger>
+					<xf:trigger id="filter_inactive" class="filter-btn" ev:onclick="scwin.filterInactive" type="button">
+						<xf:label><![CDATA[비활성]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+			<xf:group class="count-section">
+				<w2:textbox id="tenant_count" label="테넌트 목록 (로딩중...)"></w2:textbox>
+			</xf:group>
+
+			<xf:group id="tenant_list_container" class="tenant-list">
+				<xf:group id="loading_state" class="loading-state">
+					<w2:textbox label="테넌트 데이터를 불러오는 중..."></w2:textbox>
+				</xf:group>
+
+				<xf:group id="tenant_template" style="display: none;" class="tenant-item">
+					<w2:textbox id="template_name" class="tenant-name"></w2:textbox>
+					<w2:textbox id="template_users" class="tenant-info"></w2:textbox>
+					<w2:textbox id="template_modules" class="tenant-info"></w2:textbox>
+					<w2:textbox id="template_status" class="tenant-status"></w2:textbox>
+				</xf:group>
+
+			</xf:group>
+
+			<xf:group class="bottom-nav">
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_home_onclick" type="button">
+						<xf:label><![CDATA[홈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-active" ev:onclick="scwin.btn_tenant_onclick" type="button">
+						<xf:label><![CDATA[테넌트]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_module_onclick" type="button">
+						<xf:label><![CDATA[모듈]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<xf:group class="nav-item">
+					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_stats_onclick" type="button">
+						<xf:label><![CDATA[서버현황]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+		</xf:group>
+
+	</body>
+</html>

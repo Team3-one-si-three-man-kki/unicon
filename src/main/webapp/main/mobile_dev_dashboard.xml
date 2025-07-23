@@ -6,245 +6,903 @@
 		<w2:buildDate />
 		<xf:model>
 			<xf:instance>
-				<data xmlns="" />
+				<data xmlns="">
+					<dashboardData>
+						<totalModules>0</totalModules>
+						<activeTenants>0</activeTenants>
+						<inactiveTenants>0</inactiveTenants>
+						<totalTenants>0</totalTenants>
+						<connectedUsers>0</connectedUsers>
+						<activeSessions>0</activeSessions>
+						<serverStatus>로딩중</serverStatus>
+						<!-- 모듈 통계 -->
+						<freeModules>0</freeModules>
+						<paidModules>0</paidModules>
+						<avgModulePrice>0</avgModulePrice>
+						<totalModuleRevenue>0</totalModuleRevenue>
+						<highPriceModules>0</highPriceModules>
+						<!-- 서버 성능 지표 -->
+						<cpuUsage>0</cpuUsage>
+						<memoryUsage>0</memoryUsage>
+						<activeWorkers>0</activeWorkers>
+					</dashboardData>
+				</data>
 			</xf:instance>
+
+			<w2:dataCollection baseNode="map">
+				<!-- 테넌트 데이터 -->
+				<w2:dataList baseNode="list" id="dlt_tenantList" repeatNode="map" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" id="tenantId" name="tenant_id"></w2:column>
+						<w2:column dataType="text" id="name" name="name"></w2:column>
+						<w2:column dataType="text" id="isActive" name="is_active"></w2:column>
+						<w2:column dataType="text" id="createdAt" name="created_at"></w2:column>
+						<w2:column dataType="text" id="userCount" name="user_count"></w2:column>
+						<w2:column dataType="text" id="moduleCount" name="module_count"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+
+				<!-- 모듈 데이터 -->
+				<w2:dataList baseNode="list" id="dlt_moduleList" repeatNode="map" saveRemovedData="true">
+					<w2:columnInfo>
+						<w2:column dataType="text" name="moduleId" id="moduleId"></w2:column>
+						<w2:column dataType="text" name="code" id="code"></w2:column>
+						<w2:column dataType="text" name="name" id="name"></w2:column>
+						<w2:column dataType="text" name="description" id="description"></w2:column>
+						<w2:column dataType="text" name="price" id="price"></w2:column>
+						<w2:column dataType="text" name="icon" id="icon"></w2:column>
+						<w2:column dataType="text" name="category" id="category"></w2:column>
+					</w2:columnInfo>
+				</w2:dataList>
+
+				<!-- 검색 조건 -->
+				<w2:dataMap baseNode="map" id="dmp_tenantSearch">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="pageIndex" id="pageIndex" defaultValue="1"></w2:key>
+						<w2:key dataType="text" name="pageSize" id="pageSize" defaultValue="100"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+
+				<w2:dataMap baseNode="map" id="dmp_moduleSearch">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="pageIndex" id="pageIndex" defaultValue="1"></w2:key>
+						<w2:key dataType="text" name="pageSize" id="pageSize" defaultValue="100"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+
+			<!-- 테넌트 목록 조회 -->
+			<xf:submission id="sbm_selectTenantList" target='data:json,{"id":"dlt_tenantList","key":"elData.tenantVoList"}'
+				action="/InsWebApp/TNT0001List.pwkjson" method="post" mediatype="application/json" mode="asynchronous"
+				ref='data:json,{"id":"dmp_tenantSearch","key":"tenantVo"}' ev:submitdone="scwin.sbm_tenantList_submitdone"
+				ev:submiterror="scwin.sbm_tenantList_submiterror" processMsg="테넌트 데이터 조회중...">
+			</xf:submission>
+
+			<!-- 모듈 목록 조회 -->
+			<xf:submission id="sbm_selectModuleList" action="/InsWebApp/MarketplaceModuleList.pwkjson" method="post"
+				mediatype="application/json" mode="asynchronous" ref='data:json,{"id":"dmp_moduleSearch","key":"moduleVo"}'
+				target='data:json,{"id":"dlt_moduleList","key":"elData.moduleVoList"}' ev:submitdone="scwin.sbm_moduleList_submitdone"
+				ev:submiterror="scwin.sbm_moduleList_submiterror" processMsg="모듈 데이터 조회중...">
+			</xf:submission>
+
+			<!-- 서버 통계 조회 -->
+			<xf:submission id="sbm_serverStats" action="https://13.125.229.206:3000/api/admin/server-stats" method="get"
+				mediatype="application/json" replace="none" mode="asynchronous" ev:submitdone="scwin.sbm_serverStats_submitdone"
+				ev:submiterror="scwin.sbm_serverStats_submiterror" processMsg="서버 상태 조회중...">
+				<xf:request>
+					<xf:header>
+						<xf:name><![CDATA[Authorization]]></xf:name>
+						<xf:value><![CDATA[javascript:return 'Bearer ' + scwin.getApiToken();]]></xf:value>
+					</xf:header>
+				</xf:request>
+			</xf:submission>
 		</xf:model>
-		<script type="text/javascript"><![CDATA[
-scwin.onpageload = function() {
-    console.log("대시보드 로드");
+
+		<script type="text/javascript">
+            <![CDATA[let dashboardData = {
+    modules: [],
+    tenants: [],
+    serverStats: null,
+    loadedCount: 0,
+    totalLoadCount: 3
 };
 
-scwin.btn_home_onclick = function() {
+scwin.onpageload = function () {
+    console.log("=== 통합 대시보드 로드 시작 ===");
+    scwin.initializeDashboard();
+    scwin.loadAllData();
+};
+
+scwin.initializeDashboard = function () {
+    // 로딩 상태 표시
+    scwin.showLoadingState(true);
+    scwin.resetDashboardUI();
+};
+
+scwin.loadAllData = function () {
+    console.log("모든 데이터 소스 로드 시작");
+
+    // 데이터 로드 카운터 초기화
+    dashboardData.loadedCount = 0;
+
+    // 각 데이터 소스 순차적 로드
+    setTimeout(() => {
+        console.log("1. 테넌트 데이터 로드 시작");
+        $p.executeSubmission("sbm_selectTenantList");
+    }, 100);
+
+    setTimeout(() => {
+        console.log("2. 모듈 데이터 로드 시작");
+        $p.executeSubmission("sbm_selectModuleList");
+    }, 300);
+
+    setTimeout(() => {
+        console.log("3. 서버 통계 데이터 로드 시작");
+        $p.executeSubmission("sbm_serverStats");
+    }, 500);
+};
+
+scwin.getApiToken = function () {
+    return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzZWNyZXRAdGVzdC5jb20iLCJ0ZW5hbnRJZCI6IjIiLCJyb2xlIjoibWFuYWdlciIsInR5cGUiOiJhY2Nlc3MiLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzUzMDgzNzkyLCJleHAiOjE3NTMwODU1OTJ9.Zsw_SY5QwbGtmskKF97ZrvFdumxA1si0ZJTmzyOf9yyMbG6A2AsMlAZRWlcztCgLFqaBz3hslb_Q3rlm4zNRqg";
+};
+
+scwin.sbm_tenantList_submitdone = function (e) {
+    console.log("=== 테넌트 데이터 수신 완료 ===");
+
+    try {
+        const responseData = e.responseJSON;
+        if (responseData && responseData.elData && responseData.elData.tenantVoList) {
+            dashboardData.tenants = responseData.elData.tenantVoList;
+            console.log(`테넌트 데이터 로드 성공: ${dashboardData.tenants.length}개`);
+
+            // 테넌트 통계 계산
+            const tenantStats = scwin.calculateTenantStats(dashboardData.tenants);
+            scwin.updateTenantUI(tenantStats);
+
+        } else {
+            console.warn("테넌트 데이터 구조가 예상과 다릅니다:", responseData);
+        }
+    } catch (error) {
+        console.error("테넌트 데이터 처리 오류:", error);
+    }
+
+    scwin.onDataLoaded();
+};
+
+scwin.sbm_tenantList_submiterror = function (e) {
+    console.error("테넌트 데이터 로드 실패:", e);
+    scwin.onDataLoaded();
+};
+
+scwin.sbm_moduleList_submitdone = function (e) {
+    console.log("=== 모듈 데이터 수신 완료 ===");
+
+    try {
+        const responseData = e.responseJSON;
+        if (responseData && responseData.moduleVoList) {
+            dashboardData.modules = responseData.moduleVoList;
+            console.log(`모듈 데이터 로드 성공: ${dashboardData.modules.length}개`);
+
+            // 모듈 통계 계산
+            const moduleStats = scwin.calculateModuleStats(dashboardData.modules);
+            scwin.updateModuleUI(moduleStats);
+            
+            // 고가 모듈 UI 업데이트
+            scwin.updateHighPriceModules(dashboardData.modules);
+
+        } else {
+            console.warn("모듈 데이터 구조가 예상과 다릅니다:", responseData);
+        }
+    } catch (error) {
+        console.error("모듈 데이터 처리 오류:", error);
+    }
+
+    scwin.onDataLoaded();
+};
+
+scwin.sbm_moduleList_submiterror = function (e) {
+    console.error("모듈 데이터 로드 실패:", e);
+    scwin.onDataLoaded();
+};
+
+scwin.sbm_serverStats_submitdone = function (e) {
+    console.log("=== 서버 통계 수신 완료 ===");
+
+    try {
+        const responseData = e.responseJSON || JSON.parse(e.responseText);
+        if (responseData && responseData.summary) {
+            dashboardData.serverStats = responseData;
+            console.log("서버 통계 로드 성공:", responseData.summary);
+
+            scwin.updateServerStatsUI(responseData);
+
+        } else {
+            console.warn("서버 통계 데이터 구조가 예상과 다릅니다:", responseData);
+            scwin.updateServerStatsUI(null);
+        }
+    } catch (error) {
+        console.error("서버 통계 처리 오류:", error);
+        scwin.updateServerStatsUI(null);
+    }
+
+    scwin.onDataLoaded();
+};
+
+scwin.sbm_serverStats_submiterror = function (e) {
+    console.error("서버 통계 로드 실패:", e);
+    scwin.updateServerStatsUI(null);
+    scwin.onDataLoaded();
+};
+
+scwin.onDataLoaded = function () {
+    dashboardData.loadedCount++;
+    console.log(`데이터 로드 진행률: ${dashboardData.loadedCount}/${dashboardData.totalLoadCount}`);
+
+    if (dashboardData.loadedCount >= dashboardData.totalLoadCount) {
+        console.log("=== 모든 데이터 로드 완료 ===");
+        scwin.showLoadingState(false);
+        scwin.updateRecentActivity(); 
+    }
+};
+
+scwin.calculateTenantStats = function (tenants) {
+    const activeTenants = tenants.filter(t => {
+        const status = String(t.isActive || t.is_active).trim();
+        return status === "1" || status === "Y" || status === "true";
+    }).length;
+
+    const inactiveTenants = tenants.length - activeTenants;
+
+    return {
+        total: tenants.length,
+        active: activeTenants,
+        inactive: inactiveTenants
+    };
+};
+
+scwin.calculateModuleStats = function (modules) {
+    const freeModules = modules.filter(m => parseFloat(m.price || 0) === 0).length;
+    const paidModules = modules.length - freeModules;
+
+    const paidModulesForAvg = modules.filter(m => parseFloat(m.price || 0) > 0);
+    const totalRevenue = paidModulesForAvg.reduce((sum, m) => sum + parseFloat(m.price || 0), 0);
+    const avgPrice = paidModulesForAvg.length > 0 ? totalRevenue / paidModulesForAvg.length : 0;
+    const highPriceModules = modules.filter(m => parseFloat(m.price || 0) > 100000).length;
+
+    return {
+        total: modules.length,
+        free: freeModules,
+        paid: paidModules,
+        avgPrice: Math.round(avgPrice),
+        totalRevenue: Math.round(totalRevenue),
+        highPrice: highPriceModules
+    };
+};
+
+scwin.updateTenantUI = function (stats) {
+    try {
+        const totalTenantsComp = $p.getComponentById("txt_totalTenants");
+        const activeTenantsComp = $p.getComponentById("txt_activeTenants");
+
+        if (totalTenantsComp) totalTenantsComp.setValue(stats.total);
+        if (activeTenantsComp) activeTenantsComp.setValue(stats.active);
+
+        console.log(`테넌트 UI 업데이트: 총 ${stats.total}개, 활성 ${stats.active}개`);
+
+    } catch (error) {
+        console.error("테넌트 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.updateModuleUI = function (stats) {
+    try {
+        const totalModulesComp = $p.getComponentById("txt_totalModules");
+        const freeModulesComp = $p.getComponentById("txt_freeModules");
+        const avgPriceComp = $p.getComponentById("txt_avgPrice");
+
+        if (totalModulesComp) totalModulesComp.setValue(stats.total);
+        if (freeModulesComp) freeModulesComp.setValue(stats.free);
+        if (avgPriceComp) avgPriceComp.setValue(`₩${stats.avgPrice.toLocaleString()}`);
+
+        console.log(`모듈 UI 업데이트: 총 ${stats.total}개, 무료 ${stats.free}개`);
+
+    } catch (error) {
+        console.error("모듈 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.updateServerStatsUI = function (serverData) {
+    try {
+        const connectedUsersComp = $p.getComponentById("txt_connectedUsers");
+        const activeSessionsComp = $p.getComponentById("txt_activeSessions");
+        const serverStatusComp = $p.getComponentById("txt_serverStatus");
+
+        if (serverData && serverData.summary) {
+            const connectedUsers = serverData.summary.totalConnectedPeers || 0;
+            const activeSessions = serverData.summary.activeRoomCount || 0;
+
+            if (connectedUsersComp) connectedUsersComp.setValue(connectedUsers);
+            if (activeSessionsComp) activeSessionsComp.setValue(activeSessions);
+            if (serverStatusComp) {
+                serverStatusComp.setValue("정상");
+                serverStatusComp.removeClass("status-error");
+                serverStatusComp.addClass("status-badge");
+            }
+
+            console.log(`서버 통계 UI 업데이트: 접속자 ${connectedUsers}명, 세션 ${activeSessions}개`);
+        } else {
+            if (connectedUsersComp) connectedUsersComp.setValue(0);
+            if (activeSessionsComp) activeSessionsComp.setValue(0);
+            if (serverStatusComp) {
+                serverStatusComp.setValue("오류");
+                serverStatusComp.removeClass("status-badge");
+                serverStatusComp.addClass("status-error");
+            }
+        }
+    } catch (error) {
+        console.error("서버 통계 UI 업데이트 오류:", error);
+    }
+};
+
+scwin.updateHighPriceModules = function(modules) {
+    const container = document.getElementById('popular_modules_container');
+    if (!container) return;
+
+    try {
+        const sortedModules = [...modules]
+            .sort((a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0))
+            .slice(0, 3);
+
+        if (sortedModules.length === 0) {
+            container.innerHTML = '<div class="realtime-item-empty">표시할 모듈이 없습니다.</div>';
+            return;
+        }
+
+        let html = '';
+        sortedModules.forEach(module => {
+            const price = parseFloat(module.price || 0);
+            const priceStatus = price === 0 ? 'status-free' : 'status-paid';
+            const priceText = price === 0 ? '무료' : `₩${price.toLocaleString()}`;
+            
+            html += `
+                <div class="realtime-item">
+                    <div class="module-icon-latest">${(module.name || 'M').charAt(0)}</div>
+                    <div class="item-info">
+                        <div class="item-title">${module.name || '이름 없음'}</div>
+                        <div class="item-desc">${module.description || '설명 없음'}</div>
+                    </div>
+                    <div class="item-status ${priceStatus}">${priceText}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        console.log("고가 모듈 TOP 3 UI 업데이트 완료");
+    } catch (error) {
+        console.error("고가 모듈 UI 업데이트 오류:", error);
+        container.innerHTML = '<div class="realtime-item-empty">오류가 발생했습니다.</div>';
+    }
+};
+
+scwin.updateRecentActivity = function() {
+    const container = document.getElementById('recent_activity_container');
+    if (!container) return;
+
+    try {
+        const recentTenants = [...dashboardData.tenants]
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .slice(0, 5);
+
+        if (recentTenants.length === 0) {
+            container.innerHTML = '<div class="realtime-item-empty">최근 활동이 없습니다.</div>';
+            return;
+        }
+
+        let html = '';
+        recentTenants.forEach(tenant => {
+            const isActive = String(tenant.isActive || tenant.is_active).trim() === "1" || String(tenant.isActive || tenant.is_active).trim() === "true";
+            const statusClass = isActive ? 'status-active' : 'status-inactive';
+            const statusText = isActive ? '활성' : '비활성';
+
+            html += `
+                <div class="realtime-item">
+                    <div class="item-info">
+                        <div class="item-title">${tenant.name || '이름 없는 테넌트'}</div>
+                        <div class="item-desc">사용자 ${tenant.user_count || 0}명 • 모듈 ${tenant.module_count || 0}개</div>
+                    </div>
+                    <div class="item-status ${statusClass}">${statusText}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        console.log("최근 테넌트 활동 UI 업데이트 완료");
+    } catch (error) {
+        console.error("최근 테넌트 활동 UI 업데이트 오류:", error);
+        container.innerHTML = '<div class="realtime-item-empty">오류가 발생했습니다.</div>';
+    }
+};
+
+scwin.showLoadingState = function (isLoading) {
+    try {
+        const loadingElements = document.querySelectorAll('.loading-indicator');
+        loadingElements.forEach(element => {
+            element.style.display = isLoading ? 'block' : 'none';
+        });
+
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            if (isLoading) {
+                card.classList.add('loading');
+            } else {
+                card.classList.remove('loading');
+            }
+        });
+    } catch (error) {
+        console.error("로딩 상태 표시 오류:", error);
+    }
+};
+
+scwin.resetDashboardUI = function () {
+    try {
+        const components = [
+            'txt_totalModules', 'txt_activeTenants', 'txt_connectedUsers',
+            'txt_activeSessions', 'txt_serverStatus', 'txt_freeModules',
+            'txt_avgPrice', 'txt_totalTenants'
+        ];
+
+        components.forEach(id => {
+            const comp = $p.getComponentById(id);
+            if (comp) {
+                comp.setValue('-');
+            }
+        });
+        
+        // 동적 컨텐츠 영역도 초기화
+        const popularModulesContainer = document.getElementById('popular_modules_container');
+        if (popularModulesContainer) {
+            popularModulesContainer.innerHTML = '<div class="realtime-item-empty">모듈 데이터를 불러오는 중...</div>';
+        }
+        const recentActivityContainer = document.getElementById('recent_activity_container');
+        if (recentActivityContainer) {
+            recentActivityContainer.innerHTML = '<div class="realtime-item-empty">활동 데이터를 불러오는 중...</div>';
+        }
+
+    } catch (error) {
+        console.error("대시보드 UI 초기화 오류:", error);
+    }
+};
+
+scwin.refreshDashboard = function () {
+    console.log("대시보드 새로고침");
+    scwin.initializeDashboard();
+    scwin.loadAllData();
+};
+
+scwin.btn_home_onclick = function () {
     console.log("현재 홈(대시보드) 페이지입니다.");
+    scwin.refreshDashboard();
 };
 
-scwin.btn_tenant_onclick = function() {
-    console.log("테넌트 관리 페이지로 이동");
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/moblie_dev_tenant.xml";
+scwin.btn_tenant_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_tenant.xml";
 };
 
-scwin.btn_module_onclick = function() {
-    console.log("모듈 관리 페이지로 이동");
+scwin.btn_module_onclick = function () {
     location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
 };
 
-scwin.btn_stats_onclick = function() {
-    console.log("서버 현황 페이지로 이동");
-    try {
-        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
-    } catch(e) {
-        try {
-            $p.navigate("/InsWebApp/main/mobile_dev_server_info.xml");
-        } catch(e2) {
-            $p.openFrame("serverInfo", "/InsWebApp/main/mobile_dev_server_info.xml");
-        }
-    }
-};
-]]></script>
+scwin.btn_stats_onclick = function () {
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+};]]>
+		</script>
+
 		<style type="text/css">
-			.dashboard-container {
-			max-width: 400px;
-			margin: 0 auto;
-			background-color: #f5f6fa;
-			padding: 20px;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-			}
+            <![CDATA[.dashboard-container {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: #f5f6fa;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
 
-			.stats-grid {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 16px;
-			margin-bottom: 30px;
-			}
+.header-section {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-			.stat-card {
-			background: white;
-			border-radius: 16px;
-			padding: 24px;
-			text-align: center;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-			}
+.page-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
 
-			.stat-number {
-			font-size: 32px;
-			font-weight: bold;
-			margin: 12px 0 8px 0;
-			}
+.refresh-btn {
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
 
-			.stat-label {
-			font-size: 14px;
-			color: #8e8e93;
-			font-weight: 500;
-			}
+.refresh-btn:hover {
+    background: #0056b3;
+}
 
-			.blue { color: #4a90e2; }
-			.green { color: #34c759; }
-			.purple { color: #af52de; }
-			.orange { color: #ff9500; }
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 30px;
+}
 
-			.realtime-section {
-			background: white;
-			border-radius: 16px;
-			overflow: hidden;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-			margin-bottom: 30px;
-			}
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-			.section-header {
-			padding: 20px 20px 16px 20px;
-			border-bottom: 1px solid #f1f1f1;
-			font-size: 18px;
-			font-weight: bold;
-			color: #333;
-			}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
 
-			.realtime-item {
-			display: flex;
-			align-items: center;
-			padding: 16px 20px;
-			border-bottom: 1px solid #f8f8f8;
-			}
+.stat-number {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 12px 0 8px 0;
+    min-height: 38px;
+    transition: color 0.3s ease;
+}
 
-			.realtime-item:last-child {
-			border-bottom: none;
-			}
+.stat-label {
+    font-size: 14px;
+    color: #8e8e93;
+    font-weight: 500;
+}
 
-			.item-info {
-			flex: 1;
-			margin-left: 16px;
-			}
+.blue {
+    color: #4a90e2;
+}
 
-			.item-title {
-			font-size: 16px;
-			font-weight: 600;
-			color: #333;
-			margin-bottom: 2px;
-			}
+.green {
+    color: #34c759;
+}
 
-			.item-desc {
-			font-size: 13px;
-			color: #8e8e93;
-			}
+.purple {
+    color: #af52de;
+}
 
-			.item-count {
-			font-size: 16px;
-			font-weight: bold;
-			color: #4a90e2;
-			}
+.orange {
+    color: #ff9500;
+}
 
-			.status-badge {
-			background: #34c759;
-			color: white;
-			padding: 4px 12px;
-			border-radius: 12px;
-			font-size: 12px;
-			font-weight: 600;
-			}
+.red {
+    color: #ff3b30;
+}
 
-			.bottom-nav {
-			display: flex;
-			justify-content: space-around;
-			background: white;
-			border-radius: 16px;
-			padding: 16px 0;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-			}
+.teal {
+    color: #5ac8fa;
+}
 
-			.nav-item {
-			text-align: center;
-			flex: 1;
-			}
+.realtime-section {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
 
-			.nav-active {
-			color: #007aff !important;
-			font-weight: 600 !important;
-			background: none !important;
-			border: none !important;
-			}
+.section-header {
+    padding: 20px 20px 16px 20px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
 
-			.nav-inactive {
-			color: #8e8e93 !important;
-			font-weight: 500 !important;
-			background: none !important;
-			border: none !important;
-			}
+.realtime-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f8f8f8;
+    transition: background-color 0.2s ease;
+}
+
+.realtime-item:hover {
+    background-color: #f8f9fa;
+}
+
+.realtime-item:last-child {
+    border-bottom: none;
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.item-desc {
+    font-size: 13px;
+    color: #8e8e93;
+}
+
+.item-count {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4a90e2;
+}
+
+.item-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-active {
+    background-color: #e6f7e6;
+    color: #34c759;
+}
+
+.status-inactive {
+    background-color: #ffe6e6;
+    color: #ff3b30;
+}
+
+.realtime-item-empty {
+    padding: 20px;
+    text-align: center;
+    color: #8e8e93;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.status-badge {
+    background: #34c759;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-error {
+    background: #ff3b30;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    color: transparent !important;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #8e8e93;
+    font-size: 14px;
+    display: none;
+}
+
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    background: white;
+    border-radius: 16px;
+    padding: 16px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-item {
+    text-align: center;
+    flex: 1;
+}
+
+.nav-active {
+    color: #007aff !important;
+    font-weight: 600 !important;
+    background: none !important;
+    border: none !important;
+}
+
+.nav-inactive {
+    color: #8e8e93 !important;
+    font-weight: 500 !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.nav-inactive:hover {
+    color: #007aff !important;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 380px) {
+    .dashboard-container {
+        padding: 16px;
+    }
+
+    .stats-grid {
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-number {
+        font-size: 28px;
+    }
+}
+
+.module-icon-latest {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.new-badge {
+    background: #ff3b30;
+    color: white;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 8px;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+.status-free {
+    background-color: #e6f7e6;
+    color: #34c759;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-paid {
+    background-color: #fff3e0;
+    color: #ff9500;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}]]>
 		</style>
 	</head>
-	<body ev:onpageload="scwin.onpageload">
 
+	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="dashboard-container">
 
-			<xf:group class="pgtbox">
-				<w2:textbox class="pgt_tit" label="대시보드" tagname=""></w2:textbox>
+			<!-- 헤더 섹션 -->
+			<xf:group class="header-section">
+				<w2:textbox label="통합 대시보드" class="page-title"></w2:textbox>
+				<xf:trigger class="refresh-btn" ev:onclick="scwin.refreshDashboard" type="button">
+					<xf:label><![CDATA[새로고침]]></xf:label>
+				</xf:trigger>
 			</xf:group>
 
+			<!-- 로딩 인디케이터 -->
+			<xf:group class="loading-indicator">
+				<w2:textbox label="실시간 데이터를 불러오는 중..."></w2:textbox>
+			</xf:group>
+
+			<!-- 주요 통계 -->
 			<xf:group class="stats-grid">
 				<xf:group class="stat-card">
-					<w2:textbox label="총 템플릿" class="stat-label"></w2:textbox>
-					<w2:textbox label="128" class="stat-number blue"></w2:textbox>
+					<w2:textbox label="총 모듈" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_totalModules" label="-" class="stat-number blue"></w2:textbox>
 				</xf:group>
-
 				<xf:group class="stat-card">
-					<w2:textbox label="완성 테넌트" class="stat-label"></w2:textbox>
-					<w2:textbox label="95" class="stat-number green"></w2:textbox>
+					<w2:textbox label="활성 테넌트" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_activeTenants" label="-" class="stat-number green"></w2:textbox>
 				</xf:group>
-
 				<xf:group class="stat-card">
-					<w2:textbox label="총 사용자" class="stat-label"></w2:textbox>
-					<w2:textbox label="1,205" class="stat-number purple"></w2:textbox>
+					<w2:textbox label="현재 접속자" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_connectedUsers" label="-" class="stat-number purple"></w2:textbox>
 				</xf:group>
-
 				<xf:group class="stat-card">
-					<w2:textbox label="오늘 매출" class="stat-label"></w2:textbox>
-					<w2:textbox label="$2,450" class="stat-number orange"></w2:textbox>
+					<w2:textbox label="활성 세션" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_activeSessions" label="-" class="stat-number orange"></w2:textbox>
 				</xf:group>
 			</xf:group>
+
+			<!-- 추가 통계 섹션 -->
+			<xf:group class="stats-grid">
+				<xf:group class="stat-card">
+					<w2:textbox label="총 테넌트" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_totalTenants" label="-" class="stat-number teal"></w2:textbox>
+				</xf:group>
+				<xf:group class="stat-card">
+					<w2:textbox label="무료 모듈" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_freeModules" label="-" class="stat-number green"></w2:textbox>
+				</xf:group>
+				<xf:group class="stat-card">
+					<w2:textbox label="평균 모듈 가격" class="stat-label"></w2:textbox>
+					<w2:textbox id="txt_avgPrice" label="-" class="stat-number red"></w2:textbox>
+				</xf:group>
+				<xf:group class="stat-card">
+					<w2:textbox label="서버 상태" class="stat-label" style="margin-bottom: 20px;"></w2:textbox>
+					<w2:textbox id="txt_serverStatus" label="-" class="status-badge"></w2:textbox>
+				</xf:group>
+			</xf:group>
+
+			<!-- 인기 모듈 섹션 -->
+			<xf:group class="realtime-section">
+				<xf:group class="section-header">
+					<w2:textbox label=" 고가 모듈 TOP 3"></w2:textbox>
+				</xf:group>
+				<div id="popular_modules_container">
+					<xf:group class="realtime-item-empty">
+						<w2:textbox label="모듈 데이터를 불러오는 중..."></w2:textbox>
+					</xf:group>
+				</div>
+			</xf:group>
+
 
 			<xf:group class="realtime-section">
 				<xf:group class="section-header">
-					<w2:textbox label="실시간 현황"></w2:textbox>
+					<w2:textbox label=" 최근 테넌트 활동"></w2:textbox>
 				</xf:group>
-
-				<xf:group class="realtime-item">
-					<xf:group class="item-info">
-						<w2:textbox label="오늘 신규 가입" class="item-title"></w2:textbox>
-						<w2:textbox label="새로운 테넌트" class="item-desc"></w2:textbox>
+				<div id="recent_activity_container">
+					<xf:group class="realtime-item-empty">
+						<w2:textbox label="활동 데이터를 불러오는 중..."></w2:textbox>
 					</xf:group>
-					<w2:textbox label="3개" class="item-count"></w2:textbox>
-				</xf:group>
-
-				<xf:group class="realtime-item">
-					<xf:group class="item-info">
-						<w2:textbox label="오늘 모듈 구매" class="item-title"></w2:textbox>
-						<w2:textbox label="구매 건수" class="item-desc"></w2:textbox>
-					</xf:group>
-					<w2:textbox label="8건" class="item-count"></w2:textbox>
-				</xf:group>
-
-				<xf:group class="realtime-item">
-					<xf:group class="item-info">
-						<w2:textbox label="활성 세션" class="item-title"></w2:textbox>
-						<w2:textbox label="현재 진행중" class="item-desc"></w2:textbox>
-					</xf:group>
-					<w2:textbox label="24개" class="item-count"></w2:textbox>
-				</xf:group>
-
-				<xf:group class="realtime-item">
-					<xf:group class="item-info">
-						<w2:textbox label="서버 상태" class="item-title"></w2:textbox>
-						<w2:textbox label="시스템 모니터링" class="item-desc"></w2:textbox>
-					</xf:group>
-					<w2:textbox label="정상" class="status-badge"></w2:textbox>
-				</xf:group>
+				</div>
 			</xf:group>
 
+			<!-- 하단 네비게이션 -->
 			<xf:group class="bottom-nav">
 				<xf:group class="nav-item">
 					<xf:trigger class="btn_cm nav-active" ev:onclick="scwin.btn_home_onclick" type="button">
 						<xf:label><![CDATA[홈]]></xf:label>
 					</xf:trigger>
 				</xf:group>
-
 				<xf:group class="nav-item">
 					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_tenant_onclick" type="button">
 						<xf:label><![CDATA[테넌트]]></xf:label>
@@ -256,7 +914,6 @@ scwin.btn_stats_onclick = function() {
 						<xf:label><![CDATA[모듈]]></xf:label>
 					</xf:trigger>
 				</xf:group>
-
 				<xf:group class="nav-item">
 					<xf:trigger class="btn_cm nav-inactive" ev:onclick="scwin.btn_stats_onclick" type="button">
 						<xf:label><![CDATA[서버현황]]></xf:label>
@@ -265,6 +922,5 @@ scwin.btn_stats_onclick = function() {
 			</xf:group>
 
 		</xf:group>
-
 	</body>
 </html>
