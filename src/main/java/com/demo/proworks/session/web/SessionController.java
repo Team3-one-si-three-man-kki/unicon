@@ -5,19 +5,26 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.demo.proworks.session.service.SessionService;
 import com.demo.proworks.session.vo.SessionVo;
+import com.demo.proworks.user.service.UserService;
+import com.demo.proworks.user.vo.UserVo;
 import com.demo.proworks.session.vo.SessionListVo;
 
 import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
 import com.inswave.elfw.util.ControllerContextUtil;
+import com.inswave.elfw.util.ElBeanUtils;
+
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * @subject : 세션정보 관련 처리를 담당하는 컨트롤러
@@ -88,10 +95,19 @@ public class SessionController {
 	@RequestMapping(value = "TNU0001SessionIns")
 	@ElDescription(sub = "세션정보 등록처리", desc = "세션정보를 등록 처리 한다.")
 	public Map<String, Object> insertSession(SessionVo sessionVo) throws Exception {
-		// 세션 저장 후 생성된 ID 받기
+		
+		String userEmail = ControllerContextUtil.getUserHeader().getUserId();
+		UserService userService = (UserService) ElBeanUtils.getBean("userServiceImpl");
+		UserVo currentUser = userService.getUserByEmail(userEmail);
+		String actualUserId = currentUser.getUserId();
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + actualUserId);
+		
+		sessionVo.setCreatedBy(actualUserId);
+		sessionVo.setInviteLink(null); 
+		
 		sessionService.insertSession(sessionVo);
 
-		// 생성된 sessionId 가져오기 (MyBatis에서 자동 설정됨)
+		// 세션 저장 후 생성된 ID 받아서 반환 -> 세션 배치 정보 로드에 사용
 		String sessionId = sessionVo.getSessionId();
 
 		// 응답 데이터 구성

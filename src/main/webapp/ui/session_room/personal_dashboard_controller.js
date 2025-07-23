@@ -90,9 +90,9 @@ window.PersonalDashboardController = {
         }
         
         // 3초 후 자동으로 졸음 해제 (실제로는 AI에서 해제 이벤트가 와야 함)
-        setTimeout(() => {
-            this.handleDrowsinessResolved();
-        }, 3000);
+        //setTimeout(() => {
+        //    this.handleDrowsinessResolved();
+        //}, 3000);
     },
     
     handleDrowsinessResolved: function() {
@@ -122,9 +122,9 @@ window.PersonalDashboardController = {
         }
         
         // 5초 후 자동으로 복귀 (실제로는 AI에서 복귀 이벤트가 와야 함)
-        setTimeout(() => {
-            this.handleAbsenceResolved();
-        }, 5000);
+        //setTimeout(() => {
+        //    this.handleAbsenceResolved();
+        //}, 5000);
     },
     
     handleAbsenceResolved: function() {

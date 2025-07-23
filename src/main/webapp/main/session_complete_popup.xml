@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+   xmlns:ev="http://www.w3.org/2001/xml-events"
+   xmlns:w2="http://www.inswave.com/websquare" 
+   xmlns:xf="http://www.w3.org/2002/xforms">
+   <head>
+       <w2:type>COMPONENT</w2:type>
+       <w2:buildDate/>
+       <w2:MSA/>
+       <xf:model>
+           <w2:dataCollection baseNode="map">
+               <w2:dataMap baseNode="map" id="dma_popupData">
+                   <w2:keyInfo>
+                       <w2:key dataType="text" name="sessionId"></w2:key>
+                       <w2:key dataType="text" name="sessionName"></w2:key>
+                       <w2:key dataType="text" name="inviteLink"></w2:key>
+                       <w2:key dataType="text" name="action"></w2:key>
+                   </w2:keyInfo>
+               </w2:dataMap>
+           </w2:dataCollection>
+           <w2:workflowCollection/>
+       </xf:model>
+       <w2:layoutInfo/>
+       <w2:publicInfo method=""/>
+       <style>
+           .popup-container {
+               padding: 30px;
+               text-align: center;
+               font-family: 'Segoe UI', sans-serif;
+               background: #fff;
+               height: 100%;
+               display: flex;
+               flex-direction: column;
+               justify-content: center;
+           }
+           .success-icon {
+               font-size: 60px;
+               margin-bottom: 20px;
+               color: #28a745;
+           }
+           .popup-title {
+               font-size: 24px;
+               font-weight: bold;
+               margin-bottom: 15px;
+               color: #333;
+           }
+           .popup-message {
+               font-size: 16px;
+               margin-bottom: 20px;
+               color: #666;
+               line-height: 1.5;
+           }
+           .invite-link-section {
+               background: #f8f9fa;
+               padding: 20px;
+               border-radius: 8px;
+               margin: 20px 0;
+               border: 1px solid #e9ecef;
+           }
+           .invite-link-label {
+               font-weight: 600;
+               margin-bottom: 10px;
+               color: #495057;
+           }
+           .invite-link-input {
+               width: 100%;
+               padding: 12px;
+               border: 1px solid #ced4da;
+               border-radius: 4px;
+               font-family: monospace;
+               font-size: 12px;
+               background: white;
+               margin-bottom: 10px;
+               box-sizing: border-box;
+           }
+           .popup-buttons {
+               margin-top: 30px;
+               display: flex;
+               justify-content: center;
+               gap: 15px;
+           }
+           .popup-btn {
+               padding: 12px 30px;
+               border: none;
+               border-radius: 6px;
+               cursor: pointer;
+               font-size: 16px;
+               font-weight: 600;
+               transition: all 0.2s;
+           }
+           .btn-primary {
+               background: #667eea;
+               color: white;
+           }
+           .btn-primary:hover {
+               background: #5a6fd8;
+               transform: translateY(-1px);
+           }
+           .btn-secondary {
+               background: #f8f9fa;
+               color: #333;
+               border: 1px solid #ddd;
+           }
+           .btn-secondary:hover {
+               background: #e9ecef;
+               transform: translateY(-1px);
+           }
+           .btn-copy {
+               background: #28a745;
+               color: white;
+               padding: 8px 16px;
+               font-size: 14px;
+           }
+           .btn-copy:hover {
+               background: #218838;
+           }
+       </style>
+       <script lazy="false" type="text/javascript"><![CDATA[
+// 데이터맵 대신 전역 변수로 데이터 관리
+scwin.sessionInfo = {
+    sessionId: null,
+    sessionName: null,
+    inviteLink: null
+};
+
+scwin.onpageload = function() {
+    try {
+        console.log("팝업 페이지 로드 시작");
+        
+        // 부모 창에서 데이터 가져오기
+        try {
+            var parentWin = $p.parent();
+            if (parentWin && parentWin.scwin) {
+                var parentScwin = parentWin.scwin;
+                
+                if (parentScwin.currentSessionId) {
+                    // 전역 변수에 직접 저장
+                    scwin.sessionInfo.sessionId = parentScwin.currentSessionId;
+                    scwin.sessionInfo.sessionName = parentScwin.sessionData && parentScwin.sessionData.sessionInfo ? 
+                                                    parentScwin.sessionData.sessionInfo.name : "새 세션";
+                    scwin.sessionInfo.inviteLink = parentScwin.sessionData && parentScwin.sessionData.generatedInfo ? 
+                                                   parentScwin.sessionData.generatedInfo.inviteLink : "초대링크 생성 중...";
+                    
+                    console.log("부모에서 수집한 데이터:", scwin.sessionInfo);
+                    
+                    // UI 요소에 값 표시
+                    spn_sessionName.setValue(scwin.sessionInfo.sessionName);
+                    txt_inviteLink.setValue(scwin.sessionInfo.inviteLink);
+                    
+                    // 데이터맵에도 설정 시도 (비동기로)
+                    setTimeout(function() {
+                        try {
+                            dma_popupData.set("sessionId", scwin.sessionInfo.sessionId);
+                            dma_popupData.set("sessionName", scwin.sessionInfo.sessionName);
+                            dma_popupData.set("inviteLink", scwin.sessionInfo.inviteLink);
+                            dma_popupData.set("action", "");
+                            console.log("데이터맵 설정 완료");
+                        } catch (e) {
+                            console.warn("데이터맵 설정 실패:", e);
+                        }
+                    }, 100);
+                    
+                } else {
+                    throw new Error("부모 창에서 currentSessionId를 찾을 수 없습니다.");
+                }
+            } else {
+                throw new Error("부모 창에 접근할 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("부모 창 데이터 가져오기 실패:", error);
+            
+            // 기본값 설정
+            scwin.sessionInfo.sessionId = "";
+            scwin.sessionInfo.sessionName = "새 세션";
+            scwin.sessionInfo.inviteLink = "초대링크가 생성 중입니다...";
+            
+            spn_sessionName.setValue(scwin.sessionInfo.sessionName);
+            txt_inviteLink.setValue(scwin.sessionInfo.inviteLink);
+        }
+        
+        scwin.isConfirmed = false;
+        console.log("팝업 초기화 완료");
+        
+    } catch (error) {
+        console.error("팝업 초기화 중 오류:", error);
+        alert("팝업 초기화 중 오류가 발생했습니다: " + error.message);
+    }
+};
+
+scwin.startSession = function() {
+    try {
+        console.log("세션 시작 버튼 클릭");
+        scwin.isConfirmed = true;
+        
+        var finalSessionId = scwin.sessionInfo.sessionId;
+        
+        var resultData = {
+            action: "start",
+            sessionId: finalSessionId,
+            confirmed: true
+        };
+        
+        console.log("전달할 결과 데이터:", resultData);
+        
+        if (!finalSessionId) {
+            alert("세션 ID를 찾을 수 없습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+        
+        // 부모 창에서 직접 페이지 이동 호출 (closeAction 우회)
+        try {
+            var parentWin = $p.parent();
+            if (parentWin && parentWin.scwin) {
+                console.log("=== 부모 창에서 직접 페이지 이동 호출 ===");
+                
+                // localStorage에 sessionId 저장
+                try {
+                    localStorage.setItem('currentSessionId', finalSessionId);
+                    console.log("localStorage에 sessionId 저장:", finalSessionId);
+                } catch (e) {
+                    console.warn("localStorage 저장 실패:", e);
+                }
+                
+                // 부모의 navigateToLayout 함수 직접 호출
+                if (typeof parentWin.scwin.navigateToLayout === 'function') {
+                    console.log("부모의 navigateToLayout 함수 호출:", finalSessionId);
+                    parentWin.scwin.navigateToLayout(finalSessionId);
+                } else {
+                    console.error("부모에 navigateToLayout 함수가 없습니다.");
+                }
+            } else {
+                console.error("부모 창에 접근할 수 없습니다.");
+            }
+        } catch (parentError) {
+            console.error("부모 함수 직접 호출 실패:", parentError);
+        }
+        
+        // 팝업 닫기
+        var closeResult = $p.closePopup(resultData);
+        console.log("closePopup 결과:", closeResult);
+        
+    } catch (error) {
+        console.error("세션 시작 중 오류:", error);
+        alert("세션 시작 중 오류가 발생했습니다: " + error.message);
+    }
+};
+
+scwin.closeLater = function() {
+    try {
+        console.log("나중에 시작 버튼 클릭");
+        scwin.isConfirmed = false;
+        
+        var resultData = {
+            action: "close",
+            sessionId: scwin.sessionInfo.sessionId,
+            confirmed: false
+        };
+        
+        console.log("나중에 시작 결과:", resultData);
+        $p.closePopup(resultData);
+        
+    } catch (error) {
+        console.error("팝업 닫기 중 오류:", error);
+        $p.closePopup({ action: "close", confirmed: false });
+    }
+};
+
+scwin.copyInviteLink = function() {
+    try {
+        var linkText = txt_inviteLink.getValue();
+        
+        if (!linkText || linkText === "초대링크 생성 중..." || linkText === "초대링크가 생성 중입니다...") {
+            alert("아직 초대링크가 생성되지 않았습니다.");
+            return;
+        }
+        
+        // 클립보드 복사
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(linkText).then(function() {
+                alert('초대링크가 클립보드에 복사되었습니다!');
+            }).catch(function(err) {
+                console.error('클립보드 복사 실패:', err);
+                scwin.fallbackCopyText(linkText);
+            });
+        } else {
+            scwin.fallbackCopyText(linkText);
+        }
+        
+    } catch (error) {
+        console.error('복사 중 오류:', error);
+        alert('복사 중 오류가 발생했습니다: ' + error.message);
+    }
+};
+
+scwin.fallbackCopyText = function(text) {
+    try {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        var successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            alert('초대링크가 복사되었습니다!');
+        } else {
+            alert('자동 복사에 실패했습니다.\n\n다음 링크를 수동으로 복사해주세요:\n' + text);
+        }
+        
+    } catch (err) {
+        console.error('폴백 복사 실패:', err);
+        alert('자동 복사에 실패했습니다.\n\n다음 링크를 수동으로 복사해주세요:\n' + text);
+    }
+};
+
+scwin.selectAllLink = function() {
+    try {
+        txt_inviteLink.select();
+    } catch (error) {
+        console.error('텍스트 선택 중 오류:', error);
+    }
+};]]></script>
+   </head>
+   <body ev:onpageload="scwin.onpageload">
+       <xf:group class="popup-container">
+           <w2:span class="success-icon" label="✓"></w2:span>
+           
+           <w2:span class="popup-title" label="세션이 성공적으로 생성되었습니다!"></w2:span>
+           
+           <xf:group class="popup-message">
+               <w2:span label="'"></w2:span>
+               <w2:span id="spn_sessionName" label="세션"></w2:span>
+               <w2:span label="' 세션이 준비되었습니다."></w2:span>
+               <br/>
+               <w2:span label="아래 초대링크를 공유하여 참여자를 초대하세요."></w2:span>
+           </xf:group>
+           
+           <xf:group class="invite-link-section">
+               <w2:span class="invite-link-label" label="초대링크"></w2:span>
+               <w2:textbox id="txt_inviteLink" class="invite-link-input" 
+                   readOnly="true" placeholder="초대링크가 생성 중입니다..."
+                   ev:onclick="scwin.selectAllLink()"></w2:textbox>
+               <w2:span class="btn-copy popup-btn" ev:onclick="scwin.copyInviteLink()" 
+                   label="링크 복사" style="cursor: pointer;"></w2:span>
+           </xf:group>
+           
+           <xf:group class="popup-buttons">
+               <w2:span class="popup-btn btn-primary" ev:onclick="scwin.startSession()" 
+                   label="세션 시작하기" style="cursor: pointer;"></w2:span>
+           </xf:group>
+       </xf:group>
+   </body>
+</html>
