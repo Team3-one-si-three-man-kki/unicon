@@ -102,7 +102,6 @@ public class LoginPageController {
 		// 3. 클라이언트로부터 받은 Vo에 서버에서 직접 조회한 tenantId를 설정합니다.
 		// 이렇게 하면 클라이언트가 tenantId를 보내지 않아도 됩니다.
 //        vo.setTenantId(tenantId);
-		vo.setTenantId(10);
 
 		// 4. 안전하게 tenantId가 설정된 Vo를 서비스로 전달합니다.
 		loginPageService.saveLoginPageConfig(vo);
