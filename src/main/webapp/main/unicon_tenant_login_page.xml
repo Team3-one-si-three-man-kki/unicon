@@ -147,8 +147,8 @@ scwin.onpageload = function () {
         const dm_sub = dm_subdomain;
 
         if (dm && typeof dm.set === 'function') {
-            dm.set('subDomain', subDomain !== null ? subDomain : '');
-            dm_sub.set('subDomain', subDomain !== null ? subDomain : '');
+            dm.set('subDomain', subDomain !== null ? subDomain : "basic");
+            dm_sub.set('subDomain', subDomain !== null ? subDomain : "basic");
             dm_sub.set('mode',"login");
         };
         scwin.createPopupLayer();
