@@ -132,7 +132,7 @@
             }]]>
 		</style>
 		<script lazy="false" type="text/javascript"><![CDATA[scwin.drowsyStartTime = null;
-scwin.drowsyInterva = null;
+scwin.drowsyInterval = null;
 scwin.time = null;
 
 scwin.onpageload = function () {
