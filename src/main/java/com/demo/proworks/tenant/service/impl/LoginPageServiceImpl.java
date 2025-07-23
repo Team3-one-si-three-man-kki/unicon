@@ -37,4 +37,13 @@ public class LoginPageServiceImpl implements LoginPageService {
 		return loginPageDAO.saveOrUpdateLoginPage(vo);
 	}
 
+	@Override
+	public int newLoginPageConfig(int tenantId) throws Exception {
+		LoginPageVo vo = new LoginPageVo();
+		vo.setTenantId(tenantId);
+		vo.setConfigJson("{}");
+		
+		return loginPageDAO.newLoginPage(vo);
+	}
+
 }

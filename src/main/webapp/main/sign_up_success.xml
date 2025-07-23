@@ -64,7 +64,7 @@ scwin.onpageload = function () {
     tbx_adminUrl.setValue(tenantUrl)
     tenantServiceUrl.setValue(tenantUrl)
 
-    scwin.url = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml?tenant="+dma_managerInfo.get("tenant");
+    scwin.url = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml&tenant="+dma_managerInfo.get("tenant");
     hiddenUrl.setValue(origin + scwin.url)
 
 };
