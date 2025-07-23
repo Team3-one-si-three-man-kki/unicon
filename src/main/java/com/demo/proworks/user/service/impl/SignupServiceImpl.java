@@ -17,6 +17,7 @@ import com.demo.proworks.util.PasswordEncryptUtil;
 import com.inswave.elfw.log.AppLog;
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.tenant.vo.TenantVo;
+import com.demo.proworks.tenant.service.LoginPageService;
 import com.demo.proworks.tenant.service.TenantService;
 
 /**
@@ -32,6 +33,9 @@ public class SignupServiceImpl implements SignupService {
     
     @Autowired
     private TenantService tenantService; // 인터페이스로 주입
+    
+    @Autowired
+    private LoginPageService loginPageService;
     
     @Autowired
     private PasswordEncryptUtil passwordEncryptUtil;
@@ -59,7 +63,7 @@ public class SignupServiceImpl implements SignupService {
 
         // 4. Tenant 생성
         TenantVo tenant = createTenantInfo(signupRequest);
-        tenantService.insertTenant(tenant);
+        tenantService.insertTenant(tenant);       
 
         // 5. 비밀번호 처리
         if ("kakao".equals(signupRequest.getLoginType())) {
@@ -69,7 +73,10 @@ public class SignupServiceImpl implements SignupService {
             // 일반 회원가입
             signupRequest.setPassword(passwordEncryptUtil.encryptPassword(signupRequest.getPassword()));
         }
-
+        
+        // 로그인 페이지 정보 생성
+        loginPageService.newLoginPageConfig(Integer.parseInt(tenant.getTenantId()));
+        
         // 6. User 생성
         UserVo user = createUserInfo(signupRequest, tenant.getTenantId());
         userService.insertUser(user);

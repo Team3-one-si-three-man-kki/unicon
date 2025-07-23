@@ -11,6 +11,7 @@
 					<w2:keyInfo>
 						<w2:key dataType="text" name="email" id="email"></w2:key>
 						<w2:key dataType="text" name="password" id="password"></w2:key>
+						<w2:key id="subDomain" name="subDomain" dataType="text" defaultValue="admin"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
 
@@ -103,10 +104,10 @@ scwin.parseJwt = function (token) {
 scwin.onpageload = function () {
     // 모바일 팝업 레이어 생성
     scwin.createPopupLayer();
-    
+
     // 저장된 아이디 로드
     scwin.loadSavedUserId();
-    
+
     // 엔터키 이벤트 바인딩
     scwin.bindEnterKeyEvents();
 };
@@ -147,15 +148,15 @@ scwin.bindEnterKeyEvents = function () {
 scwin.login = function () {
     var userId = inp_userId.getValue();
     var password = inp_password.getValue();
-    
+
     // 입력값 검증
     if (!scwin.validateLogin(userId, password)) {
         return;
     }
-    
+
     // 로그인 버튼 상태 변경
     scwin.setLoginButtonState(true);
-    
+
     // 서버 통신
     $c.sbm.execute(login);
 };
@@ -175,7 +176,7 @@ scwin.validateLogin = function (userId, password) {
         });
         return false;
     }
-    
+
     if (userId.length < 3) {
         scwin.showPopup("아이디는 3글자 이상 입력해주세요.", false, function () {
             inp_userId.focus();
@@ -190,10 +191,10 @@ scwin.validateLogin = function (userId, password) {
 scwin.setLoginButtonState = function (isLoading) {
     if (isLoading) {
         btn_login.setDisabled(true);
-        btn_login.setText("로그인 중...");
+        btn_login.setLabel("로그인 중...");
     } else {
         btn_login.setDisabled(false);
-        btn_login.setText("로그인");
+        btn_login.setLabel("로그인");
     }
 };
 
@@ -299,7 +300,7 @@ scwin.login_submitdone = function (e) {
 
         if (tenantId) {
             // 테넌트 ID와 함께 모바일 대시보드 페이지로 이동
-            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_tenant_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
         } else {
             scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
         }

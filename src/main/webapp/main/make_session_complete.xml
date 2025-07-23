@@ -1,24 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ev="http://www.w3.org/2001/xml-events"
-    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
-    <head>
-        <w2:type>COMPONENT</w2:type>
-        <w2:buildDate/>
-        <w2:MSA/>
-        <xf:model>
-            <w2:dataCollection baseNode="map"/>
-            <w2:workflowCollection/>
-        </xf:model>
-        <w2:layoutInfo/>
-        <w2:publicInfo method=""/>
-        <script lazy="false" type="text/javascript"><![CDATA[
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map" />
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<style>
+			.smart-button {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			color: white !important;
+			border: none
+			!important;
+			padding: 7px
+			10px !important;
+			border-radius: 2px !important;
+			font-weight: 600 !important;
+			font-size: 13px !important;
+			cursor:
+			pointer !important;
+			transition: all 0.2s ease !important;
+			position: relative !important;
+			overflow: hidden !important;
+			margin: 0 2px
+			!important;
+			box-shadow: 0 3px
+			10px rgba(54, 116, 181, 0.3) !important;
+			}
+
+			.smart-button:hover {
+			transform: translateY(-1px) !important;
+			box-shadow: 0 6px 20px rgba(54, 116,
+			181, 0.4) !important;
+			background: linear-gradient(135deg, #339941 0%, #339941 100%) !important;
+			}
+
+			.smart-button.secondary {
+			background:
+			linear-gradient(135deg, #3674B5 0%, #4a8bc2 100%) !important;
+			box-shadow: 0 3px 10px rgba(113, 128,
+			150, 0.3) !important;
+			}
+
+			.smart-button.secondary:hover {
+			background: linear-gradient(135deg, #5a6c7d 0%, #6d7b8d 100%) !important;
+			box-shadow: 0 6px 20px rgba(113,
+			128, 150, 0.4) !important;
+			}
+
+			.smart-button.accent {
+			background: linear-gradient(135deg, #3674B5 0%, #4a8bc2
+			100%) !important;
+			box-shadow: 0
+			3px 10px rgba(87, 143, 202, 0.3) !important;
+			}
+
+			.smart-button.accent:hover {
+			background:
+			linear-gradient(135deg, #5a6c7d 0%, #6d7b8d 100%)
+			!important;
+			box-shadow: 0 6px 20px rgba(87, 143, 202, 0.4) !important;
+			}
+		</style>
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
     var parentData = $p.parent().scwin.sessionData;
     txt_name.setLabel(parentData.sessionInfo.name);
     txt_start.setLabel(formatDateTime(parentData.sessionInfo.start_time));
     txt_end.setLabel(formatDateTime(parentData.sessionInfo.end_time));
-    txt_link.setLabel(parentData.generatedInfo.inviteLink);
+    //txt_link.setLabel(parentData.generatedInfo.inviteLink);
 
 
     // 날짜 형식 변환 함수
@@ -48,67 +103,65 @@ scwin.btn_complete_onclick = function (e) {
     });
 };
 ]]></script>
-    </head>
-    <body ev:onpageload="scwin.onpageload">
-    	<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
-    		style="font-size:17px;padding-left: 300px;">
-    		<xf:group
-    			style="width:600px;height:570px;max-width:90%;margin:60px auto;background:white;border:3px solid #e8ecf4;border-radius:3px;padding:40px;position:relative;"
-    			id="grp_join">
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+			style="font-size:17px;padding-left: 300px;">
+			<xf:group
+				style="width:600px;height:590px;max-width:90%;margin:60px auto;background:white;border:3px solid #e8ecf4;border-radius:3px;padding:40px;position:relative;"
+				id="grp_join">
 
-    			<xf:group style="margin-bottom: 20px;" id="grp_email">
-    				<w2:span id="" label="세션 이름" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트" style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;">
-    				</w2:span>
-    				<w2:span id="txt_name" label="출력텍스트입니다. " meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트"
-    					style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
-    				</w2:span>
-    			</xf:group>
-    			<xf:group style="margin-bottom: 20px;" id="grp_pwd">
-    				<w2:span id="" label="시작 시간" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트" style="font-size: 20px;font-weight: 600;margin-bottom: 8px;display: block;">
-    				</w2:span>
-    				<w2:span id="txt_start" label="출력텍스트입니다. " meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트"
-    					style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
-    				</w2:span>
-    			</xf:group>
-    			<xf:group style="margin-bottom: 20px;" id="group2">
-    				<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-    					style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;" id="" label="종료 시간">
-    				</w2:span>
-    				<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-    					style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;"
-    					id="txt_end" label="출력텍스트입니다. ">
-    				</w2:span>
-    			</xf:group>
-    			<xf:group style="margin-bottom: 20px;" id="">
-    				<w2:span id="" label="초대 링크" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트" style="font-size: 20px;    font-weight: 600;    margin-bottom: 8px;    display: block;">
-    				</w2:span>
-    				<w2:span id="txt_link" label="출력텍스트입니다. " meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트"
-    					style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
-    				</w2:span>
-    			</xf:group>
-    			<xf:group style="margin-bottom: 20px;" id="group1">
-    				<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
-    					style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;" id="" label="초대 인원">
-    				</w2:span>
-    				<w2:span id="txt_num" label="출력텍스트입니다. " meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-    					meta_snippetName="10_16 출력텍스트"
-    					style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
-    				</w2:span>
-    			</xf:group>
-    			<xf:group style="margin-top: 70px; display: flex; justify-content: flex-end;" id="">
-    				<xf:trigger meta_snippetCategory="08_버튼" meta_snippetName="8_01 기본버튼" meta_snippetKeyComponent="true"
-    					style="width:14%;height:40px;font-size:22px;background:#1273EB;color:white;border:none;border-radius:8px;font-weight:bold;text-align:center;vertical-align:middle;clear:both;padding-bottom:6px;"
-    					id="btn_complete" type="button" class="btn_cm" ev:onclick="scwin.btn_complete_onclick">
-    					<xf:label><![CDATA[시작]]></xf:label>
-    				</xf:trigger>
-    			</xf:group>
-    		</xf:group>
-    	</xf:group>
-    </body>
+				<xf:group style="margin-bottom: 20px;" id="grp_email">
+					<w2:span id="" label="세션 이름" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true" meta_snippetName="10_16 출력텍스트"
+						style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;">
+					</w2:span>
+					<w2:span id="txt_name" label="출력텍스트입니다. " meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+						meta_snippetName="10_16 출력텍스트"
+						style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
+					</w2:span>
+				</xf:group>
+				<xf:group style="margin-bottom: 20px;" id="grp_pwd">
+					<w2:span id="" label="시작 시간" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true" meta_snippetName="10_16 출력텍스트"
+						style="font-size: 20px;font-weight: 600;margin-bottom: 8px;display: block;">
+					</w2:span>
+					<w2:span id="txt_start" label="출력텍스트입니다. " meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+						meta_snippetName="10_16 출력텍스트"
+						style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
+					</w2:span>
+				</xf:group>
+				<xf:group style="margin-bottom: 20px;" id="group2">
+					<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+						style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;" id="" label="종료 시간">
+					</w2:span>
+					<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+						style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;"
+						id="txt_end" label="출력텍스트입니다. ">
+					</w2:span>
+				</xf:group>
+				<xf:group style="margin-bottom: 20px;" id="">
+					<w2:span id="" label="초대 링크" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true" meta_snippetName="10_16 출력텍스트"
+						style="font-size: 20px;    font-weight: 600;    margin-bottom: 8px;    display: block;">
+					</w2:span>
+					<w2:span id="txt_link" label="시작버튼을 누르면 초대링크를 보실 수 있습니다." meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+						meta_snippetName="10_16 출력텍스트"
+						style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
+					</w2:span>
+				</xf:group>
+				<xf:group style="margin-bottom: 20px;" id="group1">
+					<w2:span meta_snippetCategory="10_입력폼" meta_snippetName="10_16 출력텍스트" meta_snippetKeyComponent="true"
+						style="font-size: 20px;font-weight: 600;    margin-bottom: 8px;    display: block;" id="" label="초대 인원">
+					</w2:span>
+					<w2:span id="txt_num" label="4명" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+						meta_snippetName="10_16 출력텍스트"
+						style="padding:12px 16px;border:2px solid #e8ecf4;border-radius:6px;font-size:19px;background:#f9f9f9;display:block;line-height:16px;">
+					</w2:span>
+				</xf:group>
+				<xf:group style="margin-top: 30px; display: flex; justify-content: flex-end;" id="">
+					<xf:trigger class="smart-button secondary" id="trigger1" type="button" style="" ev:onclick="scwin.btn_complete_onclick">
+						<xf:label><![CDATA[🚀 시작]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
 </html>

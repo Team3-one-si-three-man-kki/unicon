@@ -31,5 +31,11 @@ public class LoginPageDAO extends ProworksDefaultAbstractDAO {
     public LoginPageVo selectLoginPageBySubDomain(String subDomain) throws ElException {
         return (LoginPageVo) selectByPk("com.demo.proworks.tenant.selectLoginPageBySubDomain", subDomain);
     }
+    
+    public int newLoginPage(LoginPageVo vo) throws ElException {
+        return insert("com.demo.proworks.tenant.newLoginPage", vo);
+    }
+    
+    
 
 }

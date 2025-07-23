@@ -66,7 +66,7 @@ public class ChatController {
 
 			mav.addObject("result", "SUCCESS");
 			mav.addObject("roomId", roomId);
-			mav.addObject("webSocketUrl", "ws://localhost:9093/InsWebApp/chat/" + roomId);
+			mav.addObject("webSocketUrl", "wss://localhost/InsWebApp/chat/" + roomId);
 		} catch (Exception e) {
 			mav.addObject("result", "ERROR");
 			mav.addObject("message", "채팅방 입장 실패: " + e.getMessage());
