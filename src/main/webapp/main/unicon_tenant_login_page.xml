@@ -37,6 +37,12 @@
 						<w2:key dataType="text" name="subDomain" id="subDomain"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dm_subdomain">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="테넌트이름(서브도메인)" id="subDomain"></w2:key>
+						<w2:key dataType="text" name="조회모드" id="mode"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
 			</w2:dataCollection>
 
 			<w2:workflowCollection />
@@ -47,10 +53,10 @@
 				ev:submiterror="" abortTrigger="">
 			</xf:submission>
 
-			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
-				target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
-				customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
-				abortTrigger="">
+			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dm_subdomain","key":"tenant"}' target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}'
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="loading...." ev:submit=""
+				ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
 
 			<xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post"
@@ -132,21 +138,21 @@ scwin.parseJwt = function (token) {
 
 // 페이지 로드 시 초기화
 scwin.onpageload = function () {
-    const subDomain = scwin.getQueryParam('subDomain');
-    
-    console.log('subDomain:', subDomain);
-    
-    const dm =  dma_login;
-    console.log(dm);
-     if (dm && typeof dm.set === 'function') {
-    dm.set('subDomain', subDomain !== null ? subDomain : '');
-    console.log('DataMap에 subDomain 저장:', dm.get('subDomain'));
-  };
-    scwin.createPopupLayer();
-
     var mode = $p.getParameter("mode");
     console.log("mode", mode);
     if (mode !== "preview") {
+        const subDomain = scwin.getQueryParam('tenant');
+
+        const dm = dma_login;
+        const dm_sub = dm_subdomain;
+
+        if (dm && typeof dm.set === 'function') {
+            dm.set('subDomain', subDomain !== null ? subDomain : '');
+            dm_sub.set('subDomain', subDomain !== null ? subDomain : '');
+            dm_sub.set('mode',"login");
+        };
+        scwin.createPopupLayer();
+
         $c.sbm.execute(loadCustom);
     }
 };
@@ -160,8 +166,8 @@ scwin.applyCustomization = function (data) {
 scwin.overlayElement = null;
 
 scwin.loadCustomization = function (c) {
+    console.log("데이터", c)
     if (!c) return;
-
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
     }
@@ -268,30 +274,8 @@ scwin.validateLogin = function (userId, password) {
     return true;
 };
 
-// 데모용 목업 로그인
-scwin.mockLogin = function (userId, password) {
-    var validAccounts = [
-        { userId: "admin", password: "admin123" },
-        { userId: "user", password: "user123" },
-        { userId: "test", password: "test123" }
-    ];
-
-    setTimeout(function () {
-        var isValid = validAccounts.some(function (account) {
-            return account.userId === userId && account.password === password;
-        });
-
-        if (isValid) {
-            scwin.onLoginSuccess();
-        } else {
-            scwin.onLoginFailure();
-        }
-    }, 1000);
-};
-
 scwin.getQueryParam = function (name) {
     const params = new URLSearchParams(window.location.search);
-    console.log(params.get(name));
     return params.get(name);
 };
 
@@ -383,9 +367,11 @@ scwin.loginSubmitHandler = function (e) {
 };
 
 scwin.loadCustom_submitdone = function (e) {
-    console.log(e);
     var elData = e.responseJSON;
     console.log("받아온데이터입니다", elData);
+    if (elData?.code === "E001") {
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/error/404tenant.xml";
+    }
     scwin.loadCustomization(elData);
 };
 
@@ -460,18 +446,21 @@ scwin.kakao_login_submitdone = function (e) {
 scwin.togglePassword_onclick = function (e) {
     const passwordField = document.getElementById('mf_inp_password');
     if (inp_password.hasClass("show")) {
-        passwordField.type="text";
+        passwordField.type = "text";
         inp_password.toggleClass("show")
         togglePassword.setStyle("backgroundImage", '/InsWebApp/images/icons/close-eye.svg')
         console.log(togglePassword.getBackgroundImage())
     } else {
-        passwordField.type ="password";
+        passwordField.type = "password";
         inp_password.toggleClass("show")
         togglePassword.setBackgroundImage('/InsWebApp/images/icons/open-eye.svg')
     }
 };]]></script>
 
 		<style><![CDATA[
+        .title{
+        <!-- font-size: 18px !important; -->
+        }
             .login_wrapper {
                 display: flex;
                 flex-direction: row;
@@ -536,9 +525,10 @@ scwin.togglePassword_onclick = function (e) {
 				<!-- 가운데 텍스트 콘텐츠 -->
 				<xf:group id="textContent" style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
 					<w2:textbox id="mainTitle" label="메인 입니다." style="margin-bottom: 20px; display: block; "
-						ref="data:dm_loginCustomInfo.mainTitle" />
-					<w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle" />
-					<w2:textbox id="extraTitle" label="추가입니다." style="display: block;" ref="data:dm_loginCustomInfo.extraTitle" />
+						ref="data:dm_loginCustomInfo.mainTitle" class="title" />
+					<w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle"
+						class="title" />
+					<w2:textbox id="extraTitle" label="추가입니다." style="display: block;" ref="data:dm_loginCustomInfo.extraTitle" class="title" />
 				</xf:group>
 				<xf:image src="" style='position: absolute; top: 24px; left: 24px; height: 30px; object-fit: contain; z-index: 3;'
 					id="logoImage"></xf:image>
@@ -568,7 +558,7 @@ scwin.togglePassword_onclick = function (e) {
 								<w2:textbox class="tit" for="inp_userId" id="" label="ID"
 									style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
 								<xf:input adjustMaxLength="false" id="inp_userId" ref="data:dma_login.email" placeholder="아이디를 입력해주세요."
-									style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;"/>
+									style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;  border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; height: 40px;" />
 							</xf:group>
 
 							<!-- 비밀번호 입력 -->
@@ -576,17 +566,20 @@ scwin.togglePassword_onclick = function (e) {
 								<w2:textbox class="tit" for="inp_password" id="" label="Password"
 									style="display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 8px;" tagname="label" />
 
-                        <!-- 비밀번호 입력 필드와 토글 버튼 -->
-                        <xf:group class="login_form" id="" style="position: relative;">
-                        	<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
-                        		style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
-                        		type="password" />
-                        	<xf:trigger type="button" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);background-image: url(/InsWebApp/images/icons/close-eye.svg);width: 18px;height: 18px;background-color: #fff;" id="togglePassword" ev:onclick="scwin.togglePassword_onclick">
-                        		<xf:label><![CDATA[]]></xf:label>
-                        	</xf:trigger>
-                        </xf:group>
+								<!-- 비밀번호 입력 필드와 토글 버튼 -->
+								<xf:group class="login_form" id="" style="position: relative;">
+									<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
+										style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
+										type="password" />
+									<xf:trigger type="button"
+										style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);background-image: url(/InsWebApp/images/icons/close-eye.svg);width: 18px;height: 18px;background-color: #fff;"
+										id="togglePassword" ev:onclick="scwin.togglePassword_onclick">
+										<xf:label><![CDATA[]]>
+										</xf:label>
+									</xf:trigger>
+								</xf:group>
 
-                        <!-- Remember me (현재 기능 미구현이므로 주석 처리) -->
+								<!-- Remember me (현재 기능 미구현이므로 주석 처리) -->
 								<!--
 									<xf:group class="grp_password" id=""
 									style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">

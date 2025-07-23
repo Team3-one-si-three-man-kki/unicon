@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate />
+        <w2:MSA />
+        <xf:model>
+            <w2:dataCollection baseNode="map" />
+            <w2:workflowCollection />
+        </xf:model>
+        <w2:layoutInfo />
+        <w2:publicInfo method="" />
+        <style lazy="false" type="text/css">
+            <![CDATA[
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                .websquare-body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+                    background-color: #f1f3f5;
+                    height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+
+                h1 { font-size: 24px; font-weight: 600; color: #333; }
+                p { font-size: 16px; color: #666; line-height: 1.6; }
+                
+                .btn-primary:hover { background-color: #5a4fcf; }
+                .btn-secondary:hover { background-color: #f1f3f5; }
+            ]]>
+        </style>
+        <script lazy="false" type="text/javascript">
+            <![CDATA[
+            scwin.onpageload = function() {
+                
+            };
+
+            // 로그인 페이지로 이동
+            scwin.goToLogin = function() {
+                // 프로젝트의 실제 로그인 페이지 경로로 수정하세요.
+                window.location.href = "/InsWebApp/main/unicon_login.xml"; 
+            };
+
+            // 이전 페이지로 돌아가기
+            scwin.goBack = function() {
+                history.back();
+            };
+            ]]>
+        </script>
+    </head>
+    <body ev:onpageload="scwin.onpageload" class="websquare-body">
+        <xf:group style="background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 500px; width: 100%; text-align: center; padding: 40px 30px;">
+            
+            <xf:group style="width: 70px; height: 70px; background: #ffe3e3; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: #ff3b30; font-size: 40px; font-weight: bold;">
+                <w2:textbox label="!" tagname="span"></w2:textbox>
+            </xf:group>
+            
+            <w2:textbox tagname="h1" label="잘못된 접근입니다" style="margin-bottom: 15px;"></w2:textbox>
+            
+            <w2:textbox tagname="p" style="margin-bottom: 30px;">
+                <w2:label><![CDATA[테넌트 정보가 없거나 페이지를 표시할 수 없습니다.<br/>URL을 직접 입력하셨거나, 세션이 만료되었을 수 있습니다.]]></w2:label>
+            </w2:textbox>
+
+            <xf:group style="display: flex; gap: 10px; justify-content: center;">
+                <xf:trigger ev:onclick="scwin.goBack" style="flex: 1; padding: 12px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s; background: #e9ecef; color: #495057; border: 1px solid #dee2e6;">
+                    <xf:label>이전 페이지</xf:label>
+                </xf:trigger>
+                <xf:trigger ev:onclick="scwin.goToLogin" style="flex: 1; padding: 12px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s; background: #6c5ce7; color: white; border: none; font-weight: 500;">
+                    <xf:label>로그인 페이지로</xf:label>
+                </xf:trigger>
+            </xf:group>
+
+        </xf:group>
+    </body>
+</html>
