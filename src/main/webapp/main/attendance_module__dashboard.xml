@@ -10,7 +10,6 @@
 			</xf:instance>
 
 			<w2:dataCollection baseNode="map">
-				<!-- 검색 조건 DataMap -->
 				<w2:dataMap baseNode="map" id="dm_search">
 					<w2:keyInfo>
 						<w2:key dataType="text" name="세션ID" id="scSessionId"></w2:key>
@@ -23,7 +22,6 @@
 					</w2:keyInfo>
 				</w2:dataMap>
 
-				<!-- 출석 목록 DataList -->
 				<w2:dataList baseNode="list" repeatNode="" id="attendanceList" saveRemovedData="true">
 					<w2:columnInfo>
 						<w2:column id="recordId" name="기록ID" dataType="text"></w2:column>
@@ -38,7 +36,6 @@
 					</w2:columnInfo>
 				</w2:dataList>
 
-				<!-- 통계 정보 DataMap -->
 				<w2:dataMap baseNode="map" id="dm_stats">
 					<w2:keyInfo>
 						<w2:key dataType="text" name="총참여자" id="totalCount"></w2:key>
@@ -48,501 +45,681 @@
 					</w2:keyInfo>
 				</w2:dataMap>
 
-				<!-- 세션 목록 DataList -->
-				<w2:dataList baseNode="list" repeatNode="" id="dlt_sessionList" saveRemovedData="true">
+				<w2:dataList baseNode="list" id="dlt_sessionSummaryList" saveRemovedData="true">
 					<w2:columnInfo>
-					</w2:columnInfo>
-					<w2:data use="false">
-						<w2:row>
-						</w2:row>
-						<w2:row>
-						</w2:row>
-						<w2:row>
-						</w2:row>
-						<w2:row>
-						</w2:row>
-					</w2:data>
-				</w2:dataList>
-				<w2:dataList baseNode="list" id="dlt_dynamicSessionList" saveRemovedData="true">
-					<w2:columnInfo>
-						<w2:column id="session_id" name="세션ID" dataType="text"></w2:column>
-						<w2:column id="session_name" name="세션명" dataType="text"></w2:column>
+						<w2:column id="sessionId" name="세션ID" dataType="text"></w2:column>
+						<w2:column id="participantCount" name="참여자수" dataType="number"></w2:column>
+						<w2:column id="avgMinutes" name="평균참여시간" dataType="number"></w2:column>
 					</w2:columnInfo>
 				</w2:dataList>
+
 			</w2:dataCollection>
-
-			<w2:workflowCollection>
-				<!-- 출석 데이터 조회 워크플로우 -->
-				<w2:workflow id="wf_searchAttendance" ev:onprocess="scwin.wf_searchAttendance_onprocess">
-					<w2:param id="action" value="AttendanceList"></w2:param>
-					<w2:param id="submitParam" value="[data:dm_search]"></w2:param>
-					<w2:param id="submitData" value="data:dm_search"></w2:param>
-					<w2:param id="callback" value="scwin.searchCallback"></w2:param>
-				</w2:workflow>
-			</w2:workflowCollection>
-
-			<!-- WebSquare Submission 방식 -->
-			<xf:submission id="sbm_searchAttendance" action="/InsWebApp/AttendanceList.pwkjson" method="post"
-				mediatype="application/json" ref="data:dm_search" target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
-				mode="asynchronous" processMsg="데이터를 조회하고 있습니다..." ev:submit="" ev:submitdone="scwin.sbm_searchAttendance_submitdone"
-				ev:submiterror="scwin.sbm_searchAttendance_submiterror">
-			</xf:submission>
 		</xf:model>
 
-
-
 		<w2:publicInfo></w2:publicInfo>
-		<script lazy="false" type="text/javascript"><![CDATA[// 팝업 레이어 생성 함수
-scwin.createPopupLayer = function () {
 
+		<style>
+			/* Enhanced CSS for WebSquare */
+			* {
+			box-sizing: border-box;
+			}
+
+			body {
+			font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+			background: linear-gradient(135deg, #f8f9fc 0%, #e3e7f3 100%);
+			margin: 0;
+			padding: 0;
+			color: #2c3e50;
+			line-height: 1.6;
+			}
+
+			/* Page Title Styling - Simple */
+			.pgtbox {
+			background: #f8f9fa;
+			padding: 20px 0;
+			margin-bottom: 20px;
+			border-bottom: 1px solid #dee2e6;
+			}
+
+			.pgt_tit {
+			font-size: 1.5rem !important;
+			font-weight: 600 !important;
+			color: #495057 !important;
+			margin: 0 !important;
+			}
+
+			.breadcrumb {
+			margin-top: 8px;
+			}
+
+			.breadcrumb ul {
+			display: flex;
+			gap: 8px;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			font-size: 0.875rem;
+			color: #6c757d;
+			}
+
+			.breadcrumb li::after {
+			content: '>';
+			margin-left: 8px;
+			margin-right: 8px;
+			}
+
+			.breadcrumb li:last-child::after {
+			content: '';
+			}
+
+			/* Container */
+			.sub_contents {
+			max-width: 1400px;
+			margin: 0 auto;
+			padding: 0 20px;
+			}
+
+			/* Search Box */
+			.schbox {
+			background: white;
+			border-radius: 12px;
+			padding: 25px;
+			margin-bottom: 25px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+			border: 1px solid #e3e6f0;
+			transition: all 0.3s ease;
+			}
+
+			.schbox:hover {
+			box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+			transform: translateY(-2px);
+			}
+
+			.schbox_inner {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 20px;
+			margin-bottom: 20px;
+			}
+
+			.schbox_inner > div {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			}
+
+			.schbox_inner w2\\:textbox {
+			font-weight: 600 !important;
+			color: #2c3e50 !important;
+			font-size: 0.95rem !important;
+			min-width: 90px !important;
+			}
+
+			/* Input Styling */
+			.w2input, .w2calendar {
+			padding: 12px 15px !important;
+			border: 2px solid #d1d3e2 !important;
+			border-radius: 8px !important;
+			font-size: 0.9rem !important;
+			transition: all 0.3s ease !important;
+			background: #f8f9fc !important;
+			}
+
+			.w2input:focus, .w2calendar:focus {
+			border-color: #667eea !important;
+			box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+			background: white !important;
+			outline: none !important;
+			}
+
+			/* Button Styling - Fixed */
+			.btn_schbox {
+			display: flex;
+			gap: 12px;
+			justify-content: flex-end;
+			flex-wrap: wrap;
+			align-items: center;
+			}
+
+			.btn_cm {
+			padding: 10px 16px !important;
+			border: none !important;
+			border-radius: 6px !important;
+			font-weight: 500 !important;
+			font-size: 0.875rem !important;
+			cursor: pointer !important;
+			transition: all 0.2s ease !important;
+			min-width: 100px !important;
+			height: 36px !important;
+			display: inline-flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			vertical-align: middle !important;
+			line-height: 1 !important;
+			white-space: nowrap !important;
+			}
+
+			.btn_cm:hover {
+			transform: translateY(-1px) !important;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+			}
+
+			.btn_cm.sch {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+			color: white !important;
+			}
+
+			.btn_cm:not(.sch) {
+			background: #f8f9fc !important;
+			color: #2c3e50 !important;
+			border: 1px solid #d1d3e2 !important;
+			}
+
+			.btn_cm:not(.sch):hover {
+			background: #e3e6f0 !important;
+			border-color: #667eea !important;
+			}
+
+			/* Grid Box */
+			.gvwbox {
+			background: white;
+			border-radius: 12px;
+			padding: 20px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+			border: 1px solid #e3e6f0;
+			margin-bottom: 25px;
+			transition: all 0.3s ease;
+			}
+
+			.gvwbox:hover {
+			box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+			}
+
+			/* Statistics Styling */
+			.contbox {
+			margin-bottom: 25px;
+			}
+
+			.contbox > div {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 20px;
+			}
+
+			.contbox > div > div {
+			background: white !important;
+			border-radius: 12px !important;
+			padding: 25px !important;
+			text-align: center !important;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+			border: 1px solid #e3e6f0 !important;
+			transition: all 0.3s ease !important;
+			position: relative !important;
+			}
+
+			.contbox > div > div:hover {
+			transform: translateY(-5px) !important;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+			}
+
+			.contbox > div > div::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 4px;
+			height: 100%;
+			border-radius: 2px 0 0 2px;
+			}
+
+			.contbox > div > div:nth-child(1)::before {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			}
+
+			.contbox > div > div:nth-child(2)::before {
+			background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+			}
+
+			.contbox > div > div:nth-child(3)::before {
+			background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+			}
+
+			.contbox > div > div:nth-child(4)::before {
+			background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+			}
+
+			.contbox w2\\:textbox {
+			font-size: 2.5rem !important;
+			font-weight: 800 !important;
+			margin-bottom: 8px !important;
+			display: block !important;
+			}
+
+			.contbox > div > div:nth-child(1) w2\\:textbox {
+			color: #667eea !important;
+			}
+
+			.contbox > div > div:nth-child(2) w2\\:textbox {
+			color: #4facfe !important;
+			}
+
+			.contbox > div > div:nth-child(3) w2\\:textbox {
+			color: #ff758c !important;
+			}
+
+			.contbox > div > div:nth-child(4) w2\\:textbox {
+			color: #fa709a !important;
+			}
+
+			.contbox span {
+			color: #858796 !important;
+			font-size: 0.9rem !important;
+			font-weight: 600 !important;
+			text-transform: uppercase !important;
+			letter-spacing: 0.5px !important;
+			}
+
+			/* Action Bar Styling */
+			.contbox[style*="display:flex"] {
+			background: white;
+			border-radius: 12px;
+			padding: 20px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+			display: flex !important;
+			justify-content: space-between !important;
+			align-items: center !important;
+			flex-wrap: wrap !important;
+			gap: 15px !important;
+			}
+
+			.contbox[style*="display:flex"] > div {
+			display: flex !important;
+			gap: 12px !important;
+			flex-wrap: wrap !important;
+			align-items: center !important;
+			}
+
+			/* Session Header */
+			.contbox[style*="justify-content:space-between"] {
+			background: white;
+			border-radius: 12px;
+			padding: 20px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+			display: flex !important;
+			justify-content: space-between !important;
+			align-items: center !important;
+			flex-wrap: wrap !important;
+			gap: 15px !important;
+			}
+
+			.contbox[style*="justify-content:space-between"] div[style*="gap:8px"] {
+			display: flex !important;
+			align-items: center !important;
+			gap: 12px !important;
+			}
+
+			.contbox[style*="justify-content:space-between"] w2\\:textbox[style*="color:#007bff"] {
+			font-size: 1.2rem !important;
+			font-weight: 700 !important;
+			color: #667eea !important;
+			padding: 8px 16px !important;
+			background: rgba(102, 126, 234, 0.1) !important;
+			border-radius: 25px !important;
+			border: 2px solid rgba(102, 126, 234, 0.2) !important;
+			}
+
+			/* Grid Styling */
+			.w2gridview {
+			border: none !important;
+			border-radius: 8px !important;
+			overflow: hidden !important;
+			}
+
+			.w2gridview .w2grid_header {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+			color: white !important;
+			font-weight: 700 !important;
+			}
+
+			.w2gridview .w2grid_row:hover {
+			background: rgba(102, 126, 234, 0.05) !important;
+			transform: scale(1.005) !important;
+			transition: all 0.2s ease !important;
+			}
+
+			.w2gridview .w2grid_row:nth-child(even) {
+			background: rgba(102, 126, 234, 0.02) !important;
+			}
+
+			/* Responsive Design */
+			@media (max-width: 768px) {
+			.sub_contents {
+			padding: 0 15px;
+			}
+
+			.pgt_tit {
+			font-size: 1.8rem !important;
+			}
+
+			.schbox_inner {
+			flex-direction: column;
+			align-items: stretch;
+			}
+
+			.schbox_inner > div {
+			flex-direction: column;
+			align-items: stretch;
+			}
+
+			.btn_schbox {
+			justify-content: center;
+			}
+
+			.contbox > div {
+			grid-template-columns: 1fr !important;
+			}
+
+			.contbox[style*="display:flex"] {
+			flex-direction: column !important;
+			text-align: center !important;
+			}
+
+			.w2input, .w2calendar {
+			width: 100% !important;
+			}
+			}
+
+			/* Animation */
+			@keyframes fadeInUp {
+			from {
+			opacity: 0;
+			transform: translateY(30px);
+			}
+			to {
+			opacity: 1;
+			transform: translateY(0);
+			}
+			}
+
+			.gvwbox, .schbox, .contbox {
+			animation: fadeInUp 0.6s ease-out;
+			}
+
+			/* Custom Scrollbar */
+			::-webkit-scrollbar {
+			width: 8px;
+			}
+
+			::-webkit-scrollbar-track {
+			background: #f8f9fc;
+			border-radius: 4px;
+			}
+
+			::-webkit-scrollbar-thumb {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			border-radius: 4px;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+			background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+			}
+		</style>
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+// 전역 변수로 모든 출석 데이터 저장
+scwin.allAttendanceData = [];
+
+// 팝업 레이어 생성 함수
+scwin.createPopupLayer = function () {
     var existingPopup = document.getElementById('customAlertPopup');
     if (existingPopup) {
         existingPopup.remove();
     }
-
     var popupHtml = `
-        <div id="customAlertPopup" style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 9999;
-            display: none;
-        ">
-            <div style="
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                min-width: 350px;
-                max-width: 500px;
-                text-align: center;
-            ">
-                <div id="popupMessage" style="
-                    margin-bottom: 25px; 
-                    font-size: 15px; 
-                    line-height: 1.5;
-                    color: #333;
-                    white-space: pre-wrap;
-                "></div>
-                <div>
-                    <button id="popupConfirm" style="
-                        background: #007bff;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        margin: 0 5px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        min-width: 60px;
-                    ">확인</button>
-                    <button id="popupCancel" style="
-                        background: #6c757d;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        margin: 0 5px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        min-width: 60px;
-                    ">취소</button>
+        <div id="customAlertPopup" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:none;backdrop-filter:blur(5px);">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);background:white;padding:30px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);min-width:400px;max-width:600px;text-align:center;">
+                <div id="popupMessage" style="margin-bottom:25px;font-size:1.1rem;line-height:1.6;color:#2c3e50;white-space:pre-wrap;font-weight:500;"></div>
+                <div style="display:flex;gap:15px;justify-content:center;">
+                    <button id="popupConfirm" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600;min-width:100px;transition:all 0.3s ease;">확인</button>
+                    <button id="popupCancel" style="background:#6c757d;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600;min-width:100px;transition:all 0.3s ease;">취소</button>
                 </div>
             </div>
-        </div>
-    `;
-
+        </div>`;
     document.body.insertAdjacentHTML('beforeend', popupHtml);
+    
+    // 버튼 호버 효과 추가
+    var confirmBtn = document.getElementById('popupConfirm');
+    var cancelBtn = document.getElementById('popupCancel');
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
+        });
+        confirmBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.backgroundColor = '#5a6268';
+        });
+        cancelBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.backgroundColor = '#6c757d';
+        });
+    }
 };
 
 // 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
-    // 팝업 요소가 없으면 다시 생성
     var popup = document.getElementById('customAlertPopup');
     if (!popup) {
-        console.log("팝업이 없어서 다시 생성합니다.");
         scwin.createPopupLayer();
         popup = document.getElementById('customAlertPopup');
     }
-
     var messageEl = document.getElementById('popupMessage');
     var confirmBtn = document.getElementById('popupConfirm');
     var cancelBtn = document.getElementById('popupCancel');
-
-    // 안전성 검사
     if (!popup || !messageEl || !confirmBtn || !cancelBtn) {
-        console.error("팝업 요소를 찾을 수 없습니다. 기본 alert 사용");
         alert(message);
         if (callback && !isConfirm) callback();
         return;
     }
-
     messageEl.textContent = message;
-
     if (isConfirm) {
         cancelBtn.style.display = 'inline-block';
-        confirmBtn.onclick = function () {
-            popup.style.display = 'none';
-            if (callback) callback(true);
-        };
-        cancelBtn.onclick = function () {
-            popup.style.display = 'none';
-            if (callback) callback(false);
-        };
+        confirmBtn.onclick = function () { popup.style.display = 'none'; if (callback) callback(true); };
+        cancelBtn.onclick = function () { popup.style.display = 'none'; if (callback) callback(false); };
     } else {
         cancelBtn.style.display = 'none';
-        confirmBtn.onclick = function () {
-            popup.style.display = 'none';
-            if (callback) callback();
-        };
+        confirmBtn.onclick = function () { popup.style.display = 'none'; if (callback) callback(); };
     }
-
     popup.style.display = 'block';
 };
 
-/**
- * @description 기존 WebSquare 알림창 대신 커스텀 팝업을 사용
- * @param {String} message 표시할 메시지
- * @param {String} type 메시지 종류 ('success', 'error', 'warning', 'info') - 호환성을 위해 유지하되 사용하지 않음
- */
-scwin.showAlert = function (message, type) {
-    // 기존 코드와의 호환성을 위해 scwin.showPopup 호출
-    scwin.showPopup(message);
-};
-
+// 페이지 로드 함수
 scwin.onpageload = function () {
     console.log("출석 모듈 페이지 로드 시작");
-    
-    // 1. 팝업 레이어 초기화 (가장 먼저)
     scwin.createPopupLayer();
-    console.log("팝업 레이어 초기화 완료");
-    
-    // 2. 통계 초기값 설정
-    dm_stats.setJSON({ totalCount: "0", activeCount: "0", leftCount: "0", avgMinutes: "0" });
 
-    // 3. 페이지 로드 시 드롭다운 초기화
-    dlt_dynamicSessionList.setJSON([{ session_id: "", session_name: "전체" }]);
+    scwin.ui = {
+        sessionListView: $p.getComponentById("grp_sessionListView"),
+        detailView: $p.getComponentById("grp_detailView"),
+        selectedSessionText: $p.getComponentById("txt_selectedSession")
+    };
 
-    // 4. 초기 검색 조건 설정 - 전체 데이터 조회
-    dm_search.set("scSessionId", "");
-    dm_search.set("scName", "");
-    dm_search.set("scEmail", "");
-    dm_search.set("scJoinTime", "");
-    dm_search.set("pageSize", "100");
-    dm_search.set("pageIndex", "1");
-    dm_search.set("sortOrder", "DESC");
-
-    // 5. 페이지 로드 시, 전체 데이터 조회
-    scwin.btn_search_onclick();
-    
+    scwin.loadSessionList();
     console.log("출석 모듈 페이지 로드 완료");
 };
 
-scwin.onpageload = function () {
-    // 통계 초기값 설정
+// 세션 목록으로 돌아가는 함수
+scwin.showSessionList = function() {
+    scwin.ui.detailView.hide();
+    scwin.ui.sessionListView.show();
+    attendanceList.removeAll();
     dm_stats.setJSON({ totalCount: "0", activeCount: "0", leftCount: "0", avgMinutes: "0" });
-
-    // 페이지 로드 시 드롭다운 초기화
-    dlt_dynamicSessionList.setJSON([{ session_id: "", session_name: "전체" }]);
-
-    // 초기 검색 조건 설정 - 전체 데이터 조회
-    dm_search.set("scSessionId", "");
-    dm_search.set("scName", "");
-    dm_search.set("scEmail", "");
-    dm_search.set("scJoinTime", "");
-    dm_search.set("pageSize", "100");
-    dm_search.set("pageIndex", "1");
-    dm_search.set("sortOrder", "DESC");
-
-
-    // 페이지 로드 시, 전체 데이터 조회
-    scwin.btn_search_onclick();
-
 };
 
-// 새로고침 시에도 전체 데이터 조회
-scwin.btn_refresh_onclick = function () {
-    console.log("새로고침 - 전체 데이터 조회");
+// 모든 출석 데이터를 로드하여 세션별로 요약하는 함수
+scwin.loadSessionList = function() {
+    console.log("세션 요약 목록 조회를 시작합니다.");
 
-    // 검색 조건 초기화 (전체 조회)
-    dm_search.setJSON({
-        scSessionId: "",
-        scName: "",
-        scEmail: "",
-        scJoinTime: "",
-        pageSize: "100",    // 전체 데이터 조회용 큰 값
-        pageIndex: "1"
-    });
-
-    // 선택박스도 초기화
-    if (typeof sel_sessionId !== 'undefined') {
-        sel_sessionId.value = "";
-    }
-
-    scwin.btn_search_onclick('refresh');
-};
-
-/**
- * @description 검색 버튼 클릭 시 호출됩니다.
- * 여러 방법을 시도하여 안정적으로 데이터를 조회합니다.
- */
-scwin.btn_search_onclick = function () {
-
-    dm_search.set("scSessionId", sel_sessionId.getValue());
-    dm_search.set("scName", ipt_searchName.getValue());
-    dm_search.set("scEmail", ipt_searchEmail.getValue());
-    dm_search.set("scJoinTime", ipt_searchDate.getValue());
-
-    // 페이징 초기화
-    dm_search.set("pageIndex", "1");
-
-    scwin.jqueryAjaxCall();
-};
-
-/**
- * @description 정렬 버튼 클릭 시 호출됩니다.
- */
-scwin.setSortOrder_onclick = function (order) {
-    dm_search.set("sortOrder", order); // 정렬 순서 설정
-    scwin.btn_search_onclick(); // 설정된 순서로 다시 검색
-};
-
-/**
- * @description Ajax 성공 응답을 처리합니다. (팝업 적용)
- */
-scwin.handleSuccessResponse = function (responseData) {
-    try {
-        var attendanceVoList = null;
-
-        if (responseData && responseData.elData && responseData.elData.attendanceVoList) {
-            attendanceVoList = responseData.elData.attendanceVoList;
-        }
-        else if (responseData && responseData.attendanceListVo && responseData.attendanceListVo.attendanceVoList) {
-            attendanceVoList = responseData.attendanceListVo.attendanceVoList;
-        } else if (responseData && responseData.attendanceVoList) {
-            attendanceVoList = responseData.attendanceVoList;
-        } else if (responseData && responseData.elHeader && responseData.elHeader.responseData && responseData.elHeader.responseData.attendanceVoList) {
-            attendanceVoList = responseData.elHeader.responseData.attendanceVoList;
-        } else if (responseData && responseData.data && responseData.data.attendanceVoList) {
-            attendanceVoList = responseData.data.attendanceVoList;
-        } else {
-            attendanceVoList = [];
-        }
-
-        if (attendanceVoList && attendanceVoList.length > 0) {
-            // DataList에 데이터 설정
-            attendanceList.setJSON(attendanceVoList);
-
-            // 통계 업데이트
-            scwin.updateStats(attendanceVoList);
-
-            // 고유 세션 목록 생성 및 드롭다운 업데이트
-            scwin.updateSessionDropdown(attendanceVoList);
-
-        } else {
-            attendanceList.removeAll();
-            scwin.updateStats([]);
-            // 커스텀 팝업으로 변경
-            // scwin.showPopup("조회된 데이터가 없습니다.");
-            scwin.updateSessionDropdown([]);
-        }
-    } catch (error) {
-        console.error("응답 처리 중 오류:", error);
-        attendanceList.removeAll();
-        scwin.updateStats([]);
-        scwin.showPopup("데이터 처리 중 오류가 발생했습니다: " + error.message);
-    }
-};
-
-/**
- * @description 출석 목록을 기반으로 세션 드롭다운을 업데이트합니다.
- */
-scwin.updateSessionDropdown = function (data) {
-    // 1. 고유한 세션 ID를 추출하기 위해 Set을 사용
-    const uniqueSessionIds = new Set(data.map(item => item.sessionId));
-
-    // 2. dataList에 넣을 데이터 배열 생성
-    const sessionListData = [
-        // 기본값 '전체'를 가장 먼저 추가
-        { session_id: "", session_name: "전체" }
-    ];
-
-    // 3. 고유 세션 ID들을 순회하며 dataList 형식에 맞게 추가
-    uniqueSessionIds.forEach(id => {
-        if (id) { // 세션 ID가 있는 경우에만 추가
-            sessionListData.push({
-                session_id: id,
-                // 참고: attendanceList에는 세션 이름이 없으므로 ID를 이름으로 함께 사용합니다.
-                session_name: id
-            });
-        }
-    });
-
-    // 4. 새로 만든 동적 세션 dataList에 데이터 설정
-    dlt_dynamicSessionList.setJSON(sessionListData);
-    console.log("세션 드롭다운이 업데이트되었습니다.", sessionListData);
-
-    
-};
-
-/**
- * @description WebSquare Submission 완료 핸들러 (팝업 적용)
- */
-scwin.sbm_searchAttendance_submitdone = function (e) {
-    console.log("데이터 조회 성공:", e);
-
-    try {
-        var responseData = e.responseJSON;
-
-        // 동일한 로직 적용
-        var attendanceVoList = null;
-
-        if (responseData && responseData.attendanceListVo && responseData.attendanceListVo.attendanceVoList) {
-            attendanceVoList = responseData.attendanceListVo.attendanceVoList;
-        } else if (responseData && responseData.attendanceVoList) {
-            attendanceVoList = responseData.attendanceVoList;
-        } else {
-            console.warn("응답 데이터 형식이 올바르지 않습니다.", responseData);
-            attendanceList.removeAll();
-            scwin.updateStats([]);
-            scwin.showPopup("서버로부터 받은 데이터가 올바르지 않습니다.");
-            return;
-        }
-
-        if (attendanceVoList && attendanceVoList.length > 0) {
-            // DataList에 데이터 설정
-            attendanceList.setJSON(attendanceVoList);
-
-            // 통계 업데이트
-            scwin.updateStats(attendanceVoList);
-
-            console.log("조회 완료: " + attendanceVoList.length + "건의 데이터가 조회되었습니다.");
-        } else {
-            console.log("조회된 데이터 없음");
-            attendanceList.removeAll();
-            scwin.updateStats([]);
-            scwin.showPopup("조회된 데이터가 없습니다.");
-        }
-    } catch (error) {
-        console.error("응답 처리 중 오류:", error);
-        attendanceList.removeAll();
-        scwin.updateStats([]);
-        scwin.showPopup("데이터 처리 중 오류가 발생했습니다.");
-    }
-};
-
-
-/**
- * @description 대안 Ajax 호출 방법 (팝업 적용)
- */
-scwin.fallbackAjaxCall = function () {
-    console.log("대안 Ajax 호출 시작");
-
-    var searchData = dm_search.getJSON();
-    console.log("전송할 검색 데이터:", JSON.stringify(searchData));
-
-    var backendUrl = '/InsWebApp/AttendanceList.pwkjson';
-
-    // WebSquare의 Ajax 호출 방식
-    var option = {
-        requestUri: backendUrl,
-        requestType: "POST",
-        dataType: "json",
-        requestData: searchData,
-        onSuccess: function (responseData) {
-            scwin.handleSuccessResponse(responseData);
-        },
-        onError: function (xhr, status, error) {
-            console.error("백엔드 연결 실패:", "상태:", xhr.status, "오류:", error);
-            scwin.showPopup("서버에서 데이터를 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류: " + xhr.status + ")");
-            attendanceList.removeAll();
-            scwin.updateStats([]);
+    var searchOptions = {
+        attendanceVo: {
+            scSessionId: "", scName: "", scEmail: "", scJoinTime: "",
+            pageSize: "9999", pageIndex: "1", sortOrder: "DESC"
         }
     };
-
-    $p.requestData(option);
-};
-
-
-/**
- * @description jQuery Ajax를 사용한 대안 방법 (팝업 적용)
- */
-scwin.jqueryAjaxCall = function () {
-    var searchData = dm_search.getJSON();
-
-    // 1. 컨트롤러 메소드의 파라미터 이름('attendanceVo')을 키로 사용하는 새로운 payload 객체를 생성합니다.
-    var payload = {
-        attendanceVo: searchData
-    };
-
-    console.log("전송할 최종 Payload:", JSON.stringify(payload)); // 디버깅을 위한 로그 추가
-
-    var backendUrl = '/InsWebApp/AttendanceList.pwkjson';
 
     $.ajax({
-        url: backendUrl,
+        url: '/InsWebApp/AttendanceList.pwkjson',
         type: 'POST',
         contentType: 'application/json; charset=utf-8',
-        // 2. searchData 대신 새로운 payload 객체를 전송합니다.
-        data: JSON.stringify(payload),
+        data: JSON.stringify(searchOptions),
         timeout: 10000,
-        success: function (responseData) {
-            scwin.handleSuccessResponse(responseData);
+        success: function (response) {
+            var allData = [];
+            if (response && response.elData && response.elData.attendanceVoList) {
+                allData = response.elData.attendanceVoList;
+            } else if (response && response.attendanceListVo && response.attendanceListVo.attendanceVoList) {
+                allData = response.attendanceListVo.attendanceVoList;
+            } else {
+                console.error("attendanceVoList를 찾을 수 없습니다. 응답 데이터 구조를 확인하세요:", response);
+            }
+            
+            if (!allData || allData.length === 0) {
+                scwin.showPopup("조회할 출석 데이터가 없습니다.");
+                dlt_sessionSummaryList.removeAll();
+                return;
+            }
+            
+            scwin.allAttendanceData = allData;
+
+            const sessionSummary = allData.reduce((acc, item) => {
+                const sessionId = item.sessionId || 'N/A_Session';
+                if (!acc[sessionId]) {
+                    acc[sessionId] = { participants: [], totalMinutes: 0 };
+                }
+                acc[sessionId].participants.push(item);
+                if (item.participationMinutes && !isNaN(item.participationMinutes)) {
+                    acc[sessionId].totalMinutes += parseInt(item.participationMinutes, 10);
+                }
+                return acc;
+            }, {});
+
+            const summaryListData = Object.keys(sessionSummary).map(id => {
+                const summary = sessionSummary[id];
+                const participantCount = summary.participants.length;
+                const validTimeEntries = summary.participants.filter(p => p.participationMinutes && !isNaN(p.participationMinutes)).length;
+                const avgMinutes = validTimeEntries > 0 ? Math.round(summary.totalMinutes / validTimeEntries) : 0;
+                return {
+                    sessionId: id,
+                    participantCount: participantCount,
+                    avgMinutes: avgMinutes
+                };
+            });
+
+            dlt_sessionSummaryList.setJSON(summaryListData);
+            console.log("세션 요약 정보 생성 완료", summaryListData);
+            
+            scwin.showSessionList();
+
         },
-        error: function (xhr, status, error) {
-            scwin.showPopup("서버에서 데이터를 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류: " + xhr.status + ")");
-            attendanceList.removeAll();
-            scwin.updateStats([]);
+        error: function (xhr) {
+            scwin.showPopup("서버에서 데이터를 가져오는데 실패했습니다: " + xhr.status);
+            dlt_sessionSummaryList.removeAll();
         }
     });
 };
 
-scwin.sbm_searchAttendance_submiterror = function (e) {
-    console.error("데이터 조회 실패:", e);
+// 세션 그리드 클릭 이벤트
+scwin.grd_sessions_oncellclick = function(row, col) {
+    const selectedSessionId = dlt_sessionSummaryList.getCellData(row, "sessionId");
+    if (!selectedSessionId) return;
 
-    var errorMsg = "서버에서 데이터를 가져오는 데 실패했습니다.";
+    console.log(`'${selectedSessionId}' 세션의 상세 정보를 표시합니다.`);
 
-    if (e.errorType) {
-        errorMsg += "\n오류 유형: " + e.errorType;
-    }
-    if (e.responseText) {
-        errorMsg += "\n상세 오류: " + e.responseText;
-    }
+    dm_search.set("scSessionId", selectedSessionId);
+    scwin.ui.selectedSessionText.setValue(selectedSessionId);
 
-    scwin.showPopup(errorMsg);
+    const sessionDetails = scwin.allAttendanceData.filter(item => (item.sessionId || 'N/A_Session') === selectedSessionId);
 
-    // 실패 시 그리드와 통계 초기화
-    attendanceList.removeAll();
-    scwin.updateStats([]);
+    attendanceList.setJSON(sessionDetails);
+    scwin.updateStats(sessionDetails);
+    
+    ipt_searchName.setValue("");
+    ipt_searchEmail.setValue("");
+    ipt_searchDate.setValue("");
+
+    scwin.ui.sessionListView.hide();
+    scwin.ui.detailView.show();
 };
 
+// 상세 검색 버튼 클릭
+scwin.btn_search_onclick = function () {
+    const selectedSessionId = dm_search.get("scSessionId");
+    const searchName = ipt_searchName.getValue().toLowerCase();
+    const searchEmail = ipt_searchEmail.getValue().toLowerCase();
+    const searchDate = ipt_searchDate.getValue();
 
-/**
- * @description 워크플로우 처리 함수 (팝업 적용)
- */
-scwin.wf_searchAttendance_onprocess = function (e) {
-    if (e.errorType) {
-        scwin.showPopup("데이터 조회 중 오류가 발생했습니다: " + e.errorType);
+    if (!selectedSessionId) {
+        scwin.showPopup("세션이 선택되지 않았습니다.");
         return;
     }
 
-    var responseData = e.responseData;
-    if (responseData && responseData.attendanceVoList) {
-        attendanceList.setJSON(responseData.attendanceVoList);
-        scwin.updateStats(responseData.attendanceVoList);
+    const filteredData = scwin.allAttendanceData.filter(item => {
+        const itemSessionId = item.sessionId || 'N/A_Session';
+        if (itemSessionId !== selectedSessionId) {
+            return false;
+        }
+
+        const nameMatch = !searchName || (item.name && item.name.toLowerCase().includes(searchName));
+        const emailMatch = !searchEmail || (item.email && item.email.toLowerCase().includes(searchEmail));
+        const dateMatch = !searchDate || (item.joinTime && item.joinTime.substring(0, 10).replace(/-/g, '') === searchDate);
+
+        return nameMatch && emailMatch && dateMatch;
+    });
+
+    attendanceList.setJSON(filteredData);
+    scwin.updateStats(filteredData);
+    
+    if(filteredData.length === 0) {
+        scwin.showPopup("조건에 맞는 데이터가 없습니다.");
     }
 };
 
-/**
- * @description 데이터 목록을 기반으로 통계 정보를 업데이트합니다.
- */
+// 상세 검색 조건 초기화
+scwin.btn_reset_onclick = function() {
+    ipt_searchName.setValue("");
+    ipt_searchEmail.setValue("");
+    ipt_searchDate.setValue("");
+    
+    const selectedSessionId = dm_search.get("scSessionId");
+    const sessionDetails = scwin.allAttendanceData.filter(item => (item.sessionId || 'N/A_Session') === selectedSessionId);
+    attendanceList.setJSON(sessionDetails);
+    scwin.updateStats(sessionDetails);
+
+    scwin.showPopup("검색 조건이 초기화되었습니다.");
+};
+
+// 정렬 기능
+scwin.setSortOrder_onclick = function (order) {
+    dm_search.set("sortOrder", order);
+    var currentData = attendanceList.getAllJSON();
+    currentData.sort(function(a, b) {
+        var timeA = new Date(a.joinTime).getTime();
+        var timeB = new Date(b.joinTime).getTime();
+        return order === 'ASC' ? timeA - timeB : timeB - timeA;
+    });
+    attendanceList.setJSON(currentData);
+};
+
+// 통계 업데이트 함수
 scwin.updateStats = function (data) {
     var total = data.length;
     var active = 0;
@@ -567,125 +744,18 @@ scwin.updateStats = function (data) {
     dm_stats.set("activeCount", active);
     dm_stats.set("leftCount", left);
     dm_stats.set("avgMinutes", avgMinutes);
-
-    console.log("통계 업데이트 완료 - 총:", total, "참여중:", active, "퇴장:", left, "평균:", avgMinutes);
 };
 
-/**
- * @description 페이징 정보를 업데이트합니다.
- */
-scwin.updatePaging = function (totalCount, currentPage, pageSize) {
-    var totalPages = Math.ceil(totalCount / pageSize);
-    var startNo = (currentPage - 1) * pageSize + 1;
-    var endNo = Math.min(currentPage * pageSize, totalCount);
-
-    dm_paging.set("totalCount", totalCount);
-    dm_paging.set("currentPage", currentPage);
-    dm_paging.set("totalPages", totalPages);
-    dm_paging.set("pageSize", pageSize);
-    dm_paging.set("startNo", startNo);
-    dm_paging.set("endNo", endNo);
-
-    console.log("페이징 정보 업데이트:", {
-        total: totalCount,
-        current: currentPage,
-        totalPages: totalPages,
-        startNo: startNo,
-        endNo: endNo
-    });
-};
-
-// 페이징 버튼 이벤트 함수들
-scwin.goToFirstPage = function () {
-    dm_search.set("pageIndex", "1");
-    scwin.btn_search_onclick();
-};
-
-scwin.goToPrevPage = function () {
-    var currentPage = parseInt(dm_search.get("pageIndex")) || 1;
-    if (currentPage > 1) {
-        dm_search.set("pageIndex", (currentPage - 1).toString());
-        scwin.btn_search_onclick();
-    }
-};
-
-scwin.goToNextPage = function () {
-    var currentPage = parseInt(dm_search.get("pageIndex")) || 1;
-    var totalPages = parseInt(dm_paging.get("totalPages")) || 1;
-    if (currentPage < totalPages) {
-        dm_search.set("pageIndex", (currentPage + 1).toString());
-        scwin.btn_search_onclick();
-    }
-};
-
-scwin.goToLastPage = function () {
-    var totalPages = dm_paging.get("totalPages") || "1";
-    dm_search.set("pageIndex", totalPages);
-    scwin.btn_search_onclick();
-};
-
-scwin.changePageSize = function () {
-    dm_search.set("pageIndex", "1"); // 페이지 크기 변경 시 첫 페이지로
-    scwin.btn_search_onclick();
-};
-
-/**
- * @description 페이징 정보를 업데이트합니다.
- */
-scwin.updatePaging = function (totalCount, currentPage, pageSize) {
-    var totalPages = Math.ceil(totalCount / pageSize);
-    var startNo = (currentPage - 1) * pageSize + 1;
-    var endNo = Math.min(currentPage * pageSize, totalCount);
-
-    dm_paging.set("totalCount", totalCount);
-    dm_paging.set("currentPage", currentPage);
-    dm_paging.set("totalPages", totalPages);
-    dm_paging.set("pageSize", pageSize);
-    dm_paging.set("startNo", startNo);
-    dm_paging.set("endNo", endNo);
-
-    console.log("페이징 정보 업데이트:", {
-        total: totalCount,
-        current: currentPage,
-        totalPages: totalPages,
-        startNo: startNo,
-        endNo: endNo
-    });
-};
-
-// 페이징 버튼 이벤트 함수들
-scwin.goToFirstPage = function () {
-    dm_search.set("pageIndex", "1");
-    scwin.btn_search_onclick();
-};
-
-scwin.goToPrevPage = function () {
-    var currentPage = parseInt(dm_search.get("pageIndex")) || 1;
-    if (currentPage > 1) {
-        dm_search.set("pageIndex", (currentPage - 1).toString());
-        scwin.btn_search_onclick();
-    }
-};
-
-/**
- * @description CSV 다운로드 버튼 클릭 시 호출됩니다. (안전성 강화)
- */
+// CSV 다운로드 함수
 scwin.btn_downloadCSV_onclick = function () {
-    console.log("CSV 다운로드 버튼 클릭됨");
-    
     if (attendanceList.getTotalRow() === 0) {
         scwin.showPopup("다운로드할 데이터가 없습니다.");
         return;
     }
-
     try {
         var data = attendanceList.getAllJSON();
-        var csvContent = '\ufeff'; // UTF-8 BOM
-
-        // Header
+        var csvContent = '\ufeff';
         csvContent += '번호,세션ID,참여자명,이메일,접속IP,입장시간,퇴장시간,참여시간(분),상태\n';
-
-        // Body
         for (var i = 0; i < data.length; i++) {
             var row = data[i];
             csvContent += (i + 1) + ',';
@@ -699,104 +769,33 @@ scwin.btn_downloadCSV_onclick = function () {
             csvContent += '"' + (row.status || '') + '"\n';
         }
 
-        // Download
         var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         var link = document.createElement('a');
         var url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
 
-        var sessionId = dm_search.get("scSessionId") || "전체";
+        var sessionId = dm_search.get("scSessionId").replace(/[^a-zA-Z0-9]/g, '_') || "선택세션";
         var now = new Date();
         var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
-
         link.setAttribute('download', '출석현황_' + sessionId + '_' + dateStr + '.csv');
+        
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        // 다운로드 완료 알림
         scwin.showPopup("CSV 파일이 다운로드되었습니다.");
-        
     } catch (error) {
         console.error("CSV 다운로드 중 오류:", error);
         scwin.showPopup("CSV 다운로드 중 오류가 발생했습니다: " + error.message);
     }
 };
 
-
-/**
- * @description 검색 조건을 초기화합니다. (팝업 적용 및 안전성 강화)
- */
-scwin.btn_reset_onclick = function () {
-    console.log("초기화 버튼 클릭됨");
-    
-    // 팝업이 준비되었는지 확인
-    if (!document.getElementById('customAlertPopup')) {
-        console.log("팝업이 없어서 다시 생성");
-        scwin.createPopupLayer();
-    }
-    
-    scwin.showPopup("검색 조건을 초기화하시겠습니까?", true, function (result) {
-        if (result) {
-            dm_search.setJSON({
-                scSessionId: "",
-                scName: "",
-                scEmail: "",
-                scJoinTime: "",
-                pageSize: "999",
-                pageIndex: "1"
-            });
-            
-            // 입력 필드들도 초기화
-            if (typeof sel_sessionId !== 'undefined') {
-                sel_sessionId.setValue("");
-            }
-            if (typeof ipt_searchName !== 'undefined') {
-                ipt_searchName.setValue("");
-            }
-            if (typeof ipt_searchEmail !== 'undefined') {
-                ipt_searchEmail.setValue("");
-            }
-            if (typeof ipt_searchDate !== 'undefined') {
-                ipt_searchDate.setValue("");
-            }
-            
-            attendanceList.removeAll();
-            scwin.updateStats([]);
-            scwin.showPopup("검색 조건이 초기화되었습니다.");
-        }
-    });
-};
-
-/**
- * @description 세션 선택 변경 시 자동으로 데이터를 조회합니다.
- */
-scwin.sel_sessionId_onchange = function () {
-    scwin.btn_search_onclick();
-};
-
-/**
- * @description 새로고침 버튼 클릭
- */
-scwin.btn_refresh_onclick = function () {
-    scwin.btn_search_onclick();
-};
-
-/**
- * @description 그리드 행 클릭 이벤트 (선택사항)
- */
-scwin.grd_oncellclick = function (row, col) {
-    console.log("선택된 행:", row, "컬럼:", col);
-    var selectedData = attendanceList.getRowJSON(row);
-    console.log("선택된 데이터:", selectedData);
-};
-]]>
+		]]>
 		</script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents">
 
-			<!-- 페이지 헤더 -->
 			<xf:group class="pgtbox">
 				<w2:textbox class="pgt_tit" label="출석 관리 시스템"></w2:textbox>
 				<xf:group class="breadcrumb">
@@ -820,149 +819,159 @@ scwin.grd_oncellclick = function (row, col) {
 				</xf:group>
 			</xf:group>
 
-			<!-- 검색 영역 -->
 			<xf:group class="schbox">
-				<xf:group class="schbox_inner" style="display: flex; flex-wrap: wrap; align-items: center; gap: 15px;">
-					<xf:group style="display: flex; align-items: center; gap: 8px;">
-						<w2:textbox label="세션 ID" style="flex-shrink: 0;"></w2:textbox>
-						<xf:select1 ref="data:dm_search.scSessionId" id="sel_sessionId" ev:onchange="scwin.sel_sessionId_onchange"
-							appearance="minimal" style="width:250px;">
-							<xf:choices nodeset="data:dlt_dynamicSessionList">
-								<xf:label ref="session_name"></xf:label>
-								<xf:value ref="session_id"></xf:value>
-							</xf:choices>
-						</xf:select1>
-					</xf:group>
-
-					<xf:group style="display: flex; align-items: center; gap: 8px;">
-						<w2:textbox label="참여자명"></w2:textbox>
-						<w2:input id="ipt_searchName" class="w2_input" ref="data:dm_search.scName" placeholder="참여자명으로 검색" style="width:200px;"></w2:input>
-					</xf:group>
-
-					<xf:group style="display: flex; align-items: center; gap: 8px;">
-						<w2:textbox label="이메일"></w2:textbox>
-						<w2:input id="ipt_searchEmail" class="w2_input" ref="data:dm_search.scEmail" placeholder="이메일로 검색" style="width:250px;"></w2:input>
-					</xf:group>
-
-					<xf:group style="display: flex; align-items: center; gap: 8px;">
-						<w2:textbox label="입장일시"></w2:textbox>
-						<w2:inputCalendar id="ipt_searchDate" class="w2_input" ref="data:dm_search.scJoinTime" style="width:150px;"
-							renderType="native"></w2:inputCalendar>
-					</xf:group>
+				<xf:group class="schbox_inner">
+					<w2:textbox label="아래 목록에서 세션을 선택하여 상세 출석 현황을 확인하세요." style="font-weight:600; font-size:1.1rem; color:#667eea;"></w2:textbox>
 				</xf:group>
-
 				<xf:group class="btn_schbox">
-					<xf:trigger class="btn_cm sch" ev:onclick="scwin.btn_search_onclick" id="btn_search" type="button">
-						<xf:label>검색</xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm" ev:onclick="scwin.btn_reset_onclick" id="btn_reset" type="button">
-						<xf:label>초기화</xf:label>
+					<xf:trigger class="btn_cm sch" ev:onclick="scwin.loadSessionList" id="btn_refresh_sessions" type="button">
+						<xf:label>세션 목록 새로고침</xf:label>
 					</xf:trigger>
 				</xf:group>
 			</xf:group>
 
-
-
-			<!-- 통계 정보 영역 -->
-			<xf:group class="contbox" style="margin-bottom:20px;">
-				<xf:group style="display:flex; gap:20px; flex-wrap:wrap;">
-					<xf:group
-						style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #007bff;">
-						<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#007bff; margin-bottom:5px;"
-							ref="data:dm_stats.totalCount"></w2:textbox>
-						<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">총 참여자</xf:group>
-					</xf:group>
-					<xf:group
-						style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #28a745;">
-						<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#28a745; margin-bottom:5px;"
-							ref="data:dm_stats.activeCount"></w2:textbox>
-						<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">현재 참여중</xf:group>
-					</xf:group>
-					<xf:group
-						style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #dc3545;">
-						<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#dc3545; margin-bottom:5px;"
-							ref="data:dm_stats.leftCount"></w2:textbox>
-						<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">퇴장완료</xf:group>
-					</xf:group>
-					<xf:group
-						style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #6f42c1;">
-						<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#6f42c1; margin-bottom:5px;"
-							ref="data:dm_stats.avgMinutes"></w2:textbox>
-						<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">평균 참여시간(분)</xf:group>
-					</xf:group>
-				</xf:group>
-			</xf:group>
-
-			<!-- 버튼 영역 -->
-			<xf:group class="contbox" style="margin-bottom:20px;">
-				<xf:group style="display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
-					<xf:trigger class="btn_cm" id="btn_sortDesc" ev:onclick="scwin.setSortOrder_onclick('DESC')"
-						style="background:#3674B5; color:white; border:none; padding:10px 16px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; vertical-align:middle; min-height:36px;"
-						type="button">
-						<xf:label>최신순</xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm" id="btn_sortAsc" ev:onclick="scwin.setSortOrder_onclick('ASC')"
-						style="background:#3674B5; color:white; border:none; padding:10px 16px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; vertical-align:middle; min-height:36px;"
-						type="button">
-						<xf:label>오래된순</xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm" ev:onclick="scwin.btn_downloadCSV_onclick" id="btn_downloadCSV"
-						style="background:#3674B5; color:white; border:none; padding:10px 16px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; vertical-align:middle; min-height:36px;"
-						type="button">
-						<xf:label>CSV 다운로드</xf:label>
-					</xf:trigger>
-					<xf:trigger class="btn_cm" ev:onclick="scwin.btn_refresh_onclick" id="btn_refresh"
-						style="background:#3674B5; color:white; border:none; padding:10px 16px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; vertical-align:middle; min-height:36px;"
-						type="button">
-						<xf:label>새로고침</xf:label>
-					</xf:trigger>
-				</xf:group>
-			</xf:group>
-
-			<!-- 목록 영역 -->
-			<xf:group class="gvwbox">
-				<w2:gridView autoFit="allColumn" class="gvw" dataList="data:attendanceList" defaultCellHeight="30" headerHeight="35"
-					id="grd" scrollByColumn="false" style="height:450px;" useFilterList="true" visibleRowNum="15" sortable="true"
-					ev:oncellclick="scwin.grd_oncellclick">
-					<w2:caption value="출석 현황 목록"></w2:caption>
+			<xf:group class="gvwbox" id="grp_sessionListView">
+				<w2:gridView id="grd_sessions" style="height: 400px; cursor:pointer;" dataList="data:dlt_sessionSummaryList"
+					autoFit="allColumn" ev:oncellclick="scwin.grd_sessions_oncellclick" defaultCellHeight="45" headerHeight="50">
+					<w2:caption value="세션 요약 목록"></w2:caption>
 					<w2:header>
 						<w2:row>
-							<w2:column displayMode="label" id="col1" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="번호" width="70"></w2:column>
-							<w2:column displayMode="label" id="col2" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="세션ID" width="90"></w2:column>
-							<w2:column displayMode="label" id="col3" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="참여자명" width="120"></w2:column>
-							<w2:column displayMode="label" id="col4" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="이메일" width="200"></w2:column>
-							<w2:column displayMode="label" id="col5" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="접속IP" width="130"></w2:column>
-							<w2:column displayMode="label" id="col6" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="입장시간" width="150"></w2:column>
-							<w2:column displayMode="label" id="col7" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="퇴장시간" width="150"></w2:column>
-							<w2:column displayMode="label" id="col8" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="참여시간(분)" width="110"></w2:column>
-							<w2:column displayMode="label" id="col9" inputType="text" style="height:35px;text-align:center;font-weight:bold;"
-								value="상태" width="90"></w2:column>
+							<w2:column id="h_sessionId" value="세션 ID" width="350"
+								style="height:50px;text-align:center;font-weight:bold;font-size:1rem;"></w2:column>
+							<w2:column id="h_participants" value="총 참여자 수" width="180"
+								style="height:50px;text-align:center;font-weight:bold;font-size:1rem;"></w2:column>
+							<w2:column id="h_avgMinutes" value="평균 참여시간(분)" width="200"
+								style="height:50px;text-align:center;font-weight:bold;font-size:1rem;"></w2:column>
 						</w2:row>
 					</w2:header>
 					<w2:gBody>
 						<w2:row>
-							<w2:column displayMode="label" id="recordId" inputType="text" style="text-align:center;" width="70" value=""></w2:column>
-							<w2:column displayMode="label" id="sessionId" inputType="text" style="text-align:center;" width="90"></w2:column>
-							<w2:column displayMode="label" id="name" inputType="text" style="text-align:left;font-weight:500;" width="120"></w2:column>
-							<w2:column displayMode="label" id="email" inputType="text" style="text-align:left;" width="200"></w2:column>
-							<w2:column displayMode="label" id="ipAddress" inputType="text" style="text-align:center;" width="130"></w2:column>
-							<w2:column displayMode="label" id="joinTime" inputType="text" style="text-align:center;" width="150"></w2:column>
-							<w2:column displayMode="label" id="leaveTime" inputType="text" style="text-align:center;" width="150"></w2:column>
-							<w2:column displayMode="label" id="participationMinutes" inputType="text" style="text-align:center;" width="110"></w2:column>
-							<w2:column displayMode="label" id="status" inputType="text" style="text-align:center;font-weight:600;" width="90"></w2:column>
+							<w2:column id="sessionId" inputType="text" displayMode="label"
+								style="text-align:left; font-weight:600; font-size:1rem; padding:12px;"></w2:column>
+							<w2:column id="participantCount" inputType="text" displayMode="label"
+								style="text-align:center; font-weight:600; font-size:1rem;"></w2:column>
+							<w2:column id="avgMinutes" inputType="text" displayMode="label" style="text-align:center; font-weight:600; font-size:1rem;"></w2:column>
 						</w2:row>
 					</w2:gBody>
 				</w2:gridView>
 			</xf:group>
 
+			<xf:group id="grp_detailView" style="display:none;">
+
+				<xf:group class="contbox" style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+					<xf:trigger type="button" class="btn_cm" ev:onclick="scwin.showSessionList">
+						<xf:label>← 세션 목록으로</xf:label>
+					</xf:trigger>
+					<xf:group style="display:flex; align-items:center; gap:8px;">
+						<w2:textbox label="선택된 세션:" style="font-weight:bold;"></w2:textbox>
+						<w2:textbox id="txt_selectedSession" style="font-size:16px; color:#007bff; font-weight:bold;"></w2:textbox>
+					</xf:group>
+				</xf:group>
+
+				<xf:group class="schbox">
+					<xf:group class="schbox_inner" style="display: flex; flex-wrap: wrap; align-items: center; gap: 15px;">
+						<xf:group style="display: flex; align-items: center; gap: 8px;">
+							<w2:textbox label="참여자명"></w2:textbox>
+							<w2:input id="ipt_searchName" class="w2_input" ref="data:dm_search.scName" placeholder="참여자명으로 검색" style="width:200px;"></w2:input>
+						</xf:group>
+						<xf:group style="display: flex; align-items: center; gap: 8px;">
+							<w2:textbox label="이메일"></w2:textbox>
+							<w2:input id="ipt_searchEmail" class="w2_input" ref="data:dm_search.scEmail" placeholder="이메일로 검색" style="width:250px;"></w2:input>
+						</xf:group>
+						<xf:group style="display: flex; align-items: center; gap: 8px;">
+							<w2:textbox label="입장일시"></w2:textbox>
+							<w2:inputCalendar id="ipt_searchDate" class="w2_input" ref="data:dm_search.scJoinTime" style="width:150px;"
+								renderType="native"></w2:inputCalendar>
+						</xf:group>
+					</xf:group>
+					<xf:group class="btn_schbox">
+						<xf:trigger class="btn_cm sch" ev:onclick="scwin.btn_search_onclick" id="btn_search" type="button">
+							<xf:label>검색</xf:label>
+						</xf:trigger>
+						<xf:trigger class="btn_cm" ev:onclick="scwin.btn_reset_onclick" id="btn_reset" type="button">
+							<xf:label>초기화</xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+
+				<xf:group class="contbox" style="margin-bottom:20px;">
+					<xf:group style="display:flex; gap:20px; flex-wrap:wrap;">
+						<xf:group
+							style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #007bff;">
+							<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#007bff; margin-bottom:5px;"
+								ref="data:dm_stats.totalCount"></w2:textbox>
+							<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">총 참여자</xf:group>
+						</xf:group>
+						<xf:group
+							style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #28a745;">
+							<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#28a745; margin-bottom:5px;"
+								ref="data:dm_stats.activeCount"></w2:textbox>
+							<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">현재 참여중</xf:group>
+						</xf:group>
+						<xf:group
+							style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #dc3545;">
+							<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#dc3545; margin-bottom:5px;"
+								ref="data:dm_stats.leftCount"></w2:textbox>
+							<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">퇴장완료</xf:group>
+						</xf:group>
+						<xf:group
+							style="flex:1; min-width:200px; padding:15px; background:#f8f9fa; border-radius:8px; text-align:center; border-left:4px solid #6f42c1;">
+							<w2:textbox style="display:block; font-size:28px; font-weight:bold; color:#6f42c1; margin-bottom:5px;"
+								ref="data:dm_stats.avgMinutes"></w2:textbox>
+							<xf:group tagname="span" style="color:#666; font-size:14px; font-weight:500;">평균 참여시간(분)</xf:group>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+
+				<xf:group class="contbox" style="margin-bottom:20px;">
+					<xf:group style="display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
+						<xf:trigger class="btn_cm" id="btn_sortDesc" ev:onclick="scwin.setSortOrder_onclick('DESC')" type="button">
+							<xf:label>최신순</xf:label>
+						</xf:trigger>
+						<xf:trigger class="btn_cm" id="btn_sortAsc" ev:onclick="scwin.setSortOrder_onclick('ASC')" type="button">
+							<xf:label>오래된순</xf:label>
+						</xf:trigger>
+						<xf:trigger class="btn_cm" ev:onclick="scwin.btn_downloadCSV_onclick" id="btn_downloadCSV" type="button">
+							<xf:label>CSV 다운로드</xf:label>
+						</xf:trigger>
+					</xf:group>
+				</xf:group>
+
+				<xf:group class="gvwbox">
+					<w2:gridView autoFit="allColumn" class="gvw" dataList="data:attendanceList" defaultCellHeight="40" headerHeight="50"
+						id="grd" scrollByColumn="false" style="height:500px;" useFilterList="true" visibleRowNum="15" sortable="true">
+						<w2:caption value="출석 현황 목록"></w2:caption>
+						<w2:header>
+							<w2:row>
+								<w2:column displayMode="label" value="번호" width="80" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="세션ID" width="100" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="참여자명" width="140" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="이메일" width="220" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="접속IP" width="140" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="입장시간" width="160" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="퇴장시간" width="160" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="참여시간(분)" width="120" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" value="상태" width="100" style="text-align:center;font-weight:bold;font-size:0.9rem;"></w2:column>
+							</w2:row>
+						</w2:header>
+						<w2:gBody>
+							<w2:row>
+								<w2:column displayMode="label" id="recordId" inputType="text" style="text-align:center;font-size:0.9rem;" value=""></w2:column>
+								<w2:column displayMode="label" id="sessionId" inputType="text" style="text-align:center;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" id="name" inputType="text"
+									style="text-align:left;font-weight:600;font-size:0.9rem;padding-left:12px;"></w2:column>
+								<w2:column displayMode="label" id="email" inputType="text" style="text-align:left;font-size:0.9rem;padding-left:12px;"></w2:column>
+								<w2:column displayMode="label" id="ipAddress" inputType="text" style="text-align:center;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" id="joinTime" inputType="text" style="text-align:center;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" id="leaveTime" inputType="text" style="text-align:center;font-size:0.9rem;"></w2:column>
+								<w2:column displayMode="label" id="participationMinutes" inputType="text"
+									style="text-align:center;font-size:0.9rem;font-weight:600;"></w2:column>
+								<w2:column displayMode="label" id="status" inputType="text" style="text-align:center;font-weight:700;font-size:0.9rem;"></w2:column>
+							</w2:row>
+						</w2:gBody>
+					</w2:gridView>
+				</xf:group>
+			</xf:group>
 		</xf:group>
 	</body>
 </html>
