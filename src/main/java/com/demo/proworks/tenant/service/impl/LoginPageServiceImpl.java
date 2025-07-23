@@ -18,14 +18,14 @@ public class LoginPageServiceImpl implements LoginPageService {
 	@Resource(name = "messageSource")
 	private MessageSource messageSource;
 
-	public String getConfigJsonBySubDomain(String subDomain) throws Exception {
-//		LoginPageVo loginPageVo = loginPageDAO.selectLoginPageBySubDomain(subDomain);
-		String loginPageVo = loginPageDAO.selectLoginPage(10);
+	public LoginPageVo getConfigJsonBySubDomain(String subDomain) throws Exception {
+		LoginPageVo loginPageVo = loginPageDAO.selectLoginPageBySubDomain(subDomain);
+//		String loginPageVo = loginPageDAO.selectLoginPage(10);
 		if (loginPageVo != null) {
 			return loginPageVo;
 		}
 		// 설정이 없으면 기본값(빈 JSON 객체) 반환
-		return "{}";
+		return null;
 	}
 	
 	@Override

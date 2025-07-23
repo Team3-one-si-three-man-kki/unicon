@@ -37,6 +37,11 @@
 						<w2:key dataType="text" name="subDomain" id="subDomain"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dm_subdomain">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="테넌트이름(서브도메인)" id="subDomain"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
 			</w2:dataCollection>
 
 			<w2:workflowCollection />
@@ -47,7 +52,7 @@
 				ev:submiterror="" abortTrigger="">
 			</xf:submission>
 
-			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
+			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref='data:json,{"id":"dm_subdomain","key":"tenant"}'
 				target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}' encoding="UTF-8" instance="" replace="" errorHandler=""
 				customHandler="" mode="asynchronous" processMsg="loading...." ev:submit="" ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror=""
 				abortTrigger="">
@@ -132,16 +137,15 @@ scwin.parseJwt = function (token) {
 
 // 페이지 로드 시 초기화
 scwin.onpageload = function () {
-    const subDomain = scwin.getQueryParam('subDomain');
-    
-    console.log('subDomain:', subDomain);
-    
-    const dm =  dma_login;
-    console.log(dm);
-     if (dm && typeof dm.set === 'function') {
-    dm.set('subDomain', subDomain !== null ? subDomain : '');
-    console.log('DataMap에 subDomain 저장:', dm.get('subDomain'));
-  };
+    const subDomain = scwin.getQueryParam('tenant');
+
+    const dm = dma_login;
+    const dm_sub = dm_subdomain;
+
+    if (dm && typeof dm.set === 'function') {
+        dm.set('subDomain', subDomain !== null ? subDomain : '');
+        dm_sub.set('subDomain', subDomain !== null ? subDomain : '');
+    };
     scwin.createPopupLayer();
 
     var mode = $p.getParameter("mode");
@@ -160,8 +164,8 @@ scwin.applyCustomization = function (data) {
 scwin.overlayElement = null;
 
 scwin.loadCustomization = function (c) {
+    console.log("데이터", c)
     if (!c) return;
-
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
     }
@@ -268,30 +272,8 @@ scwin.validateLogin = function (userId, password) {
     return true;
 };
 
-// 데모용 목업 로그인
-scwin.mockLogin = function (userId, password) {
-    var validAccounts = [
-        { userId: "admin", password: "admin123" },
-        { userId: "user", password: "user123" },
-        { userId: "test", password: "test123" }
-    ];
-
-    setTimeout(function () {
-        var isValid = validAccounts.some(function (account) {
-            return account.userId === userId && account.password === password;
-        });
-
-        if (isValid) {
-            scwin.onLoginSuccess();
-        } else {
-            scwin.onLoginFailure();
-        }
-    }, 1000);
-};
-
 scwin.getQueryParam = function (name) {
     const params = new URLSearchParams(window.location.search);
-    console.log(params.get(name));
     return params.get(name);
 };
 
@@ -383,9 +365,11 @@ scwin.loginSubmitHandler = function (e) {
 };
 
 scwin.loadCustom_submitdone = function (e) {
-    console.log(e);
     var elData = e.responseJSON;
     console.log("받아온데이터입니다", elData);
+    if(elData?.code === "E001"){
+        location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/error/404tenant.xml";
+    }
     scwin.loadCustomization(elData);
 };
 
@@ -460,12 +444,12 @@ scwin.kakao_login_submitdone = function (e) {
 scwin.togglePassword_onclick = function (e) {
     const passwordField = document.getElementById('mf_inp_password');
     if (inp_password.hasClass("show")) {
-        passwordField.type="text";
+        passwordField.type = "text";
         inp_password.toggleClass("show")
         togglePassword.setStyle("backgroundImage", '/InsWebApp/images/icons/close-eye.svg')
         console.log(togglePassword.getBackgroundImage())
     } else {
-        passwordField.type ="password";
+        passwordField.type = "password";
         inp_password.toggleClass("show")
         togglePassword.setBackgroundImage('/InsWebApp/images/icons/open-eye.svg')
     }
