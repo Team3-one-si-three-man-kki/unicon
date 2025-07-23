@@ -337,7 +337,7 @@
 			/* 하단 모듈 영역들 */
 			.bottom-modules {
 			display: grid !important;
-			grid-template-columns: repeat(12, 1fr) !important;
+			grid-template-columns: repeat(15, 1fr) !important;
 			padding: 5px 0 !important;
 			max-height: 120px !important;
 			}
@@ -514,7 +514,7 @@ scwin.createModuleElements = function () {
     console.log("생성할 모듈 수:", moduleCount);
     
     // 기존 모듈 요소들 제거
-    var parentGroup = document.getElementById("mf_fr_session_making_process_grp_module_list");
+    var parentGroup = document.getElementById("mf_contentFrame_fr_session_making_process_grp_module_list");
     if (parentGroup) {
         parentGroup.innerHTML = '';
         console.log(" 기존 모듈 요소들 제거 완료");
@@ -708,7 +708,7 @@ scwin.checkDropZone = function (x, y) {
 };
 
 scwin.findDropZoneElement = function (element) {
-    var validDropZones = ["mf_fr_session_making_process_grp_area1", "mf_fr_session_making_process_grp_area2", "mf_fr_session_making_process_grp_area3", "mf_fr_session_making_process_grp_area4", "mf_fr_session_making_process_grp_area5", "mf_fr_session_making_process_grp_area6","mf_fr_session_making_process_grp_area7", "mf_fr_session_making_process_grp_area8", "mf_fr_session_making_process_grp_area9", "mf_fr_session_making_process_grp_area10", "mf_fr_session_making_process_grp_area11", "mf_fr_session_making_process_grp_area12", "mf_fr_session_making_process_grp_area13", "mf_fr_session_making_process_grp_area14"];
+    var validDropZones = ["mf_contentFrame_fr_session_making_process_grp_area1", "mf_contentFrame_fr_session_making_process_grp_area2", "mf_contentFrame_fr_session_making_process_grp_area3", "mf_contentFrame_fr_session_making_process_grp_area4", "mf_contentFrame_fr_session_making_process_grp_area5", "mf_contentFrame_fr_session_making_process_grp_area6","mf_contentFrame_fr_session_making_process_grp_area7", "mf_contentFrame_fr_session_making_process_grp_area8", "mf_contentFrame_fr_session_making_process_grp_area9", "mf_contentFrame_fr_session_making_process_grp_area10", "mf_contentFrame_fr_session_making_process_grp_area11", "mf_contentFrame_fr_session_making_process_grp_area12", "mf_contentFrame_fr_session_making_process_grp_area13", "mf_contentFrame_fr_session_making_process_grp_area14", "mf_contentFrame_fr_session_making_process_grp_area15", "mf_contentFrame_fr_session_making_process_grp_area16", "mf_contentFrame_fr_session_making_process_grp_area17"];
 
     var currentElement = element;
     var stepCount = 0;
@@ -737,8 +737,8 @@ scwin.saveLayoutConfiguration = function() {
     
     var layoutDataArray = [];
     
-    for (var i = 1; i <=14; i++) {
-        var areaId = "mf_fr_session_making_process_grp_area" + i;
+    for (var i = 1; i <=17; i++) {
+        var areaId = "mf_contentFrame_fr_session_making_process_grp_area" + i;
         var areaElement = document.getElementById(areaId);
         
         if (areaElement && areaElement.dataset.moduleId) {
@@ -825,7 +825,7 @@ scwin.applyTemplateLayout = function (templateData) {
 };
 ]]></script>
 	</head>
-	<body ev:onpageload="scwin.onpageload">
+	<body ev:onpageload="scwin.onpageload" style="width: 90%;">
 		<!-- 전체 컨테이너 -->
 		<xf:group class="sub_contents" id="" style="">
 
@@ -838,7 +838,7 @@ scwin.applyTemplateLayout = function (templateData) {
 						<w2:span class="sidebar-title" id="" label="보유 모듈"></w2:span>
 						<w2:span class="sidebar-subtitle" id="ui_guide" label="드래그하여 영역에 배치하세요"></w2:span>
 					</xf:group>
-					<xf:group style="overflow-y: auto !important;height: 100vh" id="grp_module_list"></xf:group>
+					<xf:group style="overflow-y: auto !important;height: 765px;" id="grp_module_list"></xf:group>
 				</xf:group>
 
 				<!-- 작업 영역 (레이아웃 디자이너) -->
@@ -851,11 +851,12 @@ scwin.applyTemplateLayout = function (templateData) {
 							<xf:trigger class="smart-button secondary" id="btn_reset" type="button">
 								<xf:label><![CDATA[초기화]]></xf:label>
 							</xf:trigger>
-							<xf:trigger class="smart-button accent" id="btn_load" type="button" ev:onclick="scwin.loadLayoutConfiguration">
+							<xf:trigger class="smart-button accent" id="btn_load" type="button"
+								ev:onclick="scwin.loadLayoutConfiguration">
 								<xf:label><![CDATA[로드]]></xf:label>
 							</xf:trigger>
-							<xf:trigger class="smart-button" id="btn_save" type="button" ev:onclick="scwin.saveLayoutConfiguration">
-								<xf:label><![CDATA[다음]]></xf:label>
+							<xf:trigger class="smart-button secondary" id="trigger2" type="button" style="" ev:onclick="scwin.saveLayoutConfiguration">
+								<xf:label><![CDATA[▶다음]]></xf:label>
 							</xf:trigger>
 						</xf:group>
 					</xf:group>
@@ -919,6 +920,15 @@ scwin.applyTemplateLayout = function (templateData) {
 									</xf:group>
 									<xf:group class="drop-zone neon-border" id="grp_area14" style="">
 										<w2:span class="drop-zone-label" id="span14" label="버튼12"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="grp_area15" style="">
+										<w2:span class="drop-zone-label" id="span15" label="버튼13"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="grp_area16" style="">
+										<w2:span class="drop-zone-label" id="span16" label="버튼14"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="grp_area17" style="">
+										<w2:span class="drop-zone-label" id="span17" label="버튼15"></w2:span>
 									</xf:group>
 								</xf:group>
 							</xf:group>

@@ -91,6 +91,7 @@
           case "adminInfo":
             this.isAdmin = msg.data.isAdmin;
             this.myPeerId = msg.data.peerId; // 이 시점에서 myPeerId가 설정됨
+            console.log("RoomClient received adminInfo:", msg.data);
             this.emit("adminStatus", msg.data); // UI 매니저에게 알림
             break;
           case "canvas": // 추가된 부분
@@ -624,108 +625,220 @@
     }
 
     initializeUI() {
-      // Main app container
-      this.appRootContainer = document.createElement("div");
-      this.appRootContainer.className = "video-conference-app";
-      this.appRootContainer.style.cssText = `
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-      position: relative;
-    `;
-      document.body.appendChild(this.appRootContainer);
+      // 웹스퀘어 컨테이너 확인
+      const webSquareContainer = document.getElementById('mf_grp_video_area');
+      
+      if (webSquareContainer) {
+        // 웹스퀘어 모드: 기존 UI 생성하지 않음
+        console.log("UIManager: Using WebSquare container mode");
+		this.createHeader();
+        this.createMainContent();
+        this.createControls();
+      } else {
+        // 기존 모드: 전체 UI 생성
+        // Main app container
+        this.appRootContainer = document.createElement("div");
+        this.appRootContainer.className = "video-conference-app";
+        this.appRootContainer.style.cssText = `
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+        position: relative;
+      `;
+        document.body.appendChild(this.appRootContainer);
 
-      // Header section
-      this.createHeader();
+        // Header section
+        this.createHeader();
 
-      // Main content area
-      this.createMainContent();
+        // Main content area
+        this.createMainContent();
 
-      // Controls section
-      this.createControls();
+        // Controls section
+        this.createControls();
+      }
 
       console.log("UIManager: Modern Zoom-style UI created.");
     }
 
-    createHeader() {
-      this.headerSection = document.createElement("div");
-      this.headerSection.className = "header-section";
-      this.headerSection.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 24px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-    `;
+	createHeader() {
+	   // 웹스퀘어 컨테이너를 우선 찾기
+	   const webSquareContainer = document.getElementById('mf_grp_session_title');
+	   
+	   if (webSquareContainer) {
+	       // 웹스퀘어 모드: headerSection을 grp_session_title에 배치
+	       this.headerSection = document.createElement("div");
+	       this.headerSection.className = "header-section";
+	       this.headerSection.style.cssText = `
+	           display: flex !important;
+	           justify-content: space-between !important;
+	           align-items: center !important;
+	           padding: 12px 24px !important;
+	           background: rgba(255, 255, 255, 0.95) !important;
+	           backdrop-filter: blur(10px) !important;
+	           border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+	           box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+	           z-index: 1000 !important;
+	           width: 100% !important;
+	           height: 60px !important;
+	           box-sizing: border-box !important;
+	           position: relative !important;
+	       `;
 
-      // Room info
-      const roomInfo = document.createElement("div");
-      roomInfo.className = "room-info";
-      roomInfo.style.cssText = `
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #333;
-    `;
+	       // Room info
+	       const roomInfo = document.createElement("div");
+	       roomInfo.className = "room-info";
+	       roomInfo.style.cssText = `
+	           display: flex;
+	           align-items: center;
+	           gap: 12px;
+	           color: #333;
+	       `;
 
-      const roomTitle = document.createElement("h2");
-      roomTitle.textContent = "화상회의";
-      roomTitle.style.cssText = `
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #2c3e50;
-    `;
+	       const roomTitle = document.createElement("h2");
+	       roomTitle.textContent = "ModuLink 화상회의";
+	       roomTitle.style.cssText = `
+	           margin: 0;
+	           font-size: 18px;
+	           font-weight: 600;
+	           color: #2c3e50;
+	       `;
 
-      const participantCount = document.createElement("span");
-      participantCount.className = "participant-count";
-      participantCount.textContent = "참가자 1명";
-      participantCount.style.cssText = `
-      background: #e8f4f8;
-      color: #2980b9;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 12px;
-      font-weight: 500;
-    `;
+	       const participantCount = document.createElement("span");
+	       participantCount.className = "participant-count";
+	       participantCount.textContent = "참가자 1명";
+	       participantCount.style.cssText = `
+	           background: #e8f4f8;
+	           color: #2980b9;
+	           padding: 4px 12px;
+	           border-radius: 16px;
+	           font-size: 12px;
+	           font-weight: 500;
+	       `;
 
-      roomInfo.appendChild(roomTitle);
-      roomInfo.appendChild(participantCount);
+	       roomInfo.appendChild(roomTitle);
+	       roomInfo.appendChild(participantCount);
 
-      // Header controls
-      const headerControls = document.createElement("div");
-      headerControls.className = "header-controls";
-      headerControls.style.cssText = `
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    `;
+	       // Header controls
+	       const headerControls = document.createElement("div");
+	       headerControls.className = "header-controls";
+	       headerControls.style.cssText = `
+	           display: flex;
+	           gap: 8px;
+	           align-items: center;
+	       `;
 
-      // Fullscreen button
-      this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
-        this.toggleFullscreen();
-      });
+	       // Fullscreen button
+	       this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
+	           this.toggleFullscreen();
+	       });
 
-      // Settings button
-      this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
-        console.log("Settings clicked");
-      });
+	       // Settings button
+	       this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
+	           console.log("Settings clicked");
+	       });
 
-      headerControls.appendChild(this.fullscreenButton);
-      headerControls.appendChild(this.settingsButton);
+	       headerControls.appendChild(this.fullscreenButton);
+	       headerControls.appendChild(this.settingsButton);
 
-      this.headerSection.appendChild(roomInfo);
-      this.headerSection.appendChild(headerControls);
-      this.appRootContainer.appendChild(this.headerSection);
-    }
+	       this.headerSection.appendChild(roomInfo);
+	       this.headerSection.appendChild(headerControls);
+
+	       // 기존 label 숨기기 (createMainContent와 동일한 패턴)
+	       const label = webSquareContainer.querySelector('.workspace-title');
+	       if (label) label.style.display = 'none';
+
+	       // grp_session_title에 직접 추가
+	       webSquareContainer.appendChild(this.headerSection);
+	       
+	       console.log("UIManager: Using WebSquare header container mode");
+	       
+	   } else {
+	       // 폴백: 웹스퀘어 영역이 없으면 기존 방식 사용
+	       this.headerSection = document.createElement("div");
+	       this.headerSection.className = "header-section";
+	       this.headerSection.style.cssText = `
+	           display: flex;
+	           justify-content: space-between;
+	           align-items: center;
+	           padding: 12px 24px;
+	           background: rgba(255, 255, 255, 0.95);
+	           backdrop-filter: blur(10px);
+	           border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	           box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+	           z-index: 1000;
+	       `;
+
+	       // Room info
+	       const roomInfo = document.createElement("div");
+	       roomInfo.className = "room-info";
+	       roomInfo.style.cssText = `
+	           display: flex;
+	           align-items: center;
+	           gap: 12px;
+	           color: #333;
+	       `;
+
+	       const roomTitle = document.createElement("h2");
+	       roomTitle.textContent = "화상회의";
+	       roomTitle.style.cssText = `
+	           margin: 0;
+	           font-size: 18px;
+	           font-weight: 600;
+	           color: #2c3e50;
+	       `;
+
+	       const participantCount = document.createElement("span");
+	       participantCount.className = "participant-count";
+	       participantCount.textContent = "참가자 1명";
+	       participantCount.style.cssText = `
+	           background: #e8f4f8;
+	           color: #2980b9;
+	           padding: 4px 12px;
+	           border-radius: 16px;
+	           font-size: 12px;
+	           font-weight: 500;
+	       `;
+
+	       roomInfo.appendChild(roomTitle);
+	       roomInfo.appendChild(participantCount);
+
+	       // Header controls
+	       const headerControls = document.createElement("div");
+	       headerControls.className = "header-controls";
+	       headerControls.style.cssText = `
+	           display: flex;
+	           gap: 8px;
+	           align-items: center;
+	       `;
+
+	       // Fullscreen button
+	       this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
+	           this.toggleFullscreen();
+	       });
+
+	       // Settings button
+	       this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
+	           console.log("Settings clicked");
+	       });
+
+	       headerControls.appendChild(this.fullscreenButton);
+	       headerControls.appendChild(this.settingsButton);
+
+	       this.headerSection.appendChild(roomInfo);
+	       this.headerSection.appendChild(headerControls);
+
+	       // appRootContainer에 추가 (기존 방식)
+	       if (this.appRootContainer) {
+	           this.appRootContainer.appendChild(this.headerSection);
+	       }
+	       
+	       console.log("UIManager: Using standalone header mode");
+	   }
+	}
 
     createHeaderButton(icon, tooltip, onClick) {
       const button = document.createElement("button");
@@ -764,45 +877,76 @@
     }
 
     createMainContent() {
-      this.mainContentArea = document.createElement("div");
-      this.mainContentArea.className = "main-content";
-      this.mainContentArea.style.cssText = `
-      flex: 1;
-      display: flex;
-      gap: 16px;
-      padding: 16px;
-      overflow: hidden;
-    `;
+      // 웹스퀘어 컨테이너를 우선 찾기
+      const webSquareContainer = document.getElementById('mf_grp_video_area');
+      
+      if (webSquareContainer) {
+        // 웹스퀘어 모드: 전체 main-content를 grp_video_area에 배치
+        this.mainContentArea = document.createElement("div");
+        this.mainContentArea.className = "main-content";
+        this.mainContentArea.style.cssText = `
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 1600px !important;
+            height: 665px !important;
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            overflow: hidden;
+            z-index: 100;
+        `;
+        
+        // 기존 label 숨기기
+        const label = webSquareContainer.querySelector('.drop-zone-label');
+        if (label) label.style.display = 'none';
+        
+        // grp_video_area에 직접 추가
+        webSquareContainer.appendChild(this.mainContentArea);
+        
+      } else {
+        // 폴백: 웹스퀘어 영역이 없으면 기존 방식 사용
+        this.mainContentArea = document.createElement("div");
+        this.mainContentArea.className = "main-content";
+        this.mainContentArea.style.cssText = `
+        flex: 1;
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        overflow: hidden;
+      `;
+      }
 
       // Main video stage
       this.mainStageContainer = document.createElement("div");
       this.mainStageContainer.id = "mainStageContainer";
       this.mainStageContainer.style.cssText = `
-      flex: 1;
-      position: relative;
-      background: #1a1a1a;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      border: 2px solid rgba(255, 255, 255, 0.1);
-    `;
+        flex: 1;
+        position: relative;
+        background: #1a1a1a;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      `;
+
 
       // Video sidebar
       this.sidebarContainer = document.createElement("div");
       this.sidebarContainer.id = "sidebarContainer";
       this.sidebarContainer.style.cssText = `
-      width: 280px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow-y: auto;
-      padding: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-    `;
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+        padding: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+      `;
 
       // Custom scrollbar for webkit browsers
       const scrollbarStyles = `
@@ -828,12 +972,39 @@
         document.head.appendChild(style);
       }
 
-      this.mainContentArea.appendChild(this.mainStageContainer);
-      this.mainContentArea.appendChild(this.sidebarContainer);
-      this.appRootContainer.appendChild(this.mainContentArea);
+      // 웹스퀘어 사이드바 영역 찾아서 추가
+      if (webSquareContainer) {
+        // 웹스퀘어 모드: mainContentArea에 함께 배치
+        this.mainContentArea.appendChild(this.mainStageContainer);
+        this.mainContentArea.appendChild(this.sidebarContainer);
+      } else {
+        // 기존 모드: 메인 컨텐츠 영역에 함께 배치
+        this.mainContentArea.appendChild(this.mainStageContainer);
+        this.mainContentArea.appendChild(this.sidebarContainer);
+        this.appRootContainer.appendChild(this.mainContentArea);
+      }
     }
 
     createControls() {
+      // 웹스퀘어 모드 확인
+      const webSquareContainer = document.getElementById('mf_grp_video_area');
+      
+      if (webSquareContainer) {
+        // 웹스퀘어 모드: 컨트롤을 하단 버튼 영역에 배치
+        //const bottomModules = document.getElementById('mf_group11');
+        //if (bottomModules) {
+        //  // 첫 번째 버튼 영역을 찾아서 컨트롤 버튼들을 배치
+        //  const firstButton = bottomModules.children[0];
+        //  if (firstButton) {
+        //    firstButton.innerHTML = '';
+        //    this.createControlButtons(firstButton);
+		//	firstButton.style.display = 'none';
+            return;
+        //  }
+        //}
+      }
+      
+      // 기존 모드 또는 웹스퀘어 영역을 찾지 못한 경우
       this.controlsSection = document.createElement("div");
       this.controlsSection.className = "controls-section";
       this.controlsSection.style.cssText = `
@@ -860,6 +1031,18 @@
       backdrop-filter: blur(10px);
     `;
 
+      this.createControlButtons(this.controlsGroup);
+
+      this.controlsSection.appendChild(this.controlsGroup);
+      
+      if (this.appRootContainer) {
+        this.appRootContainer.appendChild(this.controlsSection);
+      } else {
+        document.body.appendChild(this.controlsSection);
+      }
+    }
+
+    createControlButtons(container) {
       // Create control buttons
       this.muteButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 352 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M176 352c53 0 96-43 96-96V96c0-53-43-96-96-96S80 43 80 96v160c0 53 43 96 96 96zm160-160h-16c-8.8 0-16 7.2-16 16v48c0 74.8-64.5 134.8-140.8 127.4C96.7 376.9 48 317.1 48 250.3V208c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40.2c0 89.6 64 169.6 152 181.7V464H96c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16h-56v-33.8C285.7 418.5 352 344.9 352 256v-48c0-8.8-7.2-16-16-16z"/></svg>`, "음소거", "audio", true);
       this.cameraOffButton = this.createControlButton(`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M633.8 458.1l-55-42.5c15.4-1.4 29.2-13.7 29.2-31.1v-257c0-25.5-29.1-40.4-50.4-25.8L448 177.3v137.2l-32-24.7v-178c0-26.4-21.4-47.8-47.8-47.8H123.9L45.5 3.4C38.5-2 28.5-.8 23 6.2L3.4 31.4c-5.4 7-4.2 17 2.8 22.4L42.7 82 416 370.6l178.5 138c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.5-6.9 4.2-17-2.8-22.4zM32 400.2c0 26.4 21.4 47.8 47.8 47.8h288.4c11.2 0 21.4-4 29.6-10.5L32 154.7v245.5z"/></svg>`, "카메라 끄기", "video", true);
@@ -876,14 +1059,20 @@
         this.endCallButton.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
       });
 
-      this.controlsGroup.appendChild(this.muteButton);
-      this.controlsGroup.appendChild(this.cameraOffButton);
-      this.controlsGroup.appendChild(this.screenShareButton);
-      this.controlsGroup.appendChild(this.whiteboardButton);
-      this.controlsGroup.appendChild(this.endCallButton);
+      // 채팅 버튼 생성
+      this.chatButton = document.createElement("button");
+      this.chatButton.id = "chatButton";
+      this.chatButton.textContent = "채팅";
+      this.chatButton.style.display = "none";
+      this.chatButton.className = "control-button chat";
+      this.chatButton.style.cssText = this.createControlButton("💬", "채팅", "chat", false).style.cssText;
 
-      this.controlsSection.appendChild(this.controlsGroup);
-      this.appRootContainer.appendChild(this.controlsSection);
+      container.appendChild(this.muteButton);
+      container.appendChild(this.cameraOffButton);
+      container.appendChild(this.screenShareButton);
+      container.appendChild(this.whiteboardButton);
+      container.appendChild(this.chatButton);
+      container.appendChild(this.endCallButton);
     }
 
     createControlButton(icon, tooltip, type, disabled = false) {
@@ -954,6 +1143,25 @@
 
     applyStyles() {
       const globalStyles = `
+	  /* 웹스퀘어 영역 내의 동적 컨텐츠 스타일 */
+	  #mf_grp_video_area {
+	      position: relative !important;
+	      overflow: hidden !important;
+	  }
+
+	  #mf_grp_video_area .main-content {
+	      position: absolute !important;
+	      top: 0 !important;
+	      left: 185 !important;
+	      width: 1152px !important;
+	      height: 600px !important;
+	      z-index: 100 !important;
+	  }
+
+	  #mf_grp_video_area .drop-zone-label {
+	      display: none !important;
+	  }
+	  
       .video-conference-app * {
         box-sizing: border-box;
       }
@@ -1127,10 +1335,12 @@
     // Getters
     getMainStageContainer() {
       return this.mainStageContainer;
+	  //return document.getElementById('mf_grp_video_area');
     }
 
     getSidebarContainer() {
       return this.sidebarContainer;
+	  //return document.getElementById('mf_group6');
     }
 
     getRemoteMediaContainer() {
@@ -1139,43 +1349,75 @@
 
     // Button management
     showWhiteboardButton() {
-      this.whiteboardButton.style.display = "flex";
-      this.whiteboardButton.disabled = false;
-      this.whiteboardButton.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
-      this.whiteboardButton.style.color = 'white';
-      this.whiteboardButton.style.cursor = 'pointer';
-      this.whiteboardButton.style.opacity = '1';
+      if (this.whiteboardButton) {
+        this.whiteboardButton.style.display = "flex";
+        this.whiteboardButton.disabled = false;
+        this.whiteboardButton.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+        this.whiteboardButton.style.color = 'white';
+        this.whiteboardButton.style.cursor = 'pointer';
+        this.whiteboardButton.style.opacity = '1';
+      }
     }
+
+    hideWhiteboardButton() {
+      if (this.whiteboardButton) {
+        this.whiteboardButton.style.display = "none";
+      }
+    }
+
+    disableScreenSharing() {
+      if (this.screenShareButton) {
+        this.screenShareButton.disabled = true;
+        this.screenShareButton.style.background = 'linear-gradient(135deg, #bdc3c7, #95a5a6)';
+        this.screenShareButton.style.color = '#7f8c8d';
+        this.screenShareButton.style.cursor = 'not-allowed';
+        this.screenShareButton.style.opacity = '0.6';
+      }
+    }
+	
+	showChatButton() {
+	      if (this.chatButton) {
+	        this.chatButton.style.display = "inline-block";
+	      }
+	    }
 
     enableControls() {
       console.log("Enabling media controls...");
-      this.muteButton.disabled = false;
-      this.cameraOffButton.disabled = false;
+      if (this.muteButton) {
+        this.muteButton.disabled = false;
+      }
+      if (this.cameraOffButton) {
+        this.cameraOffButton.disabled = false;
+      }
 
       // Update button styles
       [this.muteButton, this.cameraOffButton].forEach(button => {
-        button.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
-        button.style.color = 'white';
-        button.style.cursor = 'pointer';
-        button.style.opacity = '1';
+        if (button) {
+          button.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+          button.style.color = 'white';
+          button.style.cursor = 'pointer';
+          button.style.opacity = '1';
+        }
       });
     }
 
     enableScreenSharing(onClickCallback) {
       console.log("Enabling screen sharing feature...");
-      this.screenShareButton.disabled = false;
-      this.screenShareButton.onclick = onClickCallback;
-      this.screenShareButton.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
-      this.screenShareButton.style.color = 'white';
-      this.screenShareButton.style.cursor = 'pointer';
-      this.screenShareButton.style.opacity = '1';
+      if (this.screenShareButton) {
+        this.screenShareButton.disabled = false;
+        this.screenShareButton.onclick = onClickCallback;
+        this.screenShareButton.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+        this.screenShareButton.style.color = 'white';
+        this.screenShareButton.style.cursor = 'pointer';
+        this.screenShareButton.style.opacity = '1';
+      }
     }
 
     // Layout management
     updateVideoLayout(mainStageElements, sidebarElements) {
       const mainStage = this.mainStageContainer;
       const sidebar = this.sidebarContainer;
-
+	 
       // Clear existing content
       mainStage.innerHTML = '';
       sidebar.innerHTML = '';
@@ -1196,9 +1438,10 @@
         // Add user info overlay
         this.addUserInfoOverlay(element);
       });
+	  // Add elements to sidebar
 
       // Update participant count
-      this.updateParticipantCount(sidebarElements.length + mainStageElements.length);
+      this.updateParticipantCount(sidebarElements.length + mainStageElements.length -1);
     }
 
     addUserInfoOverlay(element) {
@@ -1353,6 +1596,8 @@
     }
 
     updateMuteButton(isMuted) {
+      if (!this.muteButton) return;
+      
       if (isMuted) {
         this.muteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M633.8 458.1l-157.8-122C488.6 312.1 496 285 496 256v-48c0-8.8-7.2-16-16-16h-16c-8.8 0-16 7.2-16 16v48c0 17.9-4 34.8-10.7 50.2l-26.6-20.5c3.1-9.4 5.3-19.2 5.3-29.7V96c0-53-43-96-96-96s-96 43-96 96v45.4L45.5 3.4C38.5-2.1 28.4-.8 23 6.2L3.4 31.5C-2.1 38.4-.8 48.5 6.2 53.9l588.4 454.7c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.4-7 4.2-17-2.8-22.5zM400 464h-56v-33.8c11.7-1.6 22.9-4.5 33.7-8.3l-50.1-38.7c-6.7 .4-13.4 .9-20.4 .2-55.9-5.5-98.7-48.6-111.2-101.9L144 241.3v6.9c0 89.6 64 169.6 152 181.7V464h-56c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16z"/></svg>`;
         this.muteButton.classList.add('muted');
@@ -1363,6 +1608,8 @@
     }
 
     updateCameraButton(isOff) {
+      if (!this.cameraOffButton) return;
+      
       if (isOff) {
         this.cameraOffButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M336.2 64H47.8C21.4 64 0 85.4 0 111.8v288.4C0 426.6 21.4 448 47.8 448h288.4c26.4 0 47.8-21.4 47.8-47.8V111.8c0-26.4-21.4-47.8-47.8-47.8zm189.4 37.7L416 177.3v157.4l109.6 75.5c21.2 14.6 50.4-.3 50.4-25.8V127.5c0-25.4-29.1-40.4-50.4-25.8z"/></svg>`;
         this.cameraOffButton.classList.add('muted');

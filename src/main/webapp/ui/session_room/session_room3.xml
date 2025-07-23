@@ -1,0 +1,1815 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map">
+				<w2:dataMap baseNode="map" id="dma_sessionRequest">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="sessionId" id="sessionId"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection />
+			<xf:submission id="sbm_getSessionModuleDetails" action="/InsWebApp/TNU0000SessionModuleDetailListBySessionId.pwkjson"
+				method="post" mediatype="application/json" ref='data:json,{"id":"dma_sessionRequest","key":"requestData"}' target="" encoding="UTF-8"
+				instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				ev:submitdone="scwin.sbm_getSessionModuleDetails_submitdone" ev:submiterror="scwin.sbm_getSessionModuleDetails_submiterror"
+				abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<style type="text/css"><![CDATA[
+/* --- 기본 구조 --- */
+
+/* ✅ 상태 아이콘 관련 스타일 */
+.status-indicator-container {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    display: flex; /* 아이콘들을 가로로 나란히 배치 */
+    gap: 5px;      /* 아이콘 사이의 간격 */
+    z-index: 20;   /* 다른 요소들 위에 보이도록 z-index 설정 */
+}
+
+.audio-muted-indicator,
+.video-paused-indicator {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.audio-muted-indicator {
+    background-image: url('/InsWebApp/images/icons/mic_off.svg'); /* 음소거 이미지 경로 */
+    background-size: 14px; /* 이미지 크기 조절 */
+}
+
+.video-paused-indicator {
+    background-image: url('/InsWebApp/images/icons/camera_off.svg'); /* 카메라 꺼짐 이미지 경로 */
+    background-size: 16px; /* 이미지 크기 조절 */
+}
+
+#remoteSection {
+    display: flex;
+    width: 80%;
+    flex-grow: 1;
+    gap: 8px;
+    padding: 8px;
+}
+
+#grp_video_area {
+    position: relative;
+    flex-grow: 1;
+    background-color: #202020;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebarContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 240px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* --- 미디어 요소 공통 스타일 --- */
+#grp_video_area > div,
+#sidebarContainer > div {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+#grp_video_area > div.canvas-layer {
+    background-color: transparent; /* 일반 모드에만 투명 */
+}
+
+#grp_video_area > div.canvas-layer.standalone {
+    background-color: #FFFFFF !important; /* 단독 모드일 땐 흰색 강제 */
+}
+
+#grp_video_area > div > video,
+#sidebarContainer > div > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- 사이드바 썸네일 스타일 --- */
+#sidebarContainer > div {
+    aspect-ratio: 4 / 3;
+    height: auto;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+#sidebarContainer > div:hover {
+    border-color: #00aaff;
+}
+
+/* --- 카메라 Off 아바타 스타일 --- */
+div.video-paused::after {
+    content: '사용자';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(40, 40, 40, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: #fff;
+    pointer-events: none; 
+    z-index: 10;
+}
+
+/* --- 레이어 스타일 --- */
+.main-stage-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.pinned-video-layer { z-index: 1; }
+.screen-share-layer { z-index: 2; }
+
+.canvas-layer {
+    z-index: 3;
+    background-color: transparent; /* 기본 배경은 투명 */
+    pointer-events: none; /* 오버레이시 하위 비디오 클릭 방지 */
+}
+
+.canvas-layer.standalone {
+    background-color: #FFFFFF; /* 단독 모드일 때만 흰색 배경 적용 */
+}
+
+.canvas-layer .canvas-container,
+.canvas-layer .canvas-toolbar {
+    pointer-events: auto; /* 캔버스 자체는 클릭 가능해야 함 */
+}
+
+/*------------------모듈 버튼 영역 css------------------------------*/
+/* --- 하단 모듈 영역들 - 가로 한 줄 배치 --- */
+.bottom-modules {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    padding: 4px !important;
+    height: 80px !important;
+    min-height: 80px !important;
+    max-height: 100px !important;
+    overflow-x: auto !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+}
+
+.bottom-modules .drop-zone {
+    min-width: 80px !important;
+    max-width: 120px !important;
+    flex: 1 1 auto !important; /* 동일한 크기로 자동 조정 */
+    height: 78% !important;
+}
+
+/* --- 모듈 버튼 스타일 --- */
+.module-button {
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: white !important;
+    cursor: pointer !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.module-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+.button-icon {
+    font-size: 1.5rem !important;
+    margin-bottom: 4px !important;
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important;
+}
+
+.button-name {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+}
+
+/* --- 하단 버튼 영역만 드롭 영역 효과 적용 --- */
+.bottom-modules .drop-zone {
+    background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+    border-radius: 150px !important;
+    margin: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.bottom-modules .drop-zone:hover {
+    border-color: #578FCA !important;
+    background: linear-gradient(135deg, #f7faff 0%, #e8f4ff 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(87, 143, 202, 0.2) !important;
+}
+
+/* --- 메인 화상회의 영역 - 버튼 효과 제거 --- */
+#grp_video_area {
+    height: 720px !important; /* 하단 높이를 줄였으므로 메인 영역 높이 증가 */
+    position: relative !important;
+    background-color: #202020 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #404040 !important;
+    cursor: default !important;
+    transition: none !important;
+}
+
+#grp_video_area:hover {
+    border-color: #404040 !important;
+    background-color: #202020 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* --- 라벨 스타일 --- */
+#grp_video_area .drop-zone-label {
+    color: #ffffff !important;
+    opacity: 0.7 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+}
+
+.bottom-modules .drop-zone-label {
+    color: #4a5568 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    display: block !important;
+}
+
+/* --- 가로 스크롤바 스타일 (선택사항) --- */
+.bottom-modules::-webkit-scrollbar {
+    height: 6px !important;
+}
+
+.bottom-modules::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 3px !important;
+}
+
+.bottom-modules::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 3px !important;
+}
+
+.bottom-modules::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8 !important;
+}
+]]>
+		</style>
+		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
+		<script src="/InsWebApp/media/dist/app.bundle.js" />
+		<script src="/InsWebApp/media/dist/modules/chat.bundle.js" />
+		<script src="ai_monitoring_stats.js" />
+		<script src="ai_dashboard_controller.js" />
+		<script src="personal_dashboard_controller.js" />
+
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.updateCanvasBackground = function () {
+    if (!scwin.isWhiteboardActive) return;
+
+    const screenSharePeer = Array.from(scwin.remotePeers.values()).find(p => p.isScreenShare);
+    const isScreenShareActive = scwin.localScreenShareElement || screenSharePeer;
+
+    // isCanvasOverlayActive 플래그를 여기서 업데이트 해주는 것이 좋습니다.
+    scwin.isCanvasOverlayActive = !!isScreenShareActive;
+
+    scwin.canvasLayer.classList.toggle('standalone', !isScreenShareActive);
+};
+
+scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
+    // argRuntimeID : 팝업의 실행 시점 아이디
+    // argJsnInfo : 팝업의 부가 정보를 담은 JSON 객체
+    // argJsnInfo.isCloseButtonClick : [true, false] 팝업의 닫기 버튼을 클릭해서 호출되었는지의 여부
+
+    //팝업객체 접근
+    var popObj = $p.getPopupWindow(argRuntimeID);
+    scwin.roomClient.sendPeerStatus(popObj.scwin.time);
+
+    return true; //팝업 닫기 (반환 값이 true인 경우만 팝업이 닫힘)
+};
+
+scwin.throttle = function (callback, delay) {
+    let lastCall = 0;
+    return function () {
+        const now = new Date().getTime();
+        if (now - lastCall >= delay) {
+            lastCall = now;
+            callback();
+        }
+    };
+}
+
+scwin.centerPopup = function (popupId, offsetY = 0) {
+    const pop = $p.getPopup(popupId);
+    if (pop) {
+        const width = pop.popupWin.getSize("width");
+        const height = pop.popupWin.getSize("height");
+        const left1 = (top.window.innerWidth - width) / 2;
+        const top1 = (top.window.innerHeight - height) / 2 + offsetY;
+        pop.popupWin.setPosition(left1, top1);
+    }
+};
+
+scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
+    if ($p.getPopup(_id)) {
+        console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
+        return;
+    }
+    var popupWidth = _popupWidth;
+    var popupHeight = _popupHeight;
+    var topPosition = (window.innerHeight - popupHeight) / 2;
+    var leftPosition = (window.innerWidth - popupWidth) / 2;
+    var options = {
+        id: _id,
+        type: "wframePopup",
+        width: popupWidth + "px",
+        height: popupHeight + "px",
+        top: topPosition + "px",
+        left: leftPosition + "px",
+        popupName: _name,
+        modal: true,
+        closeAction: "scwin.popup_closeAction",
+        dataObject: _jsnData
+    };
+    $p.openPopup(url, options);
+}
+
+scwin.checkAppReady = function () {
+    return new Promise(resolve => {
+        const interval = setInterval(() => {
+            if (window.App && window.App.UIManager && window.App.RoomClient) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 50);
+    });
+};
+
+scwin.updateVideoLayout = function () {
+    const mainStageElements = [];
+    const sidebarElements = [];
+
+    // 해결: screenShareElement를 사용하는 코드보다 먼저 선언합니다.
+    const screenSharePeer = Array.from(scwin.remotePeers.values()).find(p => p.isScreenShare);
+    const screenShareElement = scwin.localScreenShareElement || screenSharePeer?.screenShareElement;
+
+    let mainElement = null;
+
+    if (screenShareElement) {
+        mainElement = screenShareElement;
+    } else if (scwin.pinnedProducerId) {
+        const pinnedPeer = Array.from(scwin.remotePeers.values()).find(p => p.videoProducerId === scwin.pinnedProducerId);
+        if (pinnedPeer) mainElement = pinnedPeer.elementWrapper;
+    } else {
+        // 원격 사용자 중 첫 번째 사용자를 메인으로 (화면 공유가 아닐 때)
+        const firstRemoteVideo = Array.from(scwin.remotePeers.values())
+            .filter(p => p.elementWrapper && !p.isScreenShare)[0];
+
+
+        if (firstRemoteVideo) {
+            mainElement = firstRemoteVideo.elementWrapper;
+        } else if (scwin.myPeerId) {
+            const myPeer = scwin.remotePeers.get(scwin.myPeerId);
+            if (myPeer) mainElement = myPeer.elementWrapper;
+        }
+    }
+
+    // 메인 요소가 결정되면 mainStageElements에 추가
+    if (mainElement) {
+        mainStageElements.push(mainElement);
+    }
+
+    // 2. 모든 peer(로컬 포함)를 순회하며 사이드바 요소 결정
+    Array.from(scwin.remotePeers.values()).forEach(peer => {
+        // 메인에 있지 않은 모든 비디오/로컬 래퍼를 사이드바로 보냄
+        if (peer.elementWrapper && peer.elementWrapper !== mainElement) {
+            sidebarElements.push(peer.elementWrapper);
+        }
+    });
+
+    // 3. 칠판 관련 로직
+    mainStageElements.push(scwin.canvasLayer);
+    if (scwin.isWhiteboardActive && !scwin.isCanvasOverlayActive) {
+        // 칠판 단독 모드일 때 메인에 있는 다른 요소들을 사이드바로 이동
+        const elementsToMove = mainStageElements.filter(el => el !== scwin.canvasLayer);
+        sidebarElements.push(...elementsToMove);
+        mainStageElements.splice(0, mainStageElements.length, scwin.canvasLayer);
+    }
+
+    // 4. UIManager에 최종 목록 전달
+    scwin.uiManager.updateVideoLayout(mainStageElements, sidebarElements);
+};
+
+scwin.onpageload = async function () {
+    // 모듈 상태 추적 변수들...
+    scwin.isMicMuted = false;
+    scwin.isCameraOff = false;
+    scwin.isRecording = false;
+    scwin.openModules = {}; // UI 모듈들 상태 추적
+
+
+    top.window.onresize = scwin.throttle(function () {
+        scwin.centerPopup("drowsinessPopUp", 0);
+        scwin.centerPopup("adfPopUp", 50);
+    }, 200);
+
+    await scwin.checkAppReady();
+    console.log("Application classes are loaded. Application starting...");
+    const { UIManager, RoomClient, loadModule } = window.App;
+    scwin.loadModule = loadModule;
+
+    scwin.uiManager = new UIManager();
+    scwin.roomClient = new RoomClient(scwin.uiManager);
+
+    let aiModule = null;
+    scwin.canvasModule = null;
+    let wsInstance = null;
+    let chatModule = null;
+
+    scwin.pinnedProducerId = null;
+    scwin.localScreenShareElement = null;
+    scwin.remotePeers = new Map();
+    scwin.myPeerId = null; // 자신의 ID를 저장할 변수
+
+    let isAudioEnabled = true;
+    let isVideoEnabled = true; // isVideoEnabled는 RoomClient에서 관리되므로, 여기서는 초기 상태만 설정
+    scwin.isScreenSharing = false;
+    scwin.isWhiteboardActive = false;
+    scwin.isCanvasOverlayActive = false;
+    scwin.isAdmin = false;
+
+    // 해결: 이 변수들을 onpageload 함수의 공용 스코프로 이동합니다.
+    const userHasAiModule = true;
+    const userHasCanvasModule = true;
+    const userHasScreenShareModule = true;
+    const userHasChatModule = true;
+
+    const CANVAS_WEBSOCKET_URL = 'wss://' + location.host + '/InsWebApp/signal.do';
+    const CANVAS_WORKER_URL = '/InsWebApp/js/canvas/canvas-worker.js';
+    const MEDIA_PIPE_WORKER_URL = '/InsWebApp/media/dist/mediapipe.worker.bundle.js';
+
+    //const mainStage = scwin.uiManager.getMainStageContainer();
+    // 메인 스테이지 참조를 WebSquare ID로 변경
+    const mainStage = document.getElementById('mf_grp_video_area');
+
+    // 1. 칠판 레이어(canvasLayer)를 생성하고 모든 레이어 스타일을 적용
+    scwin.canvasLayer = document.createElement("div");
+    scwin.canvasLayer.id = "canvasLayer";
+    scwin.canvasLayer.className = "main-stage-layer canvas-layer";
+    scwin.canvasLayer.style.display = 'none';
+    scwin.canvasLayer.style.position = 'absolute';
+    scwin.canvasLayer.style.top = '0';
+    scwin.canvasLayer.style.left = '0';
+    scwin.canvasLayer.style.width = '100%';
+    scwin.canvasLayer.style.height = '100%';
+    scwin.canvasLayer.style.zIndex = '10';
+    scwin.canvasLayer.style.overflow = 'hidden';
+
+    // 2. CanvasModule이 사용할 내부 컨테이너를 별도로 생성
+    const canvasModuleContainer = document.createElement("div");
+    canvasModuleContainer.style.width = "100%";
+    canvasModuleContainer.style.height = "100%";
+    scwin.canvasLayer.appendChild(canvasModuleContainer); // 칠판 레이어 안에 추가
+    mainStage.appendChild(scwin.canvasLayer);
+
+    try {
+        let CanvasModule = await scwin.loadModule("/InsWebApp/media/dist/modules/canvas.bundle.js", "CanvasModule");
+        if (CanvasModule && !CanvasModule.prototype) {
+            CanvasModule = CanvasModule.CanvasModule || CanvasModule.default;
+        }
+        // 해결: 새로 만든 내부 컨테이너를 전달합니다.
+        scwin.canvasModule = new CanvasModule(canvasModuleContainer, CANVAS_WEBSOCKET_URL, CANVAS_WORKER_URL);
+    } catch (e) {
+        console.error("초기 CanvasModule 로드 실패:", e);
+    }
+
+    scwin.roomClient.on("connected", (ws) => {
+        wsInstance = ws;
+        if (userHasCanvasModule) {
+            // UIManager 화이트보드 버튼이 존재할 때만 표시
+            if (scwin.uiManager && scwin.uiManager.showWhiteboardButton) {
+                scwin.uiManager.showWhiteboardButton();
+            }
+        }
+
+        if (userHasChatModule) {
+            // 채팅 기능은 모듈 버튼 시스템으로 처리됨
+            console.log("채팅 기능은 모듈 버튼으로 제공됩니다.");
+        }
+
+        // 모든 사용자에게 개인 대시보드 초기화 (관리자 여부와 상관없이)
+        if (window.PersonalDashboardController) {
+            setTimeout(() => {
+                const currentUserId = scwin.myPeerId || roomClient.peerId || 'local-user';
+                window.PersonalDashboardController.init(currentUserId);
+                console.log('[Personal Dashboard] 개인 대시보드 사전 초기화:', currentUserId);
+            }, 2000); // 시간을 늘려서 peerId 설정을 기다림
+        }
+
+        // AI 모니터링 통계를 위한 WebSocket 메시지 가로채기
+        const originalSend = ws.send;
+        ws.send = function (data) {
+            try {
+                const message = JSON.parse(data);
+                // peerStatusUpdated 이벤트를 감지하여 통계 업데이트
+                if (message.action === 'peerStatusUpdated' && message.data) {
+                    const { peerId, status } = message.data;
+                    if (peerId && status && window.aiMonitoringStats) {
+                        window.aiMonitoringStats.updateParticipantStatus(peerId, status);
+                        console.log('[AI Stats] 로컬 상태 업데이트:', peerId, status);
+                    }
+                }
+            } catch (e) {
+                // JSON 파싱 실패 시 무시
+            }
+            return originalSend.call(this, data);
+        };
+
+        // WebSocket 수신 메시지도 가로채기 (다른 참여자들의 상태 업데이트)
+        ws.addEventListener('message', function (event) {
+            try {
+                const message = JSON.parse(event.data);
+                if (message.action === 'peerStatusUpdated' && message.data) {
+                    const { peerId, status } = message.data;
+                    if (peerId && status && window.aiMonitoringStats) {
+                        // 참여자 이름을 remotePeers에서 찾거나 기본값 사용
+                        let peerName = `참여자_${peerId.slice(-4)}`;
+                        if (scwin.remotePeers && scwin.remotePeers.has(peerId)) {
+                            // 실제 참여자 정보가 있다면 더 나은 이름 사용
+                            peerName = `참여자_${peerId.slice(-4)}`;
+                        }
+
+                        window.aiMonitoringStats.initializeParticipant(peerId, peerName);
+                        window.aiMonitoringStats.updateParticipantStatus(peerId, status);
+                        console.log('[AI Stats] 원격 상태 업데이트:', peerId, status);
+                    }
+                }
+            } catch (e) {
+                // JSON 파싱 실패 시 무시
+            }
+        });
+    });
+
+    scwin.roomClient.on("canvas", (data) => {
+        if (data.type === "activate") {
+            scwin.isWhiteboardActive = true;
+            scwin.canvasLayer.style.display = 'block';
+            
+            // 화이트보드 버튼 상태 업데이트
+            scwin.updateModuleButtonState('WHITEBOARD', true, {
+                activeText: '칠판 사용중',
+                inactiveText: '칠판',
+                activeColor: '#27ae60',
+                inactiveColor: '#667eea'
+            });
+            
+            //scwin.uiManager.whiteboardButton.textContent = "칠판 끄기";
+        } else if (data.type === "deactivate") {
+            scwin.isWhiteboardActive = false;
+            scwin.canvasLayer.style.display = 'none';
+            
+            // 화이트보드 버튼 상태 업데이트
+            scwin.updateModuleButtonState('WHITEBOARD', false, {
+                activeText: '칠판 사용중',
+                inactiveText: '칠판',
+                activeColor: '#27ae60',
+                inactiveColor: '#667eea'
+            });
+            
+            //scwin.uiManager.whiteboardButton.textContent = "칠판";
+        } else if (scwin.canvasModule) {
+            scwin.canvasModule.signal(data);
+        }
+        // 칠판이 켜지거나 꺼질 때마다 배경 상태와 비디오 레이아웃을 업데이트합니다.
+        // 순서 변경: 배경 상태를 먼저 업데이트
+        scwin.updateCanvasBackground();
+        scwin.updateVideoLayout();
+    });
+
+    scwin.roomClient.on("adminStatus", ({ isAdmin, peerId }) => {
+
+        scwin.isAdmin = isAdmin;
+        scwin.myPeerId = peerId; // 서버가 알려준 나의 고유 ID 저장
+
+        if (scwin.isAdmin) {
+            if (scwin.uiManager.whiteboardButton) {
+            scwin.uiManager.whiteboardButton.onclick = () => {
+                const activate = !scwin.isWhiteboardActive;
+                wsInstance.send(JSON.stringify({ action: "canvas", data: { type: activate ? "activate" : "deactivate" } }));
+            };
+            };
+            // 화면 공유 버튼 로직은 그대로 유지
+            scwin.uiManager.enableScreenSharing(() => {
+                if (scwin.isScreenSharing) scwin.roomClient.stopScreenShare();
+                else scwin.roomClient.startScreenShare();
+            });
+
+            // 관리자용 AI 모니터링 대시보드 초기화만 (고정 버튼은 생성하지 않음)
+            if (window.AIDashboardController) {
+                window.AIDashboardController.init();
+                console.log('[AI Dashboard] 관리자 대시보드 초기화 완료 (모듈 버튼으로만 사용)');
+            }
+        } else {
+            // 일반 사용자용
+            if (scwin.uiManager && scwin.uiManager.hideWhiteboardButton) {
+                scwin.uiManager.hideWhiteboardButton();
+            }
+            if (scwin.uiManager && scwin.uiManager.disableScreenSharing) {
+                scwin.uiManager.disableScreenSharing();
+            }
+
+            // 개인 대시보드 초기화만 (고정 버튼은 생성하지 않음)
+            // 모든 사용자에게 이미 초기화되어 있으므로 추가 처리 불필요
+            console.log('[Personal Dashboard] 개인 대시보드는 모듈 버튼으로만 사용');
+        }
+    });
+
+    scwin.roomClient.on("screenShareState", ({ isSharing }) => {
+        scwin.isScreenSharing = isSharing;
+        
+        // 화면공유 버튼 상태 업데이트
+        scwin.updateModuleButtonState('SCREEN', scwin.isScreenSharing, {
+            activeText: '공유 중',
+            inactiveText: '화면공유',
+            activeColor: '#e74c3c',
+            inactiveColor: '#667eea'
+        });
+        
+        //scwin.uiManager.screenShareButton.textContent = isSharing ? "공유 중지" : "화면 공유";
+        // 화면공유 시작시에만 칠판 지우기
+        isSharing ? scwin.canvasModule.clear() : "";
+
+        // 순서 변경: 배경 상태를 먼저 업데이트
+        scwin.updateCanvasBackground();
+        scwin.updateVideoLayout();
+    });
+
+    scwin.roomClient.on("controlsReady", () => {
+        if (scwin.uiManager && scwin.uiManager.enableControls) {
+            scwin.uiManager.enableControls();
+        }
+        
+        if (scwin.uiManager && scwin.uiManager.cameraOffButton) {
+            scwin.uiManager.cameraOffButton.onclick = () => {
+                isVideoEnabled = !isVideoEnabled;
+                scwin.roomClient.setVideoEnabled(isVideoEnabled);
+                if (scwin.uiManager && scwin.uiManager.updateCameraButton) {
+                    scwin.uiManager.updateCameraButton(isVideoEnabled);
+                }
+            };
+        }
+        
+        if (scwin.uiManager && scwin.uiManager.muteButton) {
+            scwin.uiManager.muteButton.onclick = () => {
+                isAudioEnabled = !isAudioEnabled;
+                scwin.roomClient.setAudioEnabled(isAudioEnabled);
+                if (scwin.uiManager && scwin.uiManager.updateMuteButton) {
+                    scwin.uiManager.updateMuteButton(isAudioEnabled);
+                }
+            };
+        }
+
+        // 대시보드 컨트롤러들은 이미 초기화되어 있으므로 추가 버튼 생성 불필요
+        // 모든 대시보드 기능은 모듈 버튼을 통해서만 사용
+    });
+
+    // RoomClient에서 로컬 비디오 상태 변경 이벤트를 수신하여 UIManager에 전달
+    scwin.roomClient.on("localVideoStateChanged", (isEnabled) => {
+        const myPeer = scwin.remotePeers.get(scwin.myPeerId);
+        if (myPeer && myPeer.elementWrapper) {
+            myPeer.elementWrapper.classList.toggle('video-paused', !isEnabled);
+        }
+    });
+
+    scwin.roomClient.on("localStreamReady", (videoElement) => {
+        if (!scwin.myPeerId) {
+            console.error("My Peer ID is not set yet!");
+            return;
+        }
+
+        const elementWrapper = document.createElement('div');
+        elementWrapper.id = `peer-container-${scwin.myPeerId}`; // ID 명확화
+
+
+        // WebSquare 영역에 직접 삽입되도록 보장
+        const videoContainer = document.getElementById('mf_grp_video_area');
+        if (videoContainer && elementWrapper) {
+            // 라벨 뒤에 배치되도록 z-index 설정
+            elementWrapper.style.zIndex = '2';
+            elementWrapper.style.position = 'absolute';
+            elementWrapper.style.top = '0';
+            elementWrapper.style.left = '0';
+            elementWrapper.style.width = '100%';
+            elementWrapper.style.height = '100%';
+        }
+
+        const sidebarArea = document.getElementById('mf_group8');
+        if (sidebarArea) {
+            sidebarArea.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        overflow-y: auto;
+        height: 100%;
+    `;
+        }
+
+        // 윈도우 리사이즈 이벤트에 추가
+        window.addEventListener('resize', () => {
+            const videoElements = document.querySelectorAll('#mf_grp_video_area video');
+            videoElements.forEach(video => {
+                // 비디오 크기 재조정 로직
+                video.style.objectFit = 'cover';
+            });
+        });
+
+        // AI 렌더링을 위한 캔버스 생성
+        const canvasEl = document.createElement("canvas");
+        canvasEl.style.cssText = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;";
+
+        elementWrapper.appendChild(videoElement);
+        elementWrapper.appendChild(canvasEl);
+
+        // UIManager에 로컬 비디오와 캔버스 요소 전달
+        scwin.uiManager.setLocalMediaElements(videoElement, canvasEl);
+
+        // 자기 자신을 remotePeers 맵에 추가
+        scwin.remotePeers.set(scwin.myPeerId, {
+            videoProducerId: null, // 나중에 채워짐
+            audioProducerId: null, // 나중에 채워짐
+            elementWrapper: elementWrapper,
+            isLocal: true // 로컬 사용자임을 표시
+        });
+
+        if (userHasAiModule) {
+            try {
+                scwin.loadModule(
+                    "/InsWebApp/media/dist/modules/mediapipe.bundle.js",
+                    "MediaPipeModule"
+                ).then(MediaPipeModule => {
+                    if (MediaPipeModule && !MediaPipeModule.prototype) {
+                        MediaPipeModule = MediaPipeModule.MediaPipeModule || MediaPipeModule.default;
+                    }
+                    aiModule = new MediaPipeModule(videoElement, MEDIA_PIPE_WORKER_URL);
+                    console.log("AI Module will be initialized.");
+
+                    if (aiModule) aiModule.start();
+
+                    aiModule.on("landmarksUpdate", (landmarks) => {
+                        scwin.uiManager.drawFaceMesh(landmarks);
+                    });
+
+                    aiModule.on("drowsinessDetected", (data) => {
+                        console.log("Event: drowsinessUpdate -> Sending status to server.");
+                        scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml", 400, 425);
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleDrowsinessDetected();
+                        }
+                    });
+                    aiModule.on("drowsinessResolved", (data) => {
+                        console.log("Event: drowsinessUpdate -> Sending status to server.");
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleDrowsinessResolved();
+                        }
+                    });
+
+                    aiModule.on("absenceStarted", (data) => {
+                        console.log(" Event: absenceStarted -> Sending status to server.");
+                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleAbsenceDetected();
+                        }
+                    });
+                    aiModule.on("absenceEnded", (data) => {
+                        console.log(" Event: absenceEnded -> Sending status to server.");
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleAbsenceResolved();
+                        }
+                    });
+
+                    aiModule.on("error", (error) => {
+                        console.error(" AI Module Error:", error);
+                    });
+                });
+            } catch (error) {
+                console.error("Failed to load MediaPipeModule:", error);
+            }
+        }
+
+        scwin.updateVideoLayout();
+    });
+    // 로컬 프로듀서 생성 시 producerId 업데이트
+    scwin.roomClient.on('producer-created', ({ kind, producerId }) => {
+        const myPeer = scwin.remotePeers.get(scwin.myPeerId);
+        if (myPeer) {
+            if (kind === 'video') myPeer.videoProducerId = producerId;
+            if (kind === 'audio') myPeer.audioProducerId = producerId;
+        }
+    });
+
+    scwin.roomClient.on("new-consumer", async (consumer) => {
+        const { track, producerId, appData } = consumer;
+        const peerId = appData.peerId;
+        if (!peerId) return;
+
+        let peer = scwin.remotePeers.get(peerId);
+        if (!peer) {
+            // 화면 공유 속성 추가
+            peer = {
+                videoProducerId: null,
+                audioProducerId: null,
+                screenShareProducerId: null, // 추가
+                elementWrapper: null,
+                audioElement: null,
+                screenShareElement: null, // 추가
+                isScreenShare: false,
+                isLocal: false // 원격 사용자
+            };
+            scwin.remotePeers.set(peerId, peer);
+
+            // AI 통계 시스템에 새 참여자 초기화
+            if (window.aiMonitoringStats) {
+                const peerName = `참여자_${peerId.slice(-4)}`;
+                window.aiMonitoringStats.initializeParticipant(peerId, peerName);
+                console.log('[AI Stats] 새 참여자 초기화:', peerId, peerName);
+            }
+        }
+
+        if (appData && appData.source === 'screen') {
+            peer.isScreenShare = true;
+            // 카메라와 분리된 전용 속성에 ID 저장
+            peer.screenShareProducerId = producerId;
+
+            const elementWrapper = document.createElement("div");
+            elementWrapper.id = `remote-screen-${producerId}`;
+            const videoEl = document.createElement(track.kind);
+            videoEl.srcObject = new MediaStream([track]);
+            videoEl.autoplay = true;
+            videoEl.playsInline = true;
+            elementWrapper.appendChild(videoEl);
+
+            // 전용 속성에 DOM 요소 저장
+            peer.screenShareElement = elementWrapper;
+
+            if (peerId === scwin.myPeerId) {
+                // 관리자의 경우 localScreenShareElement도 세팅 (필요 시)
+                scwin.localScreenShareElement = elementWrapper;
+            }
+            scwin.updateCanvasBackground();
+        } else if (track.kind === 'video') {
+            peer.videoProducerId = producerId;
+
+            if (!peer.elementWrapper) {
+                const elementWrapper = document.createElement('div');
+                elementWrapper.id = `remote-peer-${peerId}`;
+                elementWrapper.onclick = () => {
+                    if (scwin.isScreenSharing || scwin.isWhiteboardActive) {
+                        alert("화면 공유 또는 칠판이 활성화된 중에는 다른 화면을 고정할 수 없습니다.");
+                        return;
+                    }
+                    scwin.pinnedProducerId = (scwin.pinnedProducerId === peer.videoProducerId) ? null : peer.videoProducerId;
+                    scwin.updateVideoLayout();
+                };
+                peer.elementWrapper = elementWrapper;
+            }
+
+            const videoEl = document.createElement('video');
+            videoEl.srcObject = new MediaStream([track]);
+            videoEl.autoplay = true;
+            videoEl.playsInline = true;
+            peer.elementWrapper.appendChild(videoEl);
+
+        } else if (track.kind === 'audio') {
+            peer.audioProducerId = producerId;
+            const audioEl = document.createElement('audio');
+            audioEl.id = `remote-audio-${producerId}`;
+            audioEl.srcObject = new MediaStream([track]);
+            audioEl.autoplay = true;
+            document.body.appendChild(audioEl);
+            peer.audioElement = audioEl;
+        }
+        scwin.updateVideoLayout();
+    });
+
+    scwin.roomClient.on("producer-closed", ({ producerId, isScreenShareProducer, isLocalVideoProducer, peerId }) => {
+        if (peerId) {
+            const peer = scwin.remotePeers.get(peerId);
+            if (peer) {
+                // 화면 공유 스트림 종료 처리
+                if (peer.screenShareProducerId === producerId) {
+                    if (peer.screenShareElement) {
+                        peer.screenShareElement.remove();
+                        peer.screenShareElement = null;
+                    }
+                    peer.screenShareProducerId = null;
+                    peer.isScreenShare = false; // 상태 플래그도 초기화
+                }
+                // 카메라 스트림 종료 처리 (기존 로직 유지)
+                if (peer.videoProducerId === producerId) {
+                    if (peer.elementWrapper) {
+                        peer.elementWrapper.remove();
+                        peer.elementWrapper = null;
+                    }
+                    peer.videoProducerId = null;
+                }
+                // 오디오 처리 로직
+                if (peer.audioProducerId === producerId) {
+                    if (peer.audioElement) {
+                        peer.audioElement.remove();
+                        peer.audioElement = null;
+                    }
+                    peer.audioProducerId = null;
+                }
+
+                // 참여자의 모든 스트림이 종료되었을 때 완전히 제거
+                if (!peer.videoProducerId && !peer.audioProducerId && !peer.screenShareProducerId) {
+                    scwin.remotePeers.delete(peerId);
+
+                    // AI 통계 시스템에서도 참여자 제거는 하지 않음 (통계 유지를 위해)
+                    // 대신 마지막 상태를 자리비움으로 설정
+                    if (window.aiMonitoringStats) {
+                        window.aiMonitoringStats.updateParticipantStatus(peerId, { isPresent: false });
+                        console.log('[AI Stats] 참여자 연결 종료:', peerId);
+                    }
+                }
+            }
+        }
+
+        if (isScreenShareProducer) {
+            // 로컬 화면 공유가 닫혔을 때 처리
+            if (scwin.localScreenShareElement && isLocalVideoProducer) { // isLocalVideoProducer는 로컬 비디오 프로듀서가 닫혔을 때 true
+                scwin.localScreenShareElement.remove();
+                scwin.localScreenShareElement = null;
+            }
+            scwin.updateCanvasBackground();
+        }
+
+        if (scwin.pinnedProducerId === producerId) {
+            scwin.pinnedProducerId = null;
+        }
+        scwin.updateVideoLayout();
+    });
+
+    scwin.roomClient.on("local-screen-share-started", (track) => {
+        const screenShareWrapper = document.createElement("div");
+        screenShareWrapper.id = "local-screen-share-wrapper";
+        const element = document.createElement(track.kind);
+        element.srcObject = new MediaStream([track]);
+        element.muted = true;
+        element.autoplay = true;
+        element.playsInline = true;
+        screenShareWrapper.appendChild(element);
+
+        scwin.localScreenShareElement = screenShareWrapper;
+
+        scwin.updateCanvasBackground();
+        scwin.updateVideoLayout();
+    });
+
+    scwin.roomClient.on("local-screen-share-stopped", () => {
+        if (scwin.localScreenShareElement) {
+            scwin.localScreenShareElement.remove();
+            scwin.localScreenShareElement = null;
+        }
+        scwin.updateVideoLayout();
+    });
+
+    // --- 원격 사용자의 비디오/오디오 상태 변경 처리 ---
+    scwin.roomClient.on("remote-producer-pause", ({ producerId }) => {
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.videoProducerId === producerId) {
+                scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true);
+                break;
+            }
+        }
+    });
+
+    scwin.roomClient.on("remote-producer-resume", ({ producerId }) => {
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.videoProducerId === producerId) {
+                scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, false);
+                break;
+            }
+        }
+    });
+
+    scwin.roomClient.on("remote-audio-pause", ({ producerId }) => {
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.audioProducerId === producerId) {
+                scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, true);
+                break;
+            }
+        }
+    });
+
+    scwin.roomClient.on("remote-audio-resume", ({ producerId }) => {
+        for (const peer of scwin.remotePeers.values()) {
+            if (peer.audioProducerId === producerId) {
+                scwin.uiManager.updateRemoteAudioStatus(peer.elementWrapper, false);
+                break;
+            }
+        }
+    });
+
+    // 1. URL 파라미터에서 sessionId 먼저 확인
+    sessionId = $p.getParameter("sessionId");
+    console.log('URL 파라미터 sessionId:', sessionId);
+    
+    // 2. URL 파라미터가 없으면 localStorage에서 확인 (세션 생성자용)
+    if (!sessionId) {
+        sessionId = localStorage.getItem('currentSessionId');
+        console.log('localStorage sessionId:', sessionId);
+    }
+
+    // 3. sessionId가 있으면 currentSessionId에 저장하고 모듈 로드
+    if (sessionId) {
+        scwin.currentSessionId = sessionId;
+        console.log('현재 sessionId 설정:', scwin.currentSessionId);
+        // 페이지 로드 완료 후 모듈 로드
+        setTimeout(function() {
+            scwin.loadSessionModules(sessionId);
+        }, 1000);
+    } else {
+        console.log("세션 정보를 찾을 수 없습니다.");
+    }
+
+    const roomId = `${sessionId}`;
+    const userName = "test1";
+    const userEmail = "test1@test.com"
+    const tenantId = "2"
+
+    console.log(">>>>>>>>>>>>>>>>>", roomId);
+
+    scwin.roomClient.join(roomId, userName, userEmail, tenantId);
+
+    // 로컬 사용자를 AI 통계 시스템에 초기화
+    if (window.aiMonitoringStats) {
+        // roomClient.join() 후 peerId가 설정되기를 기다림
+        setTimeout(() => {
+            const localPeerId = scwin.roomClient.peerId || 'local-user';
+            scwin.myPeerId = localPeerId; // 전역 변수에 저장
+            window.aiMonitoringStats.initializeParticipant(localPeerId, '관리자(나)');
+            console.log('[AI Stats] 로컬 사용자 초기화:', localPeerId);
+        }, 1000);
+    }
+
+    // 하단 모듈 영역 레이아웃 조정 함수
+scwin.adjustBottomModulesLayout = function() {
+    var bottomModulesContainer = document.getElementById('group11');
+    if (!bottomModulesContainer) return;
+    
+    var visibleModules = 0;
+    
+    // 표시된 모듈 개수 세기 (module-area-visible 클래스가 있는 것들)
+    for (var i = 12; i <= 26; i++) {
+        var areaElement = document.getElementById('group' + i);
+        if (areaElement && areaElement.classList.contains('module-area-visible')) {
+            visibleModules++;
+        }
+    }
+    
+    console.log('표시된 모듈 개수:', visibleModules);
+    
+    // 모듈이 없으면 하단 영역 자체를 숨김
+    if (visibleModules === 0) {
+        bottomModulesContainer.style.display = 'none';
+        
+        // 메인 비디오 영역 높이를 늘려서 하단 공간을 채움
+        var videoArea = document.getElementById('mf_grp_video_area');
+        if (videoArea) {
+            videoArea.style.height = '800px';
+        }
+    } else {
+        bottomModulesContainer.style.display = 'flex';
+        
+        // 메인 비디오 영역 높이를 원래대로 복구
+        var videoArea = document.getElementById('mf_grp_video_area');
+        if (videoArea) {
+            videoArea.style.height = '720px';
+        }
+    }
+};
+
+    // 테스트용 상태 업데이트 함수
+    window.testAIStatus = function () {
+        if (!window.aiMonitoringStats) {
+            console.log('AI 통계 시스템이 없습니다.');
+            return;
+        }
+
+        const localUserId = scwin.myPeerId || 'local-user';
+        console.log('테스트용 AI 상태 업데이트:', localUserId);
+
+        // 자리비움 상태 시뮬레이션
+        window.aiMonitoringStats.updateParticipantStatus(localUserId, { isPresent: false });
+
+        setTimeout(() => {
+            window.aiMonitoringStats.updateParticipantStatus(localUserId, { isPresent: true });
+        }, 2000);
+
+        setTimeout(() => {
+            window.aiMonitoringStats.updateParticipantStatus(localUserId, { isDrowsy: true });
+        }, 4000);
+
+        setTimeout(() => {
+            window.aiMonitoringStats.updateParticipantStatus(localUserId, { isDrowsy: false });
+        }, 6000);
+    };
+
+    // 모든 대시보드 기능은 모듈 버튼 시스템으로 통합되었습니다.
+
+    // 채팅 버튼 처리는 모듈 버튼 시스템으로 대체
+    // 기존 UIManager의 chatButton 로직은 비활성화
+
+    // 세션 모듈 로드 추가 (마지막 부분에)
+    // setTimeout(function () {
+    //     // URL 파라미터나 localStorage에서 sessionId 받기
+    //     var sessionId;
+
+    //     // localStorage에서 받기
+    //     if (!sessionId) {
+    //         try {
+    //             sessionId = localStorage.getItem('currentSessionId');
+    //             console.log('전달받은 sessionId: ', sessionId);
+    //         } catch (e) {
+    //             console.log('세션 아이디를 넘겨받지 못했습니다.');
+    //         }
+    //     }
+
+    //     if (sessionId) {
+    //         scwin.currentSessionId = sessionId;
+    //         scwin.loadSessionModules(sessionId);
+    //     } else {
+    //         console.log("세션 정보를 찾을 수 없습니다. 예시 버튼을 생성합니다.");
+    //         scwin.createExampleButtons(); // 기존 예시 버튼 생성
+    //     }
+    // }, 2000); // 페이지 로드 후 2초 대기
+};
+
+//------------------------모듈 배치 스크립트--------------------//
+
+// 모듈 데이터 로드 함수
+scwin.loadSessionModules = function (sessionId) {
+    console.log("세션 모듈 로드 시작:", sessionId);
+    dma_sessionRequest.set("sessionId", sessionId);
+    $p.executeSubmission("sbm_getSessionModuleDetails");
+};
+
+// 서브미션 성공 콜백
+scwin.sbm_getSessionModuleDetails_submitdone = function (e) {
+    console.log("서브미션 성공:", e);
+
+    if (e && e.responseJSON && e.responseJSON.elData) {
+        var sessionModuleList = e.responseJSON.elData.sessionModuleDetailVoList;
+
+        if (sessionModuleList && sessionModuleList.length > 0) {
+            console.log("받은 모듈 데이터:", sessionModuleList);
+            scwin.createModuleButtons(sessionModuleList);
+        } else {
+            console.log("사용 가능한 모듈이 없습니다. 예시 버튼을 생성합니다.");
+            scwin.createExampleButtons();
+        }
+    } else {
+        console.log("응답 데이터가 올바르지 않습니다. 예시 버튼을 생성합니다.");
+        scwin.createExampleButtons();
+    }
+};
+
+// 서브미션 실패 콜백
+scwin.sbm_getSessionModuleDetails_submiterror = function (e) {
+    console.error("모듈 목록 로드 실패:", e);
+    alert("모듈 목록을 불러오는데 실패했습니다. 예시 버튼을 표시합니다.");
+    scwin.createExampleButtons();
+};
+
+// 영역 ID 매핑 함수 (완전히 교체)
+scwin.mapAreaId = function (originalAreaId) {
+    console.log("원본 영역 ID:", originalAreaId);
+
+    // 다양한 형태의 ID 처리
+    var areaNumber = null;
+
+    // area id가 mf_contentFrame_fr_session_making_process_grp_areaXX 형태
+    if (originalAreaId.includes('grp_area')) {
+        var match = originalAreaId.match(/grp_area(\d+)/);
+        if (match) {
+            areaNumber = parseInt(match[1]);
+        }
+    }
+
+    console.log("추출된 영역 번호:", areaNumber);
+
+    // session_room3.xml의 실제 ID로 매핑
+    if (areaNumber && areaNumber >= 3 && areaNumber <= 14) {
+        var mappedId = 'mf_group' + (areaNumber + 9);
+        console.log("매핑된 ID:", originalAreaId, "->", mappedId);
+        return mappedId;
+    }
+
+    console.log("매핑 실패, 원본 ID 반환:", originalAreaId);
+    return originalAreaId;
+};
+
+// 서버에서 받은 데이터로 모듈 버튼 생성 (수정)
+scwin.createModuleButtons = function (sessionModules) {
+    console.log("모듈 버튼 생성 시작:", sessionModules);
+
+    scwin.clearAllButtonAreas();
+
+    sessionModules.forEach(function (sessionModule) {
+        try {
+            var config = JSON.parse(sessionModule.sessionModuleConfig);
+            var originalAreaId = config.area;
+            var mappedAreaId = scwin.mapAreaId(originalAreaId);
+
+            console.log("모듈 처리:", sessionModule.name, "원본:", originalAreaId, "매핑:", mappedAreaId);
+
+            var moduleInfo = {
+                moduleId: sessionModule.moduleId,
+                code: sessionModule.code,
+                name: sessionModule.name,
+                description: sessionModule.description,
+                icon: sessionModule.icon,
+                type: scwin.getModuleType(sessionModule.code)
+            };
+
+            scwin.createModuleButton(mappedAreaId, moduleInfo);
+        } catch (e) {
+            console.error("모듈 생성 실패:", sessionModule.name, e);
+        }
+    });
+
+    console.log("모듈 버튼 생성 완료");
+};
+
+// 모듈 타입 결정 함수
+scwin.getModuleType = function (moduleCode) {
+    var uiModules = ['CHAT', 'DOCUMENT', 'SIGNATURE', 'FILE', 'CALENDAR', 'SCREEN_VIEW', 'PARTICIPANTS', 'FACEAI'];
+    var actionModules = ['MIC', 'CAMERA', 'SCREEN', 'RECORD', 'LEAVE'];
+
+    if (uiModules.indexOf(moduleCode) !== -1) {
+        return 'UI_MODULE';
+    } else if (actionModules.indexOf(moduleCode) !== -1) {
+        return 'ACTION_MODULE';
+    } else {
+        return 'UI_MODULE';
+    }
+};
+
+// 서버에서 받은 데이터로 모듈 버튼 생성
+scwin.createModuleButtons = function (sessionModules) {
+    console.log("모듈 버튼 생성 시작:", sessionModules);
+
+    scwin.clearAllButtonAreas();
+
+    sessionModules.forEach(function (sessionModule) {
+        var config = JSON.parse(sessionModule.sessionModuleConfig);
+        var originalAreaId = config.area;
+        var mappedAreaId = scwin.mapAreaId(originalAreaId);
+
+        var moduleInfo = {
+            moduleId: sessionModule.moduleId,
+            code: sessionModule.code,
+            name: sessionModule.name,
+            description: sessionModule.description,
+            icon: sessionModule.icon,
+            type: scwin.getModuleType(sessionModule.code)
+        };
+
+        scwin.createModuleButton(mappedAreaId, moduleInfo);
+    });
+
+    console.log("모듈 버튼 생성 완료");
+};
+
+// 모든 버튼 영역 초기화
+scwin.clearAllButtonAreas = function () {
+    for (var i = 12; i <= 26; i++) { // group12~26까지
+        var areaId = "mf_group" + i;
+        var areaElement = document.getElementById(areaId);
+
+        if (areaElement) {
+            // 부모 요소에서 완전히 제거
+            areaElement.remove();
+        }
+    }
+};
+
+// 개별 모듈 버튼 생성
+scwin.createModuleButton = function (areaId, moduleInfo) {
+    var areaElement = document.getElementById(areaId);
+    
+    // 요소가 없다면 새로 생성
+    if (!areaElement) {
+        // 부모 컨테이너 찾기
+        var parentContainer = document.getElementById('mf_group11');
+        if (!parentContainer) {
+            console.log("부모 컨테이너를 찾을 수 없습니다: mf_group11");
+            return;
+        }
+        
+        // 새 영역 생성
+        areaElement = document.createElement('xf:group');
+        areaElement.id = areaId;
+        areaElement.className = 'drop-zone neon-border';
+        parentContainer.appendChild(areaElement);
+    }
+
+    console.log("모듈 버튼 생성:", areaId, moduleInfo);
+
+    areaElement.innerHTML = '';
+    areaElement.style.display = 'flex';
+
+    var buttonElement = document.createElement('button');
+    buttonElement.className = 'module-button';
+    buttonElement.innerHTML = '<div class="button-icon">' + moduleInfo.icon + '</div>' +
+        '<div class="button-name">' + moduleInfo.name + '</div>';
+
+    buttonElement.addEventListener('click', function () {
+        scwin.handleModuleButtonClick(moduleInfo);
+    });
+
+    buttonElement.setAttribute('data-module-code', moduleInfo.code);
+
+    buttonElement.addEventListener('mouseenter', function () {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+    });
+
+    buttonElement.addEventListener('mouseleave', function () {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+    });
+
+    areaElement.appendChild(buttonElement);
+    areaElement.dataset.moduleInfo = JSON.stringify(moduleInfo);
+
+    console.log("모듈 버튼 생성 완료:", areaId, moduleInfo.name);
+};
+
+scwin.handleModuleButtonClick = function(moduleInfo) {
+    console.log("모듈 버튼 클릭:", moduleInfo);
+    
+    if (moduleInfo.type === 'ACTION_MODULE') {
+        scwin.executeActionModule(moduleInfo);
+    } else if (moduleInfo.type === 'UI_MODULE') {
+        scwin.executeUIModule(moduleInfo);
+    }
+};
+
+scwin.executeActionModule = function(moduleInfo) {
+    if (!scwin.roomClient) {
+        console.error("RoomClient가 준비되지 않았습니다.");
+        alert("시스템이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+        return;
+    }
+    
+    switch(moduleInfo.code) {
+        case 'MIC':
+            scwin.handleMicToggle(moduleInfo);
+            break;
+        case 'CAMERA':
+            scwin.handleCameraToggle(moduleInfo);
+            break;
+        case 'SCREEN':
+            scwin.handleScreenShare(moduleInfo);
+            break;
+        case 'LEAVE':
+            scwin.handleLeaveSession(moduleInfo);
+            break;
+        default:
+            alert('준비 중인 기능입니다: ' + moduleInfo.name);
+    }
+};
+
+// 마이크 토글
+scwin.handleMicToggle = function(moduleInfo) {
+    scwin.isMicMuted = !scwin.isMicMuted;
+    scwin.roomClient.setAudioEnabled(!scwin.isMicMuted);
+    
+    scwin.updateModuleButtonState(moduleInfo.code, scwin.isMicMuted, {
+        activeText: '음소거 중',
+        inactiveText: '마이크',
+        activeColor: '#e74c3c',
+        inactiveColor: '#667eea'
+    });
+    
+    console.log("마이크 상태:", scwin.isMicMuted ? "음소거" : "켜짐");
+};
+
+// 카메라 토글
+scwin.handleCameraToggle = function(moduleInfo) {
+    scwin.isCameraOff = !scwin.isCameraOff;
+    scwin.roomClient.setVideoEnabled(!scwin.isCameraOff);
+    
+    scwin.updateModuleButtonState(moduleInfo.code, scwin.isCameraOff, {
+        activeText: '카메라 꺼짐',
+        inactiveText: '카메라',
+        activeColor: '#e74c3c',
+        inactiveColor: '#667eea'
+    });
+    
+    console.log("카메라 상태:", scwin.isCameraOff ? "꺼짐" : "켜짐");
+};
+
+// 화면공유 (기존 로직 활용)
+scwin.handleScreenShare = function(moduleInfo) {
+    if (!scwin.isAdmin) {
+        alert("화면 공유는 관리자만 사용할 수 있습니다.");
+        return;
+    }
+    
+    if (scwin.isScreenSharing) {
+        scwin.roomClient.stopScreenShare();
+    } else {
+        scwin.roomClient.startScreenShare();
+    }
+    // 상태 업데이트는 기존 이벤트 리스너에서 처리됨
+};
+
+// 세션 나가기 -- 일단 임시로 구현해놓음.... -> 재원님꺼랑 합치면됨.
+scwin.handleLeaveSession = function(moduleInfo) {
+    if (confirm("정말로 회의를 나가시겠습니까?")) {
+        if (scwin.roomClient && scwin.roomClient.ws) {
+            scwin.roomClient.ws.close();
+        }
+        alert("회의를 나갔습니다.");
+        // window.location.href = '/InsWebApp/ui/session_room/session_list.xml';
+    }
+};
+
+// 버튼 상태 업데이트 함수
+scwin.updateModuleButtonState = function(moduleCode, isActive, options) {
+    var buttons = document.querySelectorAll('[data-module-code="' + moduleCode + '"]');
+    
+    buttons.forEach(function(button) {
+        var nameElement = button.querySelector('.button-name');
+        
+        if (isActive) {
+            button.style.background = 'linear-gradient(135deg, ' + options.activeColor + ' 0%, ' + options.activeColor + ' 100%)';
+            if (nameElement) nameElement.textContent = options.activeText;
+        } else {
+            button.style.background = 'linear-gradient(135deg, ' + options.inactiveColor + ' 0%, #764ba2 100%)';
+            if (nameElement) nameElement.textContent = options.inactiveText;
+        }
+    });
+};
+
+// UI 모듈 실행 (채팅, 화이트보드, AI 대시보드 등)
+scwin.executeUIModule = function(moduleInfo) {
+    switch(moduleInfo.code) {
+        case 'CHAT':
+            scwin.handleChatModule(moduleInfo);
+            break;
+        case 'WHITEBOARD':
+        case 'CANVAS':
+            scwin.handleWhiteboardModule(moduleInfo);
+            break;
+        case 'FACEAI':
+            scwin.handleAIDashboardModule(moduleInfo);
+            break;
+        default:
+            alert('준비 중인 기능입니다: ' + moduleInfo.name);
+    }
+};
+
+// 채팅 모듈
+scwin.handleChatModule = function(moduleInfo) {
+    if (scwin.openModules['CHAT']) {
+        scwin.closeCustomModule('CHAT', moduleInfo);
+        return;
+    }
+    
+    // 직접 ChatModule을 로드하고 실행
+    scwin.openChatModule(moduleInfo);
+};
+
+// 화이트보드 모듈 (기존 로직 활용)
+scwin.handleWhiteboardModule = function(moduleInfo) {
+    console.log("화이트보드 모듈 클릭:", moduleInfo.code, "관리자:", scwin.isAdmin);
+    
+    if (!scwin.isAdmin) {
+        alert("화이트보드는 관리자만 사용할 수 있습니다.");
+        return;
+    }
+    
+    // 기존 화이트보드 토글 로직 활용
+    var activate = !scwin.isWhiteboardActive;
+    console.log("화이트보드 상태 토글:", scwin.isWhiteboardActive, "→", activate);
+    
+    if (scwin.roomClient && scwin.roomClient.ws) {
+        scwin.roomClient.ws.send(JSON.stringify({ 
+            action: "canvas", 
+            data: { type: activate ? "activate" : "deactivate" } 
+        }));
+        console.log("화이트보드 서버 요청 전송:", activate ? "activate" : "deactivate");
+    } else {
+        console.error("RoomClient 또는 WebSocket이 준비되지 않음");
+        alert("연결이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+    }
+    // 상태 업데이트는 기존 이벤트 리스너에서 처리됨
+};
+
+// 채팅 모듈 직접 로드 및 실행
+scwin.openChatModule = async function(moduleInfo) {
+    try {
+        // ChatModule 로드
+        let ChatModule = await scwin.loadModule("/InsWebApp/media/dist/modules/chat.bundle.js", "ChatModule");
+
+        if (!ChatModule) {
+            throw new Error("ChatModule not found in window.");
+        }
+
+        // 채팅 컨테이너 생성
+        const containerId = "chatModuleContainer";
+        const container = document.createElement("div");
+        container.id = containerId;
+        container.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 360px;
+            height: 500px;
+            background-color: white;
+            z-index: 999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 80px;
+        `;
+
+        document.body.appendChild(container);
+
+        // ChatModule 인스턴스 생성
+        const chatModule = new ChatModule(container, {
+            roomId: scwin.currentSessionId || "default-room",
+            currentUser: "사용자"
+        });
+
+        // 채팅 닫기 이벤트 처리
+        chatModule.on("close", () => {
+            chatModule.destroy();
+            document.getElementById(containerId)?.remove();
+            scwin.closeCustomModule('CHAT', moduleInfo);
+        });
+
+        // 상태 업데이트
+        scwin.openModules['CHAT'] = { 
+            moduleInfo: moduleInfo, 
+            instance: chatModule 
+        };
+        
+        scwin.updateModuleButtonState(moduleInfo.code, true, {
+            activeText: '채팅 열림',
+            inactiveText: '채팅',
+            activeColor: '#27ae60',
+            inactiveColor: '#667eea'
+        });
+
+        console.log("채팅 모듈이 성공적으로 열렸습니다.");
+
+    } catch (error) {
+        console.error("채팅 모듈 로딩 실패:", error);
+        alert("채팅 모듈을 불러오는데 실패했습니다.");
+    }
+};
+
+// AI 대시보드 모듈 처리 함수
+scwin.handleAIDashboardModule = function(moduleInfo) {
+    console.log("AI 대시보드 모듈 클릭:", moduleInfo.code, "관리자:", scwin.isAdmin);
+    
+    // 관리자인지 일반 사용자인지에 따라 다른 대시보드 열기
+    if (scwin.isAdmin) {
+        // 관리자용 AI 모니터링 대시보드
+        if (window.AIDashboardController) {
+            window.AIDashboardController.toggle();
+            console.log("[AI Dashboard] 관리자 대시보드 열림");
+        } else {
+            console.error("[AI Dashboard] AIDashboardController를 찾을 수 없습니다.");
+            alert("관리자 대시보드를 불러올 수 없습니다. 페이지를 새로고침 해주세요.");
+        }
+    } else {
+        // 일반 사용자용 개인 대시보드
+        if (window.PersonalDashboardController) {
+            const currentUserId = scwin.myPeerId || 'local-user';
+            // 개인 대시보드가 초기화되지 않았다면 초기화
+            if (!window.PersonalDashboardController.isInitialized) {
+                window.PersonalDashboardController.init(currentUserId);
+            }
+            window.PersonalDashboardController.toggle();
+            console.log("[Personal Dashboard] 개인 대시보드 열림:", currentUserId);
+        } else {
+            console.error("[Personal Dashboard] PersonalDashboardController를 찾을 수 없습니다.");
+            alert("개인 대시보드를 불러올 수 없습니다. 페이지를 새로고침 해주세요.");
+        }
+    }
+    
+    // 버튼 상태 업데이트 (선택사항)
+    scwin.updateModuleButtonState(moduleInfo.code, true, {
+        activeText: scwin.isAdmin ? '전체 집중도 열림' : '내 집중도 열림',
+        inactiveText: moduleInfo.name,
+        activeColor: '#27ae60',
+        inactiveColor: '#667eea'
+    });
+    
+    // 잠시 후 버튼 상태를 원래대로 되돌림
+    setTimeout(function() {
+        scwin.updateModuleButtonState(moduleInfo.code, false, {
+            inactiveText: moduleInfo.name,
+            inactiveColor: '#667eea'
+        });
+    }, 2000);
+};
+
+// 커스텀 모듈 닫기
+scwin.closeCustomModule = function(moduleCode, moduleInfo) {
+    const moduleData = scwin.openModules[moduleCode];
+    
+    if (moduleData && moduleData.instance) {
+        // 모듈 인스턴스가 있으면 destroy 호출
+        if (typeof moduleData.instance.destroy === 'function') {
+            moduleData.instance.destroy();
+        }
+        
+        // 컨테이너 제거
+        if (moduleCode === 'CHAT') {
+            const container = document.getElementById('chatModuleContainer');
+            if (container) container.remove();
+        }
+    }
+    
+    delete scwin.openModules[moduleCode];
+    
+    scwin.updateModuleButtonState(moduleCode, false, {
+        inactiveText: moduleInfo.name,
+        inactiveColor: '#667eea'
+    });
+    
+    console.log("모듈 닫힘:", moduleCode);
+};
+
+// 버튼 생성 함수
+scwin.createExampleButtons = function () {
+    var exampleModules = [
+        { code: 'MIC', name: '마이크', icon: '������', type: 'ACTION_MODULE' },
+        { code: 'CAMERA', name: '카메라', icon: '������', type: 'ACTION_MODULE' },
+        { code: 'SCREEN', name: '화면공유', icon: '������', type: 'ACTION_MODULE' },
+        { code: 'CHAT', name: '채팅', icon: '������', type: 'UI_MODULE' },
+        { code: 'WHITEBOARD', name: '화이트보드', icon: '������', type: 'UI_MODULE' },
+        { code: 'FACEAI', name: 'AI 대시보드', icon: '������', type: 'UI_MODULE' },
+        { code: 'LEAVE', name: '나가기', icon: '������', type: 'ACTION_MODULE' }
+    ];
+
+    // 먼저 모든 영역을 숨김
+    scwin.clearAllButtonAreas();
+
+    exampleModules.forEach(function (module, index) {
+        if (index < 15) {
+            var areaId = 'mf_group' + (12 + index);
+            scwin.createModuleButton(areaId, module);
+        }
+    });
+
+    console.log("예시 버튼 생성 완료");
+};]]>
+		</script>
+	</head>
+	<body class="" ev:onpageload="scwin.onpageload">
+		<xf:group class="sub_contents" id="" style="">
+			<xf:group id="group1" style="width:100%;height:858px;display:flex;overflow:hidden;">
+				<xf:group class="workspace-container" id="group2" style="flex: 1;">
+					<xf:group class="workspace-header" id="grp_session_title">
+						<w2:span class="workspace-title" id="" label="-세션 이름-"></w2:span>
+					</xf:group>
+					<xf:group class="glass-container" id="group4" style="margin: 5px 15px 0 15px; flex: 1; display: flex; flex-direction: column;">
+						<xf:group class="video-layout" id="group5">
+							<xf:group class="left-sidebar" id="group6">
+								<xf:group id="group8"></xf:group>
+							</xf:group>
+							<xf:group class="main-video-area" id="group9">
+								<xf:group class="drop-zone neon-border" id="grp_video_area"
+									style="height: 700px; position: relative; background-color: #202020; border-radius: 8px; overflow: hidden;">
+									<w2:span class="drop-zone-label" id="span1" label="메인 화상회의 영역(고정)"
+										style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;"></w2:span>
+								</xf:group>
+								<xf:group class="bottom-modules" id="group11">
+									<xf:group class="drop-zone neon-border" id="group12">
+										<w2:span class="drop-zone-label" id="span2" label="버튼1"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group13">
+										<w2:span class="drop-zone-label" id="span3" label="버튼2"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group14">
+										<w2:span class="drop-zone-label" id="span4" label="버튼3"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group15">
+										<w2:span class="drop-zone-label" id="span5" label="버튼4"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group16" style="">
+										<w2:span class="drop-zone-label" id="span6" label="버튼5"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group17" style="">
+										<w2:span class="drop-zone-label" id="span7" label="버튼6"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group18" style="">
+										<w2:span class="drop-zone-label" id="span8" label="버튼7"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group19" style="">
+										<w2:span class="drop-zone-label" id="span9" label="버튼8"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group20" style="">
+										<w2:span class="drop-zone-label" id="span10" label="버튼9"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group21" style="">
+										<w2:span class="drop-zone-label" id="span11" label="버튼10"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group22" style="">
+										<w2:span class="drop-zone-label" id="span12" label="버튼11"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group23" style="">
+										<w2:span class="drop-zone-label" id="span13" label="버튼12"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group24" style="">
+										<w2:span class="drop-zone-label" id="span14" label="버튼13"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group25" style="">
+										<w2:span class="drop-zone-label" id="span15" label="버튼14"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group26" style="">
+										<w2:span class="drop-zone-label" id="span16" label="버튼15"></w2:span>
+									</xf:group>
+								</xf:group>
+							</xf:group>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

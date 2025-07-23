@@ -143,8 +143,8 @@ public class SessionModuleController {
 	 * @return 해당 세션의 모듈 상세 목록
 	 * @throws Exception
 	 */
-	@ElService(key = "TNU0001SessionModuleDetailListBySessionId")
-	@RequestMapping(value = "TNU0001SessionModuleDetailListBySessionId")
+	@ElService(key = "TNU0000SessionModuleDetailListBySessionId")
+	@RequestMapping(value = "TNU0000SessionModuleDetailListBySessionId")
 	@ElDescription(sub = "세션별 모듈 상세 목록조회", desc = "특정 세션ID로 해당 세션의 모듈 상세 정보를 조회한다.")
 	public SessionModuleDetailListVo selectListSessionModuleDetailBySessionId(SessionModuleRequestVo requestData)
 			throws Exception {
