@@ -1,69 +1,427 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ev="http://www.w3.org/2001/xml-events"
-    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+    xmlns:xf="http://www.w3.org/2002/xforms">
     <head>
         <w2:type>COMPONENT</w2:type>
-        <w2:buildDate/>
-        <w2:MSA/>
+        <w2:buildDate />
+        <w2:MSA />
         <xf:model>
-            <w2:dataCollection baseNode="map"/>
-            <w2:workflowCollection/>
+            <w2:dataCollection baseNode="map">
+                <w2:aliasDataMap studioSrc="/InsWebApp/main/video_main.xml" scope="../meetingSettings" id="alias_meetingSettings"></w2:aliasDataMap>
+            </w2:dataCollection>
+            <w2:workflowCollection />
         </xf:model>
-        <w2:layoutInfo/>
-        <w2:publicInfo method=""/>
-        <script lazy="false" type="text/javascript"><![CDATA[
+        <w2:layoutInfo />
+        <w2:publicInfo method="" />
+        <script lazy="false" type="text/javascript"><![CDATA[// 페이지 로드 시 초기화
 scwin.onpageload = function() {
-	
+    scwin.meetInfo = alias_meetingSettings.getObj();
+    scwin.initCamera();
+    scwin.initLocalState();
+
+};
+
+
+// MediaStream 전역 보관 변수
+scwin.mediaStream = null;
+
+
+// 로컬 상태 저장 변수 (확장)
+scwin.localState = {
+    videoEnabled: true,
+    audioEnabled: true,
+    participantName: "",
+    participantEmail: ""
+};
+
+
+// 1) 카메라·마이크 초기 스트림 요청
+scwin.initCamera = function() {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(function(stream) {
+        scwin.mediaStream = stream;
+        var webcamElement = document.getElementById("webcam");
+        if (webcamElement) {
+            webcamElement.srcObject = stream;
+        }
+        console.log("카메라/마이크 접근 성공");
+    })
+    .catch(function(err) {
+        console.error("미디어 접근 오류:", err);
+        alert("카메라/마이크 접근에 실패했습니다.");
+    });
+};
+
+
+// 2) 로컬 상태 초기화 및 버튼 스타일 설정
+scwin.initLocalState = function() {
+    // AliasDataMap에서 초기 상태 읽어오기 (있다면)
+    scwin.loadFromDataMap();
+   
+    // 초기 버튼 스타일 적용
+    scwin.updateButtonStyle("video", scwin.localState.videoEnabled);
+    scwin.updateButtonStyle("audio", scwin.localState.audioEnabled);
+   
+    // 초기 미디어 트랙 상태 설정
+    scwin.toggleTracks("video", scwin.localState.videoEnabled);
+    scwin.toggleTracks("audio", scwin.localState.audioEnabled);
+};
+
+
+// 3) 버튼 스타일 업데이트 함수 (기존 로직 개선)
+scwin.updateButtonStyle = function(type, enabled) {
+    var btnElement;
+    var className;
+   
+    if (type === "video") {
+        btnElement = document.getElementById("btn_video");
+        className = "btn_video";
+    } else if (type === "audio") {
+        btnElement = document.getElementById("btn_mic");
+        className = "btn_mic";
+    }
+   
+    if (btnElement) {
+        // 기존 on/off 클래스 제거
+        btnElement.classList.remove("on", "off");
+        // 새로운 상태 클래스 추가
+        btnElement.classList.add(enabled ? "on" : "off");
+        // 기본 클래스도 유지
+        if (!btnElement.classList.contains(className)) {
+            btnElement.classList.add(className);
+        }
+       
+        // data-state 속성도 업데이트
+        btnElement.setAttribute("data-state", enabled ? "on" : "off");
+    }
+};
+
+
+// 4) 미디어 트랙 활성화/비활성화 (개선된 버전)
+scwin.toggleTracks = function(type, enabled) {
+    if (!scwin.mediaStream) return;
+   
+    if (type === "video") {
+        var videoTracks = scwin.mediaStream.getVideoTracks();
+        videoTracks.forEach(function(track) {
+            track.enabled = enabled;
+        });
+    } else if (type === "audio") {
+        var audioTracks = scwin.mediaStream.getAudioTracks();
+        audioTracks.forEach(function(track) {
+            track.enabled = enabled;
+        });
+    }
+};
+
+
+// 5) 비디오 버튼 클릭 이벤트 (실시간 데이터맵 저장 추가)
+scwin.onVideoButtonClick = function() {
+    // 상태 토글
+    scwin.localState.videoEnabled = !scwin.localState.videoEnabled;
+   
+    // 스타일 업데이트
+    scwin.updateButtonStyle("video", scwin.localState.videoEnabled);
+   
+    // 비디오 트랙 토글
+    scwin.toggleTracks("video", scwin.localState.videoEnabled);
+   
+    // 실시간 데이터맵 저장
+    scwin.saveStateToDataMap();
+   
+    console.log("비디오 상태 변경:", scwin.localState.videoEnabled ? "on" : "off");
+};
+
+
+// 6) 오디오 버튼 클릭 이벤트 (실시간 데이터맵 저장 추가)
+scwin.onAudioButtonClick = function() {
+    // 상태 토글
+    scwin.localState.audioEnabled = !scwin.localState.audioEnabled;
+   
+    // 스타일 업데이트
+    scwin.updateButtonStyle("audio", scwin.localState.audioEnabled);
+   
+    // 오디오 트랙 토글
+    scwin.toggleTracks("audio", scwin.localState.audioEnabled);
+   
+    // 실시간 데이터맵 저장
+    scwin.saveStateToDataMap();
+   
+    console.log("오디오 상태 변경:", scwin.localState.audioEnabled ? "on" : "off");
+};
+
+
+// 7) 입장하기 버튼 클릭 이벤트 (기존 로직 활용)
+scwin.onEnterMeeting = function() {
+    // 입력값 검증
+    var nameElement = $p.getComponentById("participant_name");
+    var emailElement = $p.getComponentById("participant_email");
+    
+   
+    if (!nameElement || !emailElement) {
+        alert("입력 필드를 찾을 수 없습니다.");
+        return;
+    }
+   
+    var name = nameElement.getValue().trim();
+    var email = emailElement.getValue().trim();
+    console.log("사용자이름은"+name);
+    console.log("사용자 이메일은 "+email);
+
+   
+    if (!name) {
+        alert("참여자 이름을 입력해주세요.");
+        nameElement.focus();
+        return;
+    }
+   
+    if (!email) {
+        alert("이메일을 입력해주세요.");
+        emailElement.focus();
+        return;
+    }
+   
+    // 이메일 형식 간단 검증
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert("올바른 이메일 형식을 입력해주세요.");
+        emailElement.focus();
+        return;
+    }
+   
+    // 로컬 상태에 입력값 저장
+    scwin.localState.participantName = name;
+    scwin.localState.participantEmail = email;
+   
+    // 최종 데이터맵에 상태 저장
+    scwin.saveToDataMap();
+   
+    console.log("입장 정보 저장 완료:", scwin.localState);
+   
+    // 실제 미팅룸으로 이동하는 로직
+    alert("미팅룸 입장 준비 완료!");
+};
+
+
+// 8) 실시간 상태만 데이터맵에 저장 (새로운 함수)
+scwin.saveStateToDataMap = function() {
+    try {
+        // AliasDataMap에 video/audio 상태만 저장
+        if (typeof alias_meetingSettings !== 'undefined' &&
+            alias_meetingSettings &&
+            typeof alias_meetingSettings.set === 'function') {
+           
+            alias_meetingSettings.set("videoEnabled", scwin.localState.videoEnabled ? "on" : "off");
+            alias_meetingSettings.set("audioEnabled", scwin.localState.audioEnabled ? "on" : "off");
+        }
+    } catch(e) {
+        console.error("상태 저장 오류:", e.message);
+    }
+};
+
+
+// 9) 전체 데이터맵에 저장 (기존 로직 개선)
+scwin.saveToDataMap = function() {
+     console.log("▶ saveToDataMap 진입");
+    try {
+        
+        console.log("★ meetInfo:", scwin.meetInfo);
+        // AliasDataMap에 저장 시도
+     
+                console.log("데이터맵 저장처리");
+
+           scwin.meetInfo.set("participantName", scwin.localState.participantName);
+            scwin.meetInfo.set("participantEmail", scwin.localState.participantEmail);
+            scwin.meetInfo.set("videoEnabled", scwin.localState.videoEnabled ? "on" : "off");
+            scwin.meetInfo.set("audioEnabled", scwin.localState.audioEnabled ? "on" : "off");
+           
+            console.log("AliasDataMap 저장 성공");
+          
+        
+       
+        // // 부모 창의 DataMap에 저장 시도
+        // if (window.parent &&
+        //     window.parent.dm_meetingSettings &&
+        //     typeof window.parent.dm_meetingSettings.set === 'function') {
+           
+        //     window.parent.dm_meetingSettings.set("participantName", scwin.localState.participantName);
+        //     window.parent.dm_meetingSettings.set("participantEmail", scwin.localState.participantEmail);
+        //     window.parent.dm_meetingSettings.set("videoEnabled", scwin.localState.videoEnabled ? "on" : "off");
+        //     window.parent.dm_meetingSettings.set("audioEnabled", scwin.localState.audioEnabled ? "on" : "off");
+           
+        //     console.log("부모 DataMap 저장 성공");
+        //     return;
+        // }
+       
+        // WebSquare localStorage 저장 (추가 옵션)
+        if (typeof WebSquare !== 'undefined' && WebSquare.localStorage) {
+            WebSquare.localStorage.setItem("meetingSettings", JSON.stringify({
+                participantName: scwin.localState.participantName,
+                participantEmail: scwin.localState.participantEmail,
+                videoEnabled: scwin.localState.videoEnabled ? "on" : "off",
+                audioEnabled: scwin.localState.audioEnabled ? "on" : "off"
+            }));
+            console.log("WebSquare localStorage 저장 성공");
+            console.log("웹스퀘어스토리지"+WebSquare.localStorage.getItem("meetingSettings"));
+            return;
+        }
+       
+        // 전역 변수로 저장 (fallback)
+        window.meetingData = {
+            participantName: scwin.localState.participantName,
+            participantEmail: scwin.localState.participantEmail,
+            videoEnabled: scwin.localState.videoEnabled ? "on" : "off",
+            audioEnabled: scwin.localState.audioEnabled ? "on" : "off"
+        };
+       
+        console.log("전역 변수 저장 완료");
+       
+    } catch(e) {
+        console.error("데이터맵 저장 오류:", e.message);
+        alert("설정 저장에 실패했습니다.");
+    }
+};
+
+
+// 10) 데이터맵에서 상태 로드 (새로운 함수)
+scwin.loadFromDataMap = function() {
+    try {
+        // AliasDataMap에서 로드
+        if (typeof alias_meetingSettings !== 'undefined' &&
+            alias_meetingSettings &&
+            typeof alias_meetingSettings.get === 'function') {
+           
+            var videoEnabled = alias_meetingSettings.get("videoEnabled");
+            var audioEnabled = alias_meetingSettings.get("audioEnabled");
+           
+            if (videoEnabled) scwin.localState.videoEnabled = (videoEnabled === "on");
+            if (audioEnabled) scwin.localState.audioEnabled = (audioEnabled === "on");
+           
+            console.log("AliasDataMap에서 상태 로드 완료");
+        }
+    } catch(e) {
+        console.error("데이터맵 로드 오류:", e.message);
+    }
+};
+
+
+// 11) 페이지 종료 시 스트림 정리 (기존 로직 유지)
+scwin.onpageunload = function() {
+    if (scwin.mediaStream) {
+        scwin.mediaStream.getTracks().forEach(function(track) {
+            track.stop();
+        });
+        scwin.mediaStream = null;
+        console.log("미디어 스트림 정리 완료");
+    }
 };
 ]]></script>
+        <style><![CDATA[
+            .btn_video, .btn_mic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid black;
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+/* ON 상태 이미지 */
+.btn_video.on  {
+    background-image: url('/InsWebApp/images/icons/video_on.png');
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+.btn_mic.on    {
+    background-image: url('/InsWebApp/images/icons/mic_on.png');
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+
+/* OFF 상태 이미지 */
+.btn_video.off {
+    background-image: url('/InsWebApp/images/icons/video_off.png');
+    background-color: #f44336;
+    border-color: #f44336;
+}
+.btn_mic.off   {
+    background-image: url('/InsWebApp/images/icons/mic_off.png');
+    background-color: #f44336;
+    border-color: #f44336;
+}
+
+
+         ]]></style>
     </head>
     <body ev:onpageload="scwin.onpageload">
-    	<xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
-    		style="height: 100%">
-    		<xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true" meta_snippetName="1_01 가변 2단 분할"
-    			style="height: 100%;">
-    			<xf:group adaptiveThreshold="" class=" col_5" id="" style="">
-    				<video controls="" style="width: 100%;height: 100%" id=""></video>
-    			</xf:group>
-    			<xf:group class=" col_5" id="" style="">
-    				<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
-    					meta_snippetName="2_03 서브타이틀(h4)" style="">
-    					<w2:textbox class="" id="" label="ModuLink" style="" tagname="h4"></w2:textbox>
-    				</xf:group>
-    				<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
-    					meta_snippetName="2_03 서브타이틀(h4)" style="">
-    					<w2:textbox class="" id="" label="미팅룸 제목입니다" style="" tagname="h4"></w2:textbox>
-    				</xf:group>
-    				<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
-    					meta_snippetName="2_03 서브타이틀(h4)" style="">
-    					<w2:textbox class="" id="" label="참여자이름" style="" tagname="h6"></w2:textbox>
-    				</xf:group>
-    				<xf:input class="" id="" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true" meta_snippetName="10_01 InputBox"
-    					placeholder="" style="width:150px;">
-    				</xf:input>
-    				<xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true"
-    					meta_snippetName="2_03 서브타이틀(h4)" style="">
-    					<w2:textbox class="" id="" label="이메일" style="" tagname="h6"></w2:textbox>
-    				</xf:group>
-    				<xf:input class="" id="" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true" meta_snippetName="10_01 InputBox"
-    					placeholder="" style="width:150px;">
-    				</xf:input>
-    				<w2:textbox class="txt_info" dataType="" id="" label="장치 상태 확인" meta_snippetCategory="11_메시지"
-    					meta_snippetKeyComponent="true" meta_snippetName="11_03 정보제공메시지" style="">
-    				</w2:textbox>
-    				<w2:textbox class="txt_success" dataType="" id="" label="마이크" meta_snippetCategory="11_메시지"
-    					meta_snippetKeyComponent="true" meta_snippetName="11_02 정상처리메시지" style="">
-    				</w2:textbox>
-    				<w2:textbox class="txt_success" dataType="" id="" label="카메라" meta_snippetCategory="11_메시지"
-    					meta_snippetKeyComponent="true" meta_snippetName="11_02 정상처리메시지" style="">
-    				</w2:textbox>
-    				<xf:trigger class="btn_cm" id="" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true"
-    					meta_snippetName="8_01 기본버튼" style="" type="button">
-    					<xf:label><![CDATA[입장하기]]></xf:label>
-    				</xf:trigger>
-    			</xf:group>
-    		</xf:group>
-    	</xf:group>
+        <xf:group class="sub_contents" id="" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true" meta_snippetName="0_01 페이지시작"
+            style="height: 100%">
+            <xf:group meta_snippetCategory="02_타이틀" meta_snippetName="2_03 서브타이틀(h4)" meta_snippetKeyComponent="true" style="" id=""
+                class="titbox">
+                <xf:group class="pgtbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_01 페이지타이틀"
+                    style="background-color: #008080;height: 70px;">
+                    <w2:textbox class="pgt_tit" id="" label="ModuLink" style="" tagname=""></w2:textbox>
+                    <xf:group class="breadcrumb" id="" style="">
+                        <xf:group id="" style="" tagname="ul">
+                            <xf:group id="" style="" tagname="li">
+                            </xf:group>
+                        </xf:group>
+                    </xf:group>
+                </xf:group>
+            </xf:group>
+            <xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true" meta_snippetName="1_01 가변 2단 분할"
+                style="height: 100%;">
+                <xf:group adaptiveThreshold="" class=" col_5" id="" style="display: flex; flex-direction: column; justify-content: center;">
+                    <video style="width: 100%; height: 50%;margin-bottom: 20px;" id="webcam" autoplay="autoplay"></video>
+                    <xf:group id="webcam_video" style="display: flex;align-items: center;">
+                        <xf:trigger style="margin: auto;" id="btn_video" type="button" data-state="on" class="btn_video" ev:onclick="scwin.onVideoButtonClick">
+                            <xf:label><![CDATA[]]>
+                            </xf:label>
+                        </xf:trigger>
+                        <xf:trigger id="btn_mic" style="margin: auto;" type="button" data-state="on" class="btn_mic" ev:onclick="scwin.onAudioButtonClick">
+                            <xf:label><![CDATA[]]>
+                            </xf:label>
+                        </xf:trigger>
+                    </xf:group>
+                </xf:group>
+                <xf:group class=" col_5" id="" style="">
+                    <xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_03 서브타이틀(h4)"
+                        style="">
+                        <w2:textbox class="" id="meet_title" label="미팅룸 제목입니다" style="" tagname="h6"></w2:textbox>
+                    </xf:group>
+                    <xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_03 서브타이틀(h4)"
+                        style="">
+                        <w2:textbox class="" id="" label="참여자이름" style="" tagname="h6"></w2:textbox>
+                    </xf:group>
+                    <xf:input class="" id="participant_name" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+                        meta_snippetName="10_01 InputBox" placeholder="" style="width:150px;">
+                    </xf:input>
+                    <xf:group class="titbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_03 서브타이틀(h4)"
+                        style="">
+                        <w2:textbox class="" id="" label="이메일" style="" tagname="h6"></w2:textbox>
+                    </xf:group>
+                    <xf:input class="" id="participant_email" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
+                        meta_snippetName="10_01 InputBox" placeholder="" style="width:150px;">
+                    </xf:input>
+                    <w2:textbox class="txt_info" dataType="" id="" label="장치 상태 확인" meta_snippetCategory="11_메시지"
+                        meta_snippetKeyComponent="true" meta_snippetName="11_03 정보제공메시지" style="">
+                    </w2:textbox>
+                    <w2:textbox class="txt_success" dataType="" id="" label="마이크" meta_snippetCategory="11_메시지" meta_snippetKeyComponent="true"
+                        meta_snippetName="11_02 정상처리메시지" style="">
+                    </w2:textbox>
+                    <w2:textbox class="txt_success" dataType="" id="" label="카메라" meta_snippetCategory="11_메시지" meta_snippetKeyComponent="true"
+                        meta_snippetName="11_02 정상처리메시지" style="">
+                    </w2:textbox>
+                    <xf:trigger class="btn_cm" id="" meta_snippetCategory="08_버튼" meta_snippetKeyComponent="true" meta_snippetName="8_01 기본버튼"
+                        style="" type="button" ev:onclick="scwin.onEnterMeeting">
+                        <xf:label><![CDATA[입장하기]]></xf:label>
+                    </xf:trigger>
+                </xf:group>
+            </xf:group>
+        </xf:group>
     </body>
-</html>
+</html> 

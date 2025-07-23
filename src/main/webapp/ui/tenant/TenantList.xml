@@ -22,11 +22,10 @@
 				<w2:dataList baseNode="list" id="dlt_tenantVoList" repeatNode="map" saveRemovedData="true" style="">
 					<w2:columnInfo>
 						<w2:column dataType="text" id="tenantId" name="tenant_id"></w2:column>
-                        <w2:column dataType="text" id="createdAt" name="created_at"></w2:column>
-                        <w2:column dataType="text" id="name" name="name"></w2:column>
-                        <w2:column dataType="text" id="subDomain" name="sub_domain"></w2:column>
-                        <w2:column dataType="text" id="isActive" name="is_active"></w2:column>
-                       
+						<w2:column dataType="text" id="createdAt" name="created_at"></w2:column>
+						<w2:column dataType="text" id="name" name="name"></w2:column>
+						<w2:column dataType="text" id="subDomain" name="sub_domain"></w2:column>
+						<w2:column dataType="text" id="isActive" name="is_active"></w2:column>
 					</w2:columnInfo>
 				</w2:dataList>
 				<w2:dataMap baseNode="map" id="dmp_tenantVoDetail" style="">

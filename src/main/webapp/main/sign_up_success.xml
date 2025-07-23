@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+        <w2:type>COMPONENT</w2:type>
+        <w2:buildDate />
+        <w2:MSA />
+        <xf:model>
+            <w2:dataCollection baseNode="map">
+                <w2:dataMap id="dma_managerInfo">
+                    <w2:keyInfo>
+                        <w2:key id="adminId" name="관리자 ID" dataType="text"></w2:key>
+                        <w2:key id="tempPw" name="임시 비밀번호" dataType="text"></w2:key>
+                        <w2:key id="adminUrl" name="접속 주소" dataType="text"></w2:key>
+                    </w2:keyInfo>
+                </w2:dataMap>
+            </w2:dataCollection>
+            <w2:workflowCollection />
+        </xf:model>
+        <w2:layoutInfo />
+        <w2:publicInfo method="" />
+        <style lazy="false" type="text/css">
+            <![CDATA[
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                .websquare-body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Malgun Gothic', sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    /* display:flex 와 정렬 속성 제거 */
+                }
+
+                h1 { font-size: 24px; font-weight: bold; }
+                h2 { font-size: 20px; color: #333; }
+                h3 { font-size: 16px; color: #333;}
+                h4 { font-size: 14px; color: #333;}
+                p { font-size: 12px; color: #666; line-height: 1.4; }
+
+                .manager-info-h3::before { content: "[안내]"; margin-right: 8px; }
+                .info-label-id::before { content: "ID"; margin-right: 8px; font-size: 14px; font-weight: bold; }
+                .info-label-pw::before { content: "PW"; margin-right: 8px; font-size: 14px; font-weight: bold; }
+                .info-label-url::before { content: "URL"; margin-right: 8px; font-size: 14px; font-weight: bold; }
+        
+                .btn-primary:hover { background: #5a6fd8; }
+                .btn-secondary:hover { background: #f5f7ff; }
+            ]]>
+        </style>
+        <script lazy="false" type="text/javascript">
+            <![CDATA[
+            scwin.onpageload = function() {
+                var initialData = {
+                    adminId: "admin@techcompany",
+                    tempPw: "Techmd24f6@",
+                    adminUrl: "https://techcompany.ourservice.com/admin"
+                };
+                dma_managerInfo.setJSON(initialData);
+            };
+
+            scwin.copyToClipboard = function(targetRef, triggerObj) {
+                var textToCopy = $p.data.get(targetRef);
+                $p.util.copyToClipboard(textToCopy, function() {
+                    var originalLabel = triggerObj.getLabel();
+                    triggerObj.setLabel("복사됨");
+                    setTimeout(function() {
+                        triggerObj.setLabel(originalLabel);
+                    }, 2000);
+                });
+            };
+
+            scwin.goToDashboard = function() {
+                alert("관리자 대시보드로 이동합니다!");
+            };
+
+            scwin.downloadSettings = function() {
+                alert("설정 파일을 다운로드합니다!");
+            };
+            ]]>
+        </script>
+    </head>
+    <body ev:onpageload="scwin.onpageload" class="websquare-body">
+        <xf:group style="background: white; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 550px; width: 95%; overflow: hidden; margin: 40px auto;">
+            <xf:group style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; color: white;">
+                <xf:group style="width: 60px; height: 60px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 30px; color: white; font-weight: bold;">
+                    <w2:textbox label="✓" tagname="span"></w2:textbox>
+                </xf:group>
+                <w2:textbox label="가입이 완료되었습니다!" tagname="h1" style="font-size: 26px;margin-bottom: 10px;"></w2:textbox>
+                <w2:textbox label="계정이 정상적으로 설정되었습니다." tagname="p" style="color: #eeeeee;"></w2:textbox>
+            </xf:group>
+            <xf:group style="padding: 30px;">
+                <xf:group style="text-align: center; margin-bottom: 30px;">
+                    <w2:textbox label="테크컴퍼니 주식회사" tagname="h1" style="font-size: 18px;margin : 10px 0px;"></w2:textbox>
+                    <w2:anchor outerDiv="false" href="#" style="color: #667eea;  font-size: 14px;  text-decoration: none;  margin-bottom: 8px;  display: inline-block;font-weight: bolder;  border-radius: 9999px;  padding: 10px 15px;  background-color: #e6edff;" label="https://techcompany.ourservice.com" id="tenantServiceUrl">
+                        <w2:label>https://techcompany.ourservice.com</w2:label>
+                    </w2:anchor>
+                    <w2:textbox label="000님, 회원가입을 환영합니다." tagname="p"></w2:textbox>
+                </xf:group>
+                <xf:group style="height: 1px; background: #e0e0e0; margin: 30px 0;"></xf:group>
+                <xf:group style="background: #f5f7ff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <w2:textbox label="관리자 계정 정보" tagname="h3" class="manager-info-h3" style="color: #2f2f2f;text-align: center;font-size: 16px;font-weight: bolder;padding: 5px 0px;"></w2:textbox>
+                    <w2:textbox label="아래 정보로 관리자 페이지에 로그인하세요." tagname="p" style="text-align: center;margin-bottom: 10px;padding: 5px 0px;"></w2:textbox>
+                    <xf:group style="display: flex; align-items: center; margin-bottom: 12px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <xf:group class="info-label-id" tagname="div" style="display: flex; align-items: center; min-width: 80px; font-size: 13px; color: #666;">
+                            <w2:textbox label="관리자 ID" tagname="span"></w2:textbox>
+                        </xf:group>
+                        <xf:group tagname="div" style="flex: 1; font-size: 13px; color: #333; margin-left: 20px;">
+                            <w2:textbox id="tbx_adminId" ref="data:dma_managerInfo.adminId" tagname="span" label="test@naver.com"></w2:textbox>
+                        </xf:group>
+                        <xf:trigger ev:onclick="scwin.copyToClipboard('data:dma_managerInfo.adminId', this)" style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            <xf:label>복사</xf:label>
+                        </xf:trigger>
+                    </xf:group>
+                    <xf:group style="display: flex; align-items: center; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <xf:group class="info-label-url" tagname="div" style="display: flex; align-items: center; min-width: 80px; font-size: 13px; color: #666;">
+                            <w2:textbox label="접속 주소" tagname="span"></w2:textbox>
+                        </xf:group>
+                        <xf:group tagname="div" style="flex: 1; font-size: 13px; color: #333; margin-left: 20px;">
+                            <w2:textbox id="tbx_adminUrl" ref="data:dma_managerInfo.adminUrl" tagname="span" label="https://test4.ourservice.com"></w2:textbox>
+                        </xf:group>
+                        <xf:trigger ev:onclick="scwin.copyToClipboard('data:dma_managerInfo.adminUrl', this)" style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            <xf:label>복사</xf:label>
+                        </xf:trigger>
+                    </xf:group>
+                </xf:group>
+                <xf:group class="warning-box" style="background: #fff8e1; border-left: 4px solid #ffb300; padding: 15px; margin-bottom: 20px; border-radius: 0 8px 8px 0; display: flex; align-items: center;">
+                     <xf:group tagname="div" style="line-height: 1.4;">
+                        <w2:textbox tagname="div" label="⨳ 보안 안내 ⨳" style="font-weight: bold; color: #f57c00; font-size: 14px; margin-bottom: 5px; text-align: center;"></w2:textbox>
+                        <w2:textbox tagname="p" label="로그인 후 비밀번호 및 개인정보를 공유하지 마세요. 관리자 계정 정보는 안전한 곳에 보관하시기 바랍니다." escape="false" style="text-align: center;"></w2:textbox>
+                    </xf:group>
+                </xf:group>
+                <xf:group style="display: flex; gap: 10px; margin-bottom: 30px;">
+                    <xf:trigger class="btn-primary" ev:onclick="scwin.goToDashboard" style="flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.3s; background: #667eea; color: white;">
+                        <xf:label>관리자 대시보드 시작하기</xf:label>
+                    </xf:trigger>
+                </xf:group>
+                <xf:group style="margin-bottom: 20px;padding: 5px 20px 5px 20px;border-radius: 8px;background-color: #f1f1fb;" id="nextStepGrpBox">
+                	<w2:textbox label="다음 단계" tagname="h3" style="text-align: center;font-size: 16px;font-weight: 600;padding: 15px 0px;"></w2:textbox>
+                	<xf:group
+                		style="display: flex; align-items: flex-start; margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px;">
+                		<xf:group tagname="div"
+                			style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">
+                			<w2:textbox label="1" tagname="span"></w2:textbox>
+                		</xf:group>
+                		<xf:group tagname="div">
+                			<w2:textbox label="로그인" tagname="h4"></w2:textbox>
+                			<w2:textbox label="관리자 페이지에 로그인 후 대시보드를 확인하세요." tagname="p" style="margin-top: 5px;"></w2:textbox>
+                		</xf:group>
+                	</xf:group>
+                	<xf:group
+                		style="display: flex; align-items: flex-start; margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px;">
+                		<xf:group tagname="div"
+                			style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">
+                			<w2:textbox label="2" tagname="span"></w2:textbox>
+                		</xf:group>
+                		<xf:group tagname="div">
+                			<w2:textbox label="필요한 모듈 구매" tagname="h4"></w2:textbox>
+                			<w2:textbox label="출석체크, 녹화, AI 감지 등 필요한 모듈을 선택하여 구매하세요." tagname="p" style="margin-top: 5px;"></w2:textbox>
+                		</xf:group>
+                	</xf:group>
+                	<xf:group
+                		style="display: flex; align-items: flex-start; margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px;">
+                		<xf:group tagname="div"
+                			style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">
+                			<w2:textbox label="3" tagname="span"></w2:textbox>
+                		</xf:group>
+                		<xf:group tagname="div">
+                			<w2:textbox label="사용자 계정 추가" tagname="h4"></w2:textbox>
+                			<w2:textbox label="직원, 강사, 교수 등 서비스를 이용할 사용자들의 계정을 추가하세요." tagname="p" style="margin-top: 5px;"></w2:textbox>
+                		</xf:group>
+                	</xf:group>
+                	<xf:group
+                		style="display: flex; align-items: flex-start; margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px;">
+                		<xf:group
+                			style="background:#667eea;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;margin-right:12px;flex-shrink:0;"
+                			tagname="div">
+                			<w2:textbox label="4" tagname="span"></w2:textbox>
+                		</xf:group>
+                		<xf:group tagname="div">
+                			<w2:textbox label="템플릿 디자인" tagname="h4"></w2:textbox>
+                			<w2:textbox label="화상회의 화면을 원하는대로 꾸미고 템플릿으로 저장하세요." tagname="p" style="margin-top: 5px;"></w2:textbox>
+                		</xf:group>
+                	</xf:group>
+                	<xf:group
+                		style="display: flex; align-items: flex-start; margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px;">
+                		<xf:group
+                			style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 12px; flex-shrink: 0;"
+                			tagname="div">
+                			<w2:textbox label="5" tagname="span"></w2:textbox>
+                		</xf:group>
+                		<xf:group tagname="div">
+                			<w2:textbox label="첫 세션 시작" tagname="h4"></w2:textbox>
+                			<w2:textbox label="템플릿을 선택하거나 디자인하여 첫 화상회의 세션을 만들어보세요." tagname="p" style="margin-top: 5px;"></w2:textbox>
+                		</xf:group>
+                	</xf:group>
+                </xf:group>
+            </xf:group>
+            <xf:group style="text-align: center; padding: 20px; background: #f8f9fa; font-size: 11px; color: #666;">
+                <w2:textbox escape="false"
+                    label='도움이나 문의는 &lt;a href="mailto:support@techcompany.ourservice.com" style="color: #667eea; text-decoration: none;"&gt;support@techcompany.ourservice.com&lt;/a&gt;로 연락주세요.&lt;br/&gt;&lt;br/&gt;고객센터: 1588-1234'>
+                </w2:textbox>
+            </xf:group>
+        </xf:group>
+    </body>
+</html>
