@@ -57,21 +57,27 @@ public class LoginPageController {
 	@ElDescription(sub = "로그인 커스텀 페이지 설정 조회", desc = "로그인 커스텀 페이지 설정 조회를 한다.")
 //	public ResponseEntity<String> getLoginStyle(@PathVariable String subDomain) throws Exception{
 	public ResponseEntity<String> getLoginStyle(LoginPageVo tenant) throws Exception {
-
-		String subDomain = tenant.getSubDomain();
-		System.out.println(subDomain);
-		LoginPageVo configVo = loginPageService.getConfigJsonBySubDomain(subDomain);
-
-		if (configVo == null || configVo.getConfigJson() == null) {
+		try {
+			System.out.println(tenant);
+			String configVo = loginPageService.getConfigJsonBySubDomain(tenant);
+			System.out.println(configVo + "123");
+			if (configVo == null || configVo == null) {
+				Map<String, String> message = new HashMap<>();
+				message.put("code", "E001");
+				message.put("msg", "해당 도메인을 찾을 수 없습니다.");
+				return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+						.body(new ObjectMapper().writeValueAsString(message));
+			}
+			// String을 그대로 JSON으로 응답
+			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(configVo);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			Map<String, String> message = new HashMap<>();
 			message.put("code", "E001");
 			message.put("msg", "해당 도메인을 찾을 수 없습니다.");
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
 					.body(new ObjectMapper().writeValueAsString(message));
 		}
-		String configJson = configVo.getConfigJson();
-		// String을 그대로 JSON으로 응답
-		return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(configJson);
 	}
 
 	/**

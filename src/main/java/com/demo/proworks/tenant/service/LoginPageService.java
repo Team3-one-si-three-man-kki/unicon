@@ -26,7 +26,7 @@ public interface LoginPageService {
      * @return 설정 정보 String
      * @throws Exception
      */
-	 public LoginPageVo getConfigJsonBySubDomain(String subDomain) throws Exception;
+	 public String getConfigJsonBySubDomain(LoginPageVo subDomain) throws Exception;
 	 
 	 
 	 

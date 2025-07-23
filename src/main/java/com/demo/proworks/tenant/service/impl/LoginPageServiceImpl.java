@@ -18,19 +18,23 @@ public class LoginPageServiceImpl implements LoginPageService {
 	@Resource(name = "messageSource")
 	private MessageSource messageSource;
 
-	public LoginPageVo getConfigJsonBySubDomain(String subDomain) throws Exception {
-		LoginPageVo loginPageVo = loginPageDAO.selectLoginPageBySubDomain(subDomain);
-//		String loginPageVo = loginPageDAO.selectLoginPage(10);
-		if (loginPageVo != null) {
-			return loginPageVo;
+	public String getConfigJsonBySubDomain(LoginPageVo subDomain) throws Exception {
+		String config = null;
+		if (subDomain.getMode().equals("login")) {
+			System.out.println(">>>>>>>>>>>>>>>>>>>>..1");
+			config = loginPageDAO.selectLoginPageBySubDomain(subDomain.getSubDomain()).getConfigJson();
+			System.out.println(config + "1");
+		} else {
+			System.out.println(">>>>>>>>>>>>>>>>>>>>..2");
+			config = loginPageDAO.selectLoginPage(Integer.parseInt(subDomain.getSubDomain()));
+			System.out.println(config + "2");
 		}
-		// 설정이 없으면 기본값(빈 JSON 객체) 반환
-		return null;
+		return config;
 	}
-	
+
 	@Override
-    public int saveLoginPageConfig(LoginPageVo vo) throws Exception {
-        return loginPageDAO.saveOrUpdateLoginPage(vo);
-    }
+	public int saveLoginPageConfig(LoginPageVo vo) throws Exception {
+		return loginPageDAO.saveOrUpdateLoginPage(vo);
+	}
 
 }
