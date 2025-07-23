@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.demo.proworks.module.vo.ModuleVo;
 import com.demo.proworks.module.vo.TenantModuleVo;
+import com.demo.proworks.session.vo.SessionVo;
 
 /**
  * @subject : 모듈정보 관련 처리를 담당하는 인터페이스
@@ -118,5 +119,7 @@ public interface ModuleService {
 	 * @throws Exception
 	 */
 	public boolean isDuplicateSubscription(TenantModuleVo tenantModuleVo) throws Exception;
+	
+	public List<SessionVo> getSessionsByModule(String moduleId) throws Exception;
 
 }

@@ -1,5 +1,6 @@
 package com.demo.proworks.module.web;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,8 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.demo.proworks.module.service.ModuleService;
 import com.demo.proworks.module.service.SessionModuleService;
 import com.demo.proworks.module.vo.SessionModuleVo;
+import com.demo.proworks.session.vo.SessionVo;
+import com.demo.proworks.module.vo.ModuleVo;
 import com.demo.proworks.module.vo.SessionModuleDetailListVo;
 import com.demo.proworks.module.vo.SessionModuleDetailVo;
 import com.demo.proworks.module.vo.SessionModuleListVo;
@@ -20,6 +24,8 @@ import com.demo.proworks.module.vo.SessionModuleRequestVo;
 import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.inswave.elfw.annotation.ElValidator;
 
 /**
@@ -39,6 +45,9 @@ public class SessionModuleController {
 	/** SessionModuleService */
 	@Resource(name = "sessionModuleServiceImpl")
 	private SessionModuleService sessionModuleService;
+
+	@Resource(name = "moduleServiceImpl")
+	private ModuleService moduleService;
 
 	/**
 	 * 세션모듈설정정보 목록을 조회합니다.
@@ -157,15 +166,25 @@ public class SessionModuleController {
 		SessionModuleDetailListVo retSessionModuleDetailList = new SessionModuleDetailListVo();
 		retSessionModuleDetailList.setSessionModuleDetailVoList(sessionModuleDetailList);
 		retSessionModuleDetailList.setTotalCount((long) sessionModuleDetailList.size());
-		
-		
-		//>>>>현재 로그인한 유저의 테넌트 아이디 뽑아내기
+
+		// >>>>현재 로그인한 유저의 테넌트 아이디 뽑아내기
 //		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
 //				.getRequest();
 //		String tenantId = (String) request.getAttribute("tenantId");
 //		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + tenantId);
 
 		return retSessionModuleDetailList;
+	}
+
+	@ElService(key = "TNU0002ML")
+	@RequestMapping(value = "TNU0002ML")
+	@ElDescription(sub = "모듈별 세션리스트조회", desc = "모듈ID로 세션리스트를 조회한다")
+	public List<SessionVo> getSessionByModule(ModuleVo module) throws Exception {
+		System.out.println("모듈별세션리스트조회 컨트롤러");
+		List<SessionVo> module1 = new ArrayList<SessionVo>();
+		module1=moduleService.getSessionsByModule(module.getModuleId());
+		System.out.println("가져온 데이터는"+module1);
+		return module1;
 	}
 
 }
