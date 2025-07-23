@@ -60,10 +60,10 @@ public class ProworksLoginAdapter extends LoginAdapter {
 		try {
 			// 파라미터 추출
 			String pw = (String) params[0];
-			String tenantId = (String) params[1];
+			String subDomain = (String) params[1];
 			Boolean isSocial   = params.length > 2 && Boolean.TRUE.equals(params[2]);
 
-			AppLog.debug("로그인 시도 - 테넌트 ID: " + tenantId);
+			AppLog.debug("로그인 시도 - 서브도메인: " + subDomain);
 
 			// 서비스 및 유틸리티 빈 획득
 			UserService userService = (UserService) ElBeanUtils.getBean("userServiceImpl");
@@ -83,7 +83,7 @@ public class ProworksLoginAdapter extends LoginAdapter {
 			// 사용자 정보 조회
 			UserVo userVo = new UserVo();
 			userVo.setEmail(id);
-			userVo.setTenantId(tenantId);
+			userVo.setSubDomain(subDomain);
 
 			AppLog.debug("사용자 조회 시도 - UserVo: " + userVo);
 
@@ -105,7 +105,7 @@ public class ProworksLoginAdapter extends LoginAdapter {
 
 			// JWT 토큰 생성
 			JwtUtil jwtUtil = (JwtUtil) ElBeanUtils.getBean("jwtUtil");
-			String accessToken = jwtUtil.generateAccessToken(id, tenantId, loginUser.getRole(), loginUser.isIsActive());
+			String accessToken = jwtUtil.generateAccessToken(id, loginUser.getTenantId(), loginUser.getRole(), loginUser.isIsActive());
 			String refreshToken = jwtUtil.generateRefreshToken(id);
 
 			// 응답 헤더에 토큰 추가

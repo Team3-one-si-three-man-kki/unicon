@@ -76,20 +76,22 @@
 
 	<select id="loginUser" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
 		<!-- 테넌트유저를 상세 조회한다. -->
-		SELECT /* QueryID : com.demo.proworks.user.selectUser */ 
-			u.USER_ID as userId, 
-			u.TENANT_ID as tenantId, 
-			u.NAME as name, 
-			u.EMAIL as email,
-			u.PASSWORD as password, 
-			u.ROLE as role, u.CREATED_AT as createdAt, 
-			t.is_active as isActive 
+		SELECT /* QueryID : com.demo.proworks.user.selectUser */
+		u.USER_ID as userId,
+		u.TENANT_ID as tenantId,
+		u.NAME as name,
+		u.EMAIL as email,
+		u.PASSWORD as password,
+		u.ROLE as role,
+		u.CREATED_AT as createdAt,
+		t.is_active as isActive ,
+		t.sub_domain as subDomain
 		FROM USER u
-		INNER JOIN tenant t ON u.TENANT_ID = t.tenant_id 
-		WHERE u.EMAIL = #{email} 
-		and u.TENANT_ID = #{tenantId}
+		INNER JOIN tenant t ON u.TENANT_ID = t.tenant_id
+		WHERE u.EMAIL = #{email}
+		AND t.sub_domain = #{subDomain}
 	</select>
-	
+
 	<select id="selectListUser" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
 		<!-- 테넌트유저 목록을 조회한다. -->
 		SELECT /* QueryID : com.demo.proworks.user.selectListUser */
@@ -165,22 +167,22 @@
 
 	<!-- tenant 사용자 조회 -->
 	<select id="selectUsersByTenantId" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
-		   SELECT
-		        USER_ID AS userId,
-		        TENANT_ID AS tenantId,
-		        NAME AS name,
-		        EMAIL AS email,
-		        PASSWORD AS password,
-		        ROLE AS role
-		    FROM
-		        USER
-		    WHERE 1=1
-		        <if test="tenantId != null and tenantId != ''">
-		            AND TENANT_ID = #{tenantId}
-		        </if>
-		        <if test="searchKeyword != null and searchKeyword != ''">
-		            AND (NAME LIKE CONCAT('%', #{searchKeyword}, '%') OR EMAIL LIKE CONCAT('%', #{searchKeyword}, '%'))
-		        </if>
+		SELECT
+		USER_ID AS userId,
+		TENANT_ID AS tenantId,
+		NAME AS name,
+		EMAIL AS email,
+		PASSWORD AS password,
+		ROLE AS role
+		FROM
+		USER
+		WHERE 1=1
+		<if test="tenantId != null and tenantId != ''">
+			AND TENANT_ID = #{tenantId}
+		</if>
+		<if test="searchKeyword != null and searchKeyword != ''">
+			AND (NAME LIKE CONCAT('%', #{searchKeyword}, '%') OR EMAIL LIKE CONCAT('%', #{searchKeyword}, '%'))
+		</if>
 	</select>
 
 	<!-- tenant 사용자 CUD -->

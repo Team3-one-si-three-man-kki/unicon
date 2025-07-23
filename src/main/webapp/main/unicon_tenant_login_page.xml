@@ -34,7 +34,7 @@
 					<w2:keyInfo>
 						<w2:key dataType="text" name="email" id="email"></w2:key>
 						<w2:key dataType="text" name="password" id="password"></w2:key>
-						<w2:key dataType="text" name="tenantId" id="tenantId"></w2:key>
+						<w2:key dataType="text" name="subDomain" id="subDomain"></w2:key>
 					</w2:keyInfo>
 				</w2:dataMap>
 			</w2:dataCollection>
@@ -132,15 +132,15 @@ scwin.parseJwt = function (token) {
 
 // 페이지 로드 시 초기화
 scwin.onpageload = function () {
-    const tenantId = scwin.getQueryParam('tenantId');
-    const tenantIdNum = tenantId !== null ? Number(tenantId) : null;
-    console.log('tenantId:', tenantId);
-    console.log('tenantId (number):', tenantIdNum);
+    const subDomain = scwin.getQueryParam('subDomain');
+    
+    console.log('subDomain:', subDomain);
+    
     const dm =  dma_login;
     console.log(dm);
      if (dm && typeof dm.set === 'function') {
-    dm.set('tenantId', tenantId !== null ? tenantId : '');
-    console.log('DataMap에 tenantId 저장:', dm.get('tenantId'));
+    dm.set('subDomain', subDomain !== null ? subDomain : '');
+    console.log('DataMap에 subDomain 저장:', dm.get('subDomain'));
   };
     scwin.createPopupLayer();
 
@@ -291,7 +291,7 @@ scwin.mockLogin = function (userId, password) {
 
 scwin.getQueryParam = function (name) {
     const params = new URLSearchParams(window.location.search);
-    console.log(params.get("tenantId"));
+    console.log(params.get(name));
     return params.get(name);
 };
 
