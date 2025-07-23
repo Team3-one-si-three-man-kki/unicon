@@ -63,10 +63,14 @@ scwin.onpageload = function () {
     const tenantUrl = origin+"/"+"tenant/"+dma_managerInfo.get("tenant")
     tbx_adminUrl.setValue(tenantUrl)
     tenantServiceUrl.setValue(tenantUrl)
+
+    scwin.url = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml?tenant="+dma_managerInfo.get("tenant");
+    hiddenUrl.setValue(origin + scwin.url)
+
 };
 
 scwin.goToDashboard = function () {
-    alert("관리자 대시보드로 이동합니다!");
+    location.href = scwin.url;
 };
 
 scwin.moveToHomeBtn_onclick = function (e) {
@@ -83,7 +87,7 @@ scwin.idCopy_onclick = function (e) {
 
 scwin.urlCopy_onclick = function (e) {
     console.log("복사되었다링고2")
-    $c.util.copyClipboard(tbx_adminUrl);
+    $c.util.copyClipboard(hiddenUrl);
     urlCopy.setValue("복사됨");
 };
 ]]>
@@ -102,13 +106,16 @@ scwin.urlCopy_onclick = function (e) {
 			</xf:group>
 			<xf:group style="padding: 30px 30px 0px 30px;">
 				<xf:group style="text-align: center; margin-bottom: 30px;">
-					<w2:textbox label="테크컴퍼니 주식회사" tagname="h1" style="font-size: 18px;margin : 10px 0px;" ref="data:dma_managerInfo.company"></w2:textbox>
+					<w2:textbox label="테크컴퍼니 주식회사" tagname="h1" style="font-size: 18px;margin : 10px 0px;"
+						ref="data:dma_managerInfo.company">
+					</w2:textbox>
 					<w2:anchor outerDiv="false" href="#"
 						style="color: #667eea;  font-size: 14px;  text-decoration: none;  margin-bottom: 8px;  display: inline-block;font-weight: bolder;  border-radius: 9999px;  padding: 10px 15px;  background-color: #e6edff;"
 						label="https://techcompany.ourservice.com" id="tenantServiceUrl">
 						<w2:label>https://techcompany.ourservice.com</w2:label>
 					</w2:anchor>
 					<w2:textbox label="000님, 회원가입을 환영합니다." tagname="p" id="welcomeText"></w2:textbox>
+					<w2:textbox id="hiddenUrl" label="" tagname="p" style="display: none"></w2:textbox>
 				</xf:group>
 				<xf:group style="height: 1px; background: #e0e0e0; margin: 30px 0;"></xf:group>
 				<xf:group style="background: #f5f7ff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
