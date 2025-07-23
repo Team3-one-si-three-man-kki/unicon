@@ -12,6 +12,7 @@
 						<w2:key dataType="text" name="name" id="name"></w2:key>
 						<w2:key dataType="text" name="usingDept" id="usingDept"></w2:key>
 						<w2:key dataType="text" name="startTime" id="startTime"></w2:key>
+						<w2:key dataType="text" name="endTime" id="endTime"></w2:key> <!-- 추가 -->
 						<w2:key dataType="text" name="inviteLink" id="inviteLink"></w2:key>
 						<w2:key dataType="text" name="linkExpiry" id="linkExpiry"></w2:key>
 						<w2:key dataType="text" name="createdBy" id="createdBy"></w2:key>
@@ -24,6 +25,12 @@
 						<w2:column dataType="text" name="sessionModuleConfig" id="sessionModuleConfig"></w2:column>
 					</w2:columnInfo>
 				</w2:dataList>
+				<w2:dataMap baseNode="map" id="dma_updateInviteLink">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="sessionId" id="sessionId"></w2:key>
+						<w2:key dataType="text" name="inviteLink" id="inviteLink"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
 			</w2:dataCollection>
 			<w2:workflowCollection />
 			<xf:submission id="sbm_createSession" action="/InsWebApp/TNU0001SessionIns.pwkjson" method="post"
@@ -33,8 +40,13 @@
 			</xf:submission>
 			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/TNU0001SessionModuleListIns.pwkjson" method="post"
 				mediatype="application/json" ref='data:json,{"id":"dlt_sessionModules","key":"sessionModuleVoList.sessionModuleVoList"}' target=""
-				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_createSessionModules_submitdone"
-				ev:submiterror="scwin.sbm_createSessionModules_submiterror" abortTrigger="">
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				ev:submitdone="scwin.sbm_createSessionModules_submitdone" ev:submiterror="scwin.sbm_createSessionModules_submiterror" abortTrigger="">
+			</xf:submission>
+			<xf:submission id="sbm_updateInviteLink" action="/InsWebApp/TNU0002SessionUpd.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"dma_updateInviteLink","key":"sessionVo"}' target="" encoding="UTF-8" instance=""
+				replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				ev:submitdone="scwin.sbm_updateInviteLink_submitdone" ev:submiterror="scwin.sbm_updateInviteLink_submiterror" abortTrigger="">
 			</xf:submission>
 		</xf:model>
 		<w2:layoutInfo />
@@ -46,8 +58,8 @@ scwin.onpageload = function () {
 
     // 초대 링크와 만료일을 미리 생성해서 저장
     scwin.sessionData.generatedInfo = {
-        inviteLink: "https://modulink.com/join/" + scwin.generateRandomId(),
-        linkExpiry: null
+        inviteLink: null,
+        linkExpiry: null // 세션 종료시간에서 6시간후 만료시간
     };
 
     scwin.step1_onclick();
@@ -159,36 +171,123 @@ scwin.setInviteInfo = function (inviteData) {
 };
 
 // 페이지 이동 로직 -> 트러블 슈팅 : wframe에 의한 페이지 이동의 제한
+// scwin.navigateToLayout = function (sessionId) {
+//     // -----sessionId를 localstorage에 저장---- -> 여러가지 해봤는데 제일 안전한 방법
+//     try {
+//         localStorage.setItem('currentSessionId', sessionId);
+//     } catch (e) {
+//         // localStorage 사용 불가 시 무시
+//     }
+
+//     try {
+//         // sessionId 없이 페이지 이동 (넘어가는 페이지에서 sessionId를 localStorage에서 읽어옴)
+//         if (typeof $p !== 'undefined' && typeof $p.url === 'function') {
+//             $p.url("/InsWebApp/ui/session_room/session_room3.xml");
+//             return;
+//         }
+//     } catch (error) {
+//         alert("페이지 이동에 실패했습니다. 수동으로 이동해주세요.\nSession ID: " + sessionId);
+//     }
+// };
 scwin.navigateToLayout = function (sessionId) {
-    // -----sessionId를 localstorage에 저장---- -> 여러가지 해봤는데 제일 안전한 방법
-    try {
-        localStorage.setItem('currentSessionId', sessionId);
-    } catch(e) {
-        // localStorage 사용 불가 시 무시
+    console.log("페이지 이동 시작. Session ID:", sessionId);
+    
+    if (!sessionId) {
+        console.error("Session ID가 제공되지 않았습니다.");
+        alert("세션 ID가 없어서 페이지를 이동할 수 없습니다.");
+        return;
     }
     
     try {
-        // sessionId 없이 페이지 이동 (넘어가는 페이지에서 sessionId를 localStorage에서 읽어옴)
+        // localStorage에 sessionId 저장 (이중 보장)
+        localStorage.setItem('currentSessionId', sessionId);
+        
+        // 페이지 이동 시도
         if (typeof $p !== 'undefined' && typeof $p.url === 'function') {
-            $p.url("/InsWebApp/main/layout-load.xml");
+            // WebSquare 표준 페이지 이동
+            $p.url("/InsWebApp/ui/session_room/session_room3.xml");
+            console.log("WebSquare 페이지 이동 성공");
             return;
         }
+        
+        // WebSquare $p.url이 실패할 경우 대안
+        if (typeof $p !== 'undefined' && typeof $p.openPopup === 'function') {
+            // 새 창으로 세션 페이지 열기
+            window.open("/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId, "_blank");
+            console.log("새 창으로 세션 페이지 열기 성공");
+            return;
+        }
+        
+        // 모든 방법이 실패한 경우
+        throw new Error("페이지 이동 방법을 찾을 수 없습니다.");
+        
     } catch (error) {
-        alert("페이지 이동에 실패했습니다. 수동으로 이동해주세요.\nSession ID: " + sessionId);
+        console.error("페이지 이동 실패:", error);
+        
+        // 최종 대안: 사용자에게 수동 이동 안내
+        var manualUrl = "https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
+        
+        if (confirm("자동 페이지 이동에 실패했습니다.\n\n수동으로 세션 페이지를 여시겠습니까?\n\n확인을 누르면 새 창에서 세션이 열립니다.")) {
+            window.open(manualUrl, "_blank");
+        } else {
+            alert("세션이 생성되었습니다.\n\n다음 URL로 직접 접속하세요:\n" + manualUrl);
+        }
     }
 };
 
 
 // 최종적인 세션 생성 함수
 
+// scwin.saveAllSessionData = function (callback) {
+//     try {
+//         var startTimeRaw = scwin.sessionData.sessionInfo.start_time;
+//         var endTimeRaw = scwin.sessionData.sessionInfo.end_time;
+//         var inviteLink = scwin.sessionData.generatedInfo.inviteLink;
+//         var linkExpiry = scwin.sessionData.generatedInfo.linkExpiry;
+
+//         // 날짜 형식 변환 함수
+//         function formatDateTime(dateTimeStr) {
+//             if (!dateTimeStr || dateTimeStr.length !== 12) {
+//                 return dateTimeStr;
+//             }
+//             var year = dateTimeStr.substring(0, 4);
+//             var month = dateTimeStr.substring(4, 6);
+//             var day = dateTimeStr.substring(6, 8);
+//             var hour = dateTimeStr.substring(8, 10);
+//             var minute = dateTimeStr.substring(10, 12);
+//             return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':00';
+//         }
+
+//         // DB 저장용 날짜 형식으로 변환
+//         var startTime = formatDateTime(startTimeRaw);
+//         var endTime = formatDateTime(endTimeRaw);
+
+
+
+//         dma_sessionData.set("name", scwin.sessionData.sessionInfo.name);
+//         dma_sessionData.set("usingDept", scwin.sessionData.sessionInfo.using_dept);
+//         dma_sessionData.set("startTime", startTime);
+//         dma_sessionData.set("endTime", endTime);
+//         dma_sessionData.set("inviteLink", inviteLink);
+//         dma_sessionData.set("linkExpiry", linkExpiry);
+//         dma_sessionData.set("createdBy", "1");
+
+//         // submission 성공 후 콜백 실행하도록 currentCallback 저장
+//         scwin.completionCallback = callback;
+//         $p.executeSubmission("sbm_createSession");
+
+//     } catch (error) {
+//         console.error("저장 중 오류:", error);
+//         alert("저장 중 오류가 발생했습니다: " + error.message);
+//     }
+// };
 scwin.saveAllSessionData = function (callback) {
     try {
         var startTimeRaw = scwin.sessionData.sessionInfo.start_time;
         var endTimeRaw = scwin.sessionData.sessionInfo.end_time;
-        var inviteLink = scwin.sessionData.generatedInfo.inviteLink;
+        // inviteLink는 제외 - null이나 빈 문자열 대신 아예 설정하지 않음
         var linkExpiry = scwin.sessionData.generatedInfo.linkExpiry;
 
-        // 날짜 형식 변환 함수
         function formatDateTime(dateTimeStr) {
             if (!dateTimeStr || dateTimeStr.length !== 12) {
                 return dateTimeStr;
@@ -201,7 +300,6 @@ scwin.saveAllSessionData = function (callback) {
             return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':00';
         }
 
-        // DB 저장용 날짜 형식으로 변환
         var startTime = formatDateTime(startTimeRaw);
         var endTime = formatDateTime(endTimeRaw);
 
@@ -209,11 +307,10 @@ scwin.saveAllSessionData = function (callback) {
         dma_sessionData.set("usingDept", scwin.sessionData.sessionInfo.using_dept);
         dma_sessionData.set("startTime", startTime);
         dma_sessionData.set("endTime", endTime);
-        dma_sessionData.set("inviteLink", inviteLink);
+        dma_sessionData.set("inviteLink", null);
         dma_sessionData.set("linkExpiry", linkExpiry);
         dma_sessionData.set("createdBy", "1");
 
-        // submission 성공 후 콜백 실행하도록 currentCallback 저장
         scwin.completionCallback = callback;
         $p.executeSubmission("sbm_createSession");
 
@@ -225,44 +322,99 @@ scwin.saveAllSessionData = function (callback) {
 
 
 // 랜덤 ID 생성 함수
-scwin.generateRandomId = function () {
-    return Math.random().toString(36).substr(2, 9);
-};
+// scwin.generateRandomId = function () {
+//     return Math.random().toString(36).substr(2, 9);
+// };
 
 // 세션 생성 성공 -> session_id 받아서 모듈 저장
+// scwin.sbm_createSession_submitdone = function (e) {
+//     console.log("세션 생성 성공");
+
+//     // 응답에서 sessionId 추출
+//     var sessionId = null;
+
+//     try {
+//         if (e.responseJSON) {
+//             sessionId = e.responseJSON.sessionId || e.responseJSON.id || e.responseJSON.session_id;
+//         }
+
+//         if (!sessionId && e.responseText) {
+//             var responseData = JSON.parse(e.responseText);
+//             sessionId = responseData.sessionId || responseData.id || responseData.session_id;
+//         }
+
+//         if (!sessionId && e.result) {
+//             sessionId = e.result.sessionId || e.result.id || e.result.session_id;
+//         }
+
+//         if (!sessionId) {
+//             alert("세션 ID를 받지 못했습니다. 서버 응답을 확인해주세요.");
+//             return;
+//         }
+
+//         // sessionId 저장 후 모듈 저장 진행
+//         if (sessionId) {
+//             // sessionId를 받은 후에 초대링크 생성
+//             scwin.sessionData.generatedInfo.inviteLink =
+//                 "https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
+//             console.log("inviteLink:", scwin.sessionData.generatedInfo.inviteLink);
+//             scwin.currentSessionId = sessionId;
+//             scwin.saveSessionModules(sessionId);
+//         }
+
+//     } catch (error) {
+//         console.error("sessionId 추출 오류:", error);
+//         alert("세션 ID 추출 중 오류가 발생했습니다: " + error.message);
+//     }
+// };
 scwin.sbm_createSession_submitdone = function (e) {
     console.log("세션 생성 성공");
-    
-    // 응답에서 sessionId 추출
+
     var sessionId = null;
-    
+
     try {
         if (e.responseJSON) {
             sessionId = e.responseJSON.sessionId || e.responseJSON.id || e.responseJSON.session_id;
         }
-        
+
         if (!sessionId && e.responseText) {
             var responseData = JSON.parse(e.responseText);
             sessionId = responseData.sessionId || responseData.id || responseData.session_id;
         }
-        
+
         if (!sessionId && e.result) {
             sessionId = e.result.sessionId || e.result.id || e.result.session_id;
         }
-        
+
         if (!sessionId) {
             alert("세션 ID를 받지 못했습니다. 서버 응답을 확인해주세요.");
             return;
         }
 
-        // sessionId 저장 후 모듈 저장 진행
-        scwin.currentSessionId = sessionId;
-        scwin.saveSessionModules(sessionId);
+        if (sessionId) {
+            // sessionId를 받은 후에 초대링크 생성
+            scwin.sessionData.generatedInfo.inviteLink =
+                "https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
+            
+            console.log("inviteLink:", scwin.sessionData.generatedInfo.inviteLink);
+            scwin.currentSessionId = sessionId;
+            
+            // 초대링크 업데이트 먼저 실행
+            scwin.updateInviteLink(sessionId, scwin.sessionData.generatedInfo.inviteLink);
+        }
 
     } catch (error) {
         console.error("sessionId 추출 오류:", error);
         alert("세션 ID 추출 중 오류가 발생했습니다: " + error.message);
     }
+};
+
+// 초대링크 업데이트 함수
+scwin.updateInviteLink = function(sessionId, inviteLink) {
+    dma_updateInviteLink.set("sessionId", sessionId);
+    dma_updateInviteLink.set("inviteLink", inviteLink);
+    
+    $p.executeSubmission("sbm_updateInviteLink");
 };
 
 // 모듈 저장 함수
@@ -286,37 +438,243 @@ scwin.saveSessionModules = function (sessionId) {
     $p.executeSubmission("sbm_createSessionModules");
 };
 
-
-scwin.sbm_createSessionModules_submitdone = function (e) {
-    alert('세션 생성이 완료되었습니다!');
+// scwin.sbm_createSessionModules_submitdone = function (e) {
+//     var sessionId = scwin.currentSessionId;
     
+//     // 팝업에 전달할 데이터 객체 생성
+//     var popupData = {
+//         sessionId: sessionId,
+//         sessionName: scwin.sessionData.sessionInfo.name,
+//         inviteLink: scwin.sessionData.generatedInfo.inviteLink
+//     };
+    
+//     console.log("팝업에 전달할 데이터:", popupData);
+    
+//     // session_room3.xml 스타일의 팝업 생성 (createPopUp 함수 사용)
+//     scwin.createPopUp(
+//         "sessionCompletePopUp",
+//         "세션 생성 완료", 
+//         popupData,  // 데이터 객체 전달
+//         "/InsWebApp/main/session_complete_popup.xml",
+//         700,
+//         700
+//     );
+// };
+scwin.sbm_createSessionModules_submitdone = function (e) {
     var sessionId = scwin.currentSessionId;
     
-    if (sessionId) {
-        // 콜백이 있으면 실행 (페이지 이동)
-        if (scwin.completionCallback && typeof scwin.completionCallback === 'function') {
-            scwin.completionCallback(sessionId);
-        } else {
-            // 콜백이 없으면 직접 이동
-            scwin.navigateToLayout(sessionId);
+    // 팝업에 전달할 데이터 객체 생성
+    var popupData = {
+        sessionId: sessionId,
+        sessionName: scwin.sessionData.sessionInfo ? scwin.sessionData.sessionInfo.name : "새 세션",
+        inviteLink: scwin.sessionData.generatedInfo ? scwin.sessionData.generatedInfo.inviteLink : "초대링크 생성 중..."
+    };
+    
+    console.log("팝업에 전달할 데이터:", popupData);
+    
+    // 방법 1: 기존 createPopUp 함수 사용
+    try {
+        scwin.createPopUp(
+            "sessionCompletePopUp",
+            "세션 생성 완료", 
+            popupData,
+            "/InsWebApp/main/session_complete_popup.xml",
+            700,
+            700
+        );
+    } catch (error) {
+        console.error("createPopUp 함수 실패:", error);
+        
+        // 방법 2: 직접 $p.openPopup 사용
+        try {
+            var options = {
+                width: "700px",
+                height: "700px",
+                modal: true,
+                popupName: "세션 생성 완료",
+                closeAction: "scwin.popup_closeAction",
+                dataObject: popupData
+            };
+            
+            $p.openPopup("/InsWebApp/main/session_complete_popup.xml", options, popupData);
+        } catch (error2) {
+            console.error("직접 팝업 호출도 실패:", error2);
+            alert("팝업을 열 수 없습니다. 세션은 생성되었습니다.\nSession ID: " + sessionId);
         }
-    } else {
-        alert('세션 ID가 없어 페이지 이동할 수 없습니다.');
     }
 };
 
 scwin.sbm_createSessionModules_submiterror = function (e) {
     alert('모듈 배치 정보 저장 실패');
 };
-]]></script>
+
+// 초대링크 업데이트 함수
+scwin.updateInviteLink = function(sessionId, inviteLink) {
+    dma_updateInviteLink.set("sessionId", sessionId);
+    dma_updateInviteLink.set("inviteLink", inviteLink);
+    
+    $p.executeSubmission("sbm_updateInviteLink");
+};
+
+// 초대링크 업데이트 완료 후 모듈 저장 진행
+scwin.sbm_updateInviteLink_submitdone = function(e) {
+    console.log("초대링크 업데이트 완료");
+    
+    // 이제 모듈 저장 진행
+    scwin.saveSessionModules(scwin.currentSessionId);
+};
+
+scwin.sbm_updateInviteLink_submiterror = function(e) {
+    console.error("초대링크 업데이트 실패:", e);
+    alert("초대링크 업데이트에 실패했습니다.");
+    
+    // 실패해도 모듈 저장은 진행할지 결정
+    if (confirm("초대링크 업데이트에 실패했지만 모듈 저장을 계속 진행하시겠습니까?")) {
+        scwin.saveSessionModules(scwin.currentSessionId);
+    }
+};
+
+// 에서 가져온 팝업 생성 함수
+// scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
+//     if ($p.getPopup(_id)) {
+//         console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
+//         return;
+//     }
+//     var popupWidth = _popupWidth;
+//     var popupHeight = _popupHeight;
+//     var topPosition = (window.innerHeight - popupHeight) / 2;
+//     var leftPosition = (window.innerWidth - popupWidth) / 2;
+//     var options = {
+//         id: _id,
+//         type: "wframePopup",
+//         width: popupWidth + "px",
+//         height: popupHeight + "px",
+//         top: topPosition + "px",
+//         left: leftPosition + "px",
+//         popupName: _name,
+//         modal: true,
+//         closeAction: "scwin.popup_closeAction",
+//         dataObject: _jsnData
+//     };
+//     $p.openPopup(url, options);
+// }
+scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
+    console.log("=== createPopUp 함수 호출 ===");
+    console.log("팝업 ID:", _id);
+    console.log("팝업 이름:", _name);
+    console.log("전달 데이터:", _jsnData);
+    console.log("팝업 URL:", url);
+    
+    if ($p.getPopup(_id)) {
+        console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
+        return;
+    }
+    
+    var popupWidth = _popupWidth;
+    var popupHeight = _popupHeight;
+    var topPosition = (window.innerHeight - popupHeight) / 2;
+    var leftPosition = (window.innerWidth - popupWidth) / 2;
+    
+    var options = {
+        id: _id,
+        type: "wframePopup",
+        width: popupWidth + "px",
+        height: popupHeight + "px",
+        top: topPosition + "px",
+        left: leftPosition + "px",
+        popupName: _name,
+        modal: true,
+        closeAction: "scwin.popup_closeAction",  // 이 부분이 중요!
+        dataObject: _jsnData
+    };
+    
+    console.log("팝업 옵션:", options);
+    console.log("closeAction 설정:", options.closeAction);
+    
+    // 팝업 열기 전에 closeAction 함수가 존재하는지 확인
+    if (typeof scwin.popup_closeAction === 'function') {
+        console.log("popup_closeAction 함수 존재함");
+    } else {
+        console.error("popup_closeAction 함수가 존재하지 않음!");
+    }
+    
+    $p.openPopup(url, options);
+    console.log("팝업 열기 완료");
+}
+
+// 팝업 닫기 액션
+scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
+    console.log("=== 팝업 닫기 액션 호출됨 ===");
+    console.log("argRuntimeID:", argRuntimeID);
+    console.log("argJsnInfo:", argJsnInfo);
+    console.log("argJsnInfo 타입:", typeof argJsnInfo);
+    
+    try {
+        // 팝업에서 반환된 결과 데이터 확인
+        if (argJsnInfo) {
+            console.log("argJsnInfo.action:", argJsnInfo.action);
+            console.log("argJsnInfo.confirmed:", argJsnInfo.confirmed);
+            console.log("argJsnInfo.sessionId:", argJsnInfo.sessionId);
+            
+            if (argJsnInfo.action === "start" && argJsnInfo.confirmed) {
+                console.log("=== 세션 시작 조건 만족 ===");
+                
+                // "세션 시작하기" 버튼을 눌렀을 때
+                var sessionId = argJsnInfo.sessionId || scwin.currentSessionId;
+                console.log("최종 sessionId:", sessionId);
+                console.log("scwin.currentSessionId:", scwin.currentSessionId);
+                
+                if (sessionId) {
+                    console.log("세션 시작으로 페이지 이동:", sessionId);
+                    
+                    // localStorage에 sessionId 저장 (세션 페이지에서 사용)
+                    try {
+                        localStorage.setItem('currentSessionId', sessionId);
+                        console.log("localStorage에 sessionId 저장 완료:", sessionId);
+                    } catch (e) {
+                        console.warn("localStorage 저장 실패:", e);
+                    }
+                    
+                    // 세션 페이지로 이동
+                    console.log("navigateToLayout 함수 호출 시작");
+                    scwin.navigateToLayout(sessionId);
+                    
+                } else {
+                    console.error("sessionId가 없어서 페이지 이동할 수 없습니다.");
+                    alert("세션 ID를 찾을 수 없습니다. 다시 시도해주세요.");
+                }
+                
+            } else {
+                console.log("=== 세션 시작 조건 불만족 ===");
+                console.log("action === 'start':", argJsnInfo.action === "start");
+                console.log("confirmed:", argJsnInfo.confirmed);
+            }
+        } else {
+            console.log("=== argJsnInfo가 null/undefined ===");
+        }
+        
+        // "나중에 시작" 버튼을 눌렀거나 팝업을 닫았을 때
+        if (!argJsnInfo || argJsnInfo.action !== "start") {
+            console.log("팝업이 닫혔습니다. 추가 동작 없음.");
+        }
+        
+    } catch (error) {
+        console.error("팝업 닫기 처리 중 오류:", error);
+        alert("페이지 이동 중 오류가 발생했습니다: " + error.message);
+    }
+    
+    console.log("=== popup_closeAction 함수 종료 ===");
+    return true; // 팝업 닫기
+};]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents"
-			style="display: flex !important;          flex-direction: column !important;          height: 100vh !important;          margin: 0 !important;          padding: 0 !important;          align-items: center !important;          justify-content: center !important;">
+			style="display: flex !important;          flex-direction: column !important;          height: 100vh !important;          margin-top: 50px !important;          padding: 0 !important;          align-items: center !important;          justify-content: center !important;">
 
 			<!-- 프로그레스바 - 고정 높이 -->
 			<xf:group class="processbar"
-				style="flex: 0 0 auto !important; height: 60px !important; padding: 20px 0 !important; background: white !important;" tagname="ul">
+				style="flex: 0 0 auto !important; height: 60px !important; padding: 20px 0 !important; background: white !important; margin-bottom: 30px;"
+				tagname="ul">
 				<xf:group class="on" ev:onclick="scwin.step1_onclick" id="step1" tagname="li">
 					<w2:span class="num" id="" label="1" style="" />
 					<xf:group class="dot_wrap" id="" style="">

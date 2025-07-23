@@ -70,7 +70,7 @@ public class ModuleController {
 		retModuleList.setPageSize(moduleVo.getPageSize());
 		retModuleList.setPageIndex(moduleVo.getPageIndex());
 
-		// >>> 이렇게하면 db조회 해야됨.... -> jwt에 담아서 해주세요....ㅠ
+		// >>> 이렇게하면 db조회 해야됨....
 //		String userEmail = ControllerContextUtil.getUserHeader().getUserId();
 //		UserService userService = (UserService) ElBeanUtils.getBean("userServiceImpl");
 //		UserVo currentUser = userService.getUserByEmail(userEmail);

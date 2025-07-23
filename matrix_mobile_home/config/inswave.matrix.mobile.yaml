@@ -1,6 +1,6 @@
 appID: inswave.matrix.mobile
 matrixMobile:
-  startPage: /InsWebApp/main/mobile_dev_dashboard.xml
+  startPage: /InsWebApp/main/mobile_dev_login.xml
   frameworkType: WebSquare
   storageType: I
   localUpdatePolicy: false

@@ -105,9 +105,9 @@
 			</w2:dataCollection>
 		</xf:model>
 
-		<script type="text/javascript"><![CDATA[
-// 전역 변수
+		<script type="text/javascript"><![CDATA[// 전역 변수
 let refreshInterval;
+scwin.selectedTenantId = null;
 
 scwin.getApiToken = function () {
     return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzZWNyZXRAdGVzdC5jb20iLCJ0ZW5hbnRJZCI6IjIiLCJyb2xlIjoibWFuYWdlciIsInR5cGUiOiJhY2Nlc3MiLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzUzMDgzNzkyLCJleHAiOjE3NTMwODU1OTJ9.Zsw_SY5QwbGtmskKF97ZrvFdumxA1si0ZJTmzyOf9yyMbG6A2AsMlAZRWlcztCgLFqaBz3hslb_Q3rlm4zNRqg";
@@ -116,9 +116,7 @@ scwin.getApiToken = function () {
 scwin.onpageload = function () {
     console.log("향상된 서버 현황 페이지 로드");
     scwin.showDefaultData();
-
     scwin.loadTenantList();
-
     scwin.testConnection();
 
     setTimeout(function () {
@@ -128,7 +126,6 @@ scwin.onpageload = function () {
     refreshInterval = setInterval(function () {
         scwin.loadServerData();
     }, 30000);
-
 };
 
 scwin.onpageunload = function () {
@@ -139,30 +136,52 @@ scwin.onpageunload = function () {
 
 scwin.loadTenantList = function () {
     console.log("=== 테넌트 목록 로드 시작 ===");
+    $p.hideProcessMessage();
     $p.executeSubmission("sbm_selectTenantVoList");
 };
 
 scwin.sbm_selectTenantVoList_submitdone = function (e) {
+    $p.hideProcessMessage();
     console.log("=== 테넌트 목록 조회 성공 ===");
 
     const totalCount = e.responseJSON.elData.totalCount || 0;
     dmp_tenantVo.set("totalRowCount", totalCount);
 
-    scwin.updatePagination(); 
+    scwin.updatePagination();
 
     if (dlt_tenantVoList.getRowCount() > 0) {
         const firstTenantId = dlt_tenantVoList.getCellData(0, "tenantId");
         grd_tenantList.setFocusedCell(0, "name");
+
+        const firstTenantData = {
+            tenantId: dlt_tenantVoList.getCellData(0, "tenantId"),
+            name: dlt_tenantVoList.getCellData(0, "name"),
+            subDomain: dlt_tenantVoList.getCellData(0, "subDomain"),
+            createdAt: dlt_tenantVoList.getCellData(0, "createdAt"),
+            isActive: dlt_tenantVoList.getCellData(0, "isActive")
+        };
+
+        scwin.updateTenantDetailInfo(firstTenantData);
         scwin.loadTenantData(firstTenantId);
+
+        scwin.selectedTenantId = firstTenantId;
     } else {
         scwin.updateTenantStats({ sessions: "-", users: "-" });
+        scwin.hideTenantDetailInfo();
+
+        scwin.selectedTenantId = null;
     }
 };
 
 scwin.formatActiveStatus = function (data) {
-    if (data === true || data === 'true' || data === 1 || data === '1') {
+    console.log("상태 포맷팅:", data, typeof data);
+
+    if (data === true || data === 'true' || data === 1 || data === '1' || data === 'Y' || data === 'y') {
         return "활성";
+    } else if (data === false || data === 'false' || data === 0 || data === '0' || data === 'N' || data === 'n') {
+        return "비활성";
     }
+
     return "비활성";
 };
 
@@ -363,9 +382,7 @@ scwin.handleApiSuccess = function (data) {
     }
 };
 
-
 scwin.parseMemoryPercentage = function (percentString) {
-    // "8.31%" -> 8.31 (숫자로 변환)
     if (!percentString) return 0;
     return parseFloat(percentString.replace('%', '')) || 0;
 };
@@ -388,9 +405,9 @@ scwin.calculateNetworkFromActivity = function (summary) {
     const producers = summary.totalProducers || 0;
     const consumers = summary.totalConsumers || 0;
 
-    const transportLoad = transports * 2; // Transport당 2%
-    const producerLoad = producers * 5;   // Producer당 5%
-    const consumerLoad = consumers * 3;   // Consumer당 3%
+    const transportLoad = transports * 2;
+    const producerLoad = producers * 5;
+    const consumerLoad = consumers * 3;
 
     return Math.min(transportLoad + producerLoad + consumerLoad, 100);
 };
@@ -398,15 +415,12 @@ scwin.calculateNetworkFromActivity = function (summary) {
 scwin.updateSystemInfo = function (data) {
     try {
         console.log("시스템 정보 업데이트:", data);
-
-        // 시스템 정보 로그 출력
         console.log(`시스템 메모리: ${data.systemMemoryMB}MB`);
         console.log(`프로세스 메모리: ${data.processMemoryMB}MB`);
         console.log(`메모리 사용률: ${data.memoryUsage}%`);
         console.log(`총 Transport: ${data.totalTransports}`);
         console.log(`총 Producer: ${data.totalProducers}`);
         console.log(`총 Consumer: ${data.totalConsumers}`);
-
     } catch (error) {
         console.error("시스템 정보 업데이트 오류:", error);
     }
@@ -438,7 +452,6 @@ scwin.updateWorkerProcesses = function (workers) {
                 workerSection.appendChild(workerItem);
             });
 
-            // Worker가 없는 경우 메시지 표시
             if (workers.length === 0) {
                 const noWorkerItem = document.createElement('div');
                 noWorkerItem.className = 'worker-item';
@@ -508,7 +521,6 @@ scwin.loadTenantData = function (tenantId) {
         .then(data => {
             console.log("테넌트 데이터 로드 성공:", data);
 
-            // (수정) API 응답 키인 activeRooms와 connectedPeers를 사용하도록 변경합니다.
             const tenantData = {
                 sessions: data.activeRooms || 0,
                 users: data.connectedPeers || 0
@@ -519,7 +531,6 @@ scwin.loadTenantData = function (tenantId) {
         .catch(error => {
             console.error("테넌트 데이터 로드 실패:", error);
             scwin.updateTenantStats({ sessions: "오류", users: "오류" });
-            // 에러 발생 시 XHR 폴백 로직은 그대로 유지합니다.
             scwin.loadTenantDataXHR(tenantId);
         });
 };
@@ -614,28 +625,33 @@ scwin.loadSessionInfo = function (roomId) {
 
 scwin.updateServerStats = function (data) {
     try {
-        // 주요 통계 업데이트
-        const sessionsEl = document.querySelector('.card-sessions .stat-number');
-        if (sessionsEl) sessionsEl.textContent = data.activeSessions || "0";
+        console.log("서버 통계 업데이트:", data);
 
-        const usersEl = document.querySelector('.card-users .stat-number');
-        if (usersEl) usersEl.textContent = data.connectedUsers || "0";
+        setTimeout(() => {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            console.log("stat-number 요소들:", statNumbers.length);
 
-        const workersEl = document.querySelector('.card-workers .stat-number');
-        if (workersEl) workersEl.textContent = data.activeWorkers || "0";
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = data.activeSessions || "0";
+                statNumbers[1].textContent = data.connectedUsers || "0";
+                statNumbers[2].textContent = data.activeWorkers || "0";
+                statNumbers[3].textContent = scwin.formatUptime(data.uptime);
+                console.log("클래스 선택자로 서버 통계 업데이트 성공");
+            }
 
-        const uptimeEl = document.querySelector('.card-uptime .stat-number');
-        if (uptimeEl) uptimeEl.textContent = scwin.formatUptime(data.uptime);
+            const statusTextEl = document.querySelector('.status-text');
+            if (statusTextEl) {
+                statusTextEl.textContent = data.serverStatus || "정상";
+            }
 
-        // 서버 상태 업데이트
-        const statusTextEl = document.querySelector('.status-text');
-        if (statusTextEl) statusTextEl.textContent = data.serverStatus || "정상";
+            const statusDotEl = document.querySelector('.status-dot');
+            if (statusDotEl) {
+                const isHealthy = data.serverStatus === "정상";
+                statusDotEl.style.backgroundColor = isHealthy ? "#34c759" : "#ff3b30";
+            }
 
-        const statusDotEl = document.querySelector('.status-dot');
-        if (statusDotEl) {
-            const isHealthy = data.serverStatus === "정상";
-            statusDotEl.style.backgroundColor = isHealthy ? "#34c759" : "#ff3b30";
-        }
+        }, 50);
+
     } catch (error) {
         console.error("서버 통계 UI 업데이트 오류:", error);
     }
@@ -683,7 +699,6 @@ scwin.updatePerformanceIndicators = function (data) {
 
         setTimeout(() => {
             try {
-                // CSS 선택자로 찾기
                 const cpuBar = document.querySelector('#cpuBar, [id*="cpuBar"]');
                 const memoryBar = document.querySelector('#memoryBar, [id*="memoryBar"]');
                 const networkBar = document.querySelector('#networkBar, [id*="networkBar"]');
@@ -701,7 +716,6 @@ scwin.updatePerformanceIndicators = function (data) {
                     console.log("네트워크 바 직접 업데이트 성공");
                 }
 
-                // 클래스 선택자로도 시도
                 const performanceTexts = document.querySelectorAll('.performance-text');
                 console.log("performance-text 요소들:", performanceTexts.length);
 
@@ -743,7 +757,6 @@ scwin.updateTenantStats = function (data) {
         const sessionValue = data.activeSessions || data.sessions || "0";
         const userValue = data.connectedUsers || data.users || "0";
 
-        // 웹스퀘어 컴포넌트로 접근
         try {
             const sessionsComp = $p.getComponentById('tenantSessions');
             if (sessionsComp) {
@@ -778,69 +791,6 @@ scwin.updateTenantStats = function (data) {
     }
 };
 
-scwin.updateServerStats = function (data) {
-    try {
-        console.log("서버 통계 업데이트:", data);
-
-        setTimeout(() => {
-            const statNumbers = document.querySelectorAll('.stat-number');
-            console.log("stat-number 요소들:", statNumbers.length);
-
-            if (statNumbers.length >= 4) {
-                statNumbers[0].textContent = data.activeSessions || "0";
-                statNumbers[1].textContent = data.connectedUsers || "0";
-                statNumbers[2].textContent = data.activeWorkers || "0";
-                statNumbers[3].textContent = scwin.formatUptime(data.uptime);
-                console.log("클래스 선택자로 서버 통계 업데이트 성공");
-            }
-
-            const statusTextEl = document.querySelector('.status-text');
-            if (statusTextEl) {
-                statusTextEl.textContent = data.serverStatus || "정상";
-            }
-
-            const statusDotEl = document.querySelector('.status-dot');
-            if (statusDotEl) {
-                const isHealthy = data.serverStatus === "정상";
-                statusDotEl.style.backgroundColor = isHealthy ? "#34c759" : "#ff3b30";
-            }
-
-        }, 50);
-
-    } catch (error) {
-        console.error("서버 통계 UI 업데이트 오류:", error);
-    }
-};
-
-scwin.updateWorkerProcesses = function (workers) {
-    try {
-        const workerSection = document.getElementById("worker_process_section");
-        if (workerSection) {
-            const existingItems = workerSection.querySelectorAll('.worker-item');
-            existingItems.forEach(item => item.remove());
-
-            workers.forEach((worker, index) => {
-                const workerItem = document.createElement('div');
-                workerItem.className = 'worker-item';
-                workerItem.innerHTML = `
-                    <div class="worker-icon icon-worker">W${index + 1}</div>
-                    <div class="worker-info">
-                        <div class="worker-name">Worker #${index + 1}</div>
-                        <div class="worker-details">PID: ${worker.pid || 'N/A'} | 가동시간: ${scwin.getRandomUptime()}</div>
-                    </div>
-                    <div class="worker-metrics">
-                        <div class="worker-load">부하: ${worker.load || 0}%</div>
-                        <div class="worker-sessions">세션: ${worker.sessions || 0}개</div>
-                    </div>
-                `;
-                workerSection.appendChild(workerItem);
-            });
-        }
-    } catch (error) {
-        console.error("Worker 프로세스 UI 업데이트 오류:", error);
-    }
-};
-
 scwin.updateLiveSessions = function (sessions) {
     try {
         const sessionSection = document.getElementById("live_session_section");
@@ -856,7 +806,6 @@ scwin.updateLiveSessions = function (sessions) {
                     scwin.loadSessionInfo(session.sessionId);
                 };
 
-                // 세션 타입에 따른 아이콘 결정
                 const iconClass = scwin.getSessionIconClass(session.roomName);
                 const iconText = scwin.getSessionIconText(session.roomName);
 
@@ -879,7 +828,101 @@ scwin.updateLiveSessions = function (sessions) {
     }
 };
 
-// 유틸리티 함수들
+scwin.onTenantSelectChange = function (row, col) {
+    const tenantId = dlt_tenantVoList.getCellData(row, "tenantId");
+
+    if (tenantId && tenantId === scwin.selectedTenantId) {
+        console.log(`동일 테넌트(${tenantId}) 재클릭: 상세 정보 숨김`);
+        scwin.hideTenantDetailInfo();    
+        scwin.selectedTenantId = null;  
+        grd_tenantList.setFocusedCell(-1, -1);
+        return;
+    }
+
+    const tenantData = {
+        tenantId: tenantId,
+        name: dlt_tenantVoList.getCellData(row, "name"),
+        subDomain: dlt_tenantVoList.getCellData(row, "subDomain"),
+        createdAt: dlt_tenantVoList.getCellData(row, "createdAt"),
+        isActive: dlt_tenantVoList.getCellData(row, "isActive")
+    };
+
+    console.log(`=== GridView 행 클릭: ${row}번째 행, tenantId: ${tenantId} ===`);
+
+    if (tenantId) {
+        scwin.selectedTenantId = tenantId;
+
+        scwin.updateTenantDetailInfo(tenantData);
+        scwin.loadTenantData(tenantId);
+    } else {
+        console.error("클릭된 행의 tenantId를 찾을 수 없습니다.");
+        scwin.hideTenantDetailInfo();
+        scwin.selectedTenantId = null; // 선택 상태 초기화
+    }
+};
+
+scwin.updateTenantDetailInfo = function (tenantData) {
+    try {
+        const detailSectionComp = $p.getComponentById("tenant_detail_section");
+        if (detailSectionComp) {
+            detailSectionComp.setStyle("display", "block");
+        }
+
+        const detailTenantId = $p.getComponentById('detail_tenant_id');
+        if (detailTenantId) detailTenantId.setValue(tenantData.tenantId || '-');
+
+        const detailName = $p.getComponentById('detail_name');
+        if (detailName) detailName.setValue(tenantData.name || '-');
+
+        const detailSubdomain = $p.getComponentById('detail_subdomain');
+        if (detailSubdomain) detailSubdomain.setValue(tenantData.subDomain || '-');
+
+        const detailCreatedAt = $p.getComponentById('detail_created_at');
+        if (detailCreatedAt) {
+            const formattedDate = scwin.formatDateTime(tenantData.createdAt);
+            detailCreatedAt.setValue(formattedDate);
+        }
+
+        const detailIsActive = $p.getComponentById('detail_is_active');
+        if (detailIsActive) {
+            const statusText = scwin.formatActiveStatus(tenantData.isActive);
+            detailIsActive.setValue(statusText);
+
+        }
+
+        console.log("테넌트 상세 정보 업데이트 완료:", tenantData);
+
+    } catch (error) {
+        console.error("테넌트 상세 정보 업데이트 오류:", error);
+    }
+};
+
+scwin.hideTenantDetailInfo = function () {
+    const detailSectionComp = $p.getComponentById("tenant_detail_section");
+    if (detailSectionComp) {
+        detailSectionComp.setStyle("display", "none");
+    }
+};
+scwin.formatDateTime = function (dateTimeString) {
+    if (!dateTimeString) return '-';
+
+    try {
+        const date = new Date(dateTimeString);
+        if (isNaN(date.getTime())) return dateTimeString;
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    } catch (error) {
+        console.error("날짜 포맷팅 오류:", error);
+        return dateTimeString;
+    }
+};
+
 scwin.formatUptime = function (seconds) {
     if (!seconds || seconds < 60) return `${Math.floor(seconds || 0)}초`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)}분`;
@@ -889,7 +932,7 @@ scwin.formatUptime = function (seconds) {
 };
 
 scwin.getRandomDuration = function () {
-    const minutes = Math.floor(Math.random() * 120 + 10); // 10-130분
+    const minutes = Math.floor(Math.random() * 120 + 10);
     if (minutes < 60) return `${minutes}분`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
@@ -897,7 +940,7 @@ scwin.getRandomDuration = function () {
 };
 
 scwin.getRandomUptime = function () {
-    const hours = Math.floor(Math.random() * 72 + 1); // 1-72시간
+    const hours = Math.floor(Math.random() * 72 + 1);
     return `${hours}시간`;
 };
 
@@ -940,7 +983,6 @@ scwin.handleApiError = function (message) {
     console.error("API 오류:", message);
     scwin.showLoading(false);
 
-    // 에러 발생 시 서버 상태를 '오류'로 표시
     const statusEl = document.querySelector('.status-text');
     if (statusEl) statusEl.textContent = "오류";
     const statusDotEl = document.querySelector('.status-dot');
@@ -949,7 +991,6 @@ scwin.handleApiError = function (message) {
     alert("오류: " + message);
 };
 
-// WebSquare submission 관련 함수들 (호환성을 위해 유지)
 scwin.serverStatsSuccess = function (e) {
     console.log("WebSquare submission 성공:", e);
     try {
@@ -985,21 +1026,6 @@ scwin.submissionError = function (e) {
     console.error("=== WebSquare Submission 오류 ===", e);
     scwin.handleHttpError(e.status || 0, e.statusText || 'Unknown Error');
 };
-
-scwin.onTenantSelectChange = function (row, col) {
-    // dlt_tenantVoList (DataList)에서 클릭된 행의 "tenantId" 값을 가져옵니다.
-    const tenantId = dlt_tenantVoList.getCellData(row, "tenantId");
-
-    console.log(`=== GridView 행 클릭: ${row}번째 행, tenantId: ${tenantId} ===`);
-
-    if (tenantId) {
-        // 가져온 ID로 테넌트 상세 데이터를 로드하는 함수를 호출합니다.
-        scwin.loadTenantData(tenantId);
-    } else {
-        console.error("클릭된 행의 tenantId를 찾을 수 없습니다.");
-    }
-};
-
 
 scwin.testAllAPIs = function () {
     console.log("=== 모든 API 엔드포인트 테스트 ===");
@@ -1043,7 +1069,7 @@ scwin.btn_home_onclick = function () {
 };
 
 scwin.btn_tenant_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/moblie_dev_tenant.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_tenant.xml";
 };
 
 scwin.btn_module_onclick = function () {
@@ -1054,10 +1080,9 @@ scwin.btn_stats_onclick = function () {
     console.log("현재 서버현황 페이지입니다.");
 };
 
-
 scwin.searchTenants = function () {
     console.log("테넌트 검색 실행");
-    dmp_tenantVo.set("pageIndex", 1); 
+    dmp_tenantVo.set("pageIndex", 1);
     scwin.loadTenantList();
 };
 
@@ -1551,6 +1576,50 @@ scwin.changeTenantPage = function (direction) {
     background-color: #f9f9f9;
     color: #ccc;
     cursor: not-allowed;
+}
+
+.tenant-detail-section {
+    padding: 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    margin-top: 16px;
+    background-color: #f8f9fa;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.tenant-detail-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 12px;
+    display: block; /* 공간을 차지하도록 block으로 설정 */
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #666;
+}
+
+.detail-value {
+    color: #333;
+    font-weight: 500;
 }]]></style>
 	</head>
 
@@ -1638,12 +1707,8 @@ scwin.changeTenantPage = function (direction) {
 				<w2:textbox label="테넌트별 현황" class="performance-title"></w2:textbox>
 
 				<xf:group style="display:flex; gap: 8px; margin-bottom: 12px;">
-					<w2:dataMap id="dmp_search" baseNode="map">
-						<w2:keyInfo>
-							<w2:key id="searchKeyword" name="검색어" dataType="text"></w2:key>
-						</w2:keyInfo>
-					</w2:dataMap>
-					<xf:input id="ipt_searchTenant" placeholder="테넌트 이름으로 검색" style="flex:1;width:30px;" ref="data:dmp_search.searchKeyword"
+
+					<xf:input id="ipt_searchTenant" placeholder="테넌트 이름으로 검색" style="flex:1;width:30px;" ref="data:dmp_tenantVo.scName"
 						ev:onkeyup="scwin.handleSearchKeyup"></xf:input>
 					<xf:trigger id="btn_searchTenant" type="button" ev:onclick="scwin.searchTenants" class="btn_search" style=";width:70px;">
 						<xf:label><![CDATA[검색]]></xf:label>
@@ -1656,24 +1721,20 @@ scwin.changeTenantPage = function (direction) {
 					<w2:caption id="caption1" value="this is a gridView" T-Direction="Top"></w2:caption>
 					<w2:header id="header1">
 						<w2:row id="row1">
-							<w2:column id="column_name" inputType="text" value="이름" width="100"></w2:column>
+							<w2:column id="column_name" inputType="text" value="테넌트명" width="100"></w2:column>
 							<w2:column id="column_id" inputType="text" value="ID" width="58" textAlign="center"></w2:column>
-							<w2:column id="column_status" inputType="select" value="상태" width="87" textAlign="center"></w2:column>
+							<w2:column id="column_status" inputType="text" value="상태" width="87" textAlign="center"></w2:column>
 						</w2:row>
 					</w2:header>
 					<w2:gBody id="gBody1">
 						<w2:row id="row2">
 							<w2:column id="name" inputType="text" width="100" readOnly="true" class="cell_name"></w2:column>
 							<w2:column id="tenantId" inputType="text" width="58" readOnly="true" textAlign="center"></w2:column>
-							<w2:column id="isActive" inputType="switch" width="87" textAlign="center">
-								<w2:switch id="sw_status" ev:onviewchange="scwin.updateTenantStatus" trueValue="1" falseValue="0" displayTrueText="활성"
-									displayFalseText="비활성">
-								</w2:switch>
-							</w2:column>
+							<w2:column id="isActive" inputType="text" width="87" textAlign="center" readOnly="true"
+								displayFormatter="scwin.formatActiveStatus"></w2:column>
 						</w2:row>
 					</w2:gBody>
 				</w2:gridView>
-
 				<xf:group id="pagination_controls" class="pagination">
 					<xf:trigger id="btn_prevPage" ev:onclick="scwin.changeTenantPage('prev')" type="button" class="btn-page">
 						<xf:label>◀</xf:label>
@@ -1683,6 +1744,33 @@ scwin.changeTenantPage = function (direction) {
 						<xf:label>▶</xf:label>
 					</xf:trigger>
 				</xf:group>
+
+				<xf:group id="tenant_detail_section" class="tenant-detail-section" style="margin-top: 16px; display: none;">
+					<w2:textbox label="선택된 테넌트 정보" class="tenant-detail-title"></w2:textbox>
+					<xf:group class="tenant-detail-content">
+						<xf:group class="detail-row">
+							<w2:textbox label="테넌트 ID:" class="detail-label"></w2:textbox>
+							<w2:textbox id="detail_tenant_id" label="-" class="detail-value"></w2:textbox>
+						</xf:group>
+						<xf:group class="detail-row">
+							<w2:textbox label="테넌트명:" class="detail-label"></w2:textbox>
+							<w2:textbox id="detail_name" label="-" class="detail-value"></w2:textbox>
+						</xf:group>
+						<xf:group class="detail-row">
+							<w2:textbox label="서브도메인:" class="detail-label"></w2:textbox>
+							<w2:textbox id="detail_subdomain" label="-" class="detail-value"></w2:textbox>
+						</xf:group>
+						<xf:group class="detail-row">
+							<w2:textbox label="생성일시:" class="detail-label"></w2:textbox>
+							<w2:textbox id="detail_created_at" label="-" class="detail-value"></w2:textbox>
+						</xf:group>
+						<xf:group class="detail-row">
+							<w2:textbox label="활성상태:" class="detail-label"></w2:textbox>
+							<w2:textbox id="detail_is_active" label="-" class="detail-value detail-status"></w2:textbox>
+						</xf:group>
+					</xf:group>
+				</xf:group>
+
 
 				<xf:group class="tenant-info" style="margin-top: 16px;">
 					<xf:group class="tenant-stat">

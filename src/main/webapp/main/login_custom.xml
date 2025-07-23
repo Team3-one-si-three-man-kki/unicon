@@ -34,11 +34,18 @@
         		<w2:dataMap baseNode="map" id="dm_loginPage_request">
         			<w2:keyInfo>
         				<w2:key dataType="text" name="configJson" id="configJson"></w2:key>
+        				<w2:key dataType="text" name="테넌트ID" id="tenantId"></w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        		<w2:dataMap baseNode="map" id="dm_subdomain">
+        			<w2:keyInfo>
+        				<w2:key dataType="text" name="name1" id="mode"></w2:key>
+        				<w2:key dataType="text" name="name2" id="subDomain"></w2:key>
         			</w2:keyInfo>
         		</w2:dataMap>
         	</w2:dataCollection>
         	<w2:workflowCollection />
-        	<xf:submission id="loadPreview" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref=""
+        	<xf:submission id="loadPreview" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json" ref='data:json,{"id":"dm_subdomain","key":"tenant"}'
         		target='data:json,dm_loginCustomInfo' encoding="UTF-8" instance="" replace="" errorHandler=""
         		customHandler="" mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.loadPreview_submitdone" ev:submiterror=""
         		abortTrigger="">
@@ -72,7 +79,9 @@ scwin.updateCustomData = function (key, value) {
 scwin.loginPage_onpageframeload = function () {
     // 이 함수는 loginPage의 로딩이 '완료'되었을 때 확실하게 호출됩니다.
     console.log("자식 페이지(loginPage) 로딩 완료.");
-
+    scwin.params = new URLSearchParams(window.location.search);
+    dm_subdomain.set("subDomain",scwin.params.get("tenant"))
+    dm_subdomain.set("mode","custom")
     $c.sbm.execute(loadPreview)
 };
 
@@ -85,6 +94,7 @@ scwin.loadPreview_submitdone = function (e) {
 
     var elData = e.responseJSON
     dm_loginCustomInfo.setJSON(elData)
+    console.log("여기다여기",elData)
 
     tabControl1.getWindow().scwin.setDataAndRender();
     loginPage.getWindow().scwin.applyCustomization(elData);
@@ -107,6 +117,7 @@ scwin.btn_save_onclick = function (e) {
     var configJsonString = JSON.stringify(styleData);
 
     dm_loginPage_request.set("configJson", configJsonString);
+    dm_loginPage_request.set("tenantId",scwin.params.get("tenant"));
 
     // 5. 전송용 데이터맵을 사용하는 submission을 실행합니다.
     $p.executeSubmission("sbm_saveConfig");

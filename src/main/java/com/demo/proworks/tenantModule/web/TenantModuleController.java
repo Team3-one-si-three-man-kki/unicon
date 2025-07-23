@@ -19,6 +19,7 @@ import com.demo.proworks.tenantModule.vo.TenantModuleDetailVoList;
 import com.inswave.elfw.annotation.ElDescription;
 import com.inswave.elfw.annotation.ElService;
 import com.inswave.elfw.annotation.ElValidator;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**  
  * @subject     : 테넌트모듈정보 관련 처리를 담당하는 컨트롤러
@@ -127,9 +128,9 @@ public class TenantModuleController {
      * @return 테넌트가 보유한 모듈 상세 정보 목록
      * @throws Exception
      */
-    @ElService(key="TNU0001TenantModuleDetailList")
-    @RequestMapping(value="TNU0001TenantModuleDetailList")    
-    @ElDescription(sub="테넌트보유모듈 상세목록조회",desc="현재 로그인한 사용자의 테넌트가 보유한 모듈 상세 정보를 조회한다.")               
+    @ElService(key = "TNU0001TenantModuleDetailList")
+    @RequestMapping(value = "TNU0001TenantModuleDetailList")    
+    @ElDescription(sub = "테넌트보유모듈 상세목록조회", desc = "현재 로그인한 사용자의 테넌트가 보유한 모듈 상세 정보를 조회한다.")               
     public TenantModuleDetailVoList selectTenantModuleDetailList() throws Exception {
         
         System.out.println("TenantModuleDetailList 컨트롤러 호출됨!");
