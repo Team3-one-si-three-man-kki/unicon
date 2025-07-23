@@ -77,11 +77,11 @@ public class UserController {
 	public void login(com.demo.proworks.user.vo.UserLoginVo loginVo, HttpServletRequest request) throws Exception {
 		String email = loginVo.getEmail();
 		String password = loginVo.getPassword();
-		String tenantId = loginVo.getTenantId();
+		String subDomain = loginVo.getSubDomain();
 
 		try {
 			// 1. 로그인 처리 (ProworksLoginAdapter + ProworksSessionDataAdapter 호출)
-			LoginInfo info = loginProcess.processLogin(request, email, password, tenantId);
+			LoginInfo info = loginProcess.processLogin(request, email, password, subDomain);
 			AppLog.debug("로그인 처리 결과: " + info);
 
 			// 2. 성공 여부만 판별. 세션 어댑터가 JWT 헤더 설정을 이미 수행함

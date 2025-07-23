@@ -65,11 +65,11 @@ public class ProworksSessionDataAdapter extends SessionDataAdapter {
         try {
             // 1) 사용자 정보 조회
             UserService userService = (UserService) ElBeanUtils.getBean("userServiceImpl");
-            String tenantId = (String) obj[1];
+            String subDomain = (String) obj[1];
 
             UserVo userVo = new UserVo();
             userVo.setEmail(id);
-            userVo.setTenantId(tenantId);
+            userVo.setSubDomain(subDomain);
 
             UserVo resUserVo = userService.loginUser(userVo);
             if (resUserVo == null) {
