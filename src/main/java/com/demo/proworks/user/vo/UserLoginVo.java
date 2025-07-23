@@ -19,6 +19,9 @@ public class UserLoginVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "비밀번호", physicalName = "password", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String password;
 
+    @ElDtoField(logicalName = "테넌트ID", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String tenantId;
+
     @ElVoField(physicalName = "email")
     public String getEmail(){
         String ret = this.email;
@@ -41,12 +44,24 @@ public class UserLoginVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.password = password;
     }
 
+    @ElVoField(physicalName = "tenantId")
+    public String getTenantId(){
+        String ret = this.tenantId;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "tenantId")
+    public void setTenantId(String tenantId){
+        this.tenantId = tenantId;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("UserLoginVo [");
         sb.append("email").append("=").append(email).append(",");
-        sb.append("password").append("=").append(password);
+        sb.append("password").append("=").append(password).append(",");
+        sb.append("tenantId").append("=").append(tenantId);
         sb.append("]");
         return sb.toString();
 
