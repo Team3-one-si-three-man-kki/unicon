@@ -19,8 +19,8 @@ public class UserLoginVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "비밀번호", physicalName = "password", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String password;
 
-    @ElDtoField(logicalName = "테넌트ID", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
-    private String tenantId;
+    @ElDtoField(logicalName = "서브도메인", physicalName = "subDomain", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String subDomain;
 
     @ElVoField(physicalName = "email")
     public String getEmail(){
@@ -44,15 +44,15 @@ public class UserLoginVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.password = password;
     }
 
-    @ElVoField(physicalName = "tenantId")
-    public String getTenantId(){
-        String ret = this.tenantId;
+    @ElVoField(physicalName = "subDomain")
+    public String getSubDomain(){
+        String ret = this.subDomain;
         return ret;
     }
 
-    @ElVoField(physicalName = "tenantId")
-    public void setTenantId(String tenantId){
-        this.tenantId = tenantId;
+    @ElVoField(physicalName = "subDomain")
+    public void setSubDomain(String subDomain){
+        this.subDomain = subDomain;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class UserLoginVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("UserLoginVo [");
         sb.append("email").append("=").append(email).append(",");
         sb.append("password").append("=").append(password).append(",");
-        sb.append("tenantId").append("=").append(tenantId);
+        sb.append("subDomain").append("=").append(subDomain);
         sb.append("]");
         return sb.toString();
 
