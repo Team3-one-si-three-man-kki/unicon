@@ -5,7 +5,7 @@
 	<select id="selectLoginPage" parameterType="int" resultType="com.demo.proworks.tenant.vo.LoginPageVo">
 	    SELECT
 	        lp.config_json AS configJson,
-	        t.name AS tenantName,
+	        t.name AS name,
 	        lp.tenant_id AS tenantId
 	    FROM
 	        login_page lp

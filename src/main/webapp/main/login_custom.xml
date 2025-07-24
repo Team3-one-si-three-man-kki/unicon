@@ -96,8 +96,8 @@ scwin.loadPreview_submitdone = function (e) {
     
     console.log("여기다여기", elData)
 
-    if (Object.keys(elData).length === 0) {
-        elData = scwin.defaultData();
+    if (Object.keys(elData).length === 1) {
+        elData = scwin.defaultData(elData.tenantName);
     }
     
     dm_loginCustomInfo.setJSON(elData)
@@ -133,7 +133,7 @@ scwin.sbm_saveConfig_submitdone = function (e) {
     console.log(e);
 };
 
-scwin.defaultData = function () {
+scwin.defaultData = function (name) {
     const data = {
         backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop', // 깔끔한 오피스 이미지
         logo: '',
@@ -153,7 +153,8 @@ scwin.defaultData = function () {
         overlayOpacity: 35,
         overlayColor: '#1f2937',
         primaryColor: '#3b82f6',
-        accentColor: '#6366f1'
+        accentColor: '#6366f1',
+        tenantName : name
     }
     // 부모의 데이터맵에도 세팅? -> 부모가 있는경우 
     // 현재 loginCustom시 datamap에 데이터 매핑이 안되어있어서 하나만 바꿔도 제대로 인식 못하는 문제 있음 -> 해결 필요
