@@ -62,15 +62,17 @@ public class KakaoAuthController {
 	@ElDescription(sub = "카카오 로그인 URL 조회", desc = "카카오 로그인 URL을 조회합니다.")
 	public ResponseEntity<String> getKakaoLoginUrl(@RequestParam(value = "service") String serviceCode,
 			HttpServletRequest request, HttpServletResponse response) {
+			System.out.println("TNU0000KL 진입 서비스코드는= "+serviceCode);
 		try {
 			String kakaoLoginUrl = kakaoAuthService.getKakaoLoginUrl(serviceCode);
-
+			System.out.println("가져온 로그인 url은?=="+kakaoLoginUrl);
 			Map<String, Object> result = new HashMap<>();
 			result.put("success", true);
 			result.put("loginUrl", kakaoLoginUrl);
 			result.put("message", "카카오 로그인 URL 조회 성공");
 
 			String resultJson = objectMapper.writeValueAsString(result);
+			System.out.println("resultJson==="+resultJson);
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resultJson);
 
 		} catch (Exception e) {
@@ -103,7 +105,7 @@ public class KakaoAuthController {
 			@RequestParam(value = "error", required = false) String error,
 			@RequestParam(value = "error_description", required = false) String error_description,
 			HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
-
+			System.out.println("TNU0000KC진입, 인증코드는 = "+code);
 		try {
 			// 1. 오류 파라미터 확인
 			if (error != null) {
@@ -126,6 +128,7 @@ public class KakaoAuthController {
 				errorResult.put("message", "인증 코드가 없습니다.");
 
 				String errorJson = objectMapper.writeValueAsString(errorResult);
+				System.out.println(errorJson);
 				return createJsonResponse(HttpStatus.BAD_REQUEST, errorJson);
 			}
 
@@ -156,9 +159,11 @@ public class KakaoAuthController {
 
 			if (existingUser != null) {
 				String email = existingUser.getEmail();
-				String tenantId = existingUser.getTenantId();
+				String subDoamin = existingUser.getSubDomain();
+				String logintenantId = existingUser.getTenantId();
 				String name = existingUser.getName();
-				LoginInfo info = loginProcess.processLogin(request, email, null, tenantId, true);
+				System.out.println("카카오 로그인 시도 유저VO == "+existingUser);
+				LoginInfo info = loginProcess.processLogin(request, email, null, subDoamin, true);
 				AppLog.debug("로그인 처리 결과: " + info);
 
 				// 2. 성공 여부만 판별. 세션 어댑터가 JWT 헤더 설정을 이미 수행함
@@ -174,9 +179,7 @@ public class KakaoAuthController {
 //				result.put("isActive", existingUser.isIsActive());
 //				String json = objectMapper.writeValueAsString(result);
 				String redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml"
-						+ "&tenant=" + tenantId + "&success=true" + "&userId=" + existingUser.getUserId() + "&userName="
-						+ URLEncoder.encode(existingUser.getName(), "UTF-8") + "&role=" + existingUser.getRole()
-						+ "&isActive=" + existingUser.isIsActive();
+						+ "&tenant=" + logintenantId;
 
 				response.sendRedirect(redirectUrl);
 				return null;
