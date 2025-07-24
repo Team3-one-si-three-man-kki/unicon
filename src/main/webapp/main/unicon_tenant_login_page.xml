@@ -58,7 +58,6 @@
 				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="loading...." ev:submit=""
 				ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
-
 			<xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post"
 				mediatype="application/json" ref="" target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
 				mode="asynchronous" processMsg="카카오 로그인 중입니다." ev:submit="" ev:submitdone="scwin.kakao_login_submitdone" ev:submiterror=""
@@ -444,7 +443,25 @@ scwin.login_submitdone = function (e) {
 
 // 카카오 로그인 함수들
 scwin.btn_kakao_onclick = function (e) {
-    $c.sbm.execute(kakao_login);
+   // 3.1 URL 파라미터에서 tenant 추출
+    var tenant = $p.getParameter("tenant");
+    console.log(tenant);
+    // 3.2 서비스 코드 정의
+    var service = "TNU0000KC";
+    // 3.3 동적으로 action URL 생성 (중괄호 없이)
+    var url = "/InsWebApp/TNU0000KL.pwkjson?service=" 
+              + service 
+              + "&tenant=" + encodeURIComponent(tenant);
+    // 3.4 submission에 action 설정
+    console.log(url);
+
+    var subObj = $p.getSubmission("kakao_login");
+    console.log(subObj);
+
+  subObj.action = url;
+
+  $p.executeSubmission("kakao_login");
+    
 };
 
 scwin.kakao_login_submitdone = function (e) {

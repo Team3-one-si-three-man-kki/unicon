@@ -61,18 +61,19 @@ public class KakaoAuthController {
 	@RequestMapping(value = "TNU0000KL")
 	@ElDescription(sub = "카카오 로그인 URL 조회", desc = "카카오 로그인 URL을 조회합니다.")
 	public ResponseEntity<String> getKakaoLoginUrl(@RequestParam(value = "service") String serviceCode,
+	@RequestParam(value = "tenant", required = false, defaultValue = "default") String tenant,
 			HttpServletRequest request, HttpServletResponse response) {
-			System.out.println("TNU0000KL 진입 서비스코드는= "+serviceCode);
+		System.out.println("TNU0000KL 진입 서비스코드는= " + serviceCode);
 		try {
-			String kakaoLoginUrl = kakaoAuthService.getKakaoLoginUrl(serviceCode);
-			System.out.println("가져온 로그인 url은?=="+kakaoLoginUrl);
+			String kakaoLoginUrl = kakaoAuthService.getKakaoLoginUrl(serviceCode,tenant);
+			System.out.println("가져온 로그인 url은?==" + kakaoLoginUrl);
 			Map<String, Object> result = new HashMap<>();
 			result.put("success", true);
 			result.put("loginUrl", kakaoLoginUrl);
 			result.put("message", "카카오 로그인 URL 조회 성공");
 
 			String resultJson = objectMapper.writeValueAsString(result);
-			System.out.println("resultJson==="+resultJson);
+			System.out.println("resultJson===" + resultJson);
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resultJson);
 
 		} catch (Exception e) {
@@ -104,8 +105,9 @@ public class KakaoAuthController {
 	public ResponseEntity<String> kakaoOAuthCallback(@RequestParam(value = "code", required = false) String code,
 			@RequestParam(value = "error", required = false) String error,
 			@RequestParam(value = "error_description", required = false) String error_description,
-			HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
-			System.out.println("TNU0000KC진입, 인증코드는 = "+code);
+			@RequestParam(value = "state", required = false) String state, HttpServletRequest request,
+			HttpServletResponse response) throws UnsupportedEncodingException {
+		System.out.println("TNU0000KC진입, 인증코드는 = " + code);
 		try {
 			// 1. 오류 파라미터 확인
 			if (error != null) {
@@ -162,7 +164,7 @@ public class KakaoAuthController {
 				String subDoamin = existingUser.getSubDomain();
 				String logintenantId = existingUser.getTenantId();
 				String name = existingUser.getName();
-				System.out.println("카카오 로그인 시도 유저VO == "+existingUser);
+				System.out.println("카카오 로그인 시도 유저VO == " + existingUser);
 				LoginInfo info = loginProcess.processLogin(request, email, null, subDoamin, true);
 				AppLog.debug("로그인 처리 결과: " + info);
 
@@ -198,10 +200,11 @@ public class KakaoAuthController {
 
 				// 6. 신규 유저(등록되지 않은 사용자): 안내 후 로그인 페이지로 이동
 				AppLog.info("등록되지 않은 카카오 사용자 로그인 시도: " + accessresult.get("email"));
-
-				String redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml"
-						+ "&error=true" + "&errorType=unregistered" + "&email="
-						+ URLEncoder.encode((String) accessresult.get("email"), "UTF-8") + "&message="
+				 String tenant = (state != null && !state.isEmpty()) ? state : "default";
+				String redirectUrl = "/InsWebApp/websquare/websquare.html"
+						+ "?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml" + "&tenant="
+						+ URLEncoder.encode(tenant, "UTF-8") + "&error=true&errorType=unregistered" + "&email="
+						+ URLEncoder.encode(kakaoUserInfo.getEmail(), "UTF-8") + "&message="
 						+ URLEncoder.encode("등록되지 않은 사용자입니다. 관리자에게 문의하여 계정을 등록해 주세요.", "UTF-8");
 
 				response.sendRedirect(redirectUrl);
