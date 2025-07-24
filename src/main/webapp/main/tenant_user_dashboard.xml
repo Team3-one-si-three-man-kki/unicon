@@ -14,11 +14,11 @@
 		<script type="text/javascript" lazy="false"><![CDATA[// 역할별 탭 접근 권한 정의 
 scwin.rolePermissions = {
     'ADMIN': {
-        tabs: ['user', 'module', 'login', 'meeting', 'history'], // report 제거
+        tabs: ['user', 'module', 'login', 'meeting', 'history', 'attenance', 'moduleManagement'], // report 제거
         description: '모든 기능에 접근 가능'
     },
     'MANAGER': {
-        tabs: ['user', 'module', 'login', 'meeting', 'history'], // report 제거
+        tabs: ['user', 'module', 'login', 'meeting', 'history', 'attenance', 'moduleManagement'], // report 제거
         description: '모든 기능에 접근 가능'
     },
     'USER': {
@@ -166,7 +166,7 @@ scwin.initializeTabPermissions = function () {
 scwin.applyTabPermissions = function () {
     console.log("=== 탭 권한 적용 시작 ===");
 
-    const allTabs = ['user', 'module', 'login', 'meeting', 'history'];
+    const allTabs = ['user', 'module', 'login', 'meeting', 'history', 'attenance', 'moduleManagement'];
     let visibleTabCount = 0;
     let firstVisibleTab = null;
 
@@ -357,7 +357,13 @@ scwin.showPanel = function (panelType) {
     } else if (panelType === 'meeting') {
         console.log("미팅 생성 페이지 로드 시도");
         pageUrl = "make_session_progress.xml" + tenantParam;
-    } else {
+    } else if (panelType === 'attenance') {
+        console.log("출석 관리 페이지 로드 시도");
+        pageUrl = "attendance_module__dashboard.xml" + tenantParam;
+    }else if (panelType === 'moduleManagement') {
+        console.log("모듈 관리 페이지 로드 시도");
+        pageUrl = "module-management.xml" + tenantParam;
+    }  else {
         // alert 제거 - 콘솔 로그만 남김
         console.log(panelType + " 메뉴입니다.");
         return;
@@ -815,6 +821,14 @@ scwin.updateHeaderWithRoleInfo = function () {
 						<xf:label><![CDATA[이전 미팅 관리]]></xf:label>
 					</xf:trigger>
 
+					<xf:trigger class="tab-button" data-tab="attenance" ev:onclick="scwin.switchTabWithPermission('attenance')"
+						id="tab-attenance" type="button">
+						<xf:label><![CDATA[출석 관리]]></xf:label>
+					</xf:trigger>
+					<xf:trigger class="tab-button" data-tab="moduleManagement" ev:onclick="scwin.switchTabWithPermission('moduleManagement')"
+						id="tab_moduleManagement" type="button" style="">
+						<xf:label><![CDATA[모듈관리]]></xf:label>
+					</xf:trigger>
 				</xf:group>
 			</xf:group>
 

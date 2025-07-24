@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.inswave.elfw.exception.ElException;
 import com.demo.proworks.module.vo.ModuleVo;
 import com.demo.proworks.module.vo.TenantModuleVo;
+import com.demo.proworks.session.vo.SessionVo;
 import com.demo.proworks.module.dao.ModuleDAO;
 
 /**
@@ -134,5 +135,9 @@ public class ModuleDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbstrac
 	 */
 	public TenantModuleVo selectTenantModule(TenantModuleVo tenantModuleVo) throws ElException {
 		return (TenantModuleVo) selectByPk("com.demo.proworks.module.selectTenantModule", tenantModuleVo);
+	}
+	
+	public List<SessionVo> getSessionsByModule(String moduleId) throws ElException {
+		return (List<SessionVo>) list("com.demo.proworks.module.getSessionsByModule", moduleId);
 	}
 }

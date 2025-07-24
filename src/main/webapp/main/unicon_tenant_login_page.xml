@@ -184,6 +184,8 @@ scwin.loadCustomization = function (c) {
         }
     }
 
+
+ 
     if (btn_login && c.primaryColor) {
         btn_login.setStyle("backgroundColor", c.primaryColor);
         btn_login.setStyle("color", c.accentColor);
@@ -191,6 +193,7 @@ scwin.loadCustomization = function (c) {
 
     const setLabelStyle = function (id, text, color, size, weight) {
         if (!id) return;
+        
         if (text) id.setLabel(text);
         if (color) id.setStyle("color", color);
         if (weight) id.setStyle("fontWeight", weight);
