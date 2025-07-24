@@ -149,7 +149,7 @@ scwin.onpageload = function () {
         if (dm && typeof dm.set === 'function') {
             dm.set('subDomain', subDomain !== null ? subDomain : "basic");
             dm_sub.set('subDomain', subDomain !== null ? subDomain : "basic");
-            dm_sub.set('mode',"login");
+            dm_sub.set('mode', "login");
         };
         scwin.createPopupLayer();
 
@@ -174,10 +174,14 @@ scwin.loadCustomization = function (c) {
 
     if (logoImage && c.logo) {
         logoImage.setSrc(c.logo);
-        logoImage.setStyle("width", c.logoSize);
-        logoImage.setStyle("height", c.logoSize);
-    }
 
+        var logoElement = document.getElementById(logoImage.getID());
+        if (logoElement && c.logoSize) {
+            var size = String(c.logoSize).endsWith('px') ? c.logoSize : c.logoSize + 'px';
+            logoElement.style.setProperty('width', size, 'important');
+            logoElement.style.setProperty('height', size, 'important');
+        }
+    }
     if (btn_login && c.primaryColor) {
         btn_login.setStyle("backgroundColor", c.primaryColor);
         btn_login.setStyle("color", c.accentColor);
@@ -185,10 +189,18 @@ scwin.loadCustomization = function (c) {
 
     const setLabelStyle = function (id, text, color, size, weight) {
         if (!id) return;
+
         id.setLabel(text);
         id.setStyle("color", color);
-        id.setStyle("fontSize", size);
         id.setStyle("fontWeight", weight);
+
+        // DOM 객체를 직접 제어하여 !important 스타일을 적용합니다.
+        var element = document.getElementById(id.getID());
+        if (element && size) {
+            // size 값에 'px'가 없는 경우를 대비해 추가합니다.
+            var fontSize = String(size).endsWith('px') ? size : size + 'px';
+            element.style.setProperty('font-size', fontSize, 'important');
+        }
     };
 
     setLabelStyle(mainTitle, c.mainTitle, c.mainTitleColor, c.mainTitleSize, c.mainTitleFont);
@@ -457,61 +469,75 @@ scwin.togglePassword_onclick = function (e) {
     }
 };]]></script>
 
-		<style><![CDATA[
-        .title{
-        <!-- font-size: 18px !important; -->
-        }
-            .login_wrapper {
-                display: flex;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            .login_box {
-                width: 50%;
-                margin: 0 auto;
-            }
-            .leftPreview, .rightLogin {
-                flex: 1;
-                min-width: 450px;
-            }
-            .leftPreview{
-                width:50%; 
-                height:100vh;
-            }
-            .rightLogin{
-                width:50%; 
-                height:100vh; 
-                background-color:white; 
-                min-width:500px
-            }
-            .btn_kakao {
-                background-image: url('/InsWebApp/images/icons/kakao_btn2.png');
-                background-size: 100% 100%;
-                background-size: contain;
-                background-repeat: no-repeat;
-                background-position: center;
-                height: 48px;
-                width: 100%;
-                border: none;
-                cursor: pointer;
-                margin: 0 auto;
-            }
+		<style><![CDATA[.title {
+    < !-- font-size: 18px !important;
+    -->
+}
 
-            @media (max-width: 900px) {
-                .login_wrapper {
-                    flex-direction: column !important;
-                }
-                .leftPreview, .rightLogin {
-                    width: 100% !important;
-                    min-width: auto !important;
-                    height: auto !important;
-                }
-                .login_box {
-                    width: 80% !important;
-                    margin: 40px auto !important;
-                }
-            }
-        ]]></style>
+.login_wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.login_box {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.leftPreview,
+.rightLogin {
+    flex: 1;
+    min-width: 450px;
+}
+
+.leftPreview {
+    width: 50%;
+    height: 100vh;
+}
+
+.rightLogin {
+    width: 50%;
+    height: 100vh;
+    background-color: white;
+    min-width: 500px
+}
+
+.btn_kakao {
+    background-image: url('/InsWebApp/images/icons/kakao_btn2.png');
+    background-size: 100% 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 48px;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .login_wrapper {
+        flex-direction: column !important;
+    }
+
+    .leftPreview,
+    .rightLogin {
+        width: 100% !important;
+        min-width: auto !important;
+        height: auto !important;
+    }
+
+    .login_box {
+        width: 80% !important;
+        margin: 40px auto !important;
+    }
+}
+
+#contentFrame {
+    isolation: isolate !important;
+    contain: strict !important;
+}]]></style>
 	</head>
 
 	<body class="" ev:onpageload="scwin.onpageload">
@@ -523,7 +549,7 @@ scwin.togglePassword_onclick = function (e) {
 				style='flex: 1; position: relative; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;'>
 
 				<!-- 가운데 텍스트 콘텐츠 -->
-				<xf:group id="textContent" style="padding:20px;z-index:2;color:#ffffff;max-width:80%;position:relative;text-align:center;">
+				<xf:group id="textContent" style="padding:20px;z-index:2; max-width:80%;position:relative;text-align:center;">
 					<w2:textbox id="mainTitle" label="메인 입니다." style="margin-bottom: 20px; display: block; "
 						ref="data:dm_loginCustomInfo.mainTitle" class="title" />
 					<w2:textbox id="subTitle" label="서브입니다." style="margin-bottom: 24px; display: block;" ref="data:dm_loginCustomInfo.subTitle"
