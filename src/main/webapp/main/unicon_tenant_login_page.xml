@@ -357,19 +357,6 @@ scwin.redirectToMainPage = function () {
     }
 };
 
-// 비밀번호 보기/숨기기 토글
-scwin.togglePasswordVisibility = function () {
-    const passwordField = document.getElementById('mf_inp_password');
-    if (inp_password.hasClass("show")) {
-        passwordField.type = "text";
-        inp_password.toggleClass("show")
-        btn_password_toggle.setLabel("비밀번호 숨기기");
-    } else {
-        passwordField.type = "password";
-        inp_password.toggleClass("show")
-        btn_password_toggle.setLabel("비밀번호 보기");
-    }
-};
 
 // 실제 서버 통신 완료 후 콜백
 scwin.loginSubmitHandler = function (e) {
@@ -464,12 +451,11 @@ scwin.togglePassword_onclick = function (e) {
     if (inp_password.hasClass("show")) {
         passwordField.type = "text";
         inp_password.toggleClass("show")
-        togglePassword.setStyle("backgroundImage", '/InsWebApp/images/icons/close-eye.svg')
-        console.log(togglePassword.getBackgroundImage())
+        togglePassword.setSrc("/InsWebApp/images/icons/open-eye.svg")
     } else {
         passwordField.type = "password";
         inp_password.toggleClass("show")
-        togglePassword.setBackgroundImage('/InsWebApp/images/icons/open-eye.svg')
+        togglePassword.setSrc('/InsWebApp/images/icons/close-eye.svg')
     }
 };
 
@@ -618,12 +604,8 @@ scwin.defaultData = function () {
 									<xf:input adjustMaxLength="false" id="inp_password" ref="data:dma_login.password" placeholder="비밀번호를 입력해주세요."
 										style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; background: #f8fafc; transition: all 0.3s ease; box-sizing: border-box; padding-right: 120px; height: 40px;"
 										type="password" />
-									<xf:trigger type="button"
-										style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);background-image: url(/InsWebApp/images/icons/close-eye.svg);width: 18px;height: 18px;background-color: #fff;"
-										id="togglePassword" ev:onclick="scwin.togglePassword_onclick">
-										<xf:label><![CDATA[]]>
-										</xf:label>
-									</xf:trigger>
+									<xf:image src="/InsWebApp/images/icons/close-eye.svg" 
+                                    style="position: absolute; right: 16px; top:50%;transform: translateY(-50%); width: 18px;height: 18px;" id="togglePassword" ev:onclick="scwin.togglePassword_onclick"></xf:image>
 								</xf:group>
 
 								<!-- Remember me (현재 기능 미구현이므로 주석 처리) -->
