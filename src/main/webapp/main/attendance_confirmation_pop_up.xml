@@ -70,6 +70,10 @@ scwin.currentDate = function () {
     const display = `${year}년 ${month}월 ${day}일 ${ampm} ${hourStr}:${minute}`;
     return display;
 }
+
+scwin.btn_confirm_onclick = function (e) {
+    $p.closePopup()
+};
 ]]></script>
     </head>
     <body ev:onpageload="scwin.onpageload">
@@ -89,7 +93,7 @@ scwin.currentDate = function () {
         	</w2:textbox>
         	<xf:trigger class="" id="btn_confirm"
         		style="background-color:#2196F3;color:white;padding:12px 40px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;"
-        		ev:onclick="scwin.confirmAttendance()" type="button">
+        		type="button" ev:onclick="scwin.btn_confirm_onclick">
         		<xf:label>확인</xf:label>
         	</xf:trigger>
         </xf:group>
