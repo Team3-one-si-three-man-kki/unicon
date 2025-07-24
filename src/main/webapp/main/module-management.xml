@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head>
+		<w2:type>DEFAULT</w2:type>
+		<w2:buildDate />
+		<title>모듈 관리</title>
+		<xf:model>
+			<xf:instance>
+				<data xmlns="" />
+			</xf:instance>
+			<w2:dataCollection baseNode="map">
+				<w2:dataList id="dlt_modules" baseNode="list" style="" repeatNode="map" valueNode="">
+					<w2:columnInfo>
+						<w2:column id="moduleId" name="모듈ID" dataType="text" />
+						<w2:column id="name" name="모듈명" dataType="text" />
+						<w2:column id="price" name="가격" dataType="text" />
+						<w2:column id="purchasedAt" name="구매일" dataType="text" />
+						<w2:column id="icon" name="아이콘" dataType="text" />
+						<w2:column id="description" name="설명" dataType="text" />
+						<w2:column id="code" name="코드" dataType="text" />
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataList id="dlt_meetingRooms" baseNode="list" style="" repeatNode="map">
+					<w2:columnInfo>
+						<w2:column id="roomName" name="미팅룸 이름" dataType="text" />
+						<w2:column id="lastUsed" name="마지막 사용일" dataType="date" />
+					</w2:columnInfo>
+				</w2:dataList>
+				<w2:dataMap id="dma_selectedModule" baseNode="map">
+					<w2:keyInfo>
+						<w2:key id="totalUsage" name="총 사용 횟수" dataType="number" />
+					</w2:keyInfo>
+				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dma_moduleRequest">
+					<w2:keyInfo>
+						<w2:key dataType="text" name="테넌트ID" id="tenantId" />
+					</w2:keyInfo>
+				</w2:dataMap>
+				<w2:dataMap baseNode="map" id="dma_moduleId">
+					<w2:keyInfo>
+						<w2:key id="moduleId" name="모듈ID" dataType="number"></w2:key>
+					</w2:keyInfo>
+				</w2:dataMap>
+			</w2:dataCollection>
+			<w2:workflowCollection>
+				<w2:submission id="sbm_selectModules" target="" action="/api/modules" method="get" mediatype="application/json"
+					encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="모듈 목록을 조회하고 있습니다..."
+					ref="data['']" submitHandler="" submitDoneHandler="scwin.sbm_selectModules_submitDone" submitErrorHandler="" />
+				<w2:submission id="sbm_getModuleDetails" ref='data:json,dma_selectedModule'
+					target='data:json,{"action":"/api/module/details", "id":"dlt_meetingRooms"}' action="/api/module/details" method="post"
+					mediatype="application/json" encoding="UTF-8" mode="asynchronous" processMsg="상세 정보를 조회하고 있습니다..." />
+			</w2:workflowCollection>
+			<xf:submission id="sbm_getModuleList" action="/InsWebApp/TNU0001TenantModuleDetailList.pwkjson" method="post"
+				mediatype="application/json" ref='data:json,{"id":"dma_moduleRequest","key":"elData"}'
+				target='data:json,{"id":"dlt_modules","key":"elData"}' encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
+				mode="asynchronous" processMsg="" ev:submit="" ev:submitdone="scwin.sbm_getModuleList_submitdone" ev:submiterror="" abortTrigger="" />
+			<xf:submission id="sbm_getSessionList" action="/InsWebApp/TNU0002ML.pwkjson" method="post" mediatype="application/json"
+				ref='data:json,{"id":"dma_moduleId","key":"elData"}' target='data:json,{"id":"dlt_meetingRooms","key":"elData"}' encoding="UTF-8"
+				instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				ev:submitdone="scwin.sbm_getSessionList_submitdone" ev:submiterror="" abortTrigger="">
+			</xf:submission>
+		</xf:model>
+		<script lazy="false" type="text/javascript"><![CDATA[
+
+scwin.parseJwt = function (token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        const payload = JSON.parse(jsonPayload);
+        console.log("파싱된 JWT 페이로드:", payload);
+        return payload;
+    } catch (error) {
+        console.error("JWT 파싱 오류:", error);
+        return null;
+    }
+};
+
+
+scwin.loadModuleData = function (tenantId) {
+    console.log("모듈 데이터 로드 시작 - tenantId:", tenantId);
+
+    console.log("설정 전 dma_moduleRequest:", dma_moduleRequest.getJSON());
+
+    dma_moduleRequest.set("tenantId", tenantId);
+
+    console.log("설정 후 dma_moduleRequest:", dma_moduleRequest.getJSON());
+
+    $p.executeSubmission("sbm_getModuleList");
+};
+
+scwin.btn_refresh_onclick = function () {
+    console.log("새로고침 버튼 클릭");
+    const accessToken = sessionStorage.getItem('accessToken');
+    if (accessToken) {
+        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+        const tokenPayload = scwin.parseJwt(tokenString);
+        const tokenTenant = tokenPayload ? tokenPayload.tenantId : null;
+
+        if (tokenTenant) {
+            scwin.loadModuleData(tokenTenant);
+        }
+    }
+    grp_module_detail.hide();
+};
+
+scwin.createModuleCards = function(moduleData) {
+    console.log("createModuleCards 시작:", moduleData);
+
+    try {
+        // 1) 컨테이너 DOM 요소 조회 (WebSquare 내 렌더된 div)
+        var container = document.querySelector(".card-container");
+        if (!container) {
+            console.error("gen_modules_container를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 2) 기존 카드 제거
+        container.innerHTML = "";
+
+        // 3) 데이터 순회하며 카드 생성
+        moduleData.forEach(function(item, idx) {
+            console.log("카드 생성:", idx, item.name);
+
+            // 카드 래퍼
+            var card = document.createElement("div");
+            card.className = "module-card";
+            card.dataset.moduleId = item.moduleId || "";
+
+            // 아이콘(이모지)
+            var emoji = document.createElement("span");
+            emoji.className = "module-icon";
+            emoji.textContent = item.icon || "–";
+            card.appendChild(emoji);
+
+            // 모듈명
+            var nameDiv = document.createElement("div");
+            nameDiv.className = "module-name";
+            nameDiv.textContent = item.name || "이름 없음";
+            card.appendChild(nameDiv);
+
+            // 코드
+            var codeDiv = document.createElement("div");
+            codeDiv.className = "module-code";
+            codeDiv.textContent = "(" + (item.code || "") + ")";
+            card.appendChild(codeDiv);
+
+            // 설명
+            var descDiv = document.createElement("div");
+            descDiv.className = "module-desc";
+            descDiv.textContent = item.description || "설명 없음";
+            card.appendChild(descDiv);
+
+            // 가격·구매일
+            var infoDiv = document.createElement("div");
+            infoDiv.className = "module-info";
+            infoDiv.textContent = "가격: " + (item.price || "-") +
+                                  " \n구매일: " + (item.purchasedAt || "-");
+            card.appendChild(infoDiv);
+
+            // 상세보기 버튼
+            var actionDiv = document.createElement("div");
+            actionDiv.className = "card-action";
+            var btn = document.createElement("button");
+            btn.className = "btn btn-primary";
+            btn.style.fontSize = "12px";
+            btn.textContent = "상세보기";
+            btn.addEventListener("click", function() {
+                scwin.showModuleDetails(item.moduleId);
+            });
+            actionDiv.appendChild(btn);
+            card.appendChild(actionDiv);
+
+            // 컨테이너에 추가
+            container.appendChild(card);
+        });
+
+        console.log("카드 렌더링 완료. 총 개수:", moduleData.length);
+
+    } catch (err) {
+        console.error("createModuleCards 오류:", err, err.stack);
+    }
+};
+
+scwin.filterByStatus = function (status) {
+    console.log("필터링 시작:", status);
+    
+    try {
+        var dataListComponent = dlt_modules || $p.getComponentById("dlt_modules");
+        if (!dataListComponent) {
+            console.error("DataList 컴포넌트를 찾을 수 없습니다.");
+            return;
+        }
+        
+        var allData = dataListComponent.getAllJSON();
+        scwin.createModuleCards(allData);
+        
+    } catch (error) {
+        console.error("필터링 중 오류 발생:", error);
+    }
+};
+
+
+scwin.showModuleDetails = function (moduleId) {
+    console.log("선택된 모듈 ID:", moduleId);
+    dma_moduleId.set("moduleId",moduleId);
+    $p.executeSubmission("sbm_getSessionList");
+    grp_module_detail.show();
+
+    if (moduleId === '1') {
+        dma_selectedModule.set("totalUsage", 128);
+        dlt_meetingRooms.setJSON([
+            { roomName: "대회의실", lastUsed: "2025-07-20" },
+            { roomName: "프로젝트룸 A", lastUsed: "2025-07-21" },
+            { roomName: "임원 회의실", lastUsed: "2025-07-18" }
+        ]);
+    } else if (moduleId === 'mod-002') {
+        dma_selectedModule.set("totalUsage", 256);
+        dlt_meetingRooms.setJSON([
+            { roomName: "소회의실 1", lastUsed: "2025-07-21" },
+            { roomName: "프로젝트룸 B", lastUsed: "2025-07-20" },
+            { roomName: "고객 접견실", lastUsed: "2025-07-19" }
+        ]);
+    } else {
+        dma_selectedModule.set("totalUsage", 0);
+        dlt_meetingRooms.setJSON([]);
+    }
+
+    // dlt_modules에서 선택된 모듈의 이름을 찾습니다.
+    const selectedModuleRow = dlt_modules.getMatchedIndex("moduleId", moduleId);
+    if (selectedModuleRow.length > 0) {
+        txt_selected_module_name.setValue(dlt_modules.getCellData(selectedModuleRow[0], "name"));
+    } else {
+        txt_selected_module_name.setValue("모듈 사용 내역"); // 찾을 수 없는 경우 기본값
+    }
+};
+
+scwin.deactivateModule = function (moduleId) {
+    var rowIndex = dlt_modules.getMatchedIndex("moduleId", moduleId)[0];
+    var moduleName = dlt_modules.getCellData(rowIndex, "name");
+    if (confirm("'" + moduleName + "' 모듈을 사용 중지하시겠습니까?")) {
+        console.log(moduleId + " 모듈 사용 중지 처리");
+        dlt_modules.setCellData(rowIndex, "status", "inactive");
+    }
+};
+
+scwin.statusFormatter = function (status) {
+    return status === 'active' ? 'status-active' : 'status-inactive';
+};
+
+
+
+
+// 2. submitdone 함수 수정 (DataList 접근 방법 개선)
+scwin.sbm_getModuleList_submitdone = function (e) {
+      console.log("서브미션 이후 함수 실행됨.");
+    console.log("서버 응답 전체:", e.responseJSON);
+
+    if (e.responseStatusCode === 200) {
+        var actualList = e.responseJSON.tenantModuleDetailVoList.tenantModuleDetailVoList;
+        console.log("서버에서 받은 원본 데이터 (tenantModuleDetailVoList):", actualList);
+
+        if (actualList && Array.isArray(actualList)) {
+            var transformedData = actualList.map(function (item) {
+                return {
+                    moduleId: item.moduleId || '',
+                    name: item.name || '',
+                    price: item.price || '',
+                    purchasedAt: item.purchasedAt || '',
+                    icon: item.icon || '',
+                    description: item.description || '',
+                    code: item.code || ''
+                };
+            });
+
+            console.log("변환된 데이터:", transformedData);
+
+            var dataListComponent = null;
+            if (typeof dlt_modules !== 'undefined') {
+                dataListComponent = dlt_modules;
+                console.log("Direct access to dlt_modules successful.");
+            } else if (typeof $p !== 'undefined' && $p.getComponentById) {
+                dataListComponent = $p.getComponentById("dlt_modules");
+                console.log("$p.getComponentById access to dlt_modules successful.");
+            } else if (typeof $p !== 'undefined' && $p.data) {
+                dataListComponent = $p.data.dlt_modules;
+                console.log("$p.data access to dlt_modules successful.");
+            }
+
+            if (dataListComponent && typeof dataListComponent.setJSON === 'function') {
+                console.log("DataList 컴포넌트 찾음:", dataListComponent);
+
+                console.log("setJSON 호출 전 dlt_modules 행 개수:", dataListComponent.getRowCount());
+                console.log("setJSON 호출 전 dlt_modules 데이터:", dataListComponent.getAllJSON());
+
+                dataListComponent.setJSON(transformedData);
+                console.log("데이터 설정 완료.");
+
+                console.log("setJSON 호출 후 dlt_modules 행 개수:", dataListComponent.getRowCount());
+                console.log("setJSON 호출 후 dlt_modules 데이터:", dataListComponent.getAllJSON());
+
+                // 카드 렌더링 - 직접 여기서 처리
+                console.log("카드 렌더링 시작");
+                scwin.createModuleCards(transformedData);
+            }
+        }
+    }
+};  
+scwin.sbm_getSessionList_submitdone = function (e) {
+// 응답 데이터에서 sessionVoList 추출
+    var sessionList = e.responseJSON.sessionVoList;
+    
+    // DataList에 설정할 데이터 배열 생성
+    var meetingRoomsData = [];
+    
+    if (sessionList && sessionList.length > 0) {
+        // sessionVoList의 각 항목을 DataList 구조에 맞게 변환
+        for (var i = 0; i < sessionList.length; i++) {
+            var session = sessionList[i];
+            
+            meetingRoomsData.push({
+                roomName: session.name,           // name을 roomName으로 매핑
+                lastUsed: session.startTime       // startTime을 lastUsed로 매핑
+            });
+        }
+    }
+    
+    // DataList에 데이터 설정
+    dlt_meetingRooms.setJSON(meetingRoomsData);
+
+    // 총 사용 횟수를 행 개수로 업데이트
+    var totalCount = dlt_meetingRooms.getRowCount();
+    dma_selectedModule.set("totalUsage", totalCount);
+    
+    // 디버깅용 로그
+    console.log("변환된 미팅룸 데이터:", meetingRoomsData);
+    console.log("DataList 행 개수:", dlt_meetingRooms.getRowCount());
+    console.log("DataList 전체 데이터:", dlt_meetingRooms.getAllJSON());
+};
+
+scwin.onpageload = function () {
+    console.log("페이지 로드 시작");
+    const accessToken = sessionStorage.getItem('accessToken');
+    console.log("토큰 조회:", accessToken);
+
+    if (accessToken) {
+        const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+        const tokenPayload = scwin.parseJwt(tokenString);
+        const tokenTenant = tokenPayload ? tokenPayload.tenantId : null;
+
+        console.log("토큰에서 추출한 테넌트:", tokenTenant);
+
+        if (tokenTenant) {
+            scwin.loadModuleData(tokenTenant);
+        } else {
+            console.error("tenantId를 찾을 수 없습니다.");
+        }
+    } else {
+        console.error("accessToken을 찾을 수 없습니다.");
+    }
+
+    grp_module_detail.hide();
+};
+]]></script>
+		<style type="text/css"><![CDATA[
+            /* 전체 페이지 스타일 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* 페이지 헤더 */
+.page-header { 
+    border: none;
+    padding: 30px 0; 
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.page-title { 
+    font-size: 28px; 
+    font-weight: 700; 
+    color: black; 
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-subtitle { 
+    font-size: 16px; 
+    color: black;
+    margin-top: 8px;
+    font-weight: 300;
+}
+
+/* 메인 컨테이너 */
+.main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 콘텐츠 헤더 */
+.content-header {
+    margin-bottom: 20px;
+    display: flex; /* 자식 요소들을 가로로 배치 */
+    justify-content: space-between; /* 양쪽 끝으로 요소를 분산 배치 */
+    align-items: center; /* 세로 중앙 정렬 */
+}
+
+.content-header-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.content-header-desc {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* 툴바 개선 - 조회 버튼 하나만 중앙 정렬 */
+.toolbar { 
+    padding: 20px;
+    border: none;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 25px;
+    border-left: 4px solid #007bff;
+    text-align: center;
+}
+
+/* 버튼 스타일 개선 */
+.btn { 
+    padding: 12px 30px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+}
+
+.btn:hover { 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary { 
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    color: white;
+    border-color: transparent;
+    min-width: 120px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004494 0%, #0056b3 100%);
+}
+
+/* 패널 스타일 */
+.module-list-panel, .module-detail-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* 카드 컨테이너 - 한 줄에 3개씩 고정 */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    min-height: 400px;
+}
+
+/* 모듈 카드 대폭 개선 */
+.module-card {
+    background: white;
+    border: none;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 280px;
+}
+
+.module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0056b3, #007bff);
+}
+
+.module-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 123, 255, 0.2);
+}
+
+/* 모듈 아이콘 개선 */
+.module-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.module-card:hover .module-icon {
+    transform: scale(1.1);
+}
+
+/* 모듈 이름 개선 */
+.module-name {
+    font-weight: 700;
+    font-size: 18px;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+/* 모듈 코드 개선 */
+.module-code {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 설명 영역 개선 */
+.module-desc {
+    font-size: 14px;
+    color: #5a6c7d;
+    text-align: center;
+    flex-grow: 1;
+    margin-bottom: 16px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 가격·구매일 정보 개선 */
+.module-info {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 20px;
+    white-space: pre-line;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 버튼 영역 개선 */
+.card-action {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.card-action .btn {
+    font-size: 13px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin: 0;
+    min-width: 100px;
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    color: white;
+}
+
+.card-action .btn:hover {
+    background: linear-gradient(135deg, #004494 0%, #0056b3 100%);
+}
+
+/* 상세 패널 개선 */
+.module-detail-panel {
+    background: white;
+}
+
+.detail-content {
+    padding: 30px !important;
+}
+
+.usage-count {
+    color: #007bff !important;
+    font-weight: 700 !important;
+    font-size: 32px !important;
+    margin: 10px 0 30px 0 !important;
+    text-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+/* 그리드뷰 개선 */
+.w2grid {
+    border: none !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.w2grid .w2grid_header {
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.w2grid .w2grid_body .w2grid_row:nth-child(even) {
+    background-color: #f8f9fa !important;
+}
+
+.w2grid .w2grid_body .w2grid_row:hover {
+    background-color: #e3f2fd !important;
+    transition: background-color 0.2s ease !important;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .card-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        padding: 0 10px;
+    }
+    
+    .module-list-panel, .module-detail-panel {
+        width: 100% !important;
+        float: none !important;
+        margin-bottom: 20px;
+    }
+    
+    .card-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .module-card {
+        padding: 20px;
+        min-height: 250px;
+    }
+    
+    .toolbar {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 24px;
+    }
+    
+    .page-subtitle {
+        font-size: 14px;
+    }
+    
+    .module-card {
+        min-height: 220px;
+    }
+}
+
+/* 스크롤바 커스터마이징 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #004494 0%, #0056b3 100%);
+}
+
+/* 로딩 애니메이션을 위한 스타일 */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading .module-card {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+        ]]></style>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group id="grp_header" class="page-header" tagname="div">
+			<w2:textbox id="txt_title" class="page-title" label="모듈 관리 시스템" style="padding-left: 10px;" />
+			<w2:textbox id="txt_subtitle" class="page-subtitle" label="마켓플레이스에서 구매한 모듈들을 관리합니다" style="padding-left: 20px;" />
+		</xf:group>
+		<xf:group id="grp_main_container" class="main-container" tagname="div">
+			<xf:group id="grp_module_list" class="module-list-panel" tagname="div"
+				style="width: 50%; float: left; padding: 10px; box-sizing: border-box;">
+				<xf:group class="content-header" tagname="div">
+					<w2:textbox class="content-header-title" label="보유 모듈 목록" style="padding-left: 5px"/>
+				</xf:group>
+				<xf:group class="card-container" id="gen_modules_container" tagname="div">
+					<!-- 이곳에 JS 로 카드들이 동적으로 추가됩니다 -->
+				</xf:group>
+
+			</xf:group>
+			<xf:group id="grp_module_detail" class="module-detail-panel" tagname="div"
+				style="width: 50%; float: left; padding: 10px; box-sizing: border-box;">
+				<xf:group class="content-header" tagname="div">
+					<w2:textbox id="txt_selected_module_name" class="content-header-title" label="모듈 사용 내역" />
+					<w2:textbox class="content-header-desc" label="해당 모듈이 사용된 내역을 확인합니다." />
+				</xf:group>
+				<xf:group class="detail-content" tagname="div" style="padding:20px;">
+					<w2:textbox label="총 사용 횟수" tagname="p" style="font-size:14px; color:#666;" />
+					<w2:textbox ref="data:dma_selectedModule.totalUsage" class="usage-count" tagname="h3"
+						style="margin-top:0; margin-bottom:20px;">
+						<w2:displayFormatter><![CDATA[value + " 회"]]></w2:displayFormatter>
+					</w2:textbox>
+					<w2:textbox label="사용한 미팅룸 목록" tagname="p" style="font-size:14px; color:#666; border-top:1px solid #eee; padding-top:20px;" />
+					<w2:gridView id="grd_meetingRooms" style="width:100%; height: 700px;" dataList="data:dlt_meetingRooms" autoFit="lastColumn"
+						rowNumVisible="true">
+						<w2:caption value="미팅룸 목록" />
+						<w2:header>
+							<w2:row>
+								<w2:column width="200" id="h_roomName" value="미팅룸 이름"></w2:column>
+								<w2:column width="150" id="h_lastUsed" value="마지막 사용일"></w2:column>
+							</w2:row>
+						</w2:header>
+						<w2:gBody>
+							<w2:row>
+								<w2:column width="200" inputType="text" id="roomName" displayMode="label"></w2:column>
+								<w2:column dataType="date" width="150" displayFormat="yyyy-MM-dd" inputType="text" id="lastUsed" displayMode="label">
+								</w2:column>
+							</w2:row>
+						</w2:gBody>
+					</w2:gridView>
+				</xf:group>
+			</xf:group>
+		</xf:group>
+	</body>
+</html>

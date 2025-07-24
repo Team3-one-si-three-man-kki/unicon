@@ -11,6 +11,7 @@ import com.demo.proworks.module.dao.ModuleDAO;
 import com.demo.proworks.module.service.ModuleService;
 import com.demo.proworks.module.vo.ModuleVo;
 import com.demo.proworks.module.vo.TenantModuleVo;
+import com.demo.proworks.session.vo.SessionVo;
 import com.inswave.elfw.exception.ElException;
 import com.inswave.elfw.log.AppLog;
 
@@ -242,6 +243,10 @@ public class ModuleServiceImpl implements ModuleService {
 	@Override
 	public boolean isDuplicateSubscription(TenantModuleVo tenantModuleVo) throws Exception {
 		return isModuleSubscribed(tenantModuleVo);
+	}
+	
+	public List<SessionVo> getSessionsByModule(String moduleId) throws Exception{
+		return moduleDAO.getSessionsByModule(moduleId);
 	}
 
 }

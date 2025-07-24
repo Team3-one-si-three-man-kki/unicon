@@ -168,6 +168,17 @@
 		WHERE module_id = #{moduleId}
 		AND tenant_id = #{tenantId}
 	</select>
+	
+	 <select id="getSessionsByModule" parameterType="string" resultType="com.demo.proworks.session.vo.SessionVo">
+        SELECT 
+            s.name       AS name,
+            s.start_time AS startTime
+        FROM session_module sm
+        JOIN session s 
+          ON sm.session_id = s.session_id
+        WHERE sm.module_id = #{moduleId}
+        ORDER BY s.start_time DESC
+    </select>
 
 
 </mapper>
