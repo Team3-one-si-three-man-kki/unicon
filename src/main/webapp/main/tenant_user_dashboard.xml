@@ -22,7 +22,7 @@ scwin.rolePermissions = {
         description: '모든 기능에 접근 가능'
     },
     'USER': {
-        tabs: ['meeting', 'history'],
+        tabs: ['meeting', 'history', 'attenance'],
         description: '미팅 관련 기능만 접근 가능'
     }
 };
