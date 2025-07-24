@@ -167,9 +167,7 @@ scwin.overlayElement = null;
 
 scwin.loadCustomization = function (c) {
     if (!c) return;
-    if (Object.keys(c).length === 0) {
-        c = scwin.defaultData()
-    }
+
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
     }
@@ -387,6 +385,8 @@ scwin.loadCustom_submitdone = function (e) {
     console.log("받아온데이터입니다", elData);
     if (elData?.code === "E001") {
         location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/error/404tenant.xml";
+    }else if (Object.keys(elData).length === 0) {
+        elData = scwin.defaultData();
     }
     scwin.loadCustomization(elData);
 };
