@@ -29,6 +29,7 @@
         				<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
         				<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
         				<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+        				<w2:key dataType="text" name="tenantName" id="tenantName"></w2:key>
         			</w2:keyInfo>
         		</w2:dataMap>
         		<w2:dataMap baseNode="map" id="dm_loginPage_request">
