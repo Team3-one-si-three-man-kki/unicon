@@ -149,7 +149,7 @@ scwin.onpageload = function () {
         if (dm && typeof dm.set === 'function') {
             dm.set('subDomain', subDomain !== null ? subDomain : "basic");
             dm_sub.set('subDomain', subDomain !== null ? subDomain : "basic");
-            dm_sub.set('mode',"login");
+            dm_sub.set('mode', "login");
         };
         scwin.createPopupLayer();
 
@@ -166,8 +166,10 @@ scwin.applyCustomization = function (data) {
 scwin.overlayElement = null;
 
 scwin.loadCustomization = function (c) {
-    console.log("데이터", c)
     if (!c) return;
+    if (Object.keys(c).length === 0) {
+        c = scwin.defaultData()
+    }
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
     }
@@ -185,10 +187,10 @@ scwin.loadCustomization = function (c) {
 
     const setLabelStyle = function (id, text, color, size, weight) {
         if (!id) return;
-        id.setLabel(text);
-        id.setStyle("color", color);
-        id.setStyle("fontSize", size);
-        id.setStyle("fontWeight", weight);
+        if (text) id.setLabel(text);
+        if (color) id.setStyle("color", color);
+        if (size) id.setStyle("fontSize", size);
+        if (weight) id.setStyle("fontWeight", weight);
     };
 
     setLabelStyle(mainTitle, c.mainTitle, c.mainTitleColor, c.mainTitleSize, c.mainTitleFont);
@@ -210,8 +212,8 @@ scwin.loadCustomization = function (c) {
         }
     }
 
-    scwin.overlayElement.style.backgroundColor = c.overlayColor;
-    scwin.overlayElement.style.opacity = (parseInt(c.overlayOpacity) || 0) / 100;
+    if (c.overlayColor) scwin.overlayElement.style.backgroundColor = c.overlayColor;
+    if (c.overlayOpacity) scwin.overlayElement.style.opacity = (parseInt(c.overlayOpacity) || 0) / 100;
 };
 
 // 저장된 아이디 로드
@@ -455,12 +457,39 @@ scwin.togglePassword_onclick = function (e) {
         inp_password.toggleClass("show")
         togglePassword.setBackgroundImage('/InsWebApp/images/icons/open-eye.svg')
     }
-};]]></script>
+};
+
+scwin.defaultData = function () {
+    const data = {
+        backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop', // 깔끔한 오피스 이미지
+        logo: '',
+        logoSize: 60,
+        mainTitle: '비즈니스의 새로운 시작을 환영합니다.',
+        mainTitleSize: 36,
+        mainTitleColor: '#ffffff',
+        mainTitleFont: 'font-semibold',
+        subTitle: '안전하고 효율적인 비즈니스 솔루션',
+        subTitleSize: 18,
+        subTitleColor: '#e5e7eb',
+        subTitleFont: 'font-normal',
+        extraTitle: '안전하고 신뢰할 수 있는 플랫폼으로 더 나은 비즈니스를 위한 첫걸음을 시작하세요',
+        extraTitleSize: 16,
+        extraTitleColor: '#d1d5db',
+        extraTitleFont: 'font-light',
+        overlayOpacity: 35,
+        overlayColor: '#1f2937',
+        primaryColor: '#3b82f6',
+        accentColor: '#6366f1'
+    }
+    // 부모의 데이터맵에도 세팅? -> 부모가 있는경우 
+    // 현재 loginCustom시 datamap에 데이터 매핑이 안되어있어서 하나만 바꿔도 제대로 인식 못하는 문제 있음 -> 해결 필요
+    return data;
+}]]></script>
 
 		<style><![CDATA[
-        .title{
-        <!-- font-size: 18px !important; -->
-        }
+            body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
             .login_wrapper {
                 display: flex;
                 flex-direction: row;
