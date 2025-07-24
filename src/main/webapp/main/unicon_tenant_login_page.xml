@@ -165,8 +165,19 @@ scwin.applyCustomization = function (data) {
 // 커스터마이징 적용 함수
 scwin.overlayElement = null;
 
+scwin.containKorean = function(text){
+  return /^[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
+}
+
 scwin.loadCustomization = function (c) {
     if (!c) return;
+
+    if(scwin.containKorean(c.tenantName)){
+        loginGuideTxt.setValue(c.tenantName+"에 로그인하세요")
+    }else{
+        loginGuideTxt.setValue("SIGN IN TO"+c.tenantName.toUpperCase());
+    }
+    
 
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
@@ -579,7 +590,7 @@ scwin.defaultData = function () {
 					<xf:group class="login_header" id="" style="margin-bottom: 40px;">
 						<w2:textbox id="" label="WELCOME"
 							style="font-size: 20px; font-weight: 300; color: #2d3748; margin-bottom: 8px; display: block;" />
-						<w2:textbox class="" id="" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 600;" />
+						<w2:textbox class="" id="loginGuideTxt" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 600;" />
 					</xf:group>
 
 					<!-- 로그인 폼 -->
