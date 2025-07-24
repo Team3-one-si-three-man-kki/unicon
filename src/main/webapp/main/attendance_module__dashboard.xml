@@ -553,10 +553,11 @@ scwin.onpageload = function () {
         selectedSessionText: $p.getComponentById("txt_selectedSession")
     };
 
+    scwin.checkAttendanceSubscription();
+
     scwin.loadSessionList();
     console.log("출석 모듈 페이지 로드 완료");
 };
-
 // 세션 목록으로 돌아가는 함수
 scwin.showSessionList = function() {
     scwin.ui.detailView.hide();
@@ -790,7 +791,47 @@ scwin.btn_downloadCSV_onclick = function () {
     }
 };
 
-		]]>
+scwin.checkAttendanceSubscription = function() {
+    console.log("출석 모듈 구독 상태를 확인합니다.");
+    try {
+        const tenantId = $p.getParameter("tenant");
+        const downloadBtn = $p.getComponentById("btn_downloadCSV");
+
+        // 컴포넌트를 찾지 못한 경우를 대비한 방어 코드
+        if (!downloadBtn) {
+            console.error("다운로드 버튼 컴포넌트(btn_downloadCSV)를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 테넌트 ID가 없으면 버튼을 숨기고 함수 종료
+        if (!tenantId) {
+            console.log("테넌트 ID가 없어 다운로드 버튼을 숨깁니다.");
+            downloadBtn.setStyle("display", "none"); // setStyle 메서드를 사용하여 숨김
+            return;
+        }
+
+        const subscribedModulesKey = `subscribedModules_${tenantId}`;
+        const subscribedModules = JSON.parse(localStorage.getItem(subscribedModulesKey) || '[]');
+
+        console.log(`테넌트 [${tenantId}]의 구독 모듈:`, subscribedModules);
+
+        const isSubscribed = subscribedModules.includes('ATTENDANCE');
+
+        if (isSubscribed) {
+            console.log("출석 모듈 구독 확인. 다운로드 버튼을 표시합니다.");
+            downloadBtn.setStyle("display", ""); // display 속성을 초기화하여 브라우저 기본값으로 다시 표시
+        } else {
+            console.log("출석 모듈 미구독 확인. 다운로드 버튼을 숨깁니다.");
+            downloadBtn.setStyle("display", "none"); // setStyle을 사용하여 display: none으로 설정
+        }
+    } catch (e) {
+        console.error("구독 상태 확인 중 오류가 발생했습니다.", e);
+        const downloadBtn = $p.getComponentById("btn_downloadCSV");
+        if (downloadBtn) {
+           downloadBtn.setStyle("display", "none"); // 오류 발생 시에도 숨김 처리
+        }
+    }
+};]]>
 		</script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
