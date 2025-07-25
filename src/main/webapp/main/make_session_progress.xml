@@ -235,52 +235,6 @@ scwin.navigateToLayout = function (sessionId) {
     }
 };
 
-
-// 최종적인 세션 생성 함수
-
-// scwin.saveAllSessionData = function (callback) {
-//     try {
-//         var startTimeRaw = scwin.sessionData.sessionInfo.start_time;
-//         var endTimeRaw = scwin.sessionData.sessionInfo.end_time;
-//         var inviteLink = scwin.sessionData.generatedInfo.inviteLink;
-//         var linkExpiry = scwin.sessionData.generatedInfo.linkExpiry;
-
-//         // 날짜 형식 변환 함수
-//         function formatDateTime(dateTimeStr) {
-//             if (!dateTimeStr || dateTimeStr.length !== 12) {
-//                 return dateTimeStr;
-//             }
-//             var year = dateTimeStr.substring(0, 4);
-//             var month = dateTimeStr.substring(4, 6);
-//             var day = dateTimeStr.substring(6, 8);
-//             var hour = dateTimeStr.substring(8, 10);
-//             var minute = dateTimeStr.substring(10, 12);
-//             return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':00';
-//         }
-
-//         // DB 저장용 날짜 형식으로 변환
-//         var startTime = formatDateTime(startTimeRaw);
-//         var endTime = formatDateTime(endTimeRaw);
-
-
-
-//         dma_sessionData.set("name", scwin.sessionData.sessionInfo.name);
-//         dma_sessionData.set("usingDept", scwin.sessionData.sessionInfo.using_dept);
-//         dma_sessionData.set("startTime", startTime);
-//         dma_sessionData.set("endTime", endTime);
-//         dma_sessionData.set("inviteLink", inviteLink);
-//         dma_sessionData.set("linkExpiry", linkExpiry);
-//         dma_sessionData.set("createdBy", "1");
-
-//         // submission 성공 후 콜백 실행하도록 currentCallback 저장
-//         scwin.completionCallback = callback;
-//         $p.executeSubmission("sbm_createSession");
-
-//     } catch (error) {
-//         console.error("저장 중 오류:", error);
-//         alert("저장 중 오류가 발생했습니다: " + error.message);
-//     }
-// };
 scwin.saveAllSessionData = function (callback) {
     try {
         var startTimeRaw = scwin.sessionData.sessionInfo.start_time;
@@ -320,53 +274,6 @@ scwin.saveAllSessionData = function (callback) {
     }
 };
 
-
-// 랜덤 ID 생성 함수
-// scwin.generateRandomId = function () {
-//     return Math.random().toString(36).substr(2, 9);
-// };
-
-// 세션 생성 성공 -> session_id 받아서 모듈 저장
-// scwin.sbm_createSession_submitdone = function (e) {
-//     console.log("세션 생성 성공");
-
-//     // 응답에서 sessionId 추출
-//     var sessionId = null;
-
-//     try {
-//         if (e.responseJSON) {
-//             sessionId = e.responseJSON.sessionId || e.responseJSON.id || e.responseJSON.session_id;
-//         }
-
-//         if (!sessionId && e.responseText) {
-//             var responseData = JSON.parse(e.responseText);
-//             sessionId = responseData.sessionId || responseData.id || responseData.session_id;
-//         }
-
-//         if (!sessionId && e.result) {
-//             sessionId = e.result.sessionId || e.result.id || e.result.session_id;
-//         }
-
-//         if (!sessionId) {
-//             alert("세션 ID를 받지 못했습니다. 서버 응답을 확인해주세요.");
-//             return;
-//         }
-
-//         // sessionId 저장 후 모듈 저장 진행
-//         if (sessionId) {
-//             // sessionId를 받은 후에 초대링크 생성
-//             scwin.sessionData.generatedInfo.inviteLink =
-//                 "https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
-//             console.log("inviteLink:", scwin.sessionData.generatedInfo.inviteLink);
-//             scwin.currentSessionId = sessionId;
-//             scwin.saveSessionModules(sessionId);
-//         }
-
-//     } catch (error) {
-//         console.error("sessionId 추출 오류:", error);
-//         alert("세션 ID 추출 중 오류가 발생했습니다: " + error.message);
-//     }
-// };
 scwin.sbm_createSession_submitdone = function (e) {
     console.log("세션 생성 성공");
 
@@ -392,7 +299,7 @@ scwin.sbm_createSession_submitdone = function (e) {
         }
 
         if (sessionId) {
-            // sessionId를 받은 후에 초대링크 생성
+            // sessionId를 받은 후에 초대링크 생성 -> 트러블 슈팅
             scwin.sessionData.generatedInfo.inviteLink =
                 "https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
             
@@ -438,28 +345,6 @@ scwin.saveSessionModules = function (sessionId) {
     $p.executeSubmission("sbm_createSessionModules");
 };
 
-// scwin.sbm_createSessionModules_submitdone = function (e) {
-//     var sessionId = scwin.currentSessionId;
-    
-//     // 팝업에 전달할 데이터 객체 생성
-//     var popupData = {
-//         sessionId: sessionId,
-//         sessionName: scwin.sessionData.sessionInfo.name,
-//         inviteLink: scwin.sessionData.generatedInfo.inviteLink
-//     };
-    
-//     console.log("팝업에 전달할 데이터:", popupData);
-    
-//     // session_room3.xml 스타일의 팝업 생성 (createPopUp 함수 사용)
-//     scwin.createPopUp(
-//         "sessionCompletePopUp",
-//         "세션 생성 완료", 
-//         popupData,  // 데이터 객체 전달
-//         "/InsWebApp/main/session_complete_popup.xml",
-//         700,
-//         700
-//     );
-// };
 scwin.sbm_createSessionModules_submitdone = function (e) {
     var sessionId = scwin.currentSessionId;
     

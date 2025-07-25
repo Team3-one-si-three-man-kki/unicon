@@ -734,6 +734,21 @@ scwin.onpageload = async function () {
 
         // 대시보드 컨트롤러들은 이미 초기화되어 있으므로 추가 버튼 생성 불필요
         // 모든 대시보드 기능은 모듈 버튼을 통해서만 사용
+
+
+        // ------------------------대기방 설정값 강제 적용----------------------------
+        setTimeout(() => {
+            scwin.roomClient.setVideoEnabled(!scwin.isCameraOff);
+            scwin.roomClient.setAudioEnabled(!scwin.isMicMuted);
+
+            // UI 버튼 상태도 동기화
+            if (scwin.uiManager.updateCameraButton) {
+                scwin.uiManager.updateCameraButton(!scwin.isCameraOff);
+            }
+            if (scwin.uiManager.updateMuteButton) {
+                scwin.uiManager.updateMuteButton(!scwin.isMicMuted);
+            }
+        }, 500); // 0.5초 지연으로 확실히 적용
     });
 
     // RoomClient에서 로컬 비디오 상태 변경 이벤트를 수신하여 UIManager에 전달
@@ -819,6 +834,12 @@ scwin.onpageload = async function () {
         // }, 100);
 
         scwin.updateVideoLayout();
+
+        // --------------------비디오 스트림이 준비된 후 AI 모듈 조건 재체크---------------------------
+        if (scwin.userHasAiModule && scwin.videoElement && scwin.canvasEl) {
+            console.log("localStreamReady에서 지연된 AI 모듈 로딩 시작");
+            scwin.loadAIModule();
+        }
     });
     // 로컬 프로듀서 생성 시 producerId 업데이트
     scwin.roomClient.on('producer-created', ({ kind, producerId }) => {
@@ -846,6 +867,7 @@ scwin.onpageload = async function () {
                 aiModule.on("landmarksUpdate", (landmarks) => {
                     scwin.uiManager.drawFaceMesh(landmarks);
                 });
+
 
                 aiModule.on("drowsinessDetected", (data) => {
                     console.log("Event: drowsinessUpdate -> Sending status to server.");
@@ -1128,13 +1150,13 @@ scwin.onpageload = async function () {
         console.log("세션 정보를 찾을 수 없습니다.");
     }
 
-    const roomId = `${sessionId}`;
-    const userName = `${scwin.invitedUserName}`;
-    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", userName)
-    const userEmail = "test1@test.com";
-    const tenantId = "2";
+    //const roomId = `${sessionId}`;
+    //const userName = `${scwin.invitedUserName}`;
+    //console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", userName);
+    //const userEmail = "test1@test.com";
+    //const tenantId = "2";
 
-    scwin.roomClient.join(roomId, userName, userEmail, tenantId);
+    //scwin.roomClient.join(roomId, userName, userEmail, tenantId);
 
     // 로컬 사용자를 AI 통계 시스템에 초기화
     if (window.aiMonitoringStats) {
@@ -1308,6 +1330,10 @@ scwin.createModuleButtons = function (sessionModules) {
     //---> 여기서 AI 모듈이 활성화되었고 비디오 스트림이 준비되었으면 AI 모듈 로드
     if (scwin.userHasAiModule && scwin.videoElement && scwin.canvasEl) {
         console.log("지연된 AI 모듈 로딩 시작");
+        console.log("AI 모듈 로딩 조건 체크:");
+        console.log("scwin.userHasAiModule:", scwin.userHasAiModule);
+        console.log("scwin.videoElement:", scwin.videoElement);
+        console.log("scwin.canvasEl:", scwin.canvasEl);
         scwin.loadAIModule();
     }
 };
@@ -1753,8 +1779,16 @@ scwin.hideWaitingRoom = function () {
 scwin.applyWaitingRoomSettings = function () {
     var audioEnabled = meetingSettings.get("audioEnabled");
     var videoEnabled = meetingSettings.get("videoEnabled");
-    var participantName = meetingSettings.get("participantName");
-    var participantEmail = meetingSettings.get("participantEmail");
+    // var participantName = meetingSettings.get("participantName");
+    // var participantEmail = meetingSettings.get("participantEmail");
+
+    //const roomId = `${sessionId}`;
+    const roomId = localStorage.getItem('currentSessionId');
+    const userName = meetingSettings.get("participantName");
+    const userEmail = meetingSettings.get("participantEmail");
+    const tenantId = "2";
+
+    //scwin.roomClient.join(roomId, userName, userEmail, tenantId);
 
     console.log("읽은 데이터:", { audioEnabled, videoEnabled });
 
@@ -1765,15 +1799,17 @@ scwin.applyWaitingRoomSettings = function () {
     if (videoEnabled !== undefined && videoEnabled !== null) {
         scwin.isCameraOff = (videoEnabled === "false");  // "false"면 카메라 꺼짐
     }
-    // 사용자 정보 설정
-    if (participantName) {
-        scwin.invitedUserName = participantName;
-        console.log("사용자 이름 설정됨:", scwin.invitedUserName);
-    }
-    if (participantEmail) {
-        scwin.invitedUserEmail = participantEmail;
-        console.log("사용자 이메일 설정됨:", scwin.invitedUserEmail);
-    }
+    // // 사용자 정보 설정
+    // if (participantName) {
+    //     scwin.invitedUserName = participantName;
+    //     console.log("사용자 이름 설정됨:", scwin.invitedUserName);
+    // }
+    // if (participantEmail) {
+    //     scwin.invitedUserEmail = participantEmail;
+    //     console.log("사용자 이메일 설정됨:", scwin.invitedUserEmail);
+    // }
+
+    //scwin.roomClient.join(roomId, userName, userEmail, tenantId);
 
     console.log("최종 설정:", {
         isMicMuted: scwin.isMicMuted,
@@ -1788,6 +1824,8 @@ scwin.applyWaitingRoomSettings = function () {
     } else {
         console.log("roomClient가 아직 준비되지 않음");
     }
+
+    scwin.roomClient.join(roomId, userName, userEmail, tenantId);
 };
 
 

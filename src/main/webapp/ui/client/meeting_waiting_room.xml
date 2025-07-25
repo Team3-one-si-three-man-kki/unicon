@@ -364,7 +364,7 @@ scwin.onpageunload = function() {
                 class="titbox">
                 <xf:group class="pgtbox" id="" meta_snippetCategory="02_타이틀" meta_snippetKeyComponent="true" meta_snippetName="2_01 페이지타이틀"
                     style="background-color: #008080;height: 70px;">
-                    <w2:textbox class="pgt_tit" id="" label="ModuLink" style="" tagname=""></w2:textbox>
+                    <w2:textbox class="pgt_tit" id="" label="Unicon" style="" tagname=""></w2:textbox>
                     <xf:group class="breadcrumb" id="" style="">
                         <xf:group id="" style="" tagname="ul">
                             <xf:group id="" style="" tagname="li">

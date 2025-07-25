@@ -117,7 +117,7 @@ var MediaPipeModule = (function (exports) {
 
     _handleAnalysisResult(landmarks) {
       // ✅ 2. 랜드마크 그리기 요청은 이벤트로만 방송합니다.
-      //this.emit("landmarksUpdate", landmarks);
+      this.emit("landmarksUpdate", landmarks);
 
       const previousIsPresent = this.isPresent;
       const previousIsDrowsy = this.isDrowsy;
