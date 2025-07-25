@@ -17,7 +17,7 @@
                         <w2:key dataType="text" name="체크시간" id="checkTime"/>
                         <w2:key dataType="text" name="체크날짜" id="checkDate"/>
                     </w2:keyInfo>
-                    <w2:data use="true">
+                    <w2:data use="false">
                         <userName>김민수</userName>
                         <checkTime>9:00</checkTime>
                         <checkDate>2024년 6월 20일 오전 9:00</checkDate>
@@ -31,13 +31,13 @@
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
     // 메시지 설정
-    const userName = dma_attendance.get("userName");
+    const userName = $p.getParameter("popup_param").name;
     scwin.now = new Date();
     const message = userName + "님 " + scwin.currentTime() + "에 출석체크되었습니다";
     const yearAndMonthAndDateAndHour = scwin.currentDate();
 
     spn_date.setValue(yearAndMonthAndDateAndHour)
-    spn_mainMsg.setValue(message);
+    spn_mainMsg.setValue(message);  
 };
 
 scwin.currentTime = function () {

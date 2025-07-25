@@ -475,6 +475,8 @@ scwin.onpageload = async function () {
     top.window.onresize = scwin.throttle(function () {
         scwin.centerPopup("drowsinessPopUp", 0);
         scwin.centerPopup("adfPopUp", 50);
+        scwin.centerPopup("checkIn", 50);
+        scwin.centerPopup("checkout", 50);
     }, 200);
 
     await scwin.checkAppReady();
@@ -554,6 +556,17 @@ scwin.onpageload = async function () {
                 scwin.uiManager.showWhiteboardButton();
             }
         }
+
+        var jsnPopupData = {
+            "type": "json", 
+            "name": "popup_param", 
+            "data": {
+                "name": meetingSettings.get("participantName")
+            } // 실제 전달할 데이터
+        };
+
+        scwin.createPopUp("checkIn", " ", jsnPopupData, "/InsWebApp/main/attendance_confirmation_pop_up.xml", 400, 350);
+        //입장시 출석 완료
 
         if (scwin.userHasChatModule) {
             // 채팅 기능은 모듈 버튼 시스템으로 처리됨
@@ -1089,7 +1102,7 @@ scwin.onpageload = async function () {
     scwin.roomClient.on("remote-producer-pause", ({ producerId, userName }) => {
         for (const peer of scwin.remotePeers.values()) {
             if (peer.videoProducerId === producerId) {
-                console.log("현재 이름은,,",userName)
+                console.log("현재 이름은,,", userName)
                 scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true, userName);
                 break;
             }
@@ -1772,7 +1785,7 @@ scwin.hideWaitingRoom = function () {
     $p.getComponentById("grp_waiting").hide();
     scwin.applyWaitingRoomSettings();
     $p.getComponentById("grp_waiting").remove();
-    
+
 };
 
 scwin.applyWaitingRoomSettings = function () {
