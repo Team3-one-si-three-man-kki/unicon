@@ -25,7 +25,7 @@ public interface LoginPageService {
 	 * @return 설정 정보 String
 	 * @throws Exception
 	 */
-	public String getConfigJsonBySubDomain(LoginPageVo subDomain) throws Exception;
+	public LoginPageVo getConfigJsonBySubDomain(LoginPageVo subDomain) throws Exception;
 
 	/**
 	 * 로그인 커스텀 페이지 설정을 저장한다.
