@@ -48,7 +48,7 @@
 .video-paused-indicator {
     width: 24px;
     height: 24px;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     background-repeat: no-repeat;
     background-position: center;
@@ -132,13 +132,13 @@
 
 /* --- 카메라 Off 아바타 스타일 --- */
 div.video-paused::after {
-    content: '사용자';
+    content: attr(data-username);
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(40, 40, 40, 0.8);
+    background-color: rgba(10, 10, 10, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1086,10 +1086,11 @@ scwin.onpageload = async function () {
     });
 
     // --- 원격 사용자의 비디오/오디오 상태 변경 처리 ---
-    scwin.roomClient.on("remote-producer-pause", ({ producerId }) => {
+    scwin.roomClient.on("remote-producer-pause", ({ producerId, userName }) => {
         for (const peer of scwin.remotePeers.values()) {
             if (peer.videoProducerId === producerId) {
-                scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true);
+                console.log("현재 이름은,,",userName)
+                scwin.uiManager.updateRemoteVideoStatus(peer.elementWrapper, true, userName);
                 break;
             }
         }
@@ -1769,11 +1770,9 @@ scwin.closeCustomModule = function (moduleCode, moduleInfo) {
 // 대기방이 숨기기
 scwin.hideWaitingRoom = function () {
     $p.getComponentById("grp_waiting").hide();
-
-    // 대기방이 숨겨진 후 설정값 적용
-    setTimeout(function () {
-        scwin.applyWaitingRoomSettings();
-    }, 500);
+    scwin.applyWaitingRoomSettings();
+    $p.getComponentById("grp_waiting").remove();
+    
 };
 
 scwin.applyWaitingRoomSettings = function () {

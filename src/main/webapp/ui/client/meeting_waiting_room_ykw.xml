@@ -38,7 +38,7 @@ scwin.localState = {
 
 // 1) 카메라·마이크 초기 스트림 요청
 scwin.initCamera = function () {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: true })
         .then(function (stream) {
             scwin.mediaStream = stream;
             var webcamElement = document.getElementById("webcam");
@@ -645,7 +645,7 @@ scwin.onpageunload = function () {
 			<xf:group class="lybox" id="" meta_snippetCategory="01_화면분할" meta_snippetKeyComponent="true" meta_snippetName="1_01 가변 2단 분할"
 				style="height: 100%;">
 				<xf:group adaptiveThreshold="" class=" col_5" id="" style="display: flex; flex-direction: column; justify-content: center;">
-					<video style="width: 100%; height: 50%;margin-bottom: 20px;" id="webcam" autoplay="autoplay"></video>
+					<video style="width: 100%; height: 50%;margin-bottom: 20px;" id="webcam" autoplay="autoplay" muted="muted"></video>
 					<xf:group id="webcam_video" style="display: flex;align-items: center;justify-content: center;gap: 20px">
 						<xf:trigger style="margin: auto;" id="btn_video" type="button" data-state="on" class="btn_video"
 							ev:onclick="scwin.onVideoButtonClick">
