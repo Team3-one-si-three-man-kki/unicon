@@ -351,7 +351,7 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
     display: none;
 }
 #mf_signUpCompletePopup_body{
-    top: 0px;
+    top: -1px;
 }
 #mf_signUpCompletePopup_pageFrame::-webkit-scrollbar {
   display: none;
