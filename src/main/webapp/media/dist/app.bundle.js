@@ -48,9 +48,11 @@
       this.isAdmin = false; //    관리자 여부
       this.screenProducer = null; //    화면 공유 프로듀서
       this.myPeerId = null; // ✅ 자신의 peerId를 저장할 속성 추가
+      this.userName = null;
     }
 
     join(roomId, userName, userEmail, tenantId) {
+      this.userName = userName;
       //    roomId를 인자로 받습니다.
       if (!roomId) {
         throw new Error("roomId is required to join a room");
@@ -120,10 +122,10 @@
             break;
           // ✅ [추가] 다른 참여자의 프로듀서 상태 변경 알림을 처리
           case "producerStateChanged": {
-            const { producerId, kind, state } = msg.data;
+            const { producerId, kind, state, userName } = msg.data;
             if (state === "pause") {
               if (kind === "video")
-                this.emit("remote-producer-pause", { producerId });
+                this.emit("remote-producer-pause", { producerId, userName });
               // 필요하다면 오디오 pause 처리도 추가
               if (kind === "audio")
                 this.emit("remote-audio-pause", { producerId });
@@ -427,6 +429,7 @@
               producerId: videoProducer.id,
               kind: "video",
               action: enabled ? "resume" : "pause",
+              userName: this.userName,
             },
           })
         );
@@ -627,11 +630,11 @@
     initializeUI() {
       // 웹스퀘어 컨테이너 확인
       const webSquareContainer = document.getElementById('mf_grp_video_area');
-      
+
       if (webSquareContainer) {
         // 웹스퀘어 모드: 기존 UI 생성하지 않음
         console.log("UIManager: Using WebSquare container mode");
-		this.createHeader();
+        this.createHeader();
         this.createMainContent();
         this.createControls();
       } else {
@@ -664,15 +667,15 @@
       console.log("UIManager: Modern Zoom-style UI created.");
     }
 
-	createHeader() {
-	   // 웹스퀘어 컨테이너를 우선 찾기
-	   const webSquareContainer = document.getElementById('mf_grp_session_title');
-	   
-	   if (webSquareContainer) {
-	       // 웹스퀘어 모드: headerSection을 grp_session_title에 배치
-	       this.headerSection = document.createElement("div");
-	       this.headerSection.className = "header-section";
-	       this.headerSection.style.cssText = `
+    createHeader() {
+      // 웹스퀘어 컨테이너를 우선 찾기
+      const webSquareContainer = document.getElementById('mf_grp_session_title');
+
+      if (webSquareContainer) {
+        // 웹스퀘어 모드: headerSection을 grp_session_title에 배치
+        this.headerSection = document.createElement("div");
+        this.headerSection.className = "header-section";
+        this.headerSection.style.cssText = `
 	           display: flex !important;
 	           justify-content: space-between !important;
 	           align-items: center !important;
@@ -688,29 +691,29 @@
 	           position: relative !important;
 	       `;
 
-	       // Room info
-	       const roomInfo = document.createElement("div");
-	       roomInfo.className = "room-info";
-	       roomInfo.style.cssText = `
+        // Room info
+        const roomInfo = document.createElement("div");
+        roomInfo.className = "room-info";
+        roomInfo.style.cssText = `
 	           display: flex;
 	           align-items: center;
 	           gap: 12px;
 	           color: #333;
 	       `;
 
-	       const roomTitle = document.createElement("h2");
-	       roomTitle.textContent = "ModuLink 화상회의";
-	       roomTitle.style.cssText = `
+        const roomTitle = document.createElement("h2");
+        roomTitle.textContent = "ModuLink 화상회의";
+        roomTitle.style.cssText = `
 	           margin: 0;
 	           font-size: 18px;
 	           font-weight: 600;
 	           color: #2c3e50;
 	       `;
 
-	       const participantCount = document.createElement("span");
-	       participantCount.className = "participant-count";
-	       participantCount.textContent = "참가자 1명";
-	       participantCount.style.cssText = `
+        const participantCount = document.createElement("span");
+        participantCount.className = "participant-count";
+        participantCount.textContent = "참가자 1명";
+        participantCount.style.cssText = `
 	           background: #e8f4f8;
 	           color: #2980b9;
 	           padding: 4px 12px;
@@ -719,48 +722,48 @@
 	           font-weight: 500;
 	       `;
 
-	       roomInfo.appendChild(roomTitle);
-	       roomInfo.appendChild(participantCount);
+        roomInfo.appendChild(roomTitle);
+        roomInfo.appendChild(participantCount);
 
-	       // Header controls
-	       const headerControls = document.createElement("div");
-	       headerControls.className = "header-controls";
-	       headerControls.style.cssText = `
+        // Header controls
+        const headerControls = document.createElement("div");
+        headerControls.className = "header-controls";
+        headerControls.style.cssText = `
 	           display: flex;
 	           gap: 8px;
 	           align-items: center;
 	       `;
 
-	       // Fullscreen button
-	       this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
-	           this.toggleFullscreen();
-	       });
+        // Fullscreen button
+        this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
+          this.toggleFullscreen();
+        });
 
-	       // Settings button
-	       this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
-	           console.log("Settings clicked");
-	       });
+        // Settings button
+        this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
+          console.log("Settings clicked");
+        });
 
-	       headerControls.appendChild(this.fullscreenButton);
-	       headerControls.appendChild(this.settingsButton);
+        headerControls.appendChild(this.fullscreenButton);
+        headerControls.appendChild(this.settingsButton);
 
-	       this.headerSection.appendChild(roomInfo);
-	       this.headerSection.appendChild(headerControls);
+        this.headerSection.appendChild(roomInfo);
+        this.headerSection.appendChild(headerControls);
 
-	       // 기존 label 숨기기 (createMainContent와 동일한 패턴)
-	       const label = webSquareContainer.querySelector('.workspace-title');
-	       if (label) label.style.display = 'none';
+        // 기존 label 숨기기 (createMainContent와 동일한 패턴)
+        const label = webSquareContainer.querySelector('.workspace-title');
+        if (label) label.style.display = 'none';
 
-	       // grp_session_title에 직접 추가
-	       webSquareContainer.appendChild(this.headerSection);
-	       
-	       console.log("UIManager: Using WebSquare header container mode");
-	       
-	   } else {
-	       // 폴백: 웹스퀘어 영역이 없으면 기존 방식 사용
-	       this.headerSection = document.createElement("div");
-	       this.headerSection.className = "header-section";
-	       this.headerSection.style.cssText = `
+        // grp_session_title에 직접 추가
+        webSquareContainer.appendChild(this.headerSection);
+
+        console.log("UIManager: Using WebSquare header container mode");
+
+      } else {
+        // 폴백: 웹스퀘어 영역이 없으면 기존 방식 사용
+        this.headerSection = document.createElement("div");
+        this.headerSection.className = "header-section";
+        this.headerSection.style.cssText = `
 	           display: flex;
 	           justify-content: space-between;
 	           align-items: center;
@@ -772,29 +775,29 @@
 	           z-index: 1000;
 	       `;
 
-	       // Room info
-	       const roomInfo = document.createElement("div");
-	       roomInfo.className = "room-info";
-	       roomInfo.style.cssText = `
+        // Room info
+        const roomInfo = document.createElement("div");
+        roomInfo.className = "room-info";
+        roomInfo.style.cssText = `
 	           display: flex;
 	           align-items: center;
 	           gap: 12px;
 	           color: #333;
 	       `;
 
-	       const roomTitle = document.createElement("h2");
-	       roomTitle.textContent = "화상회의";
-	       roomTitle.style.cssText = `
+        const roomTitle = document.createElement("h2");
+        roomTitle.textContent = "화상회의";
+        roomTitle.style.cssText = `
 	           margin: 0;
 	           font-size: 18px;
 	           font-weight: 600;
 	           color: #2c3e50;
 	       `;
 
-	       const participantCount = document.createElement("span");
-	       participantCount.className = "participant-count";
-	       participantCount.textContent = "참가자 1명";
-	       participantCount.style.cssText = `
+        const participantCount = document.createElement("span");
+        participantCount.className = "participant-count";
+        participantCount.textContent = "참가자 1명";
+        participantCount.style.cssText = `
 	           background: #e8f4f8;
 	           color: #2980b9;
 	           padding: 4px 12px;
@@ -803,42 +806,42 @@
 	           font-weight: 500;
 	       `;
 
-	       roomInfo.appendChild(roomTitle);
-	       roomInfo.appendChild(participantCount);
+        roomInfo.appendChild(roomTitle);
+        roomInfo.appendChild(participantCount);
 
-	       // Header controls
-	       const headerControls = document.createElement("div");
-	       headerControls.className = "header-controls";
-	       headerControls.style.cssText = `
+        // Header controls
+        const headerControls = document.createElement("div");
+        headerControls.className = "header-controls";
+        headerControls.style.cssText = `
 	           display: flex;
 	           gap: 8px;
 	           align-items: center;
 	       `;
 
-	       // Fullscreen button
-	       this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
-	           this.toggleFullscreen();
-	       });
+        // Fullscreen button
+        this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
+          this.toggleFullscreen();
+        });
 
-	       // Settings button
-	       this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
-	           console.log("Settings clicked");
-	       });
+        // Settings button
+        this.settingsButton = this.createHeaderButton("⚙", "설정", () => {
+          console.log("Settings clicked");
+        });
 
-	       headerControls.appendChild(this.fullscreenButton);
-	       headerControls.appendChild(this.settingsButton);
+        headerControls.appendChild(this.fullscreenButton);
+        headerControls.appendChild(this.settingsButton);
 
-	       this.headerSection.appendChild(roomInfo);
-	       this.headerSection.appendChild(headerControls);
+        this.headerSection.appendChild(roomInfo);
+        this.headerSection.appendChild(headerControls);
 
-	       // appRootContainer에 추가 (기존 방식)
-	       if (this.appRootContainer) {
-	           this.appRootContainer.appendChild(this.headerSection);
-	       }
-	       
-	       console.log("UIManager: Using standalone header mode");
-	   }
-	}
+        // appRootContainer에 추가 (기존 방식)
+        if (this.appRootContainer) {
+          this.appRootContainer.appendChild(this.headerSection);
+        }
+
+        console.log("UIManager: Using standalone header mode");
+      }
+    }
 
     createHeaderButton(icon, tooltip, onClick) {
       const button = document.createElement("button");
@@ -879,7 +882,7 @@
     createMainContent() {
       // 웹스퀘어 컨테이너를 우선 찾기
       const webSquareContainer = document.getElementById('mf_grp_video_area');
-      
+
       if (webSquareContainer) {
         // 웹스퀘어 모드: 전체 main-content를 grp_video_area에 배치
         this.mainContentArea = document.createElement("div");
@@ -896,14 +899,14 @@
             overflow: hidden;
             z-index: 100;
         `;
-        
+
         // 기존 label 숨기기
         const label = webSquareContainer.querySelector('.drop-zone-label');
         if (label) label.style.display = 'none';
-        
+
         // grp_video_area에 직접 추가
         webSquareContainer.appendChild(this.mainContentArea);
-        
+
       } else {
         // 폴백: 웹스퀘어 영역이 없으면 기존 방식 사용
         this.mainContentArea = document.createElement("div");
@@ -988,7 +991,7 @@
     createControls() {
       // 웹스퀘어 모드 확인
       const webSquareContainer = document.getElementById('mf_grp_video_area');
-      
+
       if (webSquareContainer) {
         // 웹스퀘어 모드: 컨트롤을 하단 버튼 영역에 배치
         //const bottomModules = document.getElementById('mf_group11');
@@ -998,12 +1001,12 @@
         //  if (firstButton) {
         //    firstButton.innerHTML = '';
         //    this.createControlButtons(firstButton);
-		//	firstButton.style.display = 'none';
-            return;
+        //	firstButton.style.display = 'none';
+        return;
         //  }
         //}
       }
-      
+
       // 기존 모드 또는 웹스퀘어 영역을 찾지 못한 경우
       this.controlsSection = document.createElement("div");
       this.controlsSection.className = "controls-section";
@@ -1034,7 +1037,7 @@
       this.createControlButtons(this.controlsGroup);
 
       this.controlsSection.appendChild(this.controlsGroup);
-      
+
       if (this.appRootContainer) {
         this.appRootContainer.appendChild(this.controlsSection);
       } else {
@@ -1335,12 +1338,12 @@
     // Getters
     getMainStageContainer() {
       return this.mainStageContainer;
-	  //return document.getElementById('mf_grp_video_area');
+      //return document.getElementById('mf_grp_video_area');
     }
 
     getSidebarContainer() {
       return this.sidebarContainer;
-	  //return document.getElementById('mf_group6');
+      //return document.getElementById('mf_group6');
     }
 
     getRemoteMediaContainer() {
@@ -1374,12 +1377,12 @@
         this.screenShareButton.style.opacity = '0.6';
       }
     }
-	
-	showChatButton() {
-	      if (this.chatButton) {
-	        this.chatButton.style.display = "inline-block";
-	      }
-	    }
+
+    showChatButton() {
+      if (this.chatButton) {
+        this.chatButton.style.display = "inline-block";
+      }
+    }
 
     enableControls() {
       console.log("Enabling media controls...");
@@ -1417,7 +1420,7 @@
     updateVideoLayout(mainStageElements, sidebarElements) {
       const mainStage = this.mainStageContainer;
       const sidebar = this.sidebarContainer;
-	 
+
       // Clear existing content
       mainStage.innerHTML = '';
       sidebar.innerHTML = '';
@@ -1438,10 +1441,10 @@
         // Add user info overlay
         this.addUserInfoOverlay(element);
       });
-	  // Add elements to sidebar
+      // Add elements to sidebar
 
       // Update participant count
-      this.updateParticipantCount(sidebarElements.length + mainStageElements.length -1);
+      this.updateParticipantCount(sidebarElements.length + mainStageElements.length - 1);
     }
 
     addUserInfoOverlay(element) {
@@ -1479,8 +1482,9 @@
       }
     }
 
-    updateRemoteVideoStatus(elementWrapper, isPaused) {
+    updateRemoteVideoStatus(elementWrapper, isPaused, userName = 'User') {
       elementWrapper.classList.toggle('video-paused', isPaused);
+      elementWrapper.setAttribute('data-username', userName);
 
       const container = this.ensureStatusContainer(elementWrapper);
       let indicator = container.querySelector('.video-paused-indicator');
@@ -1597,7 +1601,7 @@
 
     updateMuteButton(isMuted) {
       if (!this.muteButton) return;
-      
+
       if (isMuted) {
         this.muteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M633.8 458.1l-157.8-122C488.6 312.1 496 285 496 256v-48c0-8.8-7.2-16-16-16h-16c-8.8 0-16 7.2-16 16v48c0 17.9-4 34.8-10.7 50.2l-26.6-20.5c3.1-9.4 5.3-19.2 5.3-29.7V96c0-53-43-96-96-96s-96 43-96 96v45.4L45.5 3.4C38.5-2.1 28.4-.8 23 6.2L3.4 31.5C-2.1 38.4-.8 48.5 6.2 53.9l588.4 454.7c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.4-7 4.2-17-2.8-22.5zM400 464h-56v-33.8c11.7-1.6 22.9-4.5 33.7-8.3l-50.1-38.7c-6.7 .4-13.4 .9-20.4 .2-55.9-5.5-98.7-48.6-111.2-101.9L144 241.3v6.9c0 89.6 64 169.6 152 181.7V464h-56c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-16c0-8.8-7.2-16-16-16z"/></svg>`;
         this.muteButton.classList.add('muted');
@@ -1609,7 +1613,7 @@
 
     updateCameraButton(isOff) {
       if (!this.cameraOffButton) return;
-      
+
       if (isOff) {
         this.cameraOffButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M336.2 64H47.8C21.4 64 0 85.4 0 111.8v288.4C0 426.6 21.4 448 47.8 448h288.4c26.4 0 47.8-21.4 47.8-47.8V111.8c0-26.4-21.4-47.8-47.8-47.8zm189.4 37.7L416 177.3v157.4l109.6 75.5c21.2 14.6 50.4-.3 50.4-25.8V127.5c0-25.4-29.1-40.4-50.4-25.8z"/></svg>`;
         this.cameraOffButton.classList.add('muted');
