@@ -372,6 +372,9 @@ scwin.centerPopup = function (popupId, offsetY = 0) {
 };
 
 scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
+    if(_id === "adfPopUp" && $p.getPopup("drowsinessPopUp"))return;
+    if(_id === "drowsinessPopUp" && $p.getPopup("adfPopUp")) return;
+    
     if ($p.getPopup(_id)) {
         console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
         return;
