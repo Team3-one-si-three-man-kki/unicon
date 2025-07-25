@@ -110,7 +110,7 @@ let refreshInterval;
 scwin.selectedTenantId = null;
 
 scwin.getApiToken = function () {
-    return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzZWNyZXRAdGVzdC5jb20iLCJ0ZW5hbnRJZCI6IjIiLCJyb2xlIjoibWFuYWdlciIsInR5cGUiOiJhY2Nlc3MiLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzUzMDgzNzkyLCJleHAiOjE3NTMwODU1OTJ9.Zsw_SY5QwbGtmskKF97ZrvFdumxA1si0ZJTmzyOf9yyMbG6A2AsMlAZRWlcztCgLFqaBz3hslb_Q3rlm4zNRqg";
+    return sessionStorage.getItem('accessToken');
 };
 
 scwin.onpageload = function () {
@@ -196,7 +196,7 @@ scwin.testConnection = function () {
         fetch('https://13.125.229.206:3000/api/admin/server-stats', {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer ' + scwin.getApiToken(),
+                'Authorization': scwin.getApiToken(),
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -508,7 +508,7 @@ scwin.loadTenantData = function (tenantId) {
     fetch(url, {
         method: 'GET',
         headers: {
-            'Authorization': 'Bearer ' + scwin.getApiToken(),
+            'Authorization': scwin.getApiToken(),
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
