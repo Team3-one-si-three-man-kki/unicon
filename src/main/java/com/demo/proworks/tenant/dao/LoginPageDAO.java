@@ -14,8 +14,8 @@ public class LoginPageDAO extends ProworksDefaultAbstractDAO {
     /**
      * Tenant ID로 로그인 페이지 설정을 조회합니다.
      */
-    public String selectLoginPage(int tenantId) throws ElException {
-        return (String) selectByPk("com.demo.proworks.tenant.selectLoginPage", tenantId);
+    public LoginPageVo selectLoginPage(int tenantId) throws ElException {
+        return (LoginPageVo) selectByPk("com.demo.proworks.tenant.selectLoginPage", tenantId);
     }
 
     /**
@@ -29,6 +29,7 @@ public class LoginPageDAO extends ProworksDefaultAbstractDAO {
      * SubDomain으로 로그인 페이지 설정을 조회합니다.
      */
     public LoginPageVo selectLoginPageBySubDomain(String subDomain) throws ElException {
+    	System.out.println("subDomain" + subDomain);
         return (LoginPageVo) selectByPk("com.demo.proworks.tenant.selectLoginPageBySubDomain", subDomain);
     }
     

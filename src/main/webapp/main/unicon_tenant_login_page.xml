@@ -165,8 +165,19 @@ scwin.applyCustomization = function (data) {
 // 커스터마이징 적용 함수
 scwin.overlayElement = null;
 
+scwin.containKorean = function(text){
+  return /^[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
+}
+
 scwin.loadCustomization = function (c) {
     if (!c) return;
+
+    if(scwin.containKorean(c.tenantName)){
+        loginGuideTxt.setValue(c.tenantName+"에 로그인하세요")
+    }else{
+        loginGuideTxt.setValue("SIGN IN TO"+c.tenantName.toUpperCase());
+    }
+    
 
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
@@ -372,8 +383,8 @@ scwin.loadCustom_submitdone = function (e) {
     console.log("받아온데이터입니다", elData);
     if (elData?.code === "E001") {
         location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/error/404tenant.xml";
-    }else if (Object.keys(elData).length === 0) {
-        elData = scwin.defaultData();
+    }else if (Object.keys(elData).length === 1) {
+        elData = scwin.defaultData(elData.tenantName);
     }
     scwin.loadCustomization(elData);
 };
@@ -459,7 +470,7 @@ scwin.togglePassword_onclick = function (e) {
     }
 };
 
-scwin.defaultData = function () {
+scwin.defaultData = function (name) {
     const data = {
         backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop', // 깔끔한 오피스 이미지
         logo: '',
@@ -479,7 +490,8 @@ scwin.defaultData = function () {
         overlayOpacity: 35,
         overlayColor: '#1f2937',
         primaryColor: '#3b82f6',
-        accentColor: '#6366f1'
+        accentColor: '#6366f1',
+        tenantName: name,
     }
     // 부모의 데이터맵에도 세팅? -> 부모가 있는경우 
     // 현재 loginCustom시 datamap에 데이터 매핑이 안되어있어서 하나만 바꿔도 제대로 인식 못하는 문제 있음 -> 해결 필요
@@ -579,7 +591,7 @@ scwin.defaultData = function () {
 					<xf:group class="login_header" id="" style="margin-bottom: 40px;">
 						<w2:textbox id="" label="WELCOME"
 							style="font-size: 20px; font-weight: 300; color: #2d3748; margin-bottom: 8px; display: block;" />
-						<w2:textbox class="" id="" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 600;" />
+						<w2:textbox class="" id="loginGuideTxt" label="SIGN IN TO INSWAVE" style="font-size: 22px; font-weight: 600;" />
 					</xf:group>
 
 					<!-- 로그인 폼 -->
