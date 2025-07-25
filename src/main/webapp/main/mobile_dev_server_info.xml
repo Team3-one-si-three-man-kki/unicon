@@ -117,7 +117,7 @@ scwin.onpageload = function () {
     console.log("향상된 서버 현황 페이지 로드");
     scwin.showDefaultData();
     scwin.loadTenantList();
-    scwin.testConnection();
+    // scwin.testConnection();
 
     setTimeout(function () {
         scwin.loadServerData();
