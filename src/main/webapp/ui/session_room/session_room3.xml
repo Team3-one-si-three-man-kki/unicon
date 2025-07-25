@@ -1770,11 +1770,9 @@ scwin.closeCustomModule = function (moduleCode, moduleInfo) {
 // 대기방이 숨기기
 scwin.hideWaitingRoom = function () {
     $p.getComponentById("grp_waiting").hide();
-
-    // 대기방이 숨겨진 후 설정값 적용
-    setTimeout(function () {
-        scwin.applyWaitingRoomSettings();
-    }, 500);
+    scwin.applyWaitingRoomSettings();
+    $p.getComponentById("grp_waiting").remove();
+    
 };
 
 scwin.applyWaitingRoomSettings = function () {
