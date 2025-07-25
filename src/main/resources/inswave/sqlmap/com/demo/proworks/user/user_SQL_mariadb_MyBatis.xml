@@ -148,22 +148,22 @@
 
 	<!-- 이메일로 사용자 조회 + 테넌트 활성여부 포함 -->
 	<select id="getUserByEmail" parameterType="string" resultType="com.demo.proworks.user.vo.UserVo">
-		SELECT
+SELECT
 		u.user_id AS userId,
 		u.tenant_id AS tenantId,
 		u.name AS name,
 		u.email AS email,
 		u.role AS role,
 		u.created_at AS createdAt,
-		t.is_active AS
-		isActive  <!-- 테넌트 활성여부 가져오기 -->
+		t.is_active AS isActive,
+		t.sub_domain AS subDomain
 		FROM USER u
 		LEFT JOIN tenant t
 		ON u.tenant_id = t.tenant_id
 		WHERE u.email = #{email}
 		ORDER BY u.created_at DESC
 		LIMIT 1
-	</select>
+</select>
 
 	<!-- tenant 사용자 조회 -->
 	<select id="selectUsersByTenantId" parameterType="com.demo.proworks.user.vo.UserVo" resultType="com.demo.proworks.user.vo.UserVo">
