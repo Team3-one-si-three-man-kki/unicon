@@ -29,6 +29,7 @@
         				<w2:key id="overlayColor" name="overlayColor" dataType="text"></w2:key>
         				<w2:key id="primaryColor" name="primaryColor" dataType="text"></w2:key>
         				<w2:key dataType="text" name="accentColor" id="accentColor"></w2:key>
+        				<w2:key dataType="text" name="tenantName" id="tenantName"></w2:key>
         			</w2:keyInfo>
         		</w2:dataMap>
         		<w2:dataMap baseNode="map" id="dm_loginPage_request">
@@ -80,8 +81,8 @@ scwin.loginPage_onpageframeload = function () {
     // 이 함수는 loginPage의 로딩이 '완료'되었을 때 확실하게 호출됩니다.
     console.log("자식 페이지(loginPage) 로딩 완료.");
     scwin.params = new URLSearchParams(window.location.search);
-    dm_subdomain.set("subDomain",scwin.params.get("tenant"))
-    dm_subdomain.set("mode","custom")
+    dm_subdomain.set("subDomain", scwin.params.get("tenant"))
+    dm_subdomain.set("mode", "custom")
     $c.sbm.execute(loadPreview)
 };
 
@@ -92,9 +93,15 @@ scwin.loadPreview_submitdone = function (e) {
     //     return false;
     // }
 
-    var elData = e.responseJSON
+    let elData = e.responseJSON
+    
+    console.log("여기다여기", elData)
+
+    if (Object.keys(elData).length === 1) {
+        elData = scwin.defaultData(elData.tenantName);
+    }
+    
     dm_loginCustomInfo.setJSON(elData)
-    console.log("여기다여기",elData)
 
     tabControl1.getWindow().scwin.setDataAndRender();
     loginPage.getWindow().scwin.applyCustomization(elData);
@@ -117,7 +124,7 @@ scwin.btn_save_onclick = function (e) {
     var configJsonString = JSON.stringify(styleData);
 
     dm_loginPage_request.set("configJson", configJsonString);
-    dm_loginPage_request.set("tenantId",scwin.params.get("tenant"));
+    dm_loginPage_request.set("tenantId", scwin.params.get("tenant"));
 
     // 5. 전송용 데이터맵을 사용하는 submission을 실행합니다.
     $p.executeSubmission("sbm_saveConfig");
@@ -126,7 +133,34 @@ scwin.btn_save_onclick = function (e) {
 scwin.sbm_saveConfig_submitdone = function (e) {
     console.log(e);
 };
-]]></script>
+
+scwin.defaultData = function (name) {
+    const data = {
+        backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop', // 깔끔한 오피스 이미지
+        logo: '',
+        logoSize: 60,
+        mainTitle: '비즈니스의 새로운 시작을 환영합니다.',
+        mainTitleSize: 36,
+        mainTitleColor: '#ffffff',
+        mainTitleFont: 'font-semibold',
+        subTitle: '안전하고 효율적인 비즈니스 솔루션',
+        subTitleSize: 18,
+        subTitleColor: '#e5e7eb',
+        subTitleFont: 'font-normal',
+        extraTitle: '안전하고 신뢰할 수 있는 플랫폼으로 더 나은 비즈니스를 위한 첫걸음을 시작하세요',
+        extraTitleSize: 16,
+        extraTitleColor: '#d1d5db',
+        extraTitleFont: 'font-light',
+        overlayOpacity: 35,
+        overlayColor: '#1f2937',
+        primaryColor: '#3b82f6',
+        accentColor: '#6366f1',
+        tenantName : name
+    }
+    // 부모의 데이터맵에도 세팅? -> 부모가 있는경우 
+    // 현재 loginCustom시 datamap에 데이터 매핑이 안되어있어서 하나만 바꿔도 제대로 인식 못하는 문제 있음 -> 해결 필요
+    return data;
+}]]></script>
     </head>
    <body ev:onpageload="scwin.onpageload">
 	<xf:group class="sub_contents" id="" style="">

@@ -18,11 +18,11 @@ public class LoginPageServiceImpl implements LoginPageService {
 	@Resource(name = "messageSource")
 	private MessageSource messageSource;
 
-	public String getConfigJsonBySubDomain(LoginPageVo subDomain) throws Exception {
-		String config = null;
+	public LoginPageVo getConfigJsonBySubDomain(LoginPageVo subDomain) throws Exception {
+		LoginPageVo config = null;
 		if (subDomain.getMode().equals("login")) {
 			System.out.println(">>>>>>>>>>>>>>>>>>>>..1");
-			config = loginPageDAO.selectLoginPageBySubDomain(subDomain.getSubDomain()).getConfigJson();
+			config = loginPageDAO.selectLoginPageBySubDomain(subDomain.getSubDomain());
 			System.out.println(config + "1");
 		} else {
 			System.out.println(">>>>>>>>>>>>>>>>>>>>..2");

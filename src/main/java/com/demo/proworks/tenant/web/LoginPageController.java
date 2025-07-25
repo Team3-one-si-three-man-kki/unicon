@@ -57,28 +57,42 @@ public class LoginPageController {
 	@ElDescription(sub = "로그인 커스텀 페이지 설정 조회", desc = "로그인 커스텀 페이지 설정 조회를 한다.")
 //	public ResponseEntity<String> getLoginStyle(@PathVariable String subDomain) throws Exception{
 	public ResponseEntity<String> getLoginStyle(LoginPageVo tenant) throws Exception {
-		try {
-			System.out.println(tenant);
-			String configVo = loginPageService.getConfigJsonBySubDomain(tenant);
-			System.out.println(configVo + "123");
-			if (configVo == null || configVo == null) {
-				Map<String, String> message = new HashMap<>();
-				message.put("code", "E001");
-				message.put("msg", "해당 도메인을 찾을 수 없습니다.");
-				return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-						.body(new ObjectMapper().writeValueAsString(message));
-			}
-			// String을 그대로 JSON으로 응답
-			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(configVo);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			Map<String, String> message = new HashMap<>();
-			message.put("code", "E001");
-			message.put("msg", "해당 도메인을 찾을 수 없습니다.");
-			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-					.body(new ObjectMapper().writeValueAsString(message));
-		}
-	}
+    try {
+        System.out.println(tenant);
+        LoginPageVo configVo = loginPageService.getConfigJsonBySubDomain(tenant);
+        System.out.println(configVo + "123");
+
+        if (configVo == null || configVo.getConfigJson() == null) {
+            Map<String, String> message = new HashMap<>();
+            message.put("code", "E001");
+            message.put("msg", "해당 도메인을 찾을 수 없습니다.");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ObjectMapper().writeValueAsString(message));
+        }
+
+        // configJson(String)을 JSON으로 파싱
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> configMap = objectMapper.readValue(configVo.getConfigJson(), Map.class);
+
+        // tenantName 추가
+        configMap.put("tenantName", configVo.getName());
+
+        // 다시 JSON 문자열로 변환해서 응답
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(objectMapper.writeValueAsString(configMap));
+
+    } catch (Exception e) {
+        System.out.println(e.getMessage());
+        Map<String, String> message = new HashMap<>();
+        message.put("code", "E001");
+        message.put("msg", "해당 도메인을 찾을 수 없습니다.");
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ObjectMapper().writeValueAsString(message));
+    }
+}
 
 	/**
 	 * 로그인 커스텀 설정 정보를 저장한다.
