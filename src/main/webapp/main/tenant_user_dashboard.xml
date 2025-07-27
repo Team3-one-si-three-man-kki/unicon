@@ -85,6 +85,7 @@ scwin.showPopup = function (message, isConfirm, callback) {
 
 // 테넌트 정보를 저장할 전역 변수
 scwin.tenantName = null;
+scwin.tenantDisplayName = null;
 
 scwin.parseJwt = function (token) {
     try {
@@ -97,6 +98,322 @@ scwin.parseJwt = function (token) {
     } catch (e) {
         console.error("JWT 파싱 오류:", e);
         return null;
+    }
+};
+
+
+scwin.getQueryParam = function (name) {
+    try {
+        // 현재 페이지 URL에서 파라미터 추출
+        const params = new URLSearchParams(window.location.search);
+        const value = params.get(name);
+        console.log(`URL 파라미터 [${name}]:`, value);
+        return value;
+    } catch (e) {
+        console.error("URL 파라미터 추출 오류:", e);
+        return null;
+    }
+};
+
+scwin.preserveTenantInfo = function() {
+    try {
+        const tenantFromUrl = scwin.getQueryParam('tenant');
+        const tenantFromGlobal = scwin.tenantName;
+        const tenantFromSession = sessionStorage.getItem('currentTenantName');
+        
+        const finalTenant = tenantFromUrl || tenantFromGlobal || tenantFromSession;
+        
+        if (finalTenant) {
+            // 임시로 localStorage에 저장 (로그아웃 시 사용)
+            localStorage.setItem('logoutTenantId', finalTenant);
+            console.log("로그아웃용 테넌트 정보 저장:", finalTenant);
+        }
+    } catch (e) {
+        console.error("테넌트 정보 보존 오류:", e);
+    }
+};
+
+// 테넌트 정보 가져오기 함수
+scwin.fetchTenantInfo = function (tenantId) {
+    console.log("=== 테넌트 정보 조회 시작 ===", tenantId);
+
+    // sessionStorage에서 테넌트 이름 먼저 확인
+    const savedTenantName = sessionStorage.getItem('currentTenantName');
+    console.log("SessionStorage에서 가져온 테넌트 이름:", savedTenantName);
+
+    if (savedTenantName) {
+        console.log("저장된 테넌트 이름으로 헤더 업데이트:", savedTenantName);
+        scwin.updateHeaderTitle(savedTenantName + " Dashboard");
+        scwin.tenantDisplayName = savedTenantName;
+        return;
+    }
+
+    if (!tenantId) {
+        console.warn("테넌트 ID가 없고 저장된 이름도 없습니다.");
+        scwin.updateHeaderTitle("Dashboard");
+        return;
+    }
+
+    // API 호출로 테넌트 정보 가져오기
+    console.log("저장된 이름이 없어 API 호출을 시도합니다.");
+    $p.ajax({
+        url: `/api/tenants/${tenantId}`,
+        method: "GET",
+        headers: {
+            "Authorization": sessionStorage.getItem('accessToken'),
+            "Content-Type": "application/json"
+        },
+        success: function (response) {
+            console.log("테넌트 정보 조회 성공:", response);
+
+            if (response && response.name) {
+                scwin.tenantDisplayName = response.name;
+                scwin.updateHeaderTitle(response.name + " Dashboard");
+                // sessionStorage에 저장하여 다음에 사용
+                sessionStorage.setItem('currentTenantName', response.name);
+            } else {
+                console.warn("API에서 테넌트 이름을 가져오지 못했습니다.");
+                // tenantId를 display name으로 사용
+                scwin.tenantDisplayName = tenantId;
+                scwin.updateHeaderTitle(tenantId + " Dashboard");
+                sessionStorage.setItem('currentTenantName', tenantId);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("테넌트 정보 조회 실패:", error);
+            // tenantId를 display name으로 사용
+            scwin.tenantDisplayName = tenantId;
+            scwin.updateHeaderTitle(tenantId + " Dashboard");
+            sessionStorage.setItem('currentTenantName', tenantId);
+        }
+    });
+};
+
+
+
+
+// 헤더 타이틀 업데이트 함수
+scwin.updateHeaderTitle = function (title) {
+    console.log("헤더 타이틀 업데이트:", title);
+    try {
+        // 1. $p.getComponentById API를 사용하여 컴포넌트를 가져옵니다.
+        var headerTitleComp = $p.getComponentById("headerTitle");
+
+        if (headerTitleComp) {
+            // 2. 컴포넌트의 setLabel 메소드를 사용하여 텍스트를 변경합니다.
+            headerTitleComp.setLabel(title);
+        } else {
+            console.error("headerTitle 컴포넌트를 찾을 수 없습니다.");
+        }
+    } catch (e) {
+        console.error("헤더 타이틀 업데이트 중 오류 발생:", e);
+    }
+};
+
+// 로그아웃 함수
+scwin.logout = function () {
+    // 테넌트 정보 미리 보존
+    scwin.preserveTenantInfo();
+    
+    const tenantDisplayName = scwin.tenantDisplayName || scwin.tenantName || "현재 테넌트";
+    const message = `${tenantDisplayName}에서 로그아웃 하시겠습니까?`;
+    
+    scwin.showPopup(message, true, function (confirmed) {
+        if (confirmed) {
+            // 서버에 로그아웃 요청
+            $p.ajax({
+                url: "/InsWebApp/TNU0000Logout.pwkjson",
+                method: "POST",
+                headers: {
+                    "Authorization": sessionStorage.getItem('accessToken'),
+                    "Content-Type": "application/json"
+                },
+                success: function (response) {
+                    console.log("서버 로그아웃 성공");
+                    scwin.performLogout();
+                },
+                error: function (xhr, status, error) {
+                    console.log("서버 로그아웃 실패, 클라이언트 로그아웃 진행");
+                    scwin.performLogout();
+                }
+            });
+        }
+    });
+};
+
+// ===== tenant_user_dashboard.xml의 <script> 태그 안에 추가할 코드 =====
+// 기존 코드 아래에 다음 함수들을 추가하세요
+
+// 현재 도메인 정보 추출 함수
+scwin.getCurrentDomainInfo = function() {
+    try {
+        const currentUrl = window.location.href;
+        const urlObj = new URL(currentUrl);
+        
+        const domainInfo = {
+            protocol: urlObj.protocol, // https: 또는 http:
+            hostname: urlObj.hostname, // localhost
+            port: urlObj.port,         // 19443
+            baseUrl: `${urlObj.protocol}//${urlObj.hostname}${urlObj.port ? ':' + urlObj.port : ''}`
+        };
+        
+        console.log("현재 도메인 정보:", domainInfo);
+        return domainInfo;
+    } catch (e) {
+        console.error("도메인 정보 추출 실패:", e);
+        return {
+            protocol: 'https:',
+            hostname: 'localhost',
+            port: '19443',
+            baseUrl: 'https://localhost:19443'
+        };
+    }
+};
+
+// 테넌트 로그인 URL 생성 함수
+scwin.buildTenantLoginUrl = function(tenantId) {
+    const domainInfo = scwin.getCurrentDomainInfo();
+    
+    let loginUrl;
+    
+    if (tenantId && tenantId.trim() && tenantId !== 'null' && tenantId !== 'undefined') {
+        // 테넌트 정보가 있는 경우 - 현재 도메인에서 테넌트 파라미터와 함께
+        loginUrl = `${domainInfo.baseUrl}/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml&tenant=${encodeURIComponent(tenantId.trim())}`;
+    } else {
+        // 테넌트 정보가 없는 경우 - 기본 로그인 페이지
+        console.warn("테넌트 정보 없음 - 기본 로그인 페이지로 이동");
+        loginUrl = `${domainInfo.baseUrl}/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml`;
+    }
+    
+    // 캐시 방지를 위한 타임스탬프 추가
+    const timestamp = new Date().getTime();
+    loginUrl += `&_t=${timestamp}`;
+    
+    console.log("생성된 테넌트 로그인 URL:", loginUrl);
+    return loginUrl;
+};
+
+// 테스트용 함수
+scwin.testLogoutUrl = function() {
+    console.log("=== 로그아웃 URL 테스트 ===");
+    
+    const currentDomain = scwin.getCurrentDomainInfo();
+    console.log("현재 도메인:", currentDomain);
+    
+    const tenantId = scwin.tenantName || scwin.getQueryParam('tenant') || 'TestTenant';
+    console.log("테넌트 ID:", tenantId);
+    
+    const loginUrl = scwin.buildTenantLoginUrl(tenantId);
+    console.log("생성될 로그인 URL:", loginUrl);
+    
+    return loginUrl;
+};
+
+// 기존 performLogout 함수를 수정 (완전 교체)
+scwin.performLogout = function () {
+    try {
+        console.log("=== 로그아웃 처리 시작 ===");
+        
+        // 1. 테넌트 ID 추출 (여러 방법으로 시도)
+        let tenantId = null;
+        
+        // 방법 1: 전역 변수에서 가져오기
+        if (scwin.tenantName) {
+            tenantId = scwin.tenantName;
+            console.log("전역 변수에서 테넌트 ID 추출:", tenantId);
+        }
+        
+        // 방법 2: URL 파라미터에서 가져오기
+        if (!tenantId) {
+            tenantId = scwin.getQueryParam('tenant');
+            console.log("URL 파라미터에서 테넌트 ID 추출:", tenantId);
+        }
+        
+        // 방법 3: 토큰에서 가져오기 (세션 클리어 전에 먼저)
+        if (!tenantId) {
+            const accessToken = sessionStorage.getItem('accessToken');
+            if (accessToken) {
+                try {
+                    const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
+                    const tokenPayload = scwin.parseJwt(tokenString);
+                    if (tokenPayload && tokenPayload.tenantId) {
+                        tenantId = tokenPayload.tenantId;
+                        console.log("토큰에서 테넌트 ID 추출:", tenantId);
+                    }
+                } catch (e) {
+                    console.warn("토큰 파싱 실패:", e);
+                }
+            }
+        }
+        
+        // 방법 4: sessionStorage에서 저장된 테넌트 이름 확인
+        if (!tenantId) {
+            const savedTenantName = sessionStorage.getItem('currentTenantName');
+            if (savedTenantName) {
+                tenantId = savedTenantName;
+                console.log("sessionStorage에서 테넌트 ID 추출:", tenantId);
+            }
+        }
+        
+        console.log("최종 사용할 테넌트 ID:", tenantId);
+        
+        // 2. 세션 클리어
+        sessionStorage.clear();
+        localStorage.removeItem('refreshToken');
+        
+        // 3. 테넌트별 로그인 페이지로 이동
+        const loginUrl = scwin.buildTenantLoginUrl(tenantId);
+        
+        console.log("로그인 페이지 리다이렉트 URL:", loginUrl);
+        
+        // 4. 리다이렉트 실행
+        try {
+            window.location.href = loginUrl;
+        } catch (e1) {
+            console.error("window.location.href 실패:", e1);
+            try {
+                window.location.replace(loginUrl);
+            } catch (e2) {
+                console.error("window.location.replace 실패:", e2);
+                try {
+                    window.top.location.href = loginUrl;
+                } catch (e3) {
+                    console.error("모든 리다이렉트 방법 실패:", e3);
+                    alert("로그아웃 완료. 수동으로 로그인 페이지로 이동해주세요.");
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error("로그아웃 처리 중 오류:", error);
+        
+        // 세션 클리어
+        try {
+            sessionStorage.clear();
+            localStorage.removeItem('refreshToken');
+        } catch (e) {
+            console.error("세션 클리어 오류:", e);
+        }
+        
+        // 오류 시 안전한 경로들로 순차 시도
+        const domainInfo = scwin.getCurrentDomainInfo();
+        const safeUrls = [
+            `${domainInfo.baseUrl}/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml`,
+            `${domainInfo.baseUrl}/InsWebApp/`,
+            `${domainInfo.baseUrl}/InsWebApp/websquare/websquare.html`,
+            `${domainInfo.baseUrl}/`
+        ];
+        
+        for (let url of safeUrls) {
+            try {
+                console.log("안전 경로 시도:", url);
+                window.location.href = url;
+                break;
+            } catch (e) {
+                console.error("안전 경로 실패:", url, e);
+                continue;
+            }
+        }
     }
 };
 
@@ -162,7 +479,54 @@ scwin.initializeTabPermissions = function () {
     }
 };
 
+
 // 탭 권한 적용 (올바른 ID 사용)
+scwin.fetchTenantInfo = function (tenantId) {
+    console.log("=== 테넌트 정보 조회 시작 ===", tenantId);
+
+    const savedTenantName = sessionStorage.getItem('currentTenantName');
+    console.log("SessionStorage에서 가져온 테넌트 이름:", savedTenantName);
+
+    if (savedTenantName) {
+        console.log("저장된 테넌트 이름으로 헤더 업데이트:", savedTenantName);
+        scwin.updateHeaderTitle(savedTenantName + " Dashboard");
+        scwin.tenantDisplayName = savedTenantName;
+        return;
+    }
+
+    if (!tenantId) {
+        console.warn("테넌트 ID가 없고 저장된 이름도 없습니다.");
+        scwin.updateHeaderTitle("Dashboard");
+        return;
+    }
+
+    console.log("저장된 이름이 없어 API 호출을 시도합니다.");
+    $p.ajax({
+        url: `/api/tenants/${tenantId}`,
+        method: "GET",
+        headers: {
+            "Authorization": sessionStorage.getItem('accessToken'),
+            "Content-Type": "application/json"
+        },
+        success: function (response) {
+            console.log("테넌트 정보 조회 성공:", response);
+
+            if (response && response.name) {
+                scwin.tenantDisplayName = response.name;
+                scwin.updateHeaderTitle(response.name + " Dashboard");
+                sessionStorage.setItem('currentTenantName', response.name);
+            } else {
+                console.warn("API에서 테넌트 이름을 가져오지 못했습니다.");
+                scwin.updateHeaderTitle("Dashboard");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("테넌트 정보 조회 실패:", error);
+            scwin.updateHeaderTitle("Dashboard");
+        }
+    });
+};
+
 scwin.applyTabPermissions = function () {
     console.log("=== 탭 권한 적용 시작 ===");
 
@@ -171,14 +535,28 @@ scwin.applyTabPermissions = function () {
     let firstVisibleTab = null;
 
     setTimeout(function () {
+
         allTabs.forEach(function (tabName) {
-            const tabElement = document.getElementById('mf_tab_' + tabName);
+            let tabElement = null;
+            const possibleIds = [
+                'tab_' + tabName,
+                'mf_tab_' + tabName,
+                'tab-' + tabName,
+                'mf_tab-' + tabName
+            ];
+
+            for (let id of possibleIds) {
+                tabElement = document.getElementById(id);
+                if (tabElement) {
+                    console.log(`탭 [${tabName}] 발견: ${id}`);
+                    break;
+                }
+            }
 
             if (tabElement) {
                 const hasPermission = scwin.allowedTabs && scwin.allowedTabs.indexOf(tabName) > -1;
 
                 if (hasPermission) {
-                    // 권한이 있는 탭은 표시
                     tabElement.style.display = 'inline-block';
                     tabElement.style.visibility = 'visible';
                     tabElement.classList.remove('hidden-tab');
@@ -190,7 +568,6 @@ scwin.applyTabPermissions = function () {
 
                     console.log(`탭 [${tabName}] 표시됨`);
                 } else {
-                    // 권한이 없는 탭은 완전히 숨김
                     tabElement.style.display = 'none';
                     tabElement.style.visibility = 'hidden';
                     tabElement.classList.add('hidden-tab');
@@ -198,43 +575,57 @@ scwin.applyTabPermissions = function () {
                     console.log(`탭 [${tabName}] 숨김 처리됨`);
                 }
             } else {
-                console.warn(`탭 요소를 찾을 수 없음: mf_tab_${tabName}`);
+                console.warn(`탭 요소를 찾을 수 없음: ${tabName} (시도한 ID들: ${possibleIds.join(', ')})`);
             }
         });
 
-        // USER 역할일 때 탭 네비게이션 중앙 정렬 적용
-        const tabNav = document.getElementById('mf_tab_nav');
-        if (tabNav) {
-            if (scwin.currentUserRole === 'USER' && visibleTabCount <= 2) {
-                tabNav.classList.add('user-role');
-                console.log('USER 역할 - 탭 네비게이션 중앙 정렬 적용');
-            } else {
-                tabNav.classList.remove('user-role');
-            }
-        }
+        const allElements = document.querySelectorAll('[id*="tab"]');
+        console.log("DOM에서 'tab'이 포함된 모든 요소들:");
+        allElements.forEach(el => {
+            console.log(`- ID: ${el.id}, TagName: ${el.tagName}, Text: ${el.textContent?.trim()}`);
+        });
 
         console.log(`총 ${visibleTabCount}개 탭이 표시됨`);
 
-        // 첫 번째 허용된 탭을 활성화
         if (firstVisibleTab) {
             console.log(`기본 활성 탭: ${firstVisibleTab}`);
-
-            // 기존 active 클래스 모두 제거
-            allTabs.forEach(function (tabName) {
-                const tabElement = document.getElementById('mf_tab_' + tabName);
-                if (tabElement) {
-                    tabElement.classList.remove('active');
-                }
-            });
-
             setTimeout(function () {
                 scwin.switchTab(firstVisibleTab);
             }, 100);
         } else {
-            console.warn("표시할 수 있는 탭이 없습니다.");
+            console.warn("표시할 수 있는 탭이 없습니다. DOM 구조를 확인해주세요.");
         }
-    }, 50);
+    }, 100);
 };
+
+
+scwin.switchTabWithPermission = function (tabName) {
+    console.log(`탭 전환 요청: ${tabName}`);
+
+    // 권한 체크
+    if (!scwin.allowedTabs || scwin.allowedTabs.indexOf(tabName) === -1) {
+        console.warn(`탭 [${tabName}]에 대한 권한 없음`);
+        return;
+    }
+
+    console.log(`탭 [${tabName}] 권한 확인됨 - 전환 진행`);
+
+    // 기존 탭 전환 로직 실행
+    scwin.switchTab(tabName);
+};
+
+// 권한별 메시지 표시
+scwin.showRoleInfo = function () {
+    if (scwin.currentUserRole && scwin.rolePermissions[scwin.currentUserRole]) {
+        const roleInfo = scwin.rolePermissions[scwin.currentUserRole];
+        const message = `현재 권한: ${scwin.currentUserRole}\n` +
+            `설명: ${roleInfo.description}\n` +
+            `사용 가능한 기능: ${roleInfo.tabs.join(', ')}`;
+
+        scwin.showPopup(message);
+    }
+};
+
 
 scwin.switchTabWithPermission = function (tabName) {
     console.log(`탭 전환 요청: ${tabName}`);
@@ -272,6 +663,12 @@ scwin.onpageload = function () {
 
     const urlTenant = $p.getParameter("tenant");
     console.log("URL에서 추출한 테넌트:", urlTenant);
+    
+    // 테넌트 정보를 즉시 전역 변수에 저장
+    if (urlTenant) {
+        scwin.tenantName = urlTenant;
+        console.log("전역 변수에 테넌트 저장:", scwin.tenantName);
+    }
 
     // DOM 로드 완료 후 권한 초기화 실행
     setTimeout(function () {
@@ -279,9 +676,9 @@ scwin.onpageload = function () {
             // 권한 초기화
             scwin.initializeTabPermissions();
 
-            // 테넌트 검증
+            // 테넌트 검증 및 정보 가져오기
             const accessToken = sessionStorage.getItem('accessToken');
-            
+
             if (accessToken) {
                 const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
                 const tokenPayload = scwin.parseJwt(tokenString);
@@ -289,26 +686,51 @@ scwin.onpageload = function () {
 
                 console.log("토큰에서 추출한 테넌트:", tokenTenant);
 
-                if (urlTenant && tokenTenant && urlTenant === tokenTenant) {
+                // URL 테넌트와 토큰 테넌트 검증
+                if (urlTenant && tokenTenant) {
+                    if (urlTenant === tokenTenant) {
+                        scwin.tenantName = tokenTenant;
+                        console.log("검증된 테넌트 이름:", scwin.tenantName);
+                    } else {
+                        console.warn("URL 테넌트와 토큰 테넌트가 일치하지 않음");
+                        console.warn(`URL: ${urlTenant}, 토큰: ${tokenTenant}`);
+                        // 토큰의 테넌트를 우선으로 사용
+                        scwin.tenantName = tokenTenant;
+                    }
+                } else if (urlTenant) {
+                    scwin.tenantName = urlTenant;
+                } else if (tokenTenant) {
                     scwin.tenantName = tokenTenant;
-                    console.log("인증된 테넌트 이름:", scwin.tenantName);
                 } else {
-                    console.warn("테넌트 검증 실패, 기본값 사용");
-                    scwin.tenantName = urlTenant || "default";
+                    scwin.tenantName = "default";
                 }
+
+                // 테넌트 정보 가져오기
+                scwin.fetchTenantInfo(scwin.tenantName);
             } else {
+                console.warn("액세스 토큰이 없음");
                 scwin.tenantName = urlTenant || "default";
+                scwin.fetchTenantInfo(scwin.tenantName);
             }
 
             console.log("=== Dashboard 초기화 완료 ===");
-            
+
         } catch (e) {
             console.warn("초기화 중 오류, 기본값 사용:", e);
             scwin.tenantName = urlTenant || "default";
+
+            // sessionStorage에서 테넌트 이름 확인
+            const savedTenantName = sessionStorage.getItem('currentTenantName');
+            if (savedTenantName) {
+                scwin.updateHeaderTitle(savedTenantName + " Dashboard");
+            } else {
+                scwin.updateHeaderTitle("Dashboard");
+            }
             console.log("=== Dashboard 초기화 완료 (오류 복구) ===");
         }
     }, 200);
 };
+
 
 
 /**
@@ -330,6 +752,7 @@ scwin.switchTab = function (tabName) {
     scwin.showPanel(tabName);
 };
 
+
 scwin.showPanel = function (panelType) {
     console.log("showPanel 호출됨, 패널 타입:", panelType);
 
@@ -346,26 +769,18 @@ scwin.showPanel = function (panelType) {
     const tenantParam = scwin.tenantName ? "?tenant=" + encodeURIComponent(scwin.tenantName) : "";
 
     if (panelType === 'user') {
-        console.log("사용자 관리 페이지 로드 시도");
         pageUrl = "user_management_dashboard.xml" + tenantParam;
     } else if (panelType === 'module') {
-        console.log("모듈 마켓플레이스 페이지 로드 시도");
         pageUrl = "module_marketplace.xml" + tenantParam;
     } else if (panelType === 'login') {
-        console.log("로그인 페이지 관리 로드 시도");
         pageUrl = "login_custom.xml" + tenantParam;
     } else if (panelType === 'meeting') {
-        console.log("미팅 생성 페이지 로드 시도");
         pageUrl = "make_session_progress.xml" + tenantParam;
     } else if (panelType === 'attenance') {
-        console.log("출석 관리 페이지 로드 시도");
         pageUrl = "attendance_module__dashboard.xml" + tenantParam;
-    }else if (panelType === 'moduleManagement') {
-        console.log("모듈 관리 페이지 로드 시도");
+    } else if (panelType === 'moduleManagement') {
         pageUrl = "module-management.xml" + tenantParam;
-    }  else {
-        // alert 제거 - 콘솔 로그만 남김
-        console.log(panelType + " 메뉴입니다.");
+    } else {
         return;
     }
 
@@ -391,7 +806,7 @@ scwin.validateUserAccess = function () {
             return false;
         }
 
-        // 토큰 만료 체크
+
         const currentTime = Math.floor(Date.now() / 1000);
         if (tokenPayload.exp && tokenPayload.exp < currentTime) {
             console.error("토큰이 만료되었습니다.");
@@ -438,6 +853,83 @@ scwin.updateHeaderWithRoleInfo = function () {
     } catch (error) {
         console.error("헤더 업데이트 중 오류:", error);
     }
+};
+
+scwin.btn_kakao_onclick = function (e) {
+    // URL 파라미터에서 tenant 추출
+    var tenant = $p.getParameter("tenant") || scwin.getQueryParam('tenant');
+    console.log("카카오 로그인 - 테넌트:", tenant);
+    
+    // 테넌트 정보가 없으면 오류 처리
+    if (!tenant) {
+        scwin.showPopup("테넌트 정보를 찾을 수 없습니다. 페이지를 새로고침해주세요.");
+        return;
+    }
+    
+    // 서비스 코드 정의
+    var service = "TNU0000KC";
+    
+    // 동적으로 action URL 생성
+    var url = "/InsWebApp/TNU0000KL.pwkjson?service=" 
+              + service 
+              + "&tenant=" + encodeURIComponent(tenant);
+    
+    console.log("카카오 로그인 URL:", url);
+
+    var subObj = $p.getSubmission("kakao_login");
+    console.log(subObj);
+
+    subObj.action = url;
+    $p.executeSubmission("kakao_login");
+};
+
+// 현재 도메인 정보 추출 함수
+scwin.getCurrentDomainInfo = function() {
+    try {
+        const currentUrl = window.location.href;
+        const urlObj = new URL(currentUrl);
+        
+        const domainInfo = {
+            protocol: urlObj.protocol, // https: 또는 http:
+            hostname: urlObj.hostname, // localhost
+            port: urlObj.port,         // 19443
+            baseUrl: `${urlObj.protocol}//${urlObj.hostname}${urlObj.port ? ':' + urlObj.port : ''}`
+        };
+        
+        console.log("현재 도메인 정보:", domainInfo);
+        return domainInfo;
+    } catch (e) {
+        console.error("도메인 정보 추출 실패:", e);
+        return {
+            protocol: 'https:',
+            hostname: 'localhost',
+            port: '19443',
+            baseUrl: 'https://localhost:19443'
+        };
+    }
+};
+
+// 테넌트 로그인 URL 생성 함수
+scwin.buildTenantLoginUrl = function(tenantId) {
+    const domainInfo = scwin.getCurrentDomainInfo();
+    
+    let loginUrl;
+    
+    if (tenantId && tenantId.trim() && tenantId !== 'null' && tenantId !== 'undefined') {
+        // 테넌트 정보가 있는 경우 - 현재 도메인에서 테넌트 파라미터와 함께
+        loginUrl = `${domainInfo.baseUrl}/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml&tenant=${encodeURIComponent(tenantId.trim())}`;
+    } else {
+        // 테넌트 정보가 없는 경우 - 기본 로그인 페이지
+        console.warn("테넌트 정보 없음 - 기본 로그인 페이지로 이동");
+        loginUrl = `${domainInfo.baseUrl}/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml`;
+    }
+    
+    // 캐시 방지를 위한 타임스탬프 추가
+    const timestamp = new Date().getTime();
+    loginUrl += `&_t=${timestamp}`;
+    
+    console.log("생성된 테넌트 로그인 URL:", loginUrl);
+    return loginUrl;
 };]]></script>
 		<style><![CDATA[@import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
             
@@ -479,15 +971,20 @@ scwin.updateHeaderWithRoleInfo = function () {
                 z-index: 10000 !important;
                 background-color: #007bff !important;
                 order: 1 !important;
+                display: flex !important; 
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 0 20px !important;
             }
 
             .header h1 {
                 padding: 20px !important;
-                background-color: #007bff !important;
+                background-color: transparent !important;
                 color: white !important;
                 margin: 0 !important;
                 font-size: 24px !important;
                 font-weight: bold !important;
+                flex: 1 !important;                         
             }
 
             /* ========== 탭 컨테이너 ========== */
@@ -784,6 +1281,76 @@ scwin.updateHeaderWithRoleInfo = function () {
                 color: white;
             }
 
+            .logout-button {
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                color: white !important;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+                padding: 8px 16px !important;
+                border-radius: 6px !important;
+                font-size: 14px !important;
+                font-weight: 500 !important;
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                outline: none !important;
+                white-space: nowrap !important;
+                min-width: 80px !important;
+            }
+
+            .logout-button:hover {
+                background-color: rgba(255, 255, 255, 0.2) !important;
+                border-color: rgba(255, 255, 255, 0.5) !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            .logout-button:active {
+                transform: translateY(0) !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            .logout-button::before {
+                content: '↪';
+                margin-right: 6px !important;
+                font-size: 16px !important;
+            }
+
+            @media (max-width: 768px) {
+            .header {
+                padding: 0 15px !important;
+            }
+            
+            .header h1 {
+                font-size: 20px !important;
+            }
+            
+            .logout-button {
+                padding: 6px 12px !important;
+                font-size: 12px !important;
+                min-width: 70px !important;
+            }
+            
+            .logout-button::before {
+                margin-right: 4px !important;
+                font-size: 14px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 10px !important;
+            }
+            
+            .header h1 {
+                font-size: 18px !important;
+            }
+            
+            .logout-button {
+                padding: 5px 10px !important;
+                font-size: 11px !important;
+                min-width: 60px !important;
+            }
+        }
+
             /* 추가: 중복 행 하이라이트 스타일 */
             .duplicate-row {
                 background-color: #fff3cd !important;
@@ -794,7 +1361,10 @@ scwin.updateHeaderWithRoleInfo = function () {
 		<xf:group class="wrap" id="wrap">
 			<!-- 헤더 영역 -->
 			<xf:group class="header" id="header">
-				<w2:textbox tagname="h1" label="인스웨이브 Dashboard" />
+				<w2:textbox tagname="h1" id="headerTitle" label="Dashboard" />
+				<xf:trigger class="logout-button" id="btn_logout" type="button" ev:onclick="scwin.logout">
+					<xf:label><![CDATA[로그아웃]]></xf:label>
+				</xf:trigger>
 			</xf:group>
 
 			<!-- 탭 네비게이션 -->

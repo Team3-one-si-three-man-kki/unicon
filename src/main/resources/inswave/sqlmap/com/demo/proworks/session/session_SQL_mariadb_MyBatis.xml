@@ -17,13 +17,14 @@
 <mapper namespace="com.demo.proworks.session">
 	<insert id="insertSession" parameterType="com.demo.proworks.session.vo.SessionVo" useGeneratedKeys="true" keyProperty="sessionId"
 		keyColumn="session_id">
-		INSERT INTO SESSION (
+INSERT INTO SESSION (
 		NAME
 		<if test="usingDept != null"> , USING_DEPT </if>
 		<if test="startTime != null"> , START_TIME </if>
 		<if test="inviteLink != null"> , INVITE_LINK </if>
 		<if test="linkExpiry != null"> , LINK_EXPIRY </if>
 		<if test="createdBy != null"> , CREATED_BY </if>
+		<if test="tenantId != null"> , TENANT_ID </if>
 		) VALUES (
 		#{name}
 		<if test="usingDept != null"> , #{usingDept} </if>
@@ -31,8 +32,9 @@
 		<if test="inviteLink != null"> , #{inviteLink} </if>
 		<if test="linkExpiry != null"> , #{linkExpiry} </if>
 		<if test="createdBy != null"> , #{createdBy} </if>
+		<if test="tenantId != null"> , #{tenantId} </if>
 		)
-	</insert>
+</insert>
 
 	<update id="updateSession" parameterType="com.demo.proworks.session.vo.SessionVo">
 		<!-- 세션정보를 갱신한다. -->

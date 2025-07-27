@@ -72,6 +72,7 @@
     padding: 8px;
 }
 
+/*
 #grp_video_area {
     position: relative;
     flex-grow: 1;
@@ -89,6 +90,9 @@
     width: 240px;
     overflow-y: auto;
     flex-shrink: 0;
+        
+    align-items: stretch;
+    justify-content: flex-start;
 }
 
 /* --- 미디어 요소 공통 스타일 --- */
@@ -100,6 +104,12 @@
     border-radius: 8px;
     overflow: hidden;
     position: relative;
+    
+    flex: 0 0 auto;  /* flex-grow: 0, flex-shrink: 0, flex-basis: auto */
+    max-width: 240px;
+    max-height: 180px;  /* aspect-ratio 4:3 기준 */
+    min-width: 200px;
+    min-height: 150px;
 }
 
 #grp_video_area > div.canvas-layer {
@@ -129,6 +139,7 @@
 #sidebarContainer > div:hover {
     border-color: #00aaff;
 }
+*/
 
 /* --- 카메라 Off 아바타 스타일 --- */
 div.video-paused::after {
@@ -324,7 +335,10 @@ div.video-paused::after {
 		<script src="ai_dashboard_controller.js" />
 		<script src="personal_dashboard_controller.js" />
 
-		<script lazy="false" type="text/javascript"><![CDATA[
+		<script lazy="false" type="text/javascript"><![CDATA[// 로드시간 측정을 위한 로그
+console.log(`페이지 로딩 시작: ${performance.now().toFixed(2)}ms`);
+
+
 scwin.updateCanvasBackground = function () {
     if (!scwin.isWhiteboardActive) return;
 
@@ -471,8 +485,6 @@ scwin.onpageload = async function () {
     scwin.isMicMuted = meetingSettings.get("audioEnabled");
     scwin.isCameraOff = meetingSettings.get("videoEnabled");
 
-    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>", scwin.isMicMuted);
-
     scwin.openModules = {}; // UI 모듈들 상태 추적
 
     top.window.onresize = scwin.throttle(function () {
@@ -486,8 +498,8 @@ scwin.onpageload = async function () {
     console.log("Application classes are loaded. Application starting...");
     const { UIManager, RoomClient, loadModule } = window.App;
     scwin.loadModule = loadModule;
-
     scwin.uiManager = new UIManager();
+
     scwin.roomClient = new RoomClient(scwin.uiManager);
 
     let aiModule = null;
@@ -516,9 +528,9 @@ scwin.onpageload = async function () {
     const CANVAS_WORKER_URL = '/InsWebApp/js/canvas/canvas-worker.js';
     const MEDIA_PIPE_WORKER_URL = '/InsWebApp/media/dist/mediapipe.worker.bundle.js';
 
-    //const mainStage = scwin.uiManager.getMainStageContainer();
+    const mainStage = scwin.uiManager.getMainStageContainer();
     // 메인 스테이지 참조를 WebSquare ID로 변경
-    const mainStage = document.getElementById('mf_grp_video_area');
+    //const mainStage = document.getElementById('mf_grp_video_area');
 
     // 1. 칠판 레이어(canvasLayer)를 생성하고 모든 레이어 스타일을 적용
     scwin.canvasLayer = document.createElement("div");
@@ -791,28 +803,32 @@ scwin.onpageload = async function () {
 
 
         // WebSquare 영역에 직접 삽입되도록 보장
-        const videoContainer = document.getElementById('mf_grp_video_area');
-        if (videoContainer && elementWrapper) {
-            // 라벨 뒤에 배치되도록 z-index 설정
-            elementWrapper.style.zIndex = '2';
-            elementWrapper.style.position = 'absolute';
-            elementWrapper.style.top = '0';
-            elementWrapper.style.left = '0';
-            elementWrapper.style.width = '100%';
-            elementWrapper.style.height = '100%';
-        }
+        //const videoContainer = document.getElementById('mf_grp_video_area');
 
-        const sidebarArea = document.getElementById('mf_group8');
-        if (sidebarArea) {
-            sidebarArea.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 8px;
-        overflow-y: auto;
-        height: 100%;
-        `;
-        }
+        scwin.uiManager.createMainContent();
+        //scwin.uiManager.initializeUI();
+
+        // if (videoContainer && elementWrapper) {
+        //     // 라벨 뒤에 배치되도록 z-index 설정
+        //     elementWrapper.style.zIndex = '2';
+        //     elementWrapper.style.position = 'absolute';
+        //     elementWrapper.style.top = '0';
+        //     elementWrapper.style.left = '0';
+        //     elementWrapper.style.width = '100%';
+        //     elementWrapper.style.height = '100%';
+        // }
+
+        // const sidebarArea = document.getElementById('mf_group8');
+        // if (sidebarArea) {
+        //     sidebarArea.style.cssText = `
+        // display: flex;
+        // flex-direction: column;
+        // gap: 8px;
+        // padding: 8px;
+        // overflow-y: auto;
+        // height: 100%;
+        // `;
+        // }
 
         // 윈도우 리사이즈 이벤트에 추가
         window.addEventListener('resize', () => {
@@ -1167,14 +1183,6 @@ scwin.onpageload = async function () {
         console.log("세션 정보를 찾을 수 없습니다.");
     }
 
-    //const roomId = `${sessionId}`;
-    //const userName = `${scwin.invitedUserName}`;
-    //console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", userName);
-    //const userEmail = "test1@test.com";
-    //const tenantId = "2";
-
-    //scwin.roomClient.join(roomId, userName, userEmail, tenantId);
-
     // 로컬 사용자를 AI 통계 시스템에 초기화
     if (window.aiMonitoringStats) {
         // roomClient.join() 후 peerId가 설정되기를 기다림
@@ -1248,6 +1256,8 @@ scwin.onpageload = async function () {
             window.aiMonitoringStats.updateParticipantStatus(localUserId, { isDrowsy: false });
         }, 6000);
     };
+
+    
 };
 
 //------------------------모듈 배치 스크립트--------------------//
@@ -1797,11 +1807,34 @@ scwin.applyWaitingRoomSettings = function () {
     // var participantName = meetingSettings.get("participantName");
     // var participantEmail = meetingSettings.get("participantEmail");
 
+    var tenantId = (function(){
+    try {
+        var token = sessionStorage.getItem('accessToken');
+        if (!token) return null;
+        var payload = token.replace('Bearer ', '').split('.')[1];
+        return JSON.parse(atob(payload)).tenantId;
+    } catch(e) { return null; }
+    })();
+
+    // 1. URL 파라미터에서 sessionId 먼저 확인
+    roomId = $p.getParameter("sessionId");
+    console.log('URL 파라미터 sessionId:', roomId);
+
+    // 2. URL 파라미터가 없으면 localStorage에서 확인 (세션 생성자용)
+    if (!roomId) {
+        roomId = localStorage.getItem('currentSessionId');
+        console.log('localStorage sessionId:', roomId);
+    }
+
     //const roomId = `${sessionId}`;
-    const roomId = localStorage.getItem('currentSessionId');
+    // const roomId = localStorage.getItem('currentSessionId');
+
+
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", roomId);
+
     const userName = meetingSettings.get("participantName");
     const userEmail = meetingSettings.get("participantEmail");
-    const tenantId = "2";
+    //const tenantId = "2";
 
     //scwin.roomClient.join(roomId, userName, userEmail, tenantId);
 
@@ -1843,8 +1876,11 @@ scwin.applyWaitingRoomSettings = function () {
     scwin.roomClient.join(roomId, userName, userEmail, tenantId);
 };
 
-
-
+// 여기에 성능 측정 코드 추가
+window.addEventListener('load', () => {
+  const loadTime = performance.now();
+  console.log(`전체 페이지 로딩 시간: ${loadTime.toFixed(2)}ms`);
+});
 
 
 
@@ -1878,9 +1914,6 @@ scwin.applyWaitingRoomSettings = function () {
 					</xf:group>
 					<xf:group class="glass-container" id="group4" style="margin: 5px 15px 0 15px; flex: 1; display: flex; flex-direction: column;">
 						<xf:group class="video-layout" id="group5">
-							<xf:group class="left-sidebar" id="group6">
-								<xf:group id="group8"></xf:group>
-							</xf:group>
 							<xf:group class="main-video-area" id="group9">
 								<xf:group class="drop-zone neon-border" id="grp_video_area"
 									style="height: 700px; position: relative; background-color: #202020; border-radius: 8px; overflow: hidden;">

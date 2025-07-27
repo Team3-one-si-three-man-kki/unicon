@@ -169,15 +169,21 @@ scwin.containKorean = function(text){
 }
 
 scwin.loadCustomization = function (c) {
-    if (!c) return;
+   if (!c) return;
+
+    // 테넌트 이름을 전역 변수에 저장
+    if (c.tenantName) {
+        scwin.lastLoadedTenantName = c.tenantName;
+        console.log("loadCustomization에서 테넌트 이름 저장:", c.tenantName);
+    }
 
     if(scwin.containKorean(c.tenantName)){
         loginGuideTxt.setValue(c.tenantName+"에 로그인하세요")
     }else{
-        loginGuideTxt.setValue("SIGN IN TO"+c.tenantName.toUpperCase());
+        loginGuideTxt.setValue("SIGN IN TO "+  c.tenantName.toUpperCase());
     }
     
-
+    // 나머지 커스터마이징 로직은 그대로...
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
     }
@@ -192,8 +198,6 @@ scwin.loadCustomization = function (c) {
         }
     }
 
-
- 
     if (btn_login && c.primaryColor) {
         btn_login.setStyle("backgroundColor", c.primaryColor);
         btn_login.setStyle("color", c.accentColor);
@@ -206,10 +210,8 @@ scwin.loadCustomization = function (c) {
         if (color) id.setStyle("color", color);
         if (weight) id.setStyle("fontWeight", weight);
 
-        // DOM 객체를 직접 제어하여 !important 스타일을 적용합니다.
         var element = document.getElementById(id.getID());
         if (element && size) {
-            // size 값에 'px'가 없는 경우를 대비해 추가합니다.
             var fontSize = String(size).endsWith('px') ? size : size + 'px';
             element.style.setProperty('font-size', fontSize, 'important');
         }
@@ -219,7 +221,7 @@ scwin.loadCustomization = function (c) {
     setLabelStyle(subTitle, c.subTitle, c.subTitleColor, c.subTitleSize, c.subTitleFont);
     setLabelStyle(extraTitle, c.extraTitle, c.extraTitleColor, c.extraTitleSize, c.extraTitleFont);
 
-    // 오버레이 배경
+    // 오버레이 배경 처리...
     if (!scwin.overlayElement) {
         scwin.overlayElement = document.createElement("div");
         scwin.overlayElement.style.position = "absolute";
@@ -432,8 +434,46 @@ scwin.login_submitdone = function (e) {
 
         console.log("추출된 테넌트 ID:", tenantId);
 
+        // 현재 테넌트 이름 추출 - 여러 방법으로 시도
+        var currentTenantName = null;
+        
+        // 방법 1: URL 파라미터에서 추출
+        const urlTenant = scwin.getQueryParam('tenant');
+        if (urlTenant) {
+            currentTenantName = urlTenant;
+            console.log("URL에서 테넌트 이름 추출:", currentTenantName);
+        }
+        
+        // 방법 2: 전역 변수에서 확인
+        if (!currentTenantName && window.currentTenantName) {
+            currentTenantName = window.currentTenantName;
+            console.log("전역변수에서 테넌트 이름 추출:", currentTenantName);
+        }
+        
+        // 방법 3: loadCustomization에서 사용된 tenantName 확인
+        if (!currentTenantName && scwin.lastLoadedTenantName) {
+            currentTenantName = scwin.lastLoadedTenantName;
+            console.log("마지막 로드된 테넌트 이름 사용:", currentTenantName);
+        }
+
+        console.log("최종 현재 테넌트 이름:", currentTenantName);
+
+        // 테넌트 이름을 sessionStorage에 저장 (강화된 저장)
+        if (currentTenantName) {
+            sessionStorage.setItem('currentTenantName', currentTenantName);
+            console.log("SessionStorage에 테넌트 이름 저장 완료:", currentTenantName);
+            
+            // 확인
+            const saved = sessionStorage.getItem('currentTenantName');
+            console.log("저장 확인:", saved);
+        } else {
+            console.warn("저장할 테넌트 이름이 없습니다!");
+        }
+
         if (tenantId) {
-            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+            var dashboardUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+            console.log("대시보드 이동 URL:", dashboardUrl);
+            location.href = dashboardUrl;
         } else {
             scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
         }
