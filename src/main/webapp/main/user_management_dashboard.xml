@@ -38,10 +38,6 @@
 					</w2:columnInfo>
 					<w2:data use="true">
 						<w2:row>
-							<role_cd><![CDATA[admin]]></role_cd>
-							<role_nm><![CDATA[관리자]]></role_nm>
-						</w2:row>
-						<w2:row>
 							<role_cd><![CDATA[manager]]></role_cd>
 							<role_nm><![CDATA[매니저]]></role_nm>
 						</w2:row>
@@ -61,8 +57,8 @@
 			</xf:submission>
 			<xf:submission id="sbm_saveUserList" action="/InsWebApp/saveUserList.pwkjson" method="post" mediatype="application/json"
 				ref='data:json,{"id":"userList","key":"saveDataList"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
-				customHandler="" mode="asynchronous" processMsg="데이터를 저장하는 중입니다." ev:submit="" ev:submitdone="scwin.sbm_saveUserList_submitdone"
-				ev:submiterror="" abortTrigger="">
+				customHandler="" mode="asynchronous" processMsg="데이터를 저장하는 중입니다." ev:submit="scwin.sbm_saveUserList_onsubmit"
+				ev:submitdone="scwin.sbm_saveUserList_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
 		</xf:model>
 		<w2:publicInfo></w2:publicInfo>
@@ -427,463 +423,617 @@
 			}
 		]]></style>
 
-		<script type="text/javascript" lazy="false"><![CDATA[
-			// 기존 JavaScript 코드 유지
-			scwin.onpageload = function () {
-				if (!window.userList) {
-					window.userList = window.mf_contentFrame_userList;
-					console.log("userList 컴포넌트 설정 완료");
-				}
-
-				scwin.btn_search_onclick();
-				scwin.createPopupLayer();
-			};
-
-			// 팝업 레이어 생성 함수
-			scwin.createPopupLayer = function () {
-				if (document.getElementById('customAlertPopup')) return;
-				
-				var popupHtml = `
-					<div id="customAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
-						<div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;">
-							<div id="popupMessage" style="margin-bottom: 24px; font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap; word-break: break-word;"></div>
-							<div>
-								<button id="popupConfirm" style="background: #3674B5; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">확인</button>
-								<button id="popupCancel" style="background: #6c757d; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">취소</button>
-							</div>
-						</div>
-					</div>
-				`;
-				document.body.insertAdjacentHTML('beforeend', popupHtml);
-			};
-
-			// 팝업 표시 함수
-			scwin.showPopup = function (message, isConfirm, callback) {
-				var popup = document.getElementById('customAlertPopup');
-				if (!popup) {
-					scwin.createPopupLayer();
-					popup = document.getElementById('customAlertPopup');
-				}
-				
-				var messageEl = document.getElementById('popupMessage');
-				var confirmBtn = document.getElementById('popupConfirm');
-				var cancelBtn = document.getElementById('popupCancel');
-
-				messageEl.innerHTML = message.replace(/\\n/g, '<br>');
-
-				if (isConfirm) {
-					cancelBtn.style.display = 'inline-block';
-					confirmBtn.onclick = function () {
-						popup.style.display = 'none';
-						if (callback) callback(true);
-					};
-					cancelBtn.onclick = function () {
-						popup.style.display = 'none';
-						if (callback) callback(false);
-					};
-				} else {
-					cancelBtn.style.display = 'none';
-					confirmBtn.onclick = function () {
-						popup.style.display = 'none';
-						if (callback) callback();
-					};
-				}
-
-				popup.style.display = 'flex';
-			};
-
-			// 기본 CRUD 함수들
-			scwin.btn_insert_onclick = function (e) {
-				const tenantId = $p.getParameter("tenant");
-				if (!tenantId) {
-					scwin.showPopup("테넌트 정보가 없어 사용자를 추가할 수 없습니다.");
-					return;
-				}
-				var _rowIdx = userList.insertRow();
-				userList.setCellData(_rowIdx, "tenantId", tenantId);
-			};
-
-			scwin.btn_delete_onclick = function (e) {
-				if (grd.getFocusedRowIndex() < 0) {
-					scwin.showPopup("삭제할 행을 먼저 선택해주세요.");
-					return;
-				}
-				userList.deleteRow(grd.getFocusedRowIndex());
-			};
-
-			scwin.btn_deleteRows_onclick = function (e) {
-				var chkIdxArr = grd.getCheckedIndex("chk");
-				if (chkIdxArr.length === 0) {
-					scwin.showPopup("삭제할 행을 선택해주세요.");
-					return;
-				}
-				userList.deleteRows(chkIdxArr);
-			};
-
-			scwin.btn_reset_onclick = function (e) {
-				scwin.showPopup("모든 데이터를 초기화하시겠습니까?", true, function (result) {
-					if (result) {
-						userList.setData([]);
-					}
-				});
-			};
-
-			scwin.btn_search_onclick = function (e) {
-				const tenantIdFromUrl = $p.getParameter("tenant");
-				const searchKeywordValue = ipt_searchKeyword.getValue();
-
-				if (!tenantIdFromUrl) {
-					scwin.showPopup("테넌트 정보가 없습니다. 페이지를 새로고침 해주세요.");
-					return;
-				}
-
-				var userDetailDataMap = $p.getComponentById("userDetail");
-				if (userDetailDataMap) {
-					userDetailDataMap.set("tenantId", tenantIdFromUrl);
-					userDetailDataMap.set("searchKeyword", searchKeywordValue);
-				} else {
-					scwin.showPopup("userDetail DataMap을 찾을 수 없습니다.");
-					return;
-				}
-
-				console.log("사용자 목록 조회 실행. 테넌트ID:", tenantIdFromUrl, "검색어:", searchKeywordValue);
-				$p.executeSubmission("sbm_selectUserList");
-			};
-
-			scwin.btn_down_onclick = function (e) {
-				var options = {
-					fileName: "사용자관리.xlsx"
-				};
-				grd.advancedExcelDownload(options);
-			};
-
-			scwin.btn_save_onclick = function (e) {
-				if (userList.getModifiedIndex().length === 0) {
-					scwin.showPopup("저장할 변경사항이 없습니다.");
-					return;
-				}
-
-				scwin.showPopup("변경 내용을 저장하시겠습니까?", true, function (result) {
-					if (result) {
-						$p.executeSubmission("sbm_saveUserList");
-					}
-				});
-			};
-
-			// 서버 응답 처리 함수들
-			scwin.sbm_selectUserList_submitdone = function (e) {
-				var responseData = e.responseJSON;
-				if (!responseData || !responseData.userListVo || !Array.isArray(responseData.userListVo.userVoList)) {
-					userList.removeAll();
-					console.error("서버로부터 유효한 사용자 목록을 받지 못했습니다. 응답 데이터:", responseData);
-					return;
-				}
-				var userArray = responseData.userListVo.userVoList;
-				userArray.forEach(function (user) {
-					user.password = "******";
-				});
-				userList.setJSON(userArray);
-			};
-
-			scwin.sbm_saveUserList_submitdone = function (e) {
-				scwin.showPopup("저장이 완료되었습니다.", false, function () {
-					scwin.btn_search_onclick();
-				});
-			};
-
-			// 업로드 관련 함수들
-			scwin.btn_upload_onclick = function (e) {
-				console.log("=== Excel 업로드 시작 ===");
-				scwin.originalDataCount = userList.getTotalRow();
-				scwin.originalDataBackup = userList.getAllJSON();
-
-				try {
-					var grid = $p.getComponentById("grd");
-					if (!grid) { return; }
-
-					var options = {
-						headerExist: "1",
-						type: "2",
-						status: "C",
-						mapping: [
-							{ "excelCol": "성명", "gridCol": "name" },
-							{ "excelCol": "이메일", "gridCol": "email" },
-							{ "excelCol": "비밀번호", "gridCol": "password" },
-							{ "excelCol": "역할", "gridCol": "role" }
-						]
-					};
-
-					grid.advancedExcelUpload(options);
-
-					var checkCount = 0;
-					var maxChecks = 15;
-					var monitorInterval = setInterval(function () {
-						checkCount++;
-						var currentCount = userList.getTotalRow();
-
-						if (currentCount !== scwin.originalDataCount) {
-							console.log("데이터 변경 감지! 업로드 완료로 간주합니다.");
-							clearInterval(monitorInterval);
-
-							setTimeout(function () {
-								scwin.grd_onexcelupload({ type: "manual_trigger" });
-							}, 500);
-						}
-
-						if (checkCount >= maxChecks) {
-							clearInterval(monitorInterval);
-						}
-					}, 1000);
-
-				} catch (err) {
-					console.error("업로드 중 에러:", err);
-				}
-			};
-
-			scwin.grd_onexcelupload = function (e) {
-				console.log("=== Excel 업로드 후 데이터 병합 처리 ===");
-
-				try {
-					var newData = userList.getAllJSON();
-					var originalData = scwin.originalDataBackup || [];
-					var combinedData = originalData.concat(newData);
-
-					userList.setJSON(combinedData);
-
-					scwin.fixRoleMappingForAllData();
-					scwin.setTenantIdForAllData();
-
-					setTimeout(function () {
-						scwin.checkAllEmailDuplicates();
-					}, 500);
-
-				} catch (err) {
-					console.error("업로드 후처리 중 에러:", err);
-				}
-			};
-
-			// 역할 매핑 처리
-			scwin.fixRoleMappingForAllData = function () {
-				var roleMapping = {
-					"관리자": "admin",
-					"매니저": "manager",
-					"사용자": "user"
-				};
-
-				var totalRows = userList.getTotalRow();
-				for (var i = 0; i < totalRows; i++) {
-					var currentRole = userList.getCellData(i, "role");
-					if (currentRole && roleMapping[currentRole]) {
-						userList.setCellData(i, "role", roleMapping[currentRole]);
-					}
-				}
-			};
-
-			// tenantId 설정
-			scwin.setTenantIdForAllData = function () {
-				const tenantId = $p.getParameter("tenant");
-				if (!tenantId) return;
-
-				var totalRows = userList.getTotalRow();
-				for (var i = 0; i < totalRows; i++) {
-					var currentTenantId = userList.getCellData(i, "tenantId");
-					if (!currentTenantId) {
-						userList.setCellData(i, "tenantId", tenantId);
-					}
-				}
-			};
-
-			// 이메일 중복 검사
-			scwin.checkAllEmailDuplicates = function () {
-				try {
-					var allData = userList.getAllJSON();
-					var emailMap = {};
-					var duplicateEmails = [];
-
-					for (var i = 0; i < allData.length; i++) {
-						var email = userList.getCellData(i, "email");
-						var name = userList.getCellData(i, "name");
-
-						if (email && email.trim() !== "") {
-							var emailKey = email.trim().toLowerCase();
-							if (!emailMap[emailKey]) {
-								emailMap[emailKey] = [];
-							}
-							
-							emailMap[emailKey].push({
-								index: i,
-								name: name || "이름없음",
-								isOriginal: i < scwin.originalDataCount
-							});
-						}
-					}
-
-					for (var emailKey in emailMap) {
-						if (emailMap[emailKey].length > 1) {
-							var originalCount = emailMap[emailKey].filter(row => row.isOriginal).length;
-							var newCount = emailMap[emailKey].filter(row => !row.isOriginal).length;
-
-							if ((originalCount > 0 && newCount > 0) || newCount > 1) {
-								duplicateEmails.push({
-									email: emailKey,
-									rows: emailMap[emailKey]
-								});
-							}
-						}
-					}
-
-					if (duplicateEmails.length > 0) {
-						scwin.showDuplicateEmailOptions(duplicateEmails); 
-					} else {
-						var message = "업로드 완료! 이메일 중복이 없습니다.\\n총 " + allData.length + "개의 데이터가 처리되었습니다.";
-						scwin.showPopup(message, true, function (result) {
-							if (result) {
-								scwin.btn_save_onclick();
-							}
-						});
-					}
-				} catch(e) {
-					console.error("중복 검사 중 에러 발생:", e);
-				}
-			};
-
-			// 중복 이메일 옵션 표시
-			scwin.showDuplicateEmailOptions = function (duplicateEmails) {
-				var message = "업로드된 데이터에 중복된 이메일이 있습니다:\\n\\n";
-				var totalDuplicates = 0;
-
-				duplicateEmails.forEach(function (group) {
-					message += "[ " + group.email + " ]\\n";
-					var newRows = group.rows.filter(function (row) { return !row.isOriginal; });
-					if (newRows.length > 0) {
-						totalDuplicates += newRows.length;
-					}
-				});
-
-				message += "\\n총 " + totalDuplicates + "개의 중복된 새 데이터가 있습니다.\\n\\n";
-				message += "어떻게 처리하시겠습니까?\\n\\n확인: 화면에서 직접 수정\\n취소: 중복 데이터 삭제";
-
-				scwin.showPopup(message, true, function (result) {
-					if (result) {
-						scwin.showPopup("중복된 데이터를 화면에서 직접 수정하신 후 저장 버튼을 눌러주세요.");
-					} else {
-						scwin.removeDuplicateNewData(duplicateEmails);
-					}
-				});
-			};
-
-			// 중복 데이터 제거
-			scwin.removeDuplicateNewData = function (duplicateEmails) {
-				var indicesToRemove = [];
-
-				duplicateEmails.forEach(function (group) {
-					group.rows.forEach(function (row) {
-						if (!row.isOriginal) {
-							indicesToRemove.push(row.index);
-						}
-					});
-				});
-
-				indicesToRemove = [...new Set(indicesToRemove)].sort(function (a, b) { return b - a; });
-
-				indicesToRemove.forEach(function (index) {
-					userList.removeRow(index);
-				});
-
-				var currentDataCount = userList.getTotalRow();
-				var remainingNewData = currentDataCount - scwin.originalDataCount;
-				var removedCount = indicesToRemove.length;
-
-				if (remainingNewData > 0) {
-					scwin.showPopup("중복 제거 완료!\\n제거된 중복 데이터: " + removedCount + "개\\n추가된 새 데이터: " + remainingNewData + "개\\n\\n저장하시겠습니까?", true, function (result) {
-						if (result) {
-							scwin.btn_save_onclick();
-						}
-					});
-				} else {
-					scwin.showPopup("모든 새 데이터가 중복으로 인해 제거되었습니다.\\n기존 데이터만 남아있습니다.");
-				}
-			};
-
-			// 이메일 중복 검사 (개별)
-			scwin.grd_oncellindexchange = function (newRowIndex, newColIndex, oldRowIndex, oldColIndex) {
-				const grid = $p.getComponentById("grd");
-				const oldColId = grid.getColumnID(oldColIndex);
-
-				if (oldColId === "email") {
-					const emailValue = userList.getCellData(oldRowIndex, "email");
-
-					if (!emailValue || emailValue.trim() === "") {
-						return;
-					}
-
-					const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-					if (!emailRegex.test(emailValue)) {
-						scwin.showPopup("올바른 이메일 형식이 아닙니다.", false, function () {
-							setTimeout(function () {
-								grid.focusCell(oldRowIndex, oldColIndex);
-							}, 100);
-						});
-						return;
-					}
-
-					scwin.checkEmailDuplicate(emailValue, oldRowIndex);
-				}
-			};
-
-			// 이메일 중복 확인
-			scwin.checkEmailDuplicate = function (email, rowIndex) {
-				const tenantId = $p.getParameter("tenant");
-
-				if (!tenantId) {
-					console.error("테넌트 ID를 찾을 수 없어 이메일 중복 검사를 중단합니다.");
-					return;
-				}
-
-				$.ajax({
-					url: '/InsWebApp/checkEmailByTenant.pwkjson',
-					type: 'POST',
-					contentType: 'application/json',
-					data: JSON.stringify({
-						vo: {
-							email: email,
-							tenantId: tenantId 
-						}
-					}),
-					success: function (response) {
-						let emailCheckResult = response.emailCheckResult || response.elData?.emailCheckResult;
-
-						if (emailCheckResult === "unavailable") {
-							scwin.showPopup("'" + email + "'은(는) 이미 사용 중인 이메일입니다.\\n다른 이메일을 입력해주세요.", false, function () {
-								const grid = $p.getComponentById("grd");
-								if (grid && userList.getRowStatus(rowIndex) === "C") {
-									userList.setCellData(rowIndex, "email", "");
-									setTimeout(function () {
-										grid.focusCell(rowIndex, grid.getColumnIndex("email"));
-									}, 100);
-								}
-							});
-						}
-					},
-					error: function (xhr, status, error) {
-						scwin.showPopup("이메일 중복검사 중 오류가 발생했습니다.");
-					}
-				});
-			};
-
-			// 비밀번호 셀 클릭
-			scwin.grd_oncellclick = function (row, col) {
-				var grid = $p.getComponentById("grd");
-				var colId = grid.getColumnID(col);
-
-				if (colId === "password") {
-					var currentValue = userList.getCellData(row, "password");
-					if (currentValue === "******") {
-						userList.setCellData(row, "password", "");
-					}
-				}
-			};
-		]]></script>
+		<script type="text/javascript" lazy="false"><![CDATA[// 기존 JavaScript 코드 유지
+scwin.onpageload = function () {
+    if (!window.userList) {
+        window.userList = window.mf_contentFrame_userList;
+        console.log("userList 컴포넌트 설정 완료");
+    }
+
+    scwin.btn_search_onclick();
+    scwin.createPopupLayer();
+};
+
+// 팝업 레이어 생성 함수
+scwin.createPopupLayer = function () {
+    if (document.getElementById('customAlertPopup')) return;
+
+    var popupHtml = `
+            <div id="customAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
+                <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;">
+                    <div id="popupMessage" style="margin-bottom: 24px; font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap; word-break: break-word;"></div>
+                    <div>
+                        <button id="popupConfirm" style="background: #3674B5; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">확인</button>
+                        <button id="popupCancel" style="background: #6c757d; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">취소</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    document.body.insertAdjacentHTML('beforeend', popupHtml);
+};
+
+// 팝업 표시 함수
+scwin.showPopup = function (message, isConfirm, callback) {
+    var popup = document.getElementById('customAlertPopup');
+    if (!popup) {
+        scwin.createPopupLayer();
+        popup = document.getElementById('customAlertPopup');
+    }
+
+    var messageEl = document.getElementById('popupMessage');
+    var confirmBtn = document.getElementById('popupConfirm');
+    var cancelBtn = document.getElementById('popupCancel');
+
+    messageEl.innerHTML = message.replace(/\\n/g, '<br>');
+
+    if (isConfirm) {
+        cancelBtn.style.display = 'inline-block';
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(true);
+        };
+        cancelBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback(false);
+        };
+    } else {
+        cancelBtn.style.display = 'none';
+        confirmBtn.onclick = function () {
+            popup.style.display = 'none';
+            if (callback) callback();
+        };
+    }
+
+    popup.style.display = 'flex';
+};
+
+scwin.btn_insert_onclick = function (e) {
+    const tenantId = $p.getParameter("tenant");
+    if (!tenantId) {
+        scwin.showPopup("테넌트 정보가 없어 사용자를 추가할 수 없습니다.");
+        return;
+    }
+    
+    var _rowIdx = userList.insertRow();
+    userList.setCellData(_rowIdx, "tenantId", tenantId);
+    userList.setCellData(_rowIdx, "passwordChanged", "Y"); // 새 사용자는 비밀번호 입력 필요
+    userList.setCellData(_rowIdx, "password", ""); // 빈 값으로 시작
+    userList.setCellData(_rowIdx, "originalPassword", ""); // 원본 비밀번호 없음
+};
+
+
+scwin.btn_delete_onclick = function (e) {
+    if (grd.getFocusedRowIndex() < 0) {
+        scwin.showPopup("삭제할 행을 먼저 선택해주세요.");
+        return;
+    }
+    userList.deleteRow(grd.getFocusedRowIndex());
+};
+
+scwin.btn_deleteRows_onclick = function (e) {
+    var chkIdxArr = grd.getCheckedIndex("chk");
+    if (chkIdxArr.length === 0) {
+        scwin.showPopup("삭제할 행을 선택해주세요.");
+        return;
+    }
+    userList.deleteRows(chkIdxArr);
+};
+
+scwin.btn_reset_onclick = function (e) {
+    scwin.showPopup("모든 데이터를 초기화하시겠습니까?", true, function (result) {
+        if (result) {
+            userList.setData([]);
+        }
+    });
+};
+
+scwin.btn_search_onclick = function (e) {
+    const tenantIdFromUrl = $p.getParameter("tenant");
+    const searchKeywordValue = ipt_searchKeyword.getValue();
+
+    if (!tenantIdFromUrl) {
+        scwin.showPopup("테넌트 정보가 없습니다. 페이지를 새로고침 해주세요.");
+        return;
+    }
+
+    var userDetailDataMap = $p.getComponentById("userDetail");
+    if (userDetailDataMap) {
+        userDetailDataMap.set("tenantId", tenantIdFromUrl);
+        userDetailDataMap.set("searchKeyword", searchKeywordValue);
+    } else {
+        scwin.showPopup("userDetail DataMap을 찾을 수 없습니다.");
+        return;
+    }
+
+    console.log("사용자 목록 조회 실행. 테넌트ID:", tenantIdFromUrl, "검색어:", searchKeywordValue);
+    $p.executeSubmission("sbm_selectUserList");
+};
+
+scwin.btn_down_onclick = function (e) {
+    var options = {
+        fileName: "사용자관리.xlsx"
+    };
+    grd.advancedExcelDownload(options);
+};
+
+scwin.btn_save_onclick = function (e) {
+    if (userList.getModifiedIndex().length === 0) {
+        scwin.showPopup("저장할 변경사항이 없습니다.");
+        return;
+    }
+
+    scwin.showPopup("변경 내용을 저장하시겠습니까?", true, function (result) {
+        if (result) {
+            scwin.processAndSaveUserData();
+        }
+    });
+};
+
+scwin.processAndSaveUserData = function() {
+    try {
+        var modifiedIndices = userList.getModifiedIndex();
+        var processedData = [];
+        
+        console.log("=== 클라이언트 전용 데이터 처리 시작 ===");
+        console.log("수정된 행 인덱스:", modifiedIndices);
+        
+        modifiedIndices.forEach(function(index) {
+            var rowData = userList.getRowJSON(index);
+            var rowStatus = userList.getRowStatus(index);
+            
+            console.log(`행 ${index} 처리 전:`, {
+                name: rowData.name,
+                rowStatus: rowStatus,
+                passwordChanged: rowData.passwordChanged
+            });
+            
+            // 비밀번호 처리 로직 - 클라이언트 전용
+            if (rowStatus === "U") { // 수정된 행
+                if (rowData.passwordChanged === "Y") {
+                    // 비밀번호가 실제로 변경된 경우만 전송
+                    if (!rowData.password || rowData.password === "" || rowData.password === "******") {
+                        console.log(`${rowData.name}: 비밀번호가 비어있음 - 필드 제거`);
+                        delete rowData.password; // password 필드 완전 제거
+                    } else {
+                        console.log(`${rowData.name}: 새 비밀번호 전송`);
+                        // 평문 비밀번호만 전송 (서버에서 암호화)
+                    }
+                } else {
+                    // 비밀번호가 변경되지 않은 경우 - password 필드 제거
+                    console.log(`${rowData.name}: 비밀번호 변경 없음 - password 필드 제거`);
+                    delete rowData.password; // password 필드를 아예 전송하지 않음
+                }
+            } else if (rowStatus === "C") { // 새로 추가된 행
+                if (!rowData.password || rowData.password === "******") {
+                    console.log(`${rowData.name}: 새 사용자인데 비밀번호 없음`);
+                    // password 필드 제거하거나 기본값 설정
+                    delete rowData.password;
+                }
+            }
+            
+            // 클라이언트 전용 필드들 제거 (서버에 불필요한 데이터)
+            delete rowData.originalPassword;
+            delete rowData.passwordChanged;
+            
+            console.log(`행 ${index} 처리 후:`, {
+                name: rowData.name,
+                hasPassword: 'password' in rowData,
+                passwordValue: rowData.password ? '있음' : '없음'
+            });
+            
+            rowData.rowStatus = rowStatus;
+            processedData.push(rowData);
+        });
+        
+        var requestData = {
+            saveDataList: processedData
+        };
+        
+        console.log("서버로 전송할 데이터 요약:");
+        processedData.forEach(function(user, i) {
+            console.log(`${i+1}. ${user.name}: password필드=${'password' in user ? '전송' : '제거됨'}`);
+        });
+        
+        $.ajax({
+            url: '/InsWebApp/saveUserList.pwkjson',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(requestData),
+            success: function(response) {
+                console.log("저장 성공:", response);
+                scwin.showPopup("저장이 완료되었습니다.", false, function () {
+                    scwin.btn_search_onclick();
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("저장 실패:", error);
+                scwin.showPopup("저장 중 오류가 발생했습니다: " + error);
+            }
+        });
+        
+    } catch (err) {
+        console.error("데이터 처리 중 오류:", err);
+        scwin.showPopup("데이터 처리 중 오류가 발생했습니다: " + err.message);
+    }
+};
+scwin.sbm_saveUserList_onsubmit = function (e) {
+    console.log("기존 submission 이벤트 - 무시됨");
+    return false;
+};
+
+// 서버 응답 처리 함수들
+scwin.sbm_selectUserList_submitdone = function (e) {
+    var responseData = e.responseJSON;
+    if (!responseData || !responseData.userListVo || !Array.isArray(responseData.userListVo.userVoList)) {
+        userList.removeAll();
+        console.error("서버로부터 유효한 사용자 목록을 받지 못했습니다.");
+        return;
+    }
+    
+    var userArray = responseData.userListVo.userVoList;
+    console.log("=== 원본 데이터 백업 시작 ===");
+    
+    userArray.forEach(function (user, index) {
+        console.log(`사용자 ${index + 1} 원본 백업:`, {
+            name: user.name,
+            originalPasswordLength: user.password ? user.password.length : 0
+        });
+        
+        user.originalPassword = user.password; // 실제 비밀번호 백업
+        user.password = "******"; // 화면 표시용
+        user.passwordChanged = "N"; // 비밀번호 변경 여부 플래그
+    });
+    
+    userList.setJSON(userArray);
+    console.log("사용자 목록 로딩 완료, 총", userArray.length, "개");
+    
+    // 디버깅: 백업된 데이터 확인
+    setTimeout(function() {
+        scwin.debugPasswordData();
+    }, 1000);
+};
+
+scwin.sbm_saveUserList_submitdone = function (e) {
+    scwin.showPopup("저장이 완료되었습니다.", false, function () {
+        scwin.btn_search_onclick();
+    });
+};
+
+scwin.sbm_saveUserList_submitdone = function (e) {
+    scwin.showPopup("저장이 완료되었습니다.", false, function () {
+        scwin.btn_search_onclick();
+    });
+};
+
+// 업로드 관련 함수들
+scwin.btn_upload_onclick = function (e) {
+    console.log("=== Excel 업로드 시작 ===");
+    scwin.originalDataCount = userList.getTotalRow();
+    scwin.originalDataBackup = userList.getAllJSON();
+
+    try {
+        var grid = $p.getComponentById("grd");
+        if (!grid) { return; }
+
+        var options = {
+            headerExist: "1",
+            type: "2",
+            status: "C",
+            mapping: [
+                { "excelCol": "성명", "gridCol": "name" },
+                { "excelCol": "이메일", "gridCol": "email" },
+                { "excelCol": "비밀번호", "gridCol": "password" },
+                { "excelCol": "역할", "gridCol": "role" }
+            ]
+        };
+
+        grid.advancedExcelUpload(options);
+
+        var checkCount = 0;
+        var maxChecks = 15;
+        var monitorInterval = setInterval(function () {
+            checkCount++;
+            var currentCount = userList.getTotalRow();
+
+            if (currentCount !== scwin.originalDataCount) {
+                console.log("데이터 변경 감지! 업로드 완료로 간주합니다.");
+                clearInterval(monitorInterval);
+
+                setTimeout(function () {
+                    scwin.grd_onexcelupload({ type: "manual_trigger" });
+                }, 500);
+            }
+
+            if (checkCount >= maxChecks) {
+                clearInterval(monitorInterval);
+            }
+        }, 1000);
+
+    } catch (err) {
+        console.error("업로드 중 에러:", err);
+    }
+};
+
+scwin.grd_onexcelupload = function (e) {
+    console.log("=== Excel 업로드 후 데이터 병합 처리 ===");
+    
+    try {
+        var newData = userList.getAllJSON();
+        var originalData = scwin.originalDataBackup || [];
+        var combinedData = originalData.concat(newData);
+        
+        // 업로드된 데이터의 비밀번호 관련 필드 설정
+        combinedData.forEach(function(item, index) {
+            if (index >= originalData.length) { // 새로 업로드된 데이터
+                item.passwordChanged = "Y"; // 업로드된 데이터는 비밀번호 변경됨으로 처리
+                item.originalPassword = item.password; // 업로드된 비밀번호를 원본으로 설정
+                if (!item.password) {
+                    item.password = ""; // 비밀번호가 없으면 빈 값
+                }
+            }
+        });
+        
+        userList.setJSON(combinedData);
+        
+        scwin.fixRoleMappingForAllData();
+        scwin.setTenantIdForAllData();
+        
+        setTimeout(function () {
+            scwin.checkAllEmailDuplicates();
+        }, 500);
+        
+    } catch (err) {
+        console.error("업로드 후처리 중 에러:", err);
+    }
+};
+
+
+// 역할 매핑 처리
+scwin.fixRoleMappingForAllData = function () {
+    var roleMapping = {
+        "관리자": "admin",
+        "매니저": "manager",
+        "사용자": "user"
+    };
+
+    var totalRows = userList.getTotalRow();
+    for (var i = 0; i < totalRows; i++) {
+        var currentRole = userList.getCellData(i, "role");
+        if (currentRole && roleMapping[currentRole]) {
+            userList.setCellData(i, "role", roleMapping[currentRole]);
+        }
+    }
+};
+
+// tenantId 설정
+scwin.setTenantIdForAllData = function () {
+    const tenantId = $p.getParameter("tenant");
+    if (!tenantId) return;
+
+    var totalRows = userList.getTotalRow();
+    for (var i = 0; i < totalRows; i++) {
+        var currentTenantId = userList.getCellData(i, "tenantId");
+        if (!currentTenantId) {
+            userList.setCellData(i, "tenantId", tenantId);
+        }
+    }
+};
+
+// 이메일 중복 검사
+scwin.checkAllEmailDuplicates = function () {
+    try {
+        var allData = userList.getAllJSON();
+        var emailMap = {};
+        var duplicateEmails = [];
+
+        for (var i = 0; i < allData.length; i++) {
+            var email = userList.getCellData(i, "email");
+            var name = userList.getCellData(i, "name");
+
+            if (email && email.trim() !== "") {
+                var emailKey = email.trim().toLowerCase();
+                if (!emailMap[emailKey]) {
+                    emailMap[emailKey] = [];
+                }
+
+                emailMap[emailKey].push({
+                    index: i,
+                    name: name || "이름없음",
+                    isOriginal: i < scwin.originalDataCount
+                });
+            }
+        }
+
+        for (var emailKey in emailMap) {
+            if (emailMap[emailKey].length > 1) {
+                var originalCount = emailMap[emailKey].filter(row => row.isOriginal).length;
+                var newCount = emailMap[emailKey].filter(row => !row.isOriginal).length;
+
+                if ((originalCount > 0 && newCount > 0) || newCount > 1) {
+                    duplicateEmails.push({
+                        email: emailKey,
+                        rows: emailMap[emailKey]
+                    });
+                }
+            }
+        }
+
+        if (duplicateEmails.length > 0) {
+            scwin.showDuplicateEmailOptions(duplicateEmails);
+        } else {
+            var message = "업로드 완료! 이메일 중복이 없습니다.\\n총 " + allData.length + "개의 데이터가 처리되었습니다.";
+            scwin.showPopup(message, true, function (result) {
+                if (result) {
+                    scwin.btn_save_onclick();
+                }
+            });
+        }
+    } catch (e) {
+        console.error("중복 검사 중 에러 발생:", e);
+    }
+};
+
+// 중복 이메일 옵션 표시
+scwin.showDuplicateEmailOptions = function (duplicateEmails) {
+    var message = "업로드된 데이터에 중복된 이메일이 있습니다:\\n\\n";
+    var totalDuplicates = 0;
+
+    duplicateEmails.forEach(function (group) {
+        message += "[ " + group.email + " ]\\n";
+        var newRows = group.rows.filter(function (row) { return !row.isOriginal; });
+        if (newRows.length > 0) {
+            totalDuplicates += newRows.length;
+        }
+    });
+
+    message += "\\n총 " + totalDuplicates + "개의 중복된 새 데이터가 있습니다.\\n\\n";
+    message += "어떻게 처리하시겠습니까?\\n\\n확인: 화면에서 직접 수정\\n취소: 중복 데이터 삭제";
+
+    scwin.showPopup(message, true, function (result) {
+        if (result) {
+            scwin.showPopup("중복된 데이터를 화면에서 직접 수정하신 후 저장 버튼을 눌러주세요.");
+        } else {
+            scwin.removeDuplicateNewData(duplicateEmails);
+        }
+    });
+};
+
+// 중복 데이터 제거
+scwin.removeDuplicateNewData = function (duplicateEmails) {
+    var indicesToRemove = [];
+
+    duplicateEmails.forEach(function (group) {
+        group.rows.forEach(function (row) {
+            if (!row.isOriginal) {
+                indicesToRemove.push(row.index);
+            }
+        });
+    });
+
+    indicesToRemove = [...new Set(indicesToRemove)].sort(function (a, b) { return b - a; });
+
+    indicesToRemove.forEach(function (index) {
+        userList.removeRow(index);
+    });
+
+    var currentDataCount = userList.getTotalRow();
+    var remainingNewData = currentDataCount - scwin.originalDataCount;
+    var removedCount = indicesToRemove.length;
+
+    if (remainingNewData > 0) {
+        scwin.showPopup("중복 제거 완료!\\n제거된 중복 데이터: " + removedCount + "개\\n추가된 새 데이터: " + remainingNewData + "개\\n\\n저장하시겠습니까?", true, function (result) {
+            if (result) {
+                scwin.btn_save_onclick();
+            }
+        });
+    } else {
+        scwin.showPopup("모든 새 데이터가 중복으로 인해 제거되었습니다.\\n기존 데이터만 남아있습니다.");
+    }
+};
+
+scwin.grd_oncellindexchange = function (newRowIndex, newColIndex, oldRowIndex, oldColIndex) {
+    const grid = $p.getComponentById("grd");
+    const oldColId = grid.getColumnID(oldColIndex);
+    
+    if (oldColId === "password") {
+        const passwordValue = userList.getCellData(oldRowIndex, "password");
+        
+        if (passwordValue && passwordValue !== "" && passwordValue !== "******") {
+            userList.setCellData(oldRowIndex, "passwordChanged", "Y");
+            console.log(`행 ${oldRowIndex}: 비밀번호 입력됨, 변경 플래그 설정`);
+        }
+    }
+    
+    if (oldColId === "email") {
+        const emailValue = userList.getCellData(oldRowIndex, "email");
+        
+        if (!emailValue || emailValue.trim() === "") {
+            return;
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailValue)) {
+            scwin.showPopup("올바른 이메일 형식이 아닙니다.", false, function () {
+                setTimeout(function () {
+                    grid.focusCell(oldRowIndex, oldColIndex);
+                }, 100);
+            });
+            return;
+        }
+        
+        scwin.checkEmailDuplicate(emailValue, oldRowIndex);
+    }
+};
+// 이메일 중복 확인
+scwin.checkEmailDuplicate = function (email, rowIndex) {
+    const tenantId = $p.getParameter("tenant");
+
+    if (!tenantId) {
+        console.error("테넌트 ID를 찾을 수 없어 이메일 중복 검사를 중단합니다.");
+        return;
+    }
+
+    $.ajax({
+        url: '/InsWebApp/checkEmailByTenant.pwkjson',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            vo: {
+                email: email,
+                tenantId: tenantId
+            }
+        }),
+        success: function (response) {
+            let emailCheckResult = response.emailCheckResult || response.elData?.emailCheckResult;
+
+            if (emailCheckResult === "unavailable") {
+                scwin.showPopup("'" + email + "'은(는) 이미 사용 중인 이메일입니다.\\n다른 이메일을 입력해주세요.", false, function () {
+                    const grid = $p.getComponentById("grd");
+                    if (grid && userList.getRowStatus(rowIndex) === "C") {
+                        userList.setCellData(rowIndex, "email", "");
+                        setTimeout(function () {
+                            grid.focusCell(rowIndex, grid.getColumnIndex("email"));
+                        }, 100);
+                    }
+                });
+            }
+        },
+        error: function (xhr, status, error) {
+            scwin.showPopup("이메일 중복검사 중 오류가 발생했습니다.");
+        }
+    });
+};
+
+scwin.grd_oncellclick = function (row, col) {
+    var grid = $p.getComponentById("grd");
+    var colId = grid.getColumnID(col);
+    
+    if (colId === "password") {
+        var currentValue = userList.getCellData(row, "password");
+        if (currentValue === "******") {
+            userList.setCellData(row, "password", "");
+            userList.setCellData(row, "passwordChanged", "Y");
+            console.log("비밀번호 변경 모드로 전환 - 행:", row);
+        }
+    }
+};
+
+scwin.debugPasswordData = function() {
+    console.log("=== 현재 비밀번호 데이터 상태 ===");
+    
+    var totalRows = userList.getTotalRow();
+    for (var i = 0; i < totalRows; i++) {
+        var rowData = userList.getRowJSON(i);
+        console.log(`행 ${i}:`, {
+            name: rowData.name,
+            password: rowData.password,
+            originalPassword: rowData.originalPassword,
+            passwordChanged: rowData.passwordChanged,
+            rowStatus: userList.getRowStatus(i)
+        });
+    }
+};
+]]></script>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contents" id="" style="">
