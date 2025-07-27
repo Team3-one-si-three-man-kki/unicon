@@ -210,6 +210,7 @@
         videoElement.autoplay = true;
         videoElement.playsInline = true;
         videoElement.style.cssText = "height: 100%; width: 100%; object-fit: cover;";
+		//videoElement.style.cssText = "width: 100%; height: 100%; object-fit: contain; margin: auto;";
         videoElement.srcObject = this.localStream;
 
         // 2. 생성된 video 요소와 peerId를 UI 로직으로 전달
@@ -634,9 +635,9 @@
       if (webSquareContainer) {
         // 웹스퀘어 모드: 기존 UI 생성하지 않음
         console.log("UIManager: Using WebSquare container mode");
-        this.createHeader();
-        this.createMainContent();
-        this.createControls();
+		this.createHeader();
+        //this.createMainContent();
+        //this.createControls();
       } else {
         // 기존 모드: 전체 UI 생성
         // Main app container
@@ -888,16 +889,18 @@
         this.mainContentArea = document.createElement("div");
         this.mainContentArea.className = "main-content";
         this.mainContentArea.style.cssText = `
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 1600px !important;
-            height: 665px !important;
-            display: flex;
-            gap: 16px;
-            padding: 16px;
-            overflow: hidden;
-            z-index: 100;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		gap: 16px;
+		padding: 16px;
+		overflow: hidden;
+		box-sizing: border-box;
         `;
 
         // 기존 label 숨기기
@@ -924,13 +927,13 @@
       this.mainStageContainer = document.createElement("div");
       this.mainStageContainer.id = "mainStageContainer";
       this.mainStageContainer.style.cssText = `
-        flex: 1;
-        position: relative;
-        background: #1a1a1a;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border: 2px solid rgba(255, 255, 255, 0.1);
+	  flex: 1;
+	  position: relative;
+	  background: #1a1a1a;
+	  border-radius: 16px;
+	  overflow: hidden;
+	  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+	  border: 2px solid rgba(255, 255, 255, 0.1);
       `;
 
 
@@ -1155,9 +1158,17 @@
 	  #mf_grp_video_area .main-content {
 	      position: absolute !important;
 	      top: 0 !important;
-	      left: 185 !important;
-	      width: 1152px !important;
-	      height: 600px !important;
+	      left: 0 !important;
+		  right: 0 !important;
+		  bottom: 0 !important;
+
+		  
+	      /*width: 1152px !important;
+	      height: 600px !important;*/
+		  
+		  width: 100% !important;
+		  height: 100% !important;
+		  
 	      z-index: 100 !important;
 	  }
 
@@ -1337,8 +1348,9 @@
 
     // Getters
     getMainStageContainer() {
-      return this.mainStageContainer;
-      //return document.getElementById('mf_grp_video_area');
+      //return this.mainStageContainer;
+	  return document.getElementById('mf_grp_video_area');
+	  //return this.webSquareContainer;
     }
 
     getSidebarContainer() {

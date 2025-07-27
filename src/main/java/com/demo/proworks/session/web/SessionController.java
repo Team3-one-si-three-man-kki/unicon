@@ -100,10 +100,16 @@ public class SessionController {
 		UserService userService = (UserService) ElBeanUtils.getBean("userServiceImpl");
 		UserVo currentUser = userService.getUserByEmail(userEmail);
 		String actualUserId = currentUser.getUserId();
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + actualUserId);
+		
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+				.getRequest();
+		String tenantId = (String) request.getAttribute("tenantId");
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+ tenantId);
 		
 		sessionVo.setCreatedBy(actualUserId);
 		sessionVo.setInviteLink(null); 
+		sessionVo.setTenantId(tenantId);
 		
 		sessionService.insertSession(sessionVo);
 
