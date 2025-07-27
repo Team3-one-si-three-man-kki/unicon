@@ -40,7 +40,7 @@ scwin.onpageload = function () {
 
     top.window.onresize = scwin.throttle(function () {
         scwin.centerPopup("signUpCompletePopup", 0);
-    }, 200);
+    }, 100);
 
     console.log("onpageload - mode:", mode);
 
