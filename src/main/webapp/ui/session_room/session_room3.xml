@@ -397,9 +397,9 @@ scwin.centerPopup = function (popupId, offsetY = 0) {
 };
 
 scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
-    if(_id === "adfPopUp" && $p.getPopup("drowsinessPopUp"))return;
-    if(_id === "drowsinessPopUp" && $p.getPopup("adfPopUp")) return;
-    
+    if (_id === "adfPopUp" && $p.getPopup("drowsinessPopUp")) return;
+    if (_id === "drowsinessPopUp" && $p.getPopup("adfPopUp")) return;
+
     if ($p.getPopup(_id)) {
         console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
         return;
@@ -584,8 +584,8 @@ scwin.onpageload = async function () {
         }
 
         var jsnPopupData = {
-            "type": "json", 
-            "name": "popup_param", 
+            "type": "json",
+            "name": "popup_param",
             "data": {
                 "name": meetingSettings.get("participantName")
             } // 실제 전달할 데이터
@@ -1273,7 +1273,7 @@ scwin.onpageload = async function () {
         }, 6000);
     };
 
-    
+
 };
 
 //------------------------모듈 배치 스크립트--------------------//
@@ -1587,15 +1587,14 @@ scwin.handleScreenShare = function (moduleInfo) {
 
 // 세션 나가기 -- 일단 임시로 구현해놓음.... -> 재원님꺼랑 합치면됨. -> 모듈을 만들거나 아니면 기본 버튼
 scwin.handleLeaveSession = function (moduleInfo) {
-    if (confirm("정말로 회의를 나가시겠습니까?")) {
-        if (scwin.roomClient && scwin.roomClient.ws) {
-            scwin.roomClient.ws.close();
+        var jsnPopupData = {
+            "type": "json",
+            "name": "popup_param",
+            "data": {
+                "roomClient" : scwin.roomClient
+            }
         }
-        alert("회의를 종료합니다.");
-        //location.href = 'InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml';
-        // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/logIn.xml";
-        $p.url("/InsWebApp/ui/session_room/session_room3.xml");
-    }
+        scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/main/check_out_pop_up.xml", 400, 300);      
 };
 
 // 버튼 상태 업데이트 함수
@@ -1825,13 +1824,13 @@ scwin.applyWaitingRoomSettings = function () {
     // var participantName = meetingSettings.get("participantName");
     // var participantEmail = meetingSettings.get("participantEmail");
 
-    var tenantId = (function(){
-    try {
-        var token = sessionStorage.getItem('accessToken');
-        if (!token) return null;
-        var payload = token.replace('Bearer ', '').split('.')[1];
-        return JSON.parse(atob(payload)).tenantId;
-    } catch(e) { return null; }
+    var tenantId = (function () {
+        try {
+            var token = sessionStorage.getItem('accessToken');
+            if (!token) return null;
+            var payload = token.replace('Bearer ', '').split('.')[1];
+            return JSON.parse(atob(payload)).tenantId;
+        } catch (e) { return null; }
     })();
 
     // 1. URL 파라미터에서 sessionId 먼저 확인
@@ -1896,8 +1895,8 @@ scwin.applyWaitingRoomSettings = function () {
 
 // 여기에 성능 측정 코드 추가
 window.addEventListener('load', () => {
-  const loadTime = performance.now();
-  console.log(`전체 페이지 로딩 시간: ${loadTime.toFixed(2)}ms`);
+    const loadTime = performance.now();
+    console.log(`전체 페이지 로딩 시간: ${loadTime.toFixed(2)}ms`);
 });
 
 
