@@ -326,6 +326,17 @@ div.video-paused::after {
 .bottom-modules::-webkit-scrollbar-thumb:hover {
     background: #94a3b8 !important;
 }
+
+#group11 #group27_leave.drop-zone {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+    border: 2px solid #c0392b !important;
+}
+
+#group11 #group27_leave.drop-zone:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+    border-color: #a93226 !important;
+    transform: translateY(-2px) !important;
+}
 ]]>
 		</style>
 		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
@@ -1387,7 +1398,7 @@ scwin.activateUserHasModule = function (moduleCode) {
 // 모듈 타입 결정 함수
 scwin.getModuleType = function (moduleCode) {
     var uiModules = ['CHAT', 'DOCUMENT', 'SIGNATURE', 'FILE', 'CALENDAR', 'SCREEN_VIEW', 'PARTICIPANTS', 'FACEAI'];
-    var actionModules = ['MIC', 'CAMERA', 'SCREEN', 'RECORD', 'LEAVE'];
+    var actionModules = ['MIC', 'CAMERA', 'SCREEN', 'RECORD'];
 
     if (uiModules.indexOf(moduleCode) !== -1) {
         return 'UI_MODULE';
@@ -1516,9 +1527,9 @@ scwin.executeActionModule = function (moduleInfo) {
         case 'SCREEN':
             scwin.handleScreenShare(moduleInfo);
             break;
-        case 'LEAVE':
-            scwin.handleLeaveSession(moduleInfo);
-            break;
+        // case 'LEAVE':
+        //     scwin.handleLeaveSession(moduleInfo);
+        //     break;
         default:
             alert('준비 중인 기능입니다: ' + moduleInfo.name);
     }
@@ -1575,8 +1586,10 @@ scwin.handleLeaveSession = function (moduleInfo) {
         if (scwin.roomClient && scwin.roomClient.ws) {
             scwin.roomClient.ws.close();
         }
-        alert("회의를 나갔습니다.");
-        // window.location.href = '/InsWebApp/ui/session_room/session_list.xml';
+        alert("회의를 종료합니다.");
+        //location.href = 'InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml';
+        // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/logIn.xml";
+        $p.url("/InsWebApp/ui/session_room/session_room3.xml");
     }
 };
 
@@ -1685,7 +1698,7 @@ scwin.openChatModule = async function (moduleInfo) {
         // ChatModule 인스턴스 생성
         const chatModule = new ChatModule(container, {
             roomId: scwin.currentSessionId || "default-room",
-            currentUser: "사용자"
+            currentUser: "이병욱"
         });
 
         // 채팅 닫기 이벤트 처리
@@ -1966,6 +1979,12 @@ window.addEventListener('load', () => {
 									</xf:group>
 									<xf:group class="drop-zone neon-border" id="group26" style="">
 										<w2:span class="drop-zone-label" id="span16" label="버튼15"></w2:span>
+									</xf:group>
+									<xf:group class="drop-zone neon-border" id="group27_leave" style="order: 999; padding: 0; overflow: hidden;"
+										ev:onclick="scwin.handleLeaveSession">
+										<w2:image id="leave_img" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+											src="/InsWebApp/images/icons/btn_leave.png" alt="나가기 버튼">
+										</w2:image>
 									</xf:group>
 								</xf:group>
 							</xf:group>
