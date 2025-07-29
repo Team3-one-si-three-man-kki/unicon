@@ -36,9 +36,9 @@ window.AIDashboardController = {
         
         const dashboardHTML = `
             <div id="aiDashboardSlide" style="
-                position: fixed; top: 0; right: -400px; width: 380px; height: 100vh;
-                background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15); z-index: 1000;
-                transition: right 0.3s ease-in-out; overflow: hidden;
+                position: fixed; top: 0; left: -400px; width: 380px; height: 100vh;
+                background: white; box-shadow: 4px 0 20px rgba(0,0,0,0.15); z-index: 1000;
+                transition: left 0.3s ease-in-out; overflow: hidden;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 display: flex; flex-direction: column;
             ">
@@ -150,7 +150,7 @@ window.AIDashboardController = {
             this.init();
         }
         
-        this.dashboardElement.style.right = '0';
+        this.dashboardElement.style.left = '0';
         this.isOpen = true;
         
         // 실제 데이터 업데이트 시작
@@ -164,7 +164,7 @@ window.AIDashboardController = {
     
     close: function() {
         if (this.dashboardElement) {
-            this.dashboardElement.style.right = '-400px';
+            this.dashboardElement.style.left = '-400px';
         }
         this.isOpen = false;
         
