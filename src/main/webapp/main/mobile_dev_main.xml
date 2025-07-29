@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:w2="http://www.inswave.com/websquare"
+	xmlns:xf="http://www.w3.org/2002/xforms">
+	<head meta_templateCategory="01_Single" meta_templateName="1_00 모바일 페이지">
+
+		<style type="text/css">
+			@import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.6/dist/web/variable/pretendardvariable.css');
+			<![CDATA[@charset "utf-8";
+
+/* ################################ mobile main ################################## */
+/* 모바일 기본 설정 */
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+	font-size: 14px;
+	line-height: 1.4;
+	color: #333;
+	-webkit-text-size-adjust: 100%;
+}
+
+/* 모바일 컨테이너 */
+.mobile-container {
+	max-width: 100%;
+	margin: 0 auto;
+	padding: 0 16px;
+}
+
+/* #헤더 - 모바일 최적화# */
+.mobile-header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 60px;
+	z-index: 1000;
+	background-color: #ffffff;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 16px;
+}
+
+.mobile-logo {
+	font-size: 20px !important;
+	font-weight: 600 !important;
+	color: #3674B5 !important;
+}
+
+.mobile-menu-btn {
+	width: 32px !important;
+	height: 32px !important;
+	background: none !important;
+	border: none !important;
+	font-size: 18px !important;
+	color: #3674B5 !important;
+}
+
+/* #메인 배너 - 모바일 최적화# */
+.mobile-main-banner {
+	margin-top: 60px;
+	padding: 40px 16px;
+	text-align: center;
+	background: linear-gradient(135deg, rgba(54, 116, 181, 0.1) 0%, rgba(87, 143, 202, 0.1) 100%);
+	min-height: 50vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.mobile-main-subtitle {
+	font-size: 12px !important;
+	color: #6c757d !important;
+	margin-bottom: 16px !important;
+}
+
+.mobile-main-title {
+	font-size: 28px !important;
+	font-weight: 700 !important;
+	color: #2c3e50 !important;
+	line-height: 1.2 !important;
+	margin-bottom: 16px !important;
+}
+
+.mobile-main-description {
+	font-size: 14px !important;
+	color: #6c757d !important;
+	line-height: 1.4 !important;
+	margin-bottom: 24px !important;
+}
+
+/* 모바일 버튼 그룹 */
+.mobile-button-group {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.mobile-btn {
+	width: 100% !important;
+	height: 48px !important;
+	border-radius: 8px !important;
+	font-size: 16px !important;
+	font-weight: 600 !important;
+	border: none !important;
+	cursor: pointer !important;
+	transition: all 0.3s ease !important;
+}
+
+.mobile-btn-primary {
+	background-color: #3674B5 !important;
+	color: white !important;
+}
+
+.mobile-btn-secondary {
+	background-color: transparent !important;
+	color: #3674B5 !important;
+	border: 2px solid #3674B5 !important;
+}
+
+/* #통계 섹션 - 모바일 최적화# */
+.mobile-statistics {
+	padding: 40px 16px;
+	text-align: center;
+	background-color: #ffffff;
+}
+
+.mobile-section-title {
+	font-size: 24px !important;
+	font-weight: 700 !important;
+	color: #2c3e50 !important;
+	margin-bottom: 12px !important;
+}
+
+.mobile-section-subtitle {
+	font-size: 14px !important;
+	color: #6c757d !important;
+	margin-bottom: 32px !important;
+}
+
+.mobile-stats-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+	margin-bottom: 32px;
+}
+
+.mobile-stat-item {
+	text-align: center;
+	padding: 20px 10px;
+}
+
+.mobile-stat-number {
+	font-size: 24px !important;
+	font-weight: 700 !important;
+	color: #3674B5 !important;
+	margin-bottom: 8px !important;
+}
+
+.mobile-stat-label {
+	font-size: 12px !important;
+	color: #6c757d !important;
+}
+
+/* #기능 카드 섹션 - 모바일 최적화# */
+.mobile-features {
+	padding: 40px 16px;
+	background-color: #F5F5F6;
+}
+
+.mobile-features-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+	margin-top: 24px;
+}
+
+.mobile-feature-card {
+	background: white;
+	border-radius: 12px;
+	padding: 20px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.mobile-feature-icon {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	background-color: #f0f7ff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.mobile-feature-content {
+	flex: 1;
+}
+
+.mobile-feature-title {
+	font-size: 16px !important;
+	font-weight: 600 !important;
+	color: #2c3e50 !important;
+	margin-bottom: 8px !important;
+}
+
+.mobile-feature-description {
+	font-size: 14px !important;
+	color: #6c757d !important;
+	line-height: 1.4 !important;
+}
+
+/* 아이콘 스타일 - 모바일 크기 조정 */
+.mobile-icon {
+	width: 24px !important;
+	height: 24px !important;
+	background-size: 24px 24px !important;
+}
+
+.UiIcon-mobile {
+	background-image: url(../cm/images/main/main_custom.png);
+	background-repeat: no-repeat;
+}
+
+.AiIcon-mobile {
+	background-image: url(../cm/images/main/main_AI.png);
+	background-repeat: no-repeat;
+}
+
+.VideoIcon-mobile {
+	background-image: url(../cm/images/main/main_video.png);
+	background-repeat: no-repeat;
+}
+
+.sharingIcon-mobile {
+	background-image: url(../cm/images/main/main_share.png);
+	background-repeat: no-repeat;
+}
+
+.canvasIcon-mobile {
+	background-image: url(../cm/images/main/main_canvas.png);
+	background-repeat: no-repeat;
+}
+
+.chatIcon-mobile {
+	background-image: url(../cm/images/main/main_chat.png);
+	background-repeat: no-repeat;
+}
+
+/* #고객 후기 - 모바일 최적화# */
+.mobile-testimonials {
+	padding: 40px 16px;
+	background-color: #ffffff;
+}
+
+.mobile-testimonial-card {
+	background: white;
+	border-radius: 12px;
+	padding: 20px;
+	margin-bottom: 16px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-stars {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+.mobile-star {
+	color: #ffc107 !important;
+	font-size: 16px !important;
+}
+
+.mobile-testimonial-text {
+	font-size: 14px !important;
+	line-height: 1.4 !important;
+	color: #495057 !important;
+	margin-bottom: 16px !important;
+}
+
+.mobile-author-name {
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	color: #3674B5 !important;
+	margin-bottom: 4px !important;
+}
+
+.mobile-author-position {
+	font-size: 12px !important;
+	color: #6c757d !important;
+}
+
+/* #CTA 섹션 - 모바일 최적화# */
+.mobile-cta {
+	background: linear-gradient(135deg, #3674B5 0%, #578FCA 100%);
+	padding: 40px 16px;
+	text-align: center;
+	color: white;
+}
+
+.mobile-cta-title {
+	font-size: 24px !important;
+	font-weight: 700 !important;
+	margin-bottom: 12px !important;
+	line-height: 1.2 !important;
+}
+
+.mobile-cta-description {
+	font-size: 14px !important;
+	opacity: 0.9 !important;
+	margin-bottom: 24px !important;
+	line-height: 1.4 !important;
+}
+
+.mobile-cta-form {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.mobile-email-input {
+	height: 48px !important;
+	padding: 0 16px !important;
+	border: none !important;
+	border-radius: 8px !important;
+	font-size: 14px !important;
+	background: rgba(255, 255, 255, 0.15) !important;
+	color: white !important;
+	width: 100% !important;
+}
+
+.mobile-email-input::placeholder {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.mobile-cta-btn {
+	height: 48px !important;
+	border: 2px solid white !important;
+	background-color: transparent !important;
+	color: white !important;
+	border-radius: 8px !important;
+	font-weight: 600 !important;
+	width: 100% !important;
+}
+
+.mobile-cta-info {
+	font-size: 12px !important;
+	opacity: 0.7 !important;
+}
+
+/* #회사 로고 - 모바일 최적화# */
+.mobile-companies {
+	padding: 40px 16px;
+	text-align: center;
+	background-color: #ffffff;
+}
+
+.mobile-companies-title {
+	font-size: 14px !important;
+	color: #666666 !important;
+	margin-bottom: 24px !important;
+}
+
+.mobile-logos-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
+	justify-items: center;
+	align-items: center;
+}
+
+.mobile-logo-item {
+	opacity: 0.7;
+	font-size: 16px !important;
+	font-weight: 600 !important;
+}
+
+/* #푸터 - 모바일 최적화# */
+.mobile-footer {
+	background: linear-gradient(135deg, #578FCA 0%, #3674B5 100%);
+	padding: 40px 16px 20px;
+	color: white;
+}
+
+.mobile-footer-content {
+	margin-bottom: 32px;
+}
+
+.mobile-footer-logo {
+	font-size: 20px !important;
+	font-weight: 700 !important;
+	margin-bottom: 12px !important;
+}
+
+.mobile-footer-description {
+	font-size: 14px !important;
+	opacity: 0.8 !important;
+	margin-bottom: 20px !important;
+	line-height: 1.4 !important;
+}
+
+.mobile-footer-section {
+	margin-bottom: 24px;
+}
+
+.mobile-footer-section-title {
+	font-size: 16px !important;
+	font-weight: 600 !important;
+	margin-bottom: 12px !important;
+}
+
+.mobile-footer-link {
+	display: block !important;
+	font-size: 14px !important;
+	color: rgba(255, 255, 255, 0.8) !important;
+	margin-bottom: 8px !important;
+	text-decoration: none !important;
+}
+
+.mobile-footer-bottom {
+	padding-top: 20px;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	text-align: center;
+}
+
+.mobile-copyright {
+	font-size: 12px !important;
+	opacity: 0.6 !important;
+	margin-bottom: 12px !important;
+}
+
+.mobile-footer-links {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 16px;
+}
+
+.mobile-footer-link-small {
+	font-size: 12px !important;
+	color: rgba(255, 255, 255, 0.6) !important;
+	text-decoration: none !important;
+}
+
+/* 반응형 - 작은 모바일 */
+@media (max-width: 360px) {
+	.mobile-container {
+		padding: 0 12px;
+	}
+	
+	.mobile-main-title {
+		font-size: 24px !important;
+	}
+	
+	.mobile-stats-grid {
+		gap: 16px;
+	}
+	
+	.mobile-stat-number {
+		font-size: 20px !important;
+	}
+}
+
+/* 가로 모드 최적화 */
+@media (max-height: 500px) and (orientation: landscape) {
+	.mobile-main-banner {
+		min-height: auto;
+		padding: 20px 16px;
+	}
+	
+	.mobile-main-title {
+		font-size: 24px !important;
+	}
+}
+]]></style>
+
+		<w2:type>COMPONENT</w2:type>
+		<w2:buildDate />
+		<w2:MSA />
+		<xf:model>
+			<w2:dataCollection baseNode="map" />
+			<w2:workflowCollection />
+		</xf:model>
+		<w2:layoutInfo />
+		<w2:publicInfo method="" />
+		<script lazy="false" type="text/javascript"><![CDATA[
+scwin.onpageload = function () {
+    // 모바일 버튼 스타일 초기화
+    scwin.initMobileButtons();
+    
+    // 숫자 애니메이션 함수 호출
+    scwin.animateCounters();
+};
+
+// 모바일 버튼 초기화
+scwin.initMobileButtons = function() {
+    var primaryBtns = document.querySelectorAll('.mobile-btn-primary');
+    var secondaryBtns = document.querySelectorAll('.mobile-btn-secondary');
+    
+    primaryBtns.forEach(function(btn) {
+        btn.style.backgroundColor = '#3674B5';
+        btn.style.color = '#ffffff';
+        btn.style.border = 'none';
+    });
+    
+    secondaryBtns.forEach(function(btn) {
+        btn.style.backgroundColor = 'transparent';
+        btn.style.color = '#3674B5';
+        btn.style.border = '2px solid #3674B5';
+    });
+};
+
+// 모바일 메뉴 토글
+scwin.mobileMenu_onclick = function(e) {
+    // 모바일 메뉴 로직 (추후 구현)
+    alert('메뉴가 열립니다');
+};
+
+// 모바일 버튼 호버 효과
+scwin.mobilePrimaryBtn_onmouseover = function(e) {
+    var btn = e.target || e.srcElement;
+    btn.style.backgroundColor = '#2C5A94';
+};
+
+scwin.mobilePrimaryBtn_onmouseout = function(e) {
+    var btn = e.target || e.srcElement;
+    btn.style.backgroundColor = '#3674B5';
+};
+
+scwin.mobileSecondaryBtn_onmouseover = function(e) {
+    var btn = e.target || e.srcElement;
+    btn.style.backgroundColor = '#3674B5';
+    btn.style.color = '#ffffff';
+};
+
+scwin.mobileSecondaryBtn_onmouseout = function(e) {
+    var btn = e.target || e.srcElement;
+    btn.style.backgroundColor = 'transparent';
+    btn.style.color = '#3674B5';
+};
+
+// CTA 버튼 호버
+scwin.mobileCTABtn_onmouseover = function(e) {
+    var btn = e.target || e.srcElement;
+    btn.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+};
+
+scwin.mobileCTABtn_onmouseout = function(e) {
+    var btn = e.target || e.srcElement;
+    btn.style.backgroundColor = 'transparent';
+};
+
+// 회원가입 페이지 이동
+scwin.mobileRegister_onclick = function(e) {
+    window.location.href = '/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_join_mobile.xml';
+};
+
+// 로고 클릭시 새로고침
+scwin.mobileLogo_onclick = function(e) {
+    window.location.reload();
+};
+
+// 숫자 애니메이션 (모바일 최적화)
+scwin.animateCounters = function() {
+    var counters = [
+        { id: 'mobile_counter1', target: 10000, suffix: '+', duration: 2000 },
+        { id: 'mobile_counter2', target: 99.9, suffix: '%', duration: 2000 },
+        { id: 'mobile_counter3', target: 24, suffix: '/7', duration: 1500 },
+        { id: 'mobile_counter4', target: 50, suffix: '%', duration: 1800 }
+    ];
+
+    counters.forEach(function(counter) {
+        scwin.animateCounterById(counter.id, counter.target, counter.suffix, counter.duration);
+    });
+};
+
+scwin.animateCounterById = function(id, target, suffix, duration) {
+    var component = $p.getComponentById(id);
+    if (!component) return;
+
+    var startTime = null;
+    var startValue = 0;
+
+    function animate(currentTime) {
+        if (!startTime) startTime = currentTime;
+        var progress = (currentTime - startTime) / duration;
+
+        if (progress >= 1) {
+            var finalValue = target >= 1000 ? target.toLocaleString() + suffix : target + suffix;
+            component.setValue(finalValue);
+            return;
+        }
+
+        var easedProgress = 1 - Math.pow(1 - progress, 3);
+        var currentValue = startValue + (target - startValue) * easedProgress;
+        
+        var displayValue;
+        if (target === 99.9) {
+            displayValue = currentValue.toFixed(1);
+        } else if (target >= 1000) {
+            displayValue = Math.floor(currentValue).toLocaleString();
+        } else {
+            displayValue = Math.floor(currentValue);
+        }
+
+        component.setValue(displayValue + suffix);
+        requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+};
+]]>
+		</script>
+	</head>
+	<body ev:onpageload="scwin.onpageload">
+		<xf:group class="mobile-container" id="mobile_main" meta_snippetCategory="00_화면시작" meta_snippetKeyComponent="true"
+			meta_snippetName="0_01 모바일페이지시작">
+
+			<!-- 모바일 헤더 -->
+			<xf:group class="mobile-header" id="mobile_header">
+				<w2:textbox class="mobile-logo" id="mobile_logo" label="UniCon" ev:onclick="scwin.mobileLogo_onclick" />
+				<xf:trigger class="mobile-menu-btn" id="mobile_menu_btn" type="button" ev:onclick="scwin.mobileMenu_onclick">
+					<xf:label>☰</xf:label>
+				</xf:trigger>
+			</xf:group>
+
+			<!-- 모바일 메인 배너 -->
+			<xf:group class="mobile-main-banner" id="mobile_main_banner">
+				<w2:textbox class="mobile-main-subtitle" id="mobile_main_subtitle" label="Unify + Conference = UniCon" />
+
+				<w2:textbox class="mobile-main-title" id="mobile_main_title" label="비대면 UI 커스텀 모듈 플랫폼" />
+
+				<w2:textbox class="mobile-main-description" id="mobile_main_description"
+					label="언제 어디서나 모듈형 UI를 내 손 안에, 간편한 설치와 즉시 사용으로 원격 협업을 혁신하세요." />
+
+				<xf:group class="mobile-button-group" id="mobile_button_group">
+					<xf:trigger class="mobile-btn mobile-btn-primary" id="mobile_start_btn" type="button"
+						ev:onmouseover="scwin.mobilePrimaryBtn_onmouseover" ev:onmouseout="scwin.mobilePrimaryBtn_onmouseout">
+						<xf:label>시작하기</xf:label>
+					</xf:trigger>
+					<xf:trigger class="mobile-btn mobile-btn-secondary" id="mobile_service_btn" type="button"
+						ev:onmouseover="scwin.mobileSecondaryBtn_onmouseover" ev:onmouseout="scwin.mobileSecondaryBtn_onmouseout">
+						<xf:label>서비스 알아보기</xf:label>
+					</xf:trigger>
+				</xf:group>
+			</xf:group>
+
+			<!-- 모바일 통계 섹션 -->
+			<xf:group class="mobile-statistics" id="mobile_statistics">
+				<w2:textbox class="mobile-section-subtitle" id="mobile_trusted_text" label="TRUSTED BY 1000+ COMPANIES" />
+				<w2:textbox class="mobile-section-title" id="mobile_stats_title" label="혁신적인 화상미팅 솔루션을 경험하고 있습니다" />
+
+				<xf:group class="mobile-stats-grid" id="mobile_stats_grid">
+					<xf:group class="mobile-stat-item" id="mobile_stat_1">
+						<w2:textbox class="mobile-stat-number" id="mobile_counter1" label="10,000+" />
+						<w2:textbox class="mobile-stat-label" id="mobile_stat_label_1" label="일일 사용자" />
+					</xf:group>
+					<xf:group class="mobile-stat-item" id="mobile_stat_2">
+						<w2:textbox class="mobile-stat-number" id="mobile_counter2" label="99.9%" />
+						<w2:textbox class="mobile-stat-label" id="mobile_stat_label_2" label="서비스 안정성" />
+					</xf:group>
+					<xf:group class="mobile-stat-item" id="mobile_stat_3">
+						<w2:textbox class="mobile-stat-number" id="mobile_counter3" label="24/7" />
+						<w2:textbox class="mobile-stat-label" id="mobile_stat_label_3" label="기술지원" />
+					</xf:group>
+					<xf:group class="mobile-stat-item" id="mobile_stat_4">
+						<w2:textbox class="mobile-stat-number" id="mobile_counter4" label="50%" />
+						<w2:textbox class="mobile-stat-label" id="mobile_stat_label_4" label="업무 효율성 향상" />
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+			<!-- 모바일 기능 섹션 -->
+			<xf:group class="mobile-features" id="mobile_features">
+				<w2:textbox class="mobile-section-title" id="mobile_features_title" label="기업이 원하는 기능을 하나의 솔루션으로" />
+				<w2:textbox class="mobile-section-subtitle" id="mobile_features_subtitle" label="AI 기반의 혁신적인 기능으로 기업의 업무 효율성을 극대화하세요" />
+
+				<xf:group class="mobile-features-grid" id="mobile_features_grid">
+					<!-- 커스텀 UI -->
+					<xf:group class="mobile-feature-card" id="mobile_feature_1">
+						<xf:group class="mobile-feature-icon" id="mobile_icon_1">
+							<w2:textbox class="mobile-icon UiIcon-mobile" id="mobile_ui_icon" label="" />
+						</xf:group>
+						<xf:group class="mobile-feature-content" id="mobile_content_1">
+							<w2:textbox class="mobile-feature-title" id="mobile_title_1" label="커스텀 UI" />
+							<w2:textbox class="mobile-feature-description" id="mobile_desc_1" label="원하는 대로 인터페이스를 바꾸어 나만의 편리한 환경을 구성할 수 있습니다." />
+						</xf:group>
+					</xf:group>
+
+					<!-- 졸음 AI -->
+					<xf:group class="mobile-feature-card" id="mobile_feature_2">
+						<xf:group class="mobile-feature-icon" id="mobile_icon_2">
+							<w2:textbox class="mobile-icon AiIcon-mobile" id="mobile_ai_icon" label="" />
+						</xf:group>
+						<xf:group class="mobile-feature-content" id="mobile_content_2">
+							<w2:textbox class="mobile-feature-title" id="mobile_title_2" label="졸음 AI" />
+							<w2:textbox class="mobile-feature-description" id="mobile_desc_2" label="실시간 졸음 감지로 집중력을 유지합니다." />
+						</xf:group>
+					</xf:group>
+
+					<!-- 영상통화 -->
+					<xf:group class="mobile-feature-card" id="mobile_feature_3">
+						<xf:group class="mobile-feature-icon" id="mobile_icon_3">
+							<w2:textbox class="mobile-icon VideoIcon-mobile" id="mobile_video_icon" label="" />
+						</xf:group>
+						<xf:group class="mobile-feature-content" id="mobile_content_3">
+							<w2:textbox class="mobile-feature-title" id="mobile_title_3" label="영상통화" />
+							<w2:textbox class="mobile-feature-description" id="mobile_desc_3" label="고화질 영상으로 자연스러운 대면 소통 경험을 제공합니다." />
+						</xf:group>
+					</xf:group>
+
+					<!-- 화면공유 -->
+					<xf:group class="mobile-feature-card" id="mobile_feature_4">
+						<xf:group class="mobile-feature-icon" id="mobile_icon_4">
+							<w2:textbox class="mobile-icon sharingIcon-mobile" id="mobile_sharing_icon" label="" />
+						</xf:group>
+						<xf:group class="mobile-feature-content" id="mobile_content_4">
+							<w2:textbox class="mobile-feature-title" id="mobile_title_4" label="화면공유" />
+							<w2:textbox class="mobile-feature-description" id="mobile_desc_4" label="클릭 한 번으로 화면을 즉시 전송해 빠르고 효율적인 협업을 지원합니다." />
+						</xf:group>
+					</xf:group>
+
+					<!-- 캔버스 -->
+					<xf:group class="mobile-feature-card" id="mobile_feature_5">
+						<xf:group class="mobile-feature-icon" id="mobile_icon_5">
+							<w2:textbox class="mobile-icon canvasIcon-mobile" id="mobile_canvas_icon" label="" />
+						</xf:group>
+						<xf:group class="mobile-feature-content" id="mobile_content_5">
+							<w2:textbox class="mobile-feature-title" id="mobile_title_5" label="캔버스" />
+							<w2:textbox class="mobile-feature-description" id="mobile_desc_5" label="매끄러운 그래픽 처리로 몰입감 높은 시각 콘텐츠를 구현합니다." />
+						</xf:group>
+					</xf:group>
+
+					<!-- 채팅 -->
+					<xf:group class="mobile-feature-card" id="mobile_feature_6">
+						<xf:group class="mobile-feature-icon" id="mobile_icon_6">
+							<w2:textbox class="mobile-icon chatIcon-mobile" id="mobile_chat_icon" label="" />
+						</xf:group>
+						<xf:group class="mobile-feature-content" id="mobile_content_6">
+							<w2:textbox class="mobile-feature-title" id="mobile_title_6" label="채팅" />
+							<w2:textbox class="mobile-feature-description" id="mobile_desc_6" label="채팅을 통해 실시간 소통을 지원합니다." />
+						</xf:group>
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+			<!-- 모바일 고객 후기 섹션 -->
+			<xf:group class="mobile-testimonials" id="mobile_testimonials">
+				<w2:textbox class="mobile-section-title" id="mobile_testimonials_title" label="고객들의 이야기" />
+				<w2:textbox class="mobile-section-subtitle" id="mobile_testimonials_subtitle" label="UniCon을 사용하는 기업들의 실제 경험담을 확인해보세요" />
+
+				<!-- 첫 번째 후기 -->
+				<xf:group class="mobile-testimonial-card" id="mobile_testimonial_1">
+					<xf:group class="mobile-stars" id="mobile_stars_1">
+						<w2:textbox class="mobile-star" id="mobile_star_1_1" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_1_2" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_1_3" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_1_4" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_1_5" label="★" />
+					</xf:group>
+					<w2:textbox class="mobile-testimonial-text" id="mobile_testimonial_text_1" label="UniCon 도입 후 팀과의 커뮤니케이션이 획기적으로 개선되었습니다." />
+					<w2:textbox class="mobile-author-name" id="mobile_author_name_1" label="김지훈" />
+					<w2:textbox class="mobile-author-position" id="mobile_author_position_1" label="네이버 CTO" />
+				</xf:group>
+
+				<!-- 두 번째 후기 -->
+				<xf:group class="mobile-testimonial-card" id="mobile_testimonial_2">
+					<xf:group class="mobile-stars" id="mobile_stars_2">
+						<w2:textbox class="mobile-star" id="mobile_star_2_1" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_2_2" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_2_3" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_2_4" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_2_5" label="★" />
+					</xf:group>
+					<w2:textbox class="mobile-testimonial-text" id="mobile_testimonial_text_2"
+						label="회의에 집중할 수 있게 되었고, 후처리 시간 없이 모든 회의 내용을 기록해줍니다." />
+					<w2:textbox class="mobile-author-name" id="mobile_author_name_2" label="박서현" />
+					<w2:textbox class="mobile-author-position" id="mobile_author_position_2" label="삼성SDS 프로젝트 매니저" />
+				</xf:group>
+
+				<!-- 세 번째 후기 -->
+				<xf:group class="mobile-testimonial-card" id="mobile_testimonial_3">
+					<xf:group class="mobile-stars" id="mobile_stars_3">
+						<w2:textbox class="mobile-star" id="mobile_star_3_1" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_3_2" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_3_3" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_3_4" label="★" />
+						<w2:textbox class="mobile-star" id="mobile_star_3_5" label="★" />
+					</xf:group>
+					<w2:textbox class="mobile-testimonial-text" id="mobile_testimonial_text_3"
+						label="보안이 엄격한 금융 산업에서도 안심하고 사용할 수 있습니다. 엔터프라이즈 보안과 암호화가 완벽하고 안전합니다." />
+					<w2:textbox class="mobile-author-name" id="mobile_author_name_3" label="이현준" />
+					<w2:textbox class="mobile-author-position" id="mobile_author_position_3" label="한국투자증권 IT 보안팀장" />
+				</xf:group>
+			</xf:group>
+
+			<!-- 모바일 CTA 섹션 -->
+			<xf:group class="mobile-cta" id="mobile_cta">
+				<w2:textbox class="mobile-cta-title" id="mobile_cta_title" label="지금 바로 UniCon을 경험해보세요" />
+				<w2:textbox class="mobile-cta-description" id="mobile_cta_description" label="구독하여 UniCon의 모든 모듈 커스텀 기능을 제한 없이 사용해보세요" />
+
+				<xf:group class="mobile-cta-form" id="mobile_cta_form">
+					<w2:textbox class="mobile-email-input" id="mobile_email_input" placeholder="회사 이메일을 입력하세요" />
+					<xf:trigger class="mobile-cta-btn" id="mobile_cta_btn" type="button" ev:onmouseover="scwin.mobileCTABtn_onmouseover"
+						ev:onmouseout="scwin.mobileCTABtn_onmouseout">
+						<xf:label>시작하기</xf:label>
+					</xf:trigger>
+				</xf:group>
+
+				<w2:textbox class="mobile-cta-info" id="mobile_cta_info" label="신용카드가 필요하지 않습니다. 언제든지 취소 가능합니다." />
+			</xf:group>
+
+			<!-- 모바일 회사 로고 섹션 -->
+			<xf:group class="mobile-companies" id="mobile_companies">
+				<w2:textbox class="mobile-companies-title" id="mobile_companies_title" label="500+ 기업이 UniCon을 신뢰하고 있습니다" />
+
+				<xf:group class="mobile-logos-grid" id="mobile_logos_grid">
+					<w2:textbox class="mobile-logo-item" id="mobile_microsoft_logo" label="Microsoft" style="color: #00A1F1;" />
+					<w2:textbox class="mobile-logo-item" id="mobile_amazon_logo" label="amazon" style="color: #FF9900;" />
+					<w2:textbox class="mobile-logo-item" id="mobile_netflix_logo" label="NETFLIX" style="color: #E50914;" />
+					<w2:textbox class="mobile-logo-item" id="mobile_samsung_logo" label="SAMSUNG" style="color: #1428A0;" />
+				</xf:group>
+			</xf:group>
+
+			<!-- 모바일 푸터 -->
+			<xf:group class="mobile-footer" id="mobile_footer">
+				<xf:group class="mobile-footer-content" id="mobile_footer_content">
+					<w2:textbox class="mobile-footer-logo" id="mobile_footer_logo" label="UniCon" />
+					<w2:textbox class="mobile-footer-description" id="mobile_footer_description" label="스마트한 기업을 위한 최고의 화상미팅 솔루션" />
+
+					<!-- 제품 섹션 -->
+					<xf:group class="mobile-footer-section" id="mobile_footer_product">
+						<w2:textbox class="mobile-footer-section-title" id="mobile_product_title" label="제품" />
+						<w2:anchor class="mobile-footer-link" id="mobile_product_link1" label="기능 소개" />
+						<w2:anchor class="mobile-footer-link" id="mobile_product_link2" label="요금 안내" />
+						<w2:anchor class="mobile-footer-link" id="mobile_product_link3" label="보안" />
+						<w2:anchor class="mobile-footer-link" id="mobile_product_link4" label="API 문서" />
+					</xf:group>
+
+					<!-- 리소스 섹션 -->
+					<xf:group class="mobile-footer-section" id="mobile_footer_resource">
+						<w2:textbox class="mobile-footer-section-title" id="mobile_resource_title" label="리소스" />
+						<w2:anchor class="mobile-footer-link" id="mobile_resource_link1" label="고객 사례" />
+						<w2:anchor class="mobile-footer-link" id="mobile_resource_link2" label="블로그" />
+						<w2:anchor class="mobile-footer-link" id="mobile_resource_link3" label="웨비나" />
+						<w2:anchor class="mobile-footer-link" id="mobile_resource_link4" label="도움말 센터" />
+					</xf:group>
+
+					<!-- 회사 섹션 -->
+					<xf:group class="mobile-footer-section" id="mobile_footer_company">
+						<w2:textbox class="mobile-footer-section-title" id="mobile_company_title" label="회사" />
+						<w2:anchor class="mobile-footer-link" id="mobile_company_link1" label="회사 소개" />
+						<w2:anchor class="mobile-footer-link" id="mobile_company_link2" label="채용 정보" />
+						<w2:anchor class="mobile-footer-link" id="mobile_company_link3" label="파트너십" />
+						<w2:anchor class="mobile-footer-link" id="mobile_company_link4" label="문의하기" />
+					</xf:group>
+				</xf:group>
+
+				<!-- 푸터 하단 -->
+				<xf:group class="mobile-footer-bottom" id="mobile_footer_bottom">
+					<w2:textbox class="mobile-copyright" id="mobile_copyright" label="© 2025 UniCon. All rights reserved." />
+
+					<xf:group class="mobile-footer-links" id="mobile_footer_links">
+						<w2:anchor class="mobile-footer-link-small" id="mobile_footer_link1" label="이용약관" />
+						<w2:anchor class="mobile-footer-link-small" id="mobile_footer_link2" label="개인정보처리방침" />
+						<w2:anchor class="mobile-footer-link-small" id="mobile_footer_link3" label="쿠키 정책" />
+					</xf:group>
+				</xf:group>
+			</xf:group>
+
+		</xf:group>
+	</body>
+</html>

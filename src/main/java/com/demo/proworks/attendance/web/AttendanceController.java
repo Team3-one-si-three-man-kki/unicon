@@ -72,7 +72,7 @@ public class AttendanceController {
 		// 페이징 설정
 		int pageSizeInt = (attendanceVo.getPageSize() > 0) ? attendanceVo.getPageSize() : 100;
 		int pageIndexInt = (int) ((attendanceVo.getPageIndex() > 0) ? attendanceVo.getPageIndex() : 1);
-		
+
 		attendanceVo.setPageSize(pageSizeInt);
 		attendanceVo.setPageIndex(pageIndexInt);
 

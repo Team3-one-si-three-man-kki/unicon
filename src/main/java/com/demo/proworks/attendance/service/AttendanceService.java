@@ -35,7 +35,6 @@ public interface AttendanceService {
 	 * @return 출석모듈 목록 전체 카운트
 	 * @throws Exception
 	 */
-	public long selectListCountAttendance(AttendanceVo attendanceVo) throws Exception;
 
 	/**
 	 * 출석모듈를 상세 조회한다.
@@ -88,5 +87,7 @@ public interface AttendanceService {
 	 * 출석 통계 정보 조회
 	 */
 	public AttendanceVo getAttendanceStats(AttendanceVo searchVo) throws Exception;
+
+	public long selectListCountAttendance(AttendanceVo attendanceVo) throws Exception;
 
 }
