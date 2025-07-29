@@ -308,6 +308,28 @@ div.video-paused::after {
     display: block !important;
 }
 
+.neon-leave-btn {
+            width: 120px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff4757 0%, #c44569 100%);
+            border: 2px solid #ff6b7a;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 20px rgba(255, 71, 87, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
 /* --- 가로 스크롤바 스타일 (선택사항) --- */
 .bottom-modules::-webkit-scrollbar {
     height: 6px !important;
@@ -1986,9 +2008,8 @@ window.addEventListener('load', () => {
 									</xf:group>
 									<xf:group class="drop-zone neon-border" id="group27_leave" style="order: 999; padding: 0; overflow: hidden;"
 										ev:onclick="scwin.handleLeaveSession">
-										<w2:image id="leave_img" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-											src="/InsWebApp/images/icons/btn_leave.png" alt="나가기 버튼">
-										</w2:image>
+									
+										<w2:span class="neon-leave-btn" id="span17" label="나가기"></w2:span>
 									</xf:group>
 								</xf:group>
 							</xf:group>
