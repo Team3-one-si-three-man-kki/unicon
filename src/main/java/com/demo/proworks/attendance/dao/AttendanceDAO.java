@@ -44,17 +44,6 @@ public class AttendanceDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbs
 	}
 
 	/**
-	 * 출석모듈 목록 조회의 전체 카운트를 조회한다.
-	 * 
-	 * @param AttendanceVo 출석모듈
-	 * @return 출석모듈 조회의 전체 카운트
-	 * @throws ElException
-	 */
-	public long selectListCountAttendance(AttendanceVo vo) throws ElException {
-		return (Long) selectByPk("com.demo.proworks.attendance.selectListCountAttendance", vo);
-	}
-
-	/**
 	 * 출석모듈를 등록한다.
 	 * 
 	 * @param AttendanceVo 출석모듈
@@ -100,6 +89,48 @@ public class AttendanceDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbs
 	 */
 	public AttendanceVo selectAttendanceStats(AttendanceVo vo) throws ElException {
 		return (AttendanceVo) selectByPk("com.demo.proworks.attendance.selectAttendanceStats", vo);
+	}
+
+	// 테넌트별 조회 메소드들 (신규 추가)
+	/**
+	 * 테넌트별 출석모듈 목록조회를 한다. (세션 테이블과 조인)
+	 * 
+	 * @param AttendanceVo 출석모듈
+	 * @return List<AttendanceVo> 출석모듈
+	 * @throws ElException
+	 */
+	public List<AttendanceVo> selectListAttendanceByTenant(AttendanceVo vo) throws ElException {
+		return (List<AttendanceVo>) list("com.demo.proworks.attendance.selectListAttendanceByTenant", vo);
+	}
+
+	/**
+	 * 테넌트별 출석모듈 목록 조회의 전체 카운트를 조회한다.
+	 * 
+	 * @param AttendanceVo 출석모듈
+	 * @return 출석모듈 조회의 전체 카운트
+	 * @throws ElException
+	 */
+	public long selectListCountAttendanceByTenant(AttendanceVo vo) throws ElException {
+		return (Long) selectByPk("com.demo.proworks.attendance.selectListCountAttendanceByTenant", vo);
+	}
+
+	/**
+	 * 테넌트별 CSV 다운로드용 출석 목록 조회 (참여시간 계산 포함)
+	 */
+	public List<AttendanceVo> selectAttendanceForCSVByTenant(AttendanceVo vo) throws ElException {
+		return (List<AttendanceVo>) list("com.demo.proworks.attendance.selectAttendanceForCSVByTenant", vo);
+	}
+
+	/**
+	 * 테넌트별 세션별 출석 통계 조회
+	 */
+	public AttendanceVo selectAttendanceStatsByTenant(AttendanceVo vo) throws ElException {
+		return (AttendanceVo) selectByPk("com.demo.proworks.attendance.selectAttendanceStatsByTenant", vo);
+	}
+
+	public long selectListCountAttendance(AttendanceVo attendanceVo) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

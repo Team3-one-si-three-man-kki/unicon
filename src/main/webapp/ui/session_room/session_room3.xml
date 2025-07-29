@@ -1706,7 +1706,7 @@ scwin.openChatModule = async function (moduleInfo) {
         // ChatModule 인스턴스 생성
         const chatModule = new ChatModule(container, {
             roomId: scwin.currentSessionId || "default-room",
-            currentUser: "이병욱"
+            currentUser: "사용자"
         });
 
         // 채팅 닫기 이벤트 처리

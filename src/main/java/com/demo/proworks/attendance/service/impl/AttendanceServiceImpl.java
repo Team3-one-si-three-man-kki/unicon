@@ -46,9 +46,14 @@ public class AttendanceServiceImpl implements AttendanceService {
 	 * @throws Exception
 	 */
 	public List<AttendanceVo> selectListAttendance(AttendanceVo attendanceVo) throws Exception {
-		List<AttendanceVo> list = attendanceDAO.selectListAttendance(attendanceVo);
-
-		return list;
+		// 테넌트 ID가 있으면 테넌트별 조회, 없으면 기존 조회
+		if (attendanceVo.getScTenantId() != null && !attendanceVo.getScTenantId().trim().isEmpty()) {
+			List<AttendanceVo> list = attendanceDAO.selectListAttendanceByTenant(attendanceVo);
+			return list;
+		} else {
+			List<AttendanceVo> list = attendanceDAO.selectListAttendance(attendanceVo);
+			return list;
+		}
 	}
 
 	/**
@@ -61,7 +66,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 	 * @throws Exception
 	 */
 	public long selectListCountAttendance(AttendanceVo attendanceVo) throws Exception {
-		return attendanceDAO.selectListCountAttendance(attendanceVo);
+		// 테넌트 ID가 있으면 테넌트별 카운트, 없으면 기존 카운트
+		if (attendanceVo.getScTenantId() != null && !attendanceVo.getScTenantId().trim().isEmpty()) {
+			return attendanceDAO.selectListCountAttendanceByTenant(attendanceVo);
+		} else {
+			return attendanceDAO.selectListCountAttendance(attendanceVo);
+		}
 	}
 
 	/**
@@ -155,7 +165,14 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 	@Override
 	public String generateAttendanceCSV(AttendanceVo searchVo) throws Exception {
-		List<AttendanceVo> attendanceList = attendanceDAO.selectAttendanceForCSV(searchVo);
+		List<AttendanceVo> attendanceList;
+
+		// 테넌트 ID가 있으면 테넌트별 조회, 없으면 기존 조회
+		if (searchVo.getScTenantId() != null && !searchVo.getScTenantId().trim().isEmpty()) {
+			attendanceList = attendanceDAO.selectAttendanceForCSVByTenant(searchVo);
+		} else {
+			attendanceList = attendanceDAO.selectAttendanceForCSV(searchVo);
+		}
 
 		StringBuilder csvContent = new StringBuilder();
 
@@ -182,7 +199,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 	@Override
 	public AttendanceVo getAttendanceStats(AttendanceVo searchVo) throws Exception {
-		return attendanceDAO.selectAttendanceStats(searchVo);
+		// 테넌트 ID가 있으면 테넌트별 통계, 없으면 기존 통계
+		if (searchVo.getScTenantId() != null && !searchVo.getScTenantId().trim().isEmpty()) {
+			return attendanceDAO.selectAttendanceStatsByTenant(searchVo);
+		} else {
+			return attendanceDAO.selectAttendanceStats(searchVo);
+		}
 	}
 
 	/**
