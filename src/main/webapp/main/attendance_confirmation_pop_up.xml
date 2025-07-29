@@ -33,7 +33,8 @@ scwin.onpageload = function () {
     // 메시지 설정
     const userName = $p.getParameter("popup_param").name;
     scwin.now = new Date();
-    const message = userName + "님 " + scwin.currentTime() + "에 출석체크되었습니다";
+    const truncatedLocalUserName = userName.length > 5 ? userName.substring(0, 5) + '...' : userName;
+    const message = truncatedLocalUserName + "님\n" + scwin.currentTime() + "\n에 출석체크되었습니다";
     const yearAndMonthAndDateAndHour = scwin.currentDate();
 
     spn_date.setValue(yearAndMonthAndDateAndHour)
