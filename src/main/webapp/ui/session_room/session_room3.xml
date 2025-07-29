@@ -1594,7 +1594,7 @@ scwin.handleLeaveSession = function (moduleInfo) {
                 "roomClient" : scwin.roomClient
             }
         }
-        scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/main/check_out_pop_up.xml", 400, 300);      
+        scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/main/check_out_pop_up.xml", 400, 300);
 };
 
 // 버튼 상태 업데이트 함수
@@ -1702,7 +1702,7 @@ scwin.openChatModule = async function (moduleInfo) {
         // ChatModule 인스턴스 생성
         const chatModule = new ChatModule(container, {
             roomId: scwin.currentSessionId || "default-room",
-            currentUser: "이병욱"
+            currentUser: "사용자"
         });
 
         // 채팅 닫기 이벤트 처리
