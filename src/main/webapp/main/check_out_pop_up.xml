@@ -30,6 +30,8 @@
 scwin.now = new Date();
 
 scwin.onpageload = function () {
+    scwin.roomClient = $p.getParameter("popup_param");
+
     scwin.checkoutInterval = setInterval(function () {
         const now = new Date();
 
@@ -45,6 +47,7 @@ scwin.onpageload = function () {
         const currentTimeStr = `${ampm} ${hourStr}:${minute}:${second}에 퇴근처리 됩니다.`;
 
         spn_checkoutMsg.setValue(currentTimeStr);
+        spn_checkoutMsg.setStyle("color", "#333");
     }, 1000);
 
     spn_date.setValue(scwin.currentDate());
@@ -53,7 +56,7 @@ scwin.onpageload = function () {
 
 scwin.currentDate = function () {
     const now = scwin.now;
-    
+
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
@@ -70,8 +73,16 @@ scwin.currentDate = function () {
     return `${year}년 ${month}월 ${day}일 ${ampm} ${hourStr}:${minute}:${second}`;
 };
 
-scwin.confirmBtn_onclick = function (e) {
+scwin.btn_checkout_onclick = function (e) {
     clearInterval(scwin.checkoutInterval);
+    if (scwin.roomClient && scwin.roomClient.ws) {
+        scwin.roomClient.ws.close();
+    }
+    $p.closePopup();
+    $p.url("/InsWebApp/ui/session_room/session_room3.xml");
+};
+
+scwin.btn_cancel_onclick = function (e) {
     $p.closePopup();
 };
 ]]></script>
@@ -81,15 +92,15 @@ scwin.confirmBtn_onclick = function (e) {
         
         <!-- 팝업 내용 -->
         <xf:group class="" id="grp_content" style="padding:0px 40px;text-align:center;background-color:white;min-height:200px;">
-            <w2:textbox class="" id="spn_checkoutMsg" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:10px;" label="오후 00:00:00에 퇴근처리됩니다."/>
+            <w2:textbox class="" id="spn_checkoutMsg" style="font-size:20px;color:#fff;font-weight:bold;display:block;margin-bottom:10px;" label="오후 00:00:00에 퇴근처리됩니다."/>
             <w2:textbox class="" id="spn_question" style="font-size:20px;color:#333;font-weight:bold;display:block;margin-bottom:30px;" label="퇴장하시겠습니까?"/>
             <w2:textbox class="" id="spn_date" ref="data:dma_checkout.checkDate" style="font-size:16px;color:#666;display:block;margin-bottom:40px;" label="2025년 6월 20일 오후 4:54"/>
             
             <!-- 버튼 그룹 -->
-            <xf:trigger class="" id="btn_checkout" style="background-color:#F44336;color:white;padding:12px 30px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;margin-right:15px;" ev:onclick="scwin.processCheckout()" type="button">
+            <xf:trigger class="" id="btn_checkout" style="background-color:#F44336;color:white;padding:12px 30px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;margin-right:15px;" type="button" ev:onclick="scwin.btn_checkout_onclick">
                 <xf:label>퇴장</xf:label>
             </xf:trigger>
-            <xf:trigger class="" id="btn_cancel" style="background-color:#E0E0E0;color:#666;padding:12px 30px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;" ev:onclick="scwin.closePopup()" type="button">
+            <xf:trigger class="" id="btn_cancel" style="background-color:#E0E0E0;color:#666;padding:12px 30px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;" type="button" ev:onclick="scwin.btn_cancel_onclick">
                 <xf:label>취소</xf:label>
             </xf:trigger>
         </xf:group>
