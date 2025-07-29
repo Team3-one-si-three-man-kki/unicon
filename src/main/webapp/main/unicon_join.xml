@@ -15,18 +15,22 @@
 						<w2:key id="password" name="비밀번호" dataType="text" />
 						<w2:key id="passwordConfirm" name="비밀번호확인" dataType="text" />
 						<w2:key id="subDomain" name="테넌트ID" dataType="text" />
+						<w2:key id="agreeTerms" name="동의여부" dataType="text" />
 					</w2:keyInfo>
 				</w2:dataMap>
 			</w2:dataCollection>
 
 			<xf:submission id="signupProcess" action="/InsWebApp/TNU0000Signup.pwkjson" method="post" mediatype="application/json"
-				ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" processMsg="회원가입을 처리하고 있습니다." ev:submitdone="scwin.signupProcess_submitdone" />
+				ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" processMsg="회원가입을 처리하고 있습니다."
+				ev:submitdone="scwin.signupProcess_submitdone" />
 
 			<xf:submission id="emailCheck" action="/InsWebApp/TNU0000CheckEmail.pwkjson" method="post" mediatype="application/json"
-				accept="text/plain" ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" processMsg="이메일 중복 여부를 확인하는 중입니다." ev:submitdone="scwin.emailCheck_submitdone" />
-			
-            <xf:submission id="kakaoAuthProcess" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KSIGN" method="get"
-				mediatype="application/x-www-form-urlencoded" mode="asynchronous" processMsg="카카오 인증 정보를 가져오는 중입니다." ev:submitdone="scwin.kakaoAuthProcess_submitdone" />
+				accept="text/plain" ref='data:json,{"id":"signup_dma","key":"elData"}' mode="asynchronous" processMsg="이메일 중복 여부를 확인하는 중입니다."
+				ev:submitdone="scwin.emailCheck_submitdone" />
+
+			<xf:submission id="kakaoAuthProcess" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KSIGN" method="get"
+				mediatype="application/x-www-form-urlencoded" mode="asynchronous" processMsg="카카오 인증 정보를 가져오는 중입니다."
+				ev:submitdone="scwin.kakaoAuthProcess_submitdone" />
 		</xf:model>
 
 		<script type="text/javascript"><![CDATA[
@@ -38,9 +42,15 @@ scwin.onpageload = function () {
     var email = $p.getParameter("email");
     var nickname = $p.getParameter("nickname");
 
+    // 체크박스 초기화
+    var chk = document.getElementById("chk_agree_html");
+    if (chk) {
+        chk.checked = (signup_dma.get("agreeTerms") === "Y");
+    }
+
     top.window.onresize = scwin.throttle(function () {
         scwin.centerPopup("signUpCompletePopup", 0);
-    }, 100);
+    }, 200);
 
     console.log("onpageload - mode:", mode);
 
@@ -62,33 +72,277 @@ scwin.onpageload = function () {
             loginTypeSelect.setValue("kakao");
             scwin.refreshUI();
         }, 100);
-
     } else {
         currentLoginType = "normal";
         isKakaoAuthenticated = false;
     }
+    
     // 커스텀 팝업 레이어 생성
     scwin.createPopupLayer();
     scwin.refreshUI();
+    
+    // 개선된 스타일 적용 로직
+    setTimeout(scwin.forceApplyStyles, 300);
+    setTimeout(scwin.enhancedStyleForcing, 500);
+    setTimeout(scwin.enhancedStyleForcing, 1000);
+    setTimeout(scwin.forceKakaoButtonStyle, 100);
+    setTimeout(scwin.forceKakaoButtonStyle, 500);
+    setTimeout(scwin.forceKakaoButtonStyle, 1000);
+    
+    // 스타일 감시자 설정
+    scwin.setupStyleObserver();
+    
+    // 주기적 스타일 재적용 (더 강력하게)
+    setInterval(scwin.enhancedStyleForcing, 3000);
+    setInterval(scwin.forceKakaoButtonStyle, 2000);
 };
 
+// 강화된 카카오 버튼 스타일 적용 함수
+scwin.forceKakaoButtonStyle = function() {
+    var kakaoBtn = document.getElementById('btn_kakao_auth');
+    if (kakaoBtn) {
+        // 모든 클래스 제거
+        kakaoBtn.className = '';
+        
+        // 인라인 스타일로 강제 적용
+        kakaoBtn.style.cssText = `
+            width: 100% !important;
+            height: 52px !important;
+            background: #FEE500 !important;
+            background-color: #FEE500 !important;
+            background-image: none !important;
+            color: #1a1a1a !important;
+            border: 2px solid #F9CC00 !important;
+            padding: 14px 24px !important;
+            border-radius: 12px !important;
+            font-size: 16px !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+            box-sizing: border-box !important;
+            display: block !important;
+        `;
+        
+        // 하위 요소들도 강제 적용
+        var allElements = kakaoBtn.querySelectorAll('*');
+        for (var i = 0; i < allElements.length; i++) {
+            allElements[i].style.cssText = `
+                color: #1a1a1a !important;
+                background: transparent !important;
+                font-weight: 800 !important;
+            `;
+        }
+    }
+};
+
+// 기존 forceApplyStyles 함수 개선
+scwin.forceApplyStyles = function() {
+    console.log("Force apply styles started");
+    
+    // 카카오 버튼 스타일 강제 적용
+    var kakaoBtn = document.getElementById('btn_kakao_auth');
+    if (kakaoBtn) {
+        kakaoBtn.style.setProperty('background', '#FEE500', 'important');
+        kakaoBtn.style.setProperty('background-color', '#FEE500', 'important');
+        kakaoBtn.style.setProperty('background-image', 'none', 'important');
+        kakaoBtn.style.setProperty('color', '#1a1a1a', 'important');
+        kakaoBtn.style.setProperty('border', '2px solid #F9CC00', 'important');
+        kakaoBtn.style.setProperty('border-color', '#F9CC00', 'important');
+        
+        // 내부 텍스트 요소들도 강제 적용
+        var kakaoLabels = kakaoBtn.querySelectorAll('*');
+        for (var i = 0; i < kakaoLabels.length; i++) {
+            kakaoLabels[i].style.setProperty('color', '#1a1a1a', 'important');
+            kakaoLabels[i].style.setProperty('background', 'transparent', 'important');
+        }
+    }
+    
+    // 회원가입 버튼 스타일 강제 적용
+    var signupBtn = document.getElementById('trigger1');
+    if (signupBtn) {
+        signupBtn.style.setProperty('width', '100%', 'important');
+        signupBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
+        signupBtn.style.setProperty('background-color', 'rgb(54, 116, 181)', 'important');
+        signupBtn.style.setProperty('color', '#ffffff', 'important');
+        signupBtn.style.setProperty('border', 'none', 'important');
+        
+        // 내부 텍스트 요소들도 강제 적용
+        var signupLabels = signupBtn.querySelectorAll('*');
+        for (var j = 0; j < signupLabels.length; j++) {
+            signupLabels[j].style.setProperty('color', '#ffffff', 'important');
+            signupLabels[j].style.setProperty('background', 'transparent', 'important');
+        }
+    }
+    
+    // 중복검사 버튼 스타일 강제 적용
+    var checkBtn = document.getElementById('btn_check');
+    if (checkBtn) {
+        checkBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
+        checkBtn.style.setProperty('color', '#ffffff', 'important');
+        
+        // 내부 텍스트 요소들도 강제 적용
+        var checkLabels = checkBtn.querySelectorAll('*');
+        for (var k = 0; k < checkLabels.length; k++) {
+            checkLabels[k].style.setProperty('color', '#ffffff', 'important');
+            checkLabels[k].style.setProperty('background', 'transparent', 'important');
+        }
+    }
+    
+    console.log("Force apply styles completed");
+};
+
+// 새로 추가된 강화된 스타일 강제 적용 함수
+scwin.enhancedStyleForcing = function() {
+    console.log("Enhanced style forcing started");
+    
+    // 카카오 버튼 스타일 강제 적용 - 모든 가능한 속성
+    var kakaoBtn = document.getElementById('btn_kakao_auth');
+    if (kakaoBtn) {
+        // 모든 배경 관련 속성 강제 설정
+        kakaoBtn.style.setProperty('background', '#FEE500', 'important');
+        kakaoBtn.style.setProperty('background-color', '#FEE500', 'important');
+        kakaoBtn.style.setProperty('background-image', 'none', 'important');
+        kakaoBtn.style.setProperty('color', '#1a1a1a', 'important');
+        kakaoBtn.style.setProperty('border', '2px solid #F9CC00', 'important');
+        kakaoBtn.style.setProperty('border-color', '#F9CC00', 'important');
+        kakaoBtn.style.setProperty('width', '100%', 'important');
+        
+        // 웹스퀘어 프레임워크 기본 클래스 제거 시도
+        if (kakaoBtn.className) {
+            kakaoBtn.className = kakaoBtn.className.replace(/w2-btn[^\s]*/g, '');
+            kakaoBtn.className = kakaoBtn.className.replace(/w2-trigger[^\s]*/g, '');
+        }
+        
+        // 모든 하위 요소에도 적용
+        var allKakaoElements = kakaoBtn.querySelectorAll('*');
+        for (var i = 0; i < allKakaoElements.length; i++) {
+            allKakaoElements[i].style.setProperty('color', '#1a1a1a', 'important');
+            allKakaoElements[i].style.setProperty('background', 'transparent', 'important');
+            allKakaoElements[i].style.setProperty('background-color', 'transparent', 'important');
+        }
+        
+        console.log("Enhanced kakao button style applied");
+    }
+    
+    // 회원가입 버튼 스타일 강제 적용
+    var signupBtn = document.getElementById('trigger1');
+    if (signupBtn) {
+        signupBtn.style.setProperty('width', '100%', 'important');
+        signupBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
+        signupBtn.style.setProperty('background-color', 'rgb(54, 116, 181)', 'important');
+        signupBtn.style.setProperty('color', '#ffffff', 'important');
+        signupBtn.style.setProperty('border', 'none', 'important');
+        signupBtn.style.setProperty('border-color', 'transparent', 'important');
+        
+        // 웹스퀘어 프레임워크 기본 클래스 제거 시도
+        if (signupBtn.className) {
+            signupBtn.className = signupBtn.className.replace(/w2-btn[^\s]*/g, '');
+            signupBtn.className = signupBtn.className.replace(/w2-trigger[^\s]*/g, '');
+        }
+        
+        // 모든 하위 요소에도 적용
+        var allSignupElements = signupBtn.querySelectorAll('*');
+        for (var j = 0; j < allSignupElements.length; j++) {
+            allSignupElements[j].style.setProperty('color', '#ffffff', 'important');
+            allSignupElements[j].style.setProperty('background', 'transparent', 'important');
+            allSignupElements[j].style.setProperty('background-color', 'transparent', 'important');
+        }
+        
+        console.log("Enhanced signup button style applied");
+    }
+    
+    // 중복검사 버튼도 함께 처리
+    var checkBtn = document.getElementById('btn_check');
+    if (checkBtn) {
+        checkBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
+        checkBtn.style.setProperty('color', '#ffffff', 'important');
+        checkBtn.style.setProperty('border', 'none', 'important');
+        
+        if (checkBtn.className) {
+            checkBtn.className = checkBtn.className.replace(/w2-btn[^\s]*/g, '');
+            checkBtn.className = checkBtn.className.replace(/w2-trigger[^\s]*/g, '');
+        }
+        
+        var allCheckElements = checkBtn.querySelectorAll('*');
+        for (var k = 0; k < allCheckElements.length; k++) {
+            allCheckElements[k].style.setProperty('color', '#ffffff', 'important');
+            allCheckElements[k].style.setProperty('background', 'transparent', 'important');
+            allCheckElements[k].style.setProperty('background-color', 'transparent', 'important');
+        }
+        
+        console.log("Enhanced check button style applied");
+    }
+    
+    console.log("Enhanced style forcing completed");
+};
+
+// DOM 변경 감지 및 자동 스타일 재적용
+scwin.setupStyleObserver = function() {
+    if (typeof MutationObserver !== 'undefined') {
+        var observer = new MutationObserver(function(mutations) {
+            var needsStyleUpdate = false;
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && 
+                    (mutation.target.id === 'btn_kakao_auth' || 
+                     mutation.target.id === 'trigger1' || 
+                     mutation.target.id === 'btn_check')) {
+                    needsStyleUpdate = true;
+                }
+            });
+            
+            if (needsStyleUpdate) {
+                setTimeout(scwin.enhancedStyleForcing, 50);
+                setTimeout(scwin.forceKakaoButtonStyle, 50);
+            }
+        });
+        
+        // 버튼들 감시 시작
+        setTimeout(function() {
+            var kakaoBtn = document.getElementById('btn_kakao_auth');
+            var signupBtn = document.getElementById('trigger1');
+            var checkBtn = document.getElementById('btn_check');
+            
+            if (kakaoBtn) observer.observe(kakaoBtn, { attributes: true, attributeFilter: ['class', 'style'] });
+            if (signupBtn) observer.observe(signupBtn, { attributes: true, attributeFilter: ['class', 'style'] });
+            if (checkBtn) observer.observe(checkBtn, { attributes: true, attributeFilter: ['class', 'style'] });
+            
+            console.log("Style observer setup completed");
+        }, 1000);
+    }
+};
+
+// HTML 체크박스 상태 변경 핸들러 - 전역 함수로 등록
+window.htmlCheckbox_onchange = function(checkbox) {
+    if (typeof scwin !== 'undefined' && scwin.htmlCheckbox_onchange) {
+        scwin.htmlCheckbox_onchange(checkbox);
+    }
+};
+
+// scwin 객체의 체크박스 핸들러
+scwin.htmlCheckbox_onchange = function(checkbox) {
+    try {
+        signup_dma.set("agreeTerms", checkbox.checked ? "Y" : "N");
+        console.log("동의 상태 변경:", checkbox.checked ? "Y" : "N");
+    } catch (e) {
+        console.error("체크박스 상태 변경 오류:", e);
+    }
+};
 
 // 팝업 레이어 생성 함수
 scwin.createPopupLayer = function () {
     // 팝업이 이미 존재하면 다시 만들지 않음
     if (document.getElementById('customAlertPopup')) return;
 
-    var popupHtml = `
-        <div id="customAlertPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif;">
-            <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;">
-                <div id="popupMessage" style="margin-bottom: 24px; font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap; word-break: break-word;"></div>
-                <div>
-                    <button id="popupConfirm" style="background: #667eea; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">확인</button>
-                    <button id="popupCancel" style="background: #6c757d; color: white; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500;">취소</button>
-                </div>
-            </div>
-        </div>
-    `;
+    var popupHtml = 
+        "<div id='customAlertPopup' style='position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: \"Pretendard\", sans-serif;'>" +
+            "<div style='background: white; padding: 24px; border-radius: 16px; box-shadow: 0 20px 40px rgba(54, 116, 181, 0.15); min-width: 320px; max-width: 450px; text-align: center; box-sizing: border-box;'>" +
+                "<div id='popupMessage' style='margin-bottom: 24px; font-size: 16px; line-height: 1.6; color: #2d3748; white-space: pre-wrap; word-break: break-word;'></div>" +
+                "<div>" +
+                    "<button id='popupConfirm' style='background: linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%); color: white; border: none; padding: 12px 24px; margin: 0 5px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform 0.2s ease;'>확인</button>" +
+                    "<button id='popupCancel' style='background: linear-gradient(135deg, #8e9aaf 0%, #6c7b7f 100%); color: white; border: none; padding: 12px 24px; margin: 0 5px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform 0.2s ease;'>취소</button>" +
+                "</div>" +
+            "</div>" +
+        "</div>";
+        
     document.body.insertAdjacentHTML('beforeend', popupHtml);
 };
 
@@ -141,6 +395,12 @@ scwin.loginTypeSelect_onchange = function () {
     }
 
     scwin.refreshUI();
+    // UI 변경 후 강화된 스타일 재적용
+    setTimeout(function() {
+        scwin.forceApplyStyles();
+        scwin.enhancedStyleForcing();
+        scwin.forceKakaoButtonStyle();
+    }, 100);
 };
 
 scwin.refreshUI = function () {
@@ -172,6 +432,12 @@ scwin.refreshUI = function () {
     } else {
         trigger1.setLabel("카카오 회원가입");
     }
+    
+    // UI 변경 후 강화된 스타일 재적용
+    setTimeout(function() {
+        scwin.enhancedStyleForcing();
+        scwin.forceKakaoButtonStyle();
+    }, 200);
 };
 
 scwin.btn_kakao_auth_onclick = function () {
@@ -189,14 +455,16 @@ scwin.kakaoAuthProcess_submitdone = function (e) {
 
 scwin.trigger1_onclick = function () {
     if (currentLoginType === "normal") {
-        // 일반 회원가입
-        signup_dma.set("loginType", "normal");
+        // 1) 필수 입력값 검증
         if (!scwin.validateNormal()) return;
+        // 3) 회원가입 요청 실행
+        signup_dma.set("loginType", "normal");
         $c.sbm.execute(signupProcess);
+
     } else {
-        // 카카오 회원가입
-        signup_dma.set("loginType", "kakao");
+        // 카카오 회원가입 모드
         if (!scwin.validateKakao()) return;
+        signup_dma.set("loginType", "kakao");
         $c.sbm.execute(signupProcess);
     }
 };
@@ -218,29 +486,56 @@ scwin.validateNormal = function () {
         p = signup_dma.get("password"),
         pc = signup_dma.get("passwordConfirm"),
         d = signup_dma.get("subDomain");
-    if (!u || u.trim() === "") { scwin.showPopup("이름을 입력해주세요."); console.log("이름을 입력해주세요"); return false; }
-    if (!m || m.trim() === "") { scwin.showPopup("이메일을 입력해주세요."); console.log("이메일을 입력해주세요"); return false; }
-    if (!p || p.trim() === "") { scwin.showPopup("비밀번호를 입력해주세요."); console.log("비밀번호를 입력해주세요"); return false; }
-    if (p.length < 8) { scwin.showPopup("비밀번호는 8자 이상이어야 합니다."); console.log("비밀번호는 8자 이상이어야 합니다"); return false; }
-    if (p !== pc) { scwin.showPopup("비밀번호가 일치하지 않습니다."); console.log("비밀번호가 일치하지 않습니다"); return false; }
-    if (!d || d.trim() === "") { scwin.showPopup("테넌트ID를 입력해주세요."); console.log("테넌트ID를 입력해주세요"); return false; }
-    if (chk_agree.getValue() !== "Y") { scwin.showPopup("개인정보 수집 및 이용에 동의해주세요."); console.log("개인정보 동의가 필요합니다"); return false; }
-    return true;
-};
-
-
-scwin.validateKakao = function () {
-    var t = signup_dma.get("tenantName"),
-        d = signup_dma.get("subDomain");
-    if (!t || t.trim() === "") { 
-        scwin.showPopup("회사명을 입력해주세요."); 
-        console.log("회사명을 입력해주세요"); 
+    
+    if (!u || u.trim() === "") { 
+        scwin.showPopup("이름을 입력해주세요."); 
+        console.log("이름을 입력해주세요"); 
+        return false; 
+    }
+    if (!m || m.trim() === "") { 
+        scwin.showPopup("이메일을 입력해주세요."); 
+        console.log("이메일을 입력해주세요"); 
+        return false; 
+    }
+    if (!p || p.trim() === "") { 
+        scwin.showPopup("비밀번호를 입력해주세요."); 
+        console.log("비밀번호를 입력해주세요"); 
+        return false; 
+    }
+    if (p.length < 8) { 
+        scwin.showPopup("비밀번호는 8자 이상이어야 합니다."); 
+        console.log("비밀번호는 8자 이상이어야 합니다"); 
+        return false; 
+    }
+    if (p !== pc) { 
+        scwin.showPopup("비밀번호가 일치하지 않습니다."); 
+        console.log("비밀번호가 일치하지 않습니다"); 
         return false; 
     }
     if (!d || d.trim() === "") { 
         scwin.showPopup("테넌트ID를 입력해주세요."); 
         console.log("테넌트ID를 입력해주세요"); 
         return false; 
+    }
+    if (signup_dma.get("agreeTerms") !== "Y") {
+        scwin.showPopup("개인정보 수집 및 이용에 동의해주세요.");
+        return false;
+    }
+    return true;
+};
+
+scwin.validateKakao = function () {
+    var t = signup_dma.get("tenantName"),
+        d = signup_dma.get("subDomain");
+    if (!t || t.trim() === "") {
+        scwin.showPopup("회사명을 입력해주세요.");
+        console.log("회사명을 입력해주세요");
+        return false;
+    }
+    if (!d || d.trim() === "") {
+        scwin.showPopup("테넌트ID를 입력해주세요.");
+        console.log("테넌트ID를 입력해주세요");
+        return false;
     }
     return true;
 };
@@ -273,11 +568,10 @@ scwin.signupProcess_submitdone = function (e) {
     }
 };
 
-
 scwin.throttle = function (callback, delay) {
-    let lastCall = 0;
+    var lastCall = 0;
     return function () {
-        const now = new Date().getTime();
+        var now = new Date().getTime();
         if (now - lastCall >= delay) {
             lastCall = now;
             callback();
@@ -285,20 +579,21 @@ scwin.throttle = function (callback, delay) {
     };
 }
 
-scwin.centerPopup = function (popupId, offsetY = 0) {
-    const pop = $p.getPopup(popupId);
+scwin.centerPopup = function (popupId, offsetY) {
+    if (typeof offsetY === 'undefined') offsetY = 0;
+    var pop = $p.getPopup(popupId);
     if (pop) {
-        const width = pop.popupWin.getSize("width");
-        const height = pop.popupWin.getSize("height");
-        const left1 = (top.window.innerWidth - width) / 2;
-        const top1 = (top.window.innerHeight - height) / 2 + offsetY;
+        var width = pop.popupWin.getSize("width");
+        var height = pop.popupWin.getSize("height");
+        var left1 = (top.window.innerWidth - width) / 2;
+        var top1 = (top.window.innerHeight - height) / 2 + offsetY;
         pop.popupWin.setPosition(left1, top1);
     }
 };
 
 scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
     if ($p.getPopup(_id)) {
-        console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
+        console.log("Popup with ID '" + _id + "' already exists. Skipping creation.");
         return;
     }
     var popupWidth = _popupWidth;
@@ -344,374 +639,839 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
     console.log("메인페이지로 이동")
     location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_main.xml";
 
-
     return true; //팝업 닫기 (반환 값이 true인 경우만 팝업이 닫힘)
-};]]></script>
-		<style type="text/css"><![CDATA[#mf_signUpCompletePopup_header{
-    display: none;
-}
-#mf_signUpCompletePopup_body{
-    top: -1px;
-}
-#mf_signUpCompletePopup_pageFrame::-webkit-scrollbar {
-  display: none;
-}
+};
+]]></script>
 
-#mf_signUpCompletePopup{
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+		<style type="text/css">
+            <![CDATA[
+                /* 기본 리셋 및 글로벌 스타일 */
+                * { 
+                    margin: 0; 
+                    padding: 0; 
+                    box-sizing: border-box; 
+                }
+                
+                /* 1. 배경색을 전체 하늘색으로 변경 */
+                body {
+                    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+                    min-height: 100vh;
+                    padding: 40px 20px;
+                    color: #2d3748;
+                    line-height: 1.6;
+                }
 
-* {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+                /* 컨테이너 스타일 */
+                .container { 
+                    max-width: 540px; 
+                    margin: 0 auto; 
+                    padding: 0; 
+                }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-        }
+                /* 제목 영역 */
+                h1 { 
+                    font-size: 32px; 
+                    font-weight: 800; 
+                    color: #1a202c; 
+                    margin-bottom: 8px; 
+                    text-align: center;
+                    letter-spacing: -0.03em;
+                }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+                .subtitle { 
+                    color: #718096; 
+                    font-size: 16px; 
+                    margin-bottom: 40px; 
+                    text-align: center;
+                    font-weight: 400;
+                }
 
-        .breadcrumb {
-            color: #8e8e93;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
+                /* 폼 컨테이너 */
+                .form-container { 
+                    background: rgba(255, 255, 255, 0.95); 
+                    backdrop-filter: blur(10px);
+                    border-radius: 24px; 
+                    padding: 48px; 
+                    box-shadow: 0 10px 40px rgba(54, 116, 181, 0.1), 0 0 0 1px rgba(255,255,255,0.5);
+                    border: 1px solid rgba(255,255,255,0.3);
+                }
 
-        .breadcrumb a {
-            color: #8e8e93;
-            text-decoration: none;
-        }
+                /* 폼 그룹 */
+                .form-group { 
+                    margin-bottom: 28px; 
+                }
 
-        .breadcrumb a:hover {
-            color: #007aff;
-        }
+                /* 라벨 스타일 */
+                .w2-textbox[tagname='label'], 
+                .w2-checkbox-label,
+                .form-group p { 
+                    display: block; 
+                    font-size: 15px; 
+                    font-weight: 600; 
+                    margin-bottom: 10px; 
+                    color: #2d3748;
+                    letter-spacing: -0.02em;
+                }
 
-        h1 {
-            font-size: 32px;
-            font-weight: 300;
-            color: #333;
-            margin-bottom: 10px;
-        }
+                .required { 
+                    color: #e53e3e; 
+                    font-weight: 700;
+                }
 
-        .subtitle {
-            color: #8e8e93;
-            font-size: 16px;
-            margin-bottom: 40px;
-        }
+                /* 입력 필드 통일 스타일 */
+                .w2-input, 
+                .w2-secret,
+                xf\:input,
+                input[type="text"],
+                input[type="password"],
+                input[type="email"] { 
+                    width: 100% !important; 
+                    height: 52px !important; 
+                    padding: 14px 18px !important; 
+                    border: 2px solid #e2e8f0 !important; 
+                    border-radius: 12px !important; 
+                    font-size: 15px !important; 
+                    font-weight: 400 !important;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+                    background-color: #ffffff !important;
+                    color: #2d3748 !important;
+                    box-sizing: border-box !important;
+                }
 
-        .form-container {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-        }
+                .w2-input:focus, 
+                .w2-secret:focus,
+                xf\:input:focus,
+                input:focus { 
+                    outline: none !important; 
+                    border-color: rgb(74, 144, 226) !important; 
+                    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1) !important;
+                    transform: translateY(-1px) !important;
+                }
 
-        .form-group {
-            margin-bottom: 25px;
-        }
+                .w2-input:hover,
+                .w2-secret:hover,
+                input:hover {
+                    border-color: #cbd5e0 !important;
+                }
 
-        label {
-            display: block;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #333;
-        }
+                .w2-input:read-only,
+                .w2-secret:read-only,
+                input:read-only {
+                    background-color: #f7fafc !important;
+                    color: #718096 !important;
+                    cursor: not-allowed !important;
+                    border-color: #e2e8f0 !important;
+                }
 
-        .required {
-            color: #ff3b30;
-        }
+                /* 입력 그룹 (이메일 + 중복검사 버튼) */
+                .input-group { 
+                    display: flex !important; 
+                    gap: 12px !important; 
+                    align-items: flex-end !important; 
+                }
 
-        input[type="text"], input[type="email"], input[type="password"], textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d1d6;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s ease;
-            background-color: #fff;
-        }
+                .input-group .w2-input,
+                .input-group xf\:input { 
+                    flex: 1 !important; 
+                }
 
-        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
-            outline: none;
-            border-color: #6c5ce7;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
-        }
+                /* 웹스퀘어 프레임워크 기본 버튼 스타일 강제 제거 */
+                .w2-btn,
+                .w2-trigger,
+                .w2-button {
+                    background: none !important;
+                    border: none !important;
+                    color: inherit !important;
+                }
 
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+                /* 3. 카카오 인증 버튼 노란색 강제 적용 - CSS 충돌 해결 */
+                /* ID 기반 최고 우선순위 스타일 */
+                #btn_kakao_auth,
+                xf\:trigger#btn_kakao_auth,
+                html body #btn_kakao_auth,
+                html body xf\:trigger#btn_kakao_auth,
+                html body .form-container #btn_kakao_auth,
+                html body .form-container xf\:trigger#btn_kakao_auth,
+                [id="btn_kakao_auth"] {
+                    width: 100% !important;
+                    height: 52px !important;
+                    background: #FEE500 !important;
+                    background-color: #FEE500 !important;
+                    background-image: none !important;
+                    color: #1a1a1a !important;
+                    border: 2px solid #F9CC00 !important;
+                    border-color: #F9CC00 !important;
+                    padding: 14px 24px !important;
+                    border-radius: 12px !important;
+                    font-size: 16px !important;
+                    font-weight: 800 !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s ease !important;
+                    white-space: nowrap !important;
+                    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4) !important;
+                    pointer-events: auto !important;
+                    text-shadow: none !important;
+                    display: block !important;
+                    box-sizing: border-box !important;
+                }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+                /* 카카오 버튼 호버 상태 */
+                #btn_kakao_auth:hover,
+                xf\:trigger#btn_kakao_auth:hover,
+                html body #btn_kakao_auth:hover,
+                [id="btn_kakao_auth"]:hover {
+                    background: #FFEB3B !important;
+                    background-color: #FFEB3B !important;
+                    background-image: none !important;
+                    color: #1a1a1a !important;
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 6px 20px rgba(255, 235, 59, 0.6) !important;
+                    border: 2px solid #F57F17 !important;
+                    border-color: #F57F17 !important;
+                }
 
-        .input-group input {
-            flex: 1;
-        }
+                /* 카카오 버튼 내부 텍스트 강제 스타일 */
+                #btn_kakao_auth *,
+                #btn_kakao_auth xf\:label,
+                #btn_kakao_auth .w2-trigger-label,
+                #btn_kakao_auth label,
+                #btn_kakao_auth span,
+                xf\:trigger#btn_kakao_auth *,
+                xf\:trigger#btn_kakao_auth xf\:label,
+                xf\:trigger#btn_kakao_auth .w2-trigger-label,
+                xf\:trigger#btn_kakao_auth label,
+                xf\:trigger#btn_kakao_auth span {
+                    color: #1a1a1a !important;
+                    font-weight: 800 !important;
+                    text-shadow: none !important;
+                    background: none !important;
+                    background-color: transparent !important;
+                    background-image: none !important;
+                }
 
-        .btn-check {
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            white-space: nowrap;
-        }
+                /* 클래스 기반 스타일 덮어쓰기 (충돌 방지) */
+                .btn-check#btn_kakao_auth,
+                .w2-btn#btn_kakao_auth,
+                .w2-trigger#btn_kakao_auth {
+                    background: #FEE500 !important;
+                    background-color: #FEE500 !important;
+                    background-image: none !important;
+                    color: #1a1a1a !important;
+                    border: 2px solid #F9CC00 !important;
+                }
 
-        .btn-check:hover {
-            background: #5a4fcf;
-        }
+                /* 웹스퀘어 프레임워크 기본 스타일 강제 제거 */
+                #btn_kakao_auth.w2-btn,
+                #btn_kakao_auth.w2-trigger,
+                #btn_kakao_auth.btn-check {
+                    background: #FEE500 !important;
+                    background-color: #FEE500 !important;
+                    background-image: none !important;
+                    color: #1a1a1a !important;
+                    border: 2px solid #F9CC00 !important;
+                }
 
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 8px;
-        }
+                /* 일반 버튼 스타일 (중복검사, 회원가입) - 최고 우선순위 */
+                html body .form-container .btn-check,
+                html body .form-container xf\:trigger#btn_check,
+                html body .form-container #btn_check,
+                html body .btn-check,
+                html body xf\:trigger#btn_check,
+                html body #btn_check { 
+                    height: 52px !important; 
+                    background: linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%) !important; 
+                    background-color: rgb(54, 116, 181) !important;
+                    background-image: linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%) !important;
+                    color: #ffffff !important; 
+                    border: none !important; 
+                    border-color: transparent !important;
+                    padding: 14px 24px !important; 
+                    border-radius: 12px !important; 
+                    font-size: 14px !important; 
+                    font-weight: 700 !important; 
+                    cursor: pointer !important; 
+                    transition: all 0.2s ease !important; 
+                    white-space: nowrap !important;
+                    min-width: 110px !important;
+                    box-shadow: 0 3px 12px rgba(54, 116, 181, 0.3) !important;
+                    pointer-events: auto !important;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+                }
 
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+                /* 2. 회원가입 버튼 전체 너비 설정 - 최고 우선순위로 강제 적용 */
+                #trigger1,
+                xf\:trigger#trigger1,
+                html body #trigger1,
+                html body xf\:trigger#trigger1,
+                html body .form-container #trigger1,
+                html body .form-container xf\:trigger#trigger1 {
+                    width: 100% !important; 
+                    height: 60px !important; 
+                    background: linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%) !important; 
+                    background-color: rgb(54, 116, 181) !important;
+                    background-image: linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%) !important;
+                    color: #ffffff !important; 
+                    border: none !important; 
+                    border-color: transparent !important;
+                    padding: 18px 32px !important; 
+                    border-radius: 16px !important; 
+                    font-size: 18px !important; 
+                    font-weight: 800 !important; 
+                    cursor: pointer !important; 
+                    transition: all 0.3s ease !important; 
+                    margin-top: 36px !important;
+                    box-shadow: 0 8px 30px rgba(54, 116, 181, 0.4) !important;
+                    letter-spacing: -0.02em !important;
+                    pointer-events: auto !important;
+                    text-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+                    display: block !important;
+                    box-sizing: border-box !important;
+                }
 
-        input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #6c5ce7;
-        }
+                /* 회원가입 버튼 호버 효과 */
+                #trigger1:hover,
+                xf\:trigger#trigger1:hover,
+                html body #trigger1:hover,
+                html body xf\:trigger#trigger1:hover {
+                    transform: translateY(-3px) !important;
+                    box-shadow: 0 12px 40px rgba(54, 116, 181, 0.5) !important;
+                    background: linear-gradient(135deg, rgb(48, 104, 163) 0%, rgb(74, 123, 172) 50%, rgb(66, 131, 206) 100%) !important;
+                }
 
-        .help-text {
-            font-size: 14px;
-            color: #8e8e93;
-            margin-top: 8px;
-        }
+                /* 일반 버튼 호버 상태 - 최고 우선순위 */
+                html body .form-container .btn-check:hover,
+                html body .form-container xf\:trigger#btn_check:hover,
+                html body .form-container #btn_check:hover,
+                html body .btn-check:hover,
+                html body xf\:trigger#btn_check:hover,
+                html body #btn_check:hover { 
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 6px 20px rgba(54, 116, 181, 0.4) !important;
+                    background: linear-gradient(135deg, rgb(48, 104, 163) 0%, rgb(74, 123, 172) 50%, rgb(66, 131, 206) 100%) !important;
+                    background-color: rgb(48, 104, 163) !important;
+                    background-image: linear-gradient(135deg, rgb(48, 104, 163) 0%, rgb(74, 123, 172) 50%, rgb(66, 131, 206) 100%) !important;
+                    color: #ffffff !important;
+                    cursor: pointer !important;
+                }
 
-        .terms-section {
-            background: #f2f2f7;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 30px 0;
-        }
+                /* 일반 버튼 활성 상태 - 최고 우선순위 */
+                html body .form-container .btn-check:active,
+                html body .form-container xf\:trigger#btn_check:active,
+                html body .form-container #btn_check:active,
+                html body .btn-check:active,
+                html body xf\:trigger#btn_check:active,
+                html body #btn_check:active,
+                #trigger1:active,
+                xf\:trigger#trigger1:active,
+                html body #trigger1:active,
+                html body xf\:trigger#trigger1:active {
+                    transform: translateY(0) !important;
+                    color: #ffffff !important;
+                    cursor: pointer !important;
+                }
 
-        .terms-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 15px;
-            color: #333;
-        }
+                /* 모든 일반 버튼의 텍스트 색상 강제 설정 - 최고 우선순위 */
+                html body .form-container .btn-check *,
+                html body .form-container .btn-check xf\:label,
+                html body .form-container .btn-check .w2-trigger-label,
+                html body .form-container .btn-check label,
+                html body .form-container .btn-check span,
+                html body .form-container xf\:trigger#btn_check *,
+                html body .form-container xf\:trigger#btn_check xf\:label,
+                html body .form-container xf\:trigger#btn_check .w2-trigger-label,
+                html body .form-container xf\:trigger#btn_check label,
+                html body .form-container xf\:trigger#btn_check span,
+                html body .form-container #btn_check *,
+                html body .form-container #btn_check xf\:label,
+                html body .form-container #btn_check .w2-trigger-label,
+                html body .form-container #btn_check label,
+                html body .form-container #btn_check span,
+                html body .btn-check *,
+                html body .btn-check xf\:label,
+                html body .btn-check .w2-trigger-label,
+                html body .btn-check label,
+                html body .btn-check span,
+                html body xf\:trigger#btn_check *,
+                html body xf\:trigger#btn_check xf\:label,
+                html body xf\:trigger#btn_check .w2-trigger-label,
+                html body xf\:trigger#btn_check label,
+                html body xf\:trigger#btn_check span,
+                html body #btn_check *,
+                html body #btn_check xf\:label,
+                html body #btn_check .w2-trigger-label,
+                html body #btn_check label,
+                html body #btn_check span,
+                #trigger1 *,
+                #trigger1 xf\:label,
+                #trigger1 .w2-trigger-label,
+                #trigger1 label,
+                #trigger1 span,
+                xf\:trigger#trigger1 *,
+                xf\:trigger#trigger1 xf\:label,
+                xf\:trigger#trigger1 .w2-trigger-label,
+                xf\:trigger#trigger1 label,
+                xf\:trigger#trigger1 span {
+                    color: #ffffff !important;
+                    font-weight: inherit !important;
+                    text-shadow: inherit !important;
+                    background: none !important;
+                    background-color: transparent !important;
+                    background-image: none !important;
+                }
 
-        .terms-list {
-            list-style: none;
-            padding: 0;
-        }
+                /* 라디오 그룹 */
+                .radio-group { 
+                    display: flex !important; 
+                    gap: 32px !important; 
+                    margin-top: 10px !important; 
+                }
 
-        .terms-list li {
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #333;
-            padding-left: 20px;
-            position: relative;
-        }
+                .w2-radio-item { 
+                    display: flex !important; 
+                    align-items: center !important; 
+                    gap: 10px !important; 
+                }
 
-        .terms-list li:before {
-            content: counter(item);
-            counter-increment: item;
-            position: absolute;
-            left: 0;
-            font-weight: 500;
-        }
+                .w2-radio { 
+                    width: 20px !important; 
+                    height: 20px !important; 
+                    accent-color: rgb(74, 144, 226) !important; 
+                    cursor: pointer !important;
+                }
 
-        .terms-list {
-            counter-reset: item;
-        }
+                /* 도움말 텍스트 */
+                .help-text { 
+                    font-size: 13px !important; 
+                    color: #718096 !important; 
+                    margin-top: 8px !important; 
+                    line-height: 1.5 !important;
+                }
 
-        .terms-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
+                /* 약관 섹션 */
+                .terms-section { 
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important; 
+                    border: 2px solid #e2e8f0 !important;
+                    border-radius: 16px !important; 
+                    padding: 28px !important; 
+                    margin: 32px 0 !important; 
+                }
 
-        .terms-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #6c5ce7;
-        }
+                .terms-title { 
+                    font-size: 16px !important; 
+                    font-weight: 700 !important; 
+                    margin-bottom: 18px !important; 
+                    color: #2d3748 !important; 
+                }
 
-        .terms-checkbox label {
-            margin: 0;
-            font-size: 14px;
-            color: #333;
-        }
+                .terms-list { 
+                    list-style: none !important; 
+                    padding: 0 !important; 
+                    counter-reset: item !important; 
+                }
 
-        .btn-submit {
-            width: 100%;
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            padding: 16px 24px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 30px;
-        }
+                .terms-list li { 
+                    margin-bottom: 12px !important; 
+                    font-size: 14px !important; 
+                    color: #4a5568 !important; 
+                    padding-left: 28px !important; 
+                    position: relative !important; 
+                    line-height: 1.6 !important;
+                }
 
-        .btn-submit:hover {
-            background: #5a4fcf;
-        }
+                .terms-list li:before { 
+                    content: counter(item) ". " !important; 
+                    counter-increment: item !important; 
+                    position: absolute !important; 
+                    left: 0 !important; 
+                    font-weight: 600 !important; 
+                    color: rgb(54, 116, 181) !important;
+                }
 
-        .btn-submit:active {
-            transform: translateY(1px);
-        }
+                /* 약관 체크박스 */
+                .terms-checkbox { 
+                    display: flex !important; 
+                    align-items: center !important; 
+                    gap: 12px !important; 
+                    margin-top: 20px !important; 
+                    padding: 18px !important;
+                    background: rgba(255,255,255,0.8) !important;
+                    border-radius: 12px !important;
+                    border: 1px solid rgba(54, 116, 181, 0.15) !important;
+                }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .form-container {
-                padding: 25px 20px;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
-            
-            .btn-check {
-                width: 100%;
-            }
-        }
+                .w2-checkbox,
+                #chk_agree_html { 
+                    width: 20px !important; 
+                    height: 20px !important; 
+                    accent-color: rgb(74, 144, 226) !important; 
+                    cursor: pointer !important;
+                }
 
-]]>
+                .terms-checkbox span,
+                .terms-checkbox .w2-checkbox-label { 
+                    margin: 0 !important; 
+                    font-size: 14px !important; 
+                    font-weight: 500 !important; 
+                    color: #2d3748 !important;
+                    line-height: 1.5 !important;
+                }
+
+                /* 카카오 안내 텍스트 배경 수정 */
+                #grp_kakao_info .help-text {
+                    background: rgba(255, 255, 255, 0.9) !important;
+                    border: 2px solid rgba(54, 116, 181, 0.2) !important;
+                    border-radius: 12px !important;
+                    padding: 16px !important;
+                    color: #2d3748 !important;
+                    font-weight: 500 !important;
+                }
+
+                #grp_kakao_user_info {
+                    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+                    border: 2px solid #0ea5e9 !important;
+                    border-radius: 12px !important;
+                    padding: 18px !important;
+                    color: #0c4a6e !important;
+                    font-weight: 600 !important;
+                    text-align: center !important;
+                }
+
+                /* 웹스퀘어 프레임워크 전용 스타일 덮어쓰기 */
+                .w2-trigger, 
+                xf\:trigger {
+                    cursor: pointer !important;
+                    border: none !important;
+                }
+
+                /* 웹스퀘어 라벨 요소 스타일 덮어쓰기 */
+                .w2-trigger-label,
+                xf\:label {
+                    pointer-events: none !important;
+                }
+
+                /* 반응형 디자인 */
+                @media (max-width: 768px) { 
+                    body {
+                        padding: 20px 15px !important;
+                    }
+
+                    .container { 
+                        max-width: 100% !important;
+                    } 
+
+                    .form-container { 
+                        padding: 32px 24px !important; 
+                        border-radius: 20px !important;
+                    } 
+
+                    h1 {
+                        font-size: 28px !important;
+                    }
+
+                    .input-group { 
+                        flex-direction: column !important; 
+                        align-items: stretch !important;
+                        gap: 12px !important;
+                    } 
+
+                    .btn-check { 
+                        width: 100% !important; 
+                        min-width: auto !important;
+                    }
+
+                    .radio-group {
+                        flex-direction: column !important;
+                        gap: 20px !important;
+                    }
+
+                    .terms-section {
+                        margin: 24px 0 !important;
+                        padding: 24px !important;
+                    }
+                }
+
+                @media (max-width: 480px) {
+                    body {
+                        padding: 15px 10px !important;
+                    }
+
+                    .form-container {
+                        padding: 24px 20px !important;
+                    }
+
+                    h1 {
+                        font-size: 24px !important;
+                    }
+
+                    .subtitle {
+                        font-size: 14px !important;
+                    }
+
+                    .form-group {
+                        margin-bottom: 24px !important;
+                    }
+                }
+
+                /* 포커스 및 호버 애니메이션 강화 */
+                .w2-input, .w2-secret, input {
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+
+                /* 인터랙션 개선 */
+                .btn-check, #btn_kakao_auth, #trigger1 {
+                    position: relative !important;
+                    overflow: hidden !important;
+                    cursor: pointer !important;
+                }
+
+                .btn-check::before, #btn_kakao_auth::before, #trigger1::before {
+                    content: '' !important;
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: -100% !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+                    transition: left 0.5s !important;
+                    pointer-events: none !important;
+                }
+
+                .btn-check:hover::before, #btn_kakao_auth:hover::before, #trigger1:hover::before {
+                    left: 100% !important;
+                }
+
+                /* 스크롤바 스타일링 */
+                ::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                ::-webkit-scrollbar-track {
+                    background: rgba(255,255,255,0.3);
+                    border-radius: 4px;
+                }
+
+                ::-webkit-scrollbar-thumb {
+                    background: linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(74, 144, 226) 100%);
+                    border-radius: 4px;
+                }
+
+                ::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(135deg, rgb(48, 104, 163) 0%, rgb(66, 131, 206) 100%);
+                }
+
+                /* 페이드인 애니메이션 */
+                .form-container {
+                    animation: fadeInUp 0.6s ease-out;
+                }
+
+                h1, .subtitle {
+                    animation: fadeIn 0.8s ease-out;
+                }
+
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+
+                /* 접근성 개선 */
+                .w2-input:focus-visible, 
+                .w2-secret:focus-visible,
+                input:focus-visible,
+                .btn-check:focus-visible,
+                #btn_kakao_auth:focus-visible,
+                #trigger1:focus-visible {
+                    outline: 2px solid rgb(74, 144, 226) !important;
+                    outline-offset: 2px !important;
+                }
+
+                /* 버튼 커서 강제 설정 */
+                .btn-check, #btn_kakao_auth, #trigger1, 
+                .btn-check *, #btn_kakao_auth *, #trigger1 *,
+                xf\:trigger, xf\:trigger * {
+                    cursor: pointer !important;
+                }
+
+                /* xforms 트리거 요소 커서 설정 */
+                xf\:trigger {
+                    cursor: pointer !important;
+                }
+
+                xf\:trigger * {
+                    cursor: pointer !important;
+                }
+
+                /* 로딩 상태 스타일 (필요시 사용) */
+                .loading {
+                    opacity: 0.7 !important;
+                    pointer-events: none !important;
+                    cursor: not-allowed !important;
+                }
+
+                /* 에러 상태 스타일 */
+                .error {
+                    border-color: #e53e3e !important;
+                    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+                }
+
+                /* 성공 상태 스타일 */
+                .success {
+                    border-color: #38a169 !important;
+                    box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1) !important;
+                }
+            ]]>
 		</style>
 	</head>
+	<body ev:onpageload="scwin.onpageload" class="websquare-body">
+		<xf:group class="container">
+			<w2:textbox tagname="h1" label="회원가입">
+			</w2:textbox>
+			<w2:textbox class="subtitle" label="UniCon와 함께 새로운 협업의 시작" tagname="p"></w2:textbox>
 
-	<body ev:onpageload="scwin.onpageload">
-		<xf:group id="main_join" style='background: linear-gradient(135deg, #578FCA 0%, #3674B5 50%);height: 100%;'>
-			<xf:group style="width:450px;height:100%;margin:30px auto;background:#fff;padding:30px;border-radius:12px;">
+			<xf:group class="form-container">
 
-				<w2:span style="display:block;text-align:center;font-size:16px;font-weight:600;margin-bottom:20px;"
-					label="가입 방법을 선택하고, 해당 방식으로 회원가입을 진행하세요."></w2:span>
-
-				<xf:group style="display:flex;justify-content:center;gap:40px;margin-bottom:25px;">
-					<xf:select1 ev:onchange="scwin.loginTypeSelect_onchange" style="display:flex;gap:20px;font-size:15px;" id="loginTypeSelect"
-						renderType="radiogroup" selectedindex="0">
+				<xf:group class="form-group">
+					<w2:textbox tagname="label" escape="false">
+						<w2:label>
+							계정유형
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:select1 id="loginTypeSelect" renderType="radiogroup" class="radio-group" ref="data:signup_dma.loginType"
+						ev:onchange="scwin.loginTypeSelect_onchange" selectedIndex="0">
 						<xf:choices>
-							<xf:item>
-								<xf:label>일반 로그인</xf:label>
+							<xf:item class="radio-option">
+								<xf:label>일반 회원</xf:label>
 								<xf:value>normal</xf:value>
 							</xf:item>
-							<xf:item>
-								<xf:label>카카오톡 로그인</xf:label>
+							<xf:item class="radio-option">
+								<xf:label>카카오 회원</xf:label>
 								<xf:value>kakao</xf:value>
 							</xf:item>
 						</xf:choices>
 					</xf:select1>
 				</xf:group>
 
-				<xf:group style="display:none;margin-bottom:20px;padding:12px;border:1px solid #ffeaa7;background:#fff8dc;" id="grp_kakao_info">
-					<w2:span style="font-size:13px;color:#856404;" label="카카오 인증 후 이메일·이름이 자동 입력됩니다."></w2:span>
+				<xf:group id="grp_kakao_info" class="form-group" style="display:none;">
+					<w2:textbox class="help-text" label="카카오 인증 후 이름과 이메일이 자동으로 입력됩니다. 회사명과 테넌트ID를 입력해주세요."></w2:textbox>
 				</xf:group>
-
-				<xf:group style="display:none;text-align:center;margin-bottom:20px;" id="grp_kakao_auth">
-					<xf:trigger ev:onclick="scwin.btn_kakao_auth_onclick"
-						style="width:60%;height:48px;background:#FEE500;border:none;border-radius:8px;font-size:16px;font-weight:bold;color:#000;"
-						id="btn_kakao_auth" type="button">
+				<xf:group id="grp_kakao_auth" class="form-group" style="display:none;">
+					<xf:trigger id="btn_kakao_auth" class="btn-check" ev:onclick="scwin.btn_kakao_auth_onclick"
+						style="background-color:yellow;width:450px;">
+						<w2:attributes>
+							<w2:summary></w2:summary>
+							<w2:style backgroundColor="#FEE500" borderColor="#F9CC00" color="#1a1a1a" width="100%" height="52px"></w2:style>
+						</w2:attributes>
 						<xf:label>카카오 인증하기</xf:label>
 					</xf:trigger>
 				</xf:group>
-
-				<xf:group style="display:none;margin-bottom:20px;padding:12px;border:1px solid #4caf50;background:#e8f5e8;"
-					id="grp_kakao_user_info">
-					<w2:span style="font-size:13px;color:#2e7d32;" label="✅ 인증 완료: 이름·이메일이 자동 입력되었습니다."></w2:span>
+				<xf:group id="grp_kakao_user_info" class="form-group" style="display:none;">
+					<w2:textbox label="✅ 인증 완료: 이름·이메일이 자동 입력되었습니다."></w2:textbox>
 				</xf:group>
 
-				<xf:group style="margin-bottom:20px;" id="grp_name">
-					<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="이름 *"></w2:span>
-					<xf:input ref="data:signup_dma.userName" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;"
-						id="name_input" placeholder="이름 입력"></xf:input>
+				<xf:group class="form-group">
+					<w2:textbox tagname="p" escape="false">
+						<w2:label>
+							이름
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:input id="name_input" ref="data:signup_dma.userName" placeholder="이름을 입력해주세요"></xf:input>
 				</xf:group>
 
-				<xf:group style="margin-bottom:20px;" id="grp_email">
-					<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="이메일 *"></w2:span>
-					<xf:input ref="data:signup_dma.email" style="width:75%;padding:12px;border:1px solid #ddd;border-radius:6px;" id="email_input"
-						placeholder="이메일 입력" type="email"></xf:input>
-					<xf:trigger ev:onclick="scwin.btn_check_onclick"
-						style="width:20.55%;height: 30px;margin-left:8px;background:#667eea;color:#fff;border:none;border-radius:4px;" id="btn_check"
-						type="button">
-						<xf:label>중복검사</xf:label>
-					</xf:trigger>
-				</xf:group>
-
-				<xf:group style="margin-bottom:20px;" id="grp_company">
-					<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="회사명 *"></w2:span>
-					<xf:input ref="data:signup_dma.tenantName" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;"
-						id="company_input" placeholder="회사명 입력"></xf:input>
-				</xf:group>
-
-				<xf:group style="margin-bottom:20px;" id="grp_pwd">
-					<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="비밀번호 *"></w2:span>
-					<xf:input ref="data:signup_dma.password" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;"
-						id="password_input" placeholder="8자 이상" type="password"></xf:input>
-				</xf:group>
-
-				<xf:group style="margin-bottom:20px;" id="grp_pwd_confirm">
-					<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="비밀번호 확인 *"></w2:span>
-					<xf:input ref="data:signup_dma.passwordConfirm" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;"
-						id="password_chk_input" placeholder="비밀번호 재입력" type="password"></xf:input>
-				</xf:group>
-
-				<xf:group style="margin-bottom:20px;" id="grp_tenant">
-					<w2:span style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;" label="테넌트ID *"></w2:span>
-					<xf:group style="display:flex;align-items:center;gap:5px;">
-						<w2:span style="font-size:13px;" label="www."></w2:span>
-						<xf:input ref="data:signup_dma.subDomain" style="width:170px;padding:10px;border:1px solid #ddd;border-radius:6px;"
-							id="tenant_input" placeholder="서브도메인 입력"></xf:input>
-						<w2:span style="font-size:13px;" label=".unicon.com"></w2:span>
+				<xf:group class="form-group">
+					<w2:textbox tagname="p" escape="false">
+						<w2:label>
+							이메일
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:group class="input-group">
+						<xf:input id="email_input" ref="data:signup_dma.email" placeholder="이메일을 입력해주세요"></xf:input>
+						<xf:trigger id="btn_check" class="btn-check" ev:onclick="scwin.btn_check_onclick" style="color: white;">
+							<xf:label>중복검사</xf:label>
+						</xf:trigger>
 					</xf:group>
-					<w2:span style="font-size:12px;color:#666;margin-top:3px;" label="도메인에 사용될 값"></w2:span>
+					<w2:textbox class="help-text" label="이메일은 본인 인증에만 사용됩니다." tagname="div"></w2:textbox>
 				</xf:group>
 
-				<!-- 개인정보 동의 -->
-				<xf:group id="grp_agree" style="margin-top:10px;display:flex;align-items:center;gap:6px;">
-					<xf:select appearance="full" cols="" disabled="" id="chk_agree" meta_snippetCategory="10_입력폼" meta_snippetKeyComponent="true"
-						meta_snippetName="10_06 Checkbox" ref="" renderType="checkboxgroup" rows="" selectedindex="1" style="">
-						<xf:choices>
-							<xf:item>
-								<xf:label><![CDATA[개인정보수집이용동의]]></xf:label>
-								<xf:value><![CDATA[Y]]></xf:value>
-							</xf:item>
-						</xf:choices>
-					</xf:select>
+				<xf:group class="form-group">
+					<w2:textbox tagname="p" escape="false">
+						<w2:label>
+							회사명
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:input id="company_input" ref="data:signup_dma.tenantName" placeholder="회사명을 입력해주세요"></xf:input>
 				</xf:group>
 
-
-				<xf:group style="text-align:center;margin-top:30px;">
-					<xf:trigger ev:onclick="scwin.trigger1_onclick"
-						style="width:30%;height:40px;background:#667eea;color:#fff;border:none;border-radius:8px;" id="trigger1" type="button">
-						<xf:label>회원가입</xf:label>
-					</xf:trigger>
+				<xf:group id="grp_pwd" class="form-group">
+					<w2:textbox tagname="p" escape="false">
+						<w2:label>
+							비밀번호
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:input id="password_input" ref="data:signup_dma.password" placeholder="8자 이상의 비밀번호를 입력해주세요" type="password"></xf:input>
+					<w2:textbox class="help-text" label="영문, 숫자, 특수문자 포함 8자 이상" tagname="div"></w2:textbox>
 				</xf:group>
+
+				<xf:group id="grp_pwd_confirm" class="form-group">
+					<w2:textbox tagname="p" escape="false">
+						<w2:label>
+							비밀번호 확인
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:input id="password_chk_input" ref="data:signup_dma.passwordConfirm" placeholder="비밀번호를 다시 입력해주세요" type="password"></xf:input>
+				</xf:group>
+
+				<xf:group class="form-group">
+					<w2:textbox tagname="p" escape="false">
+						<w2:label>
+							테넌트ID
+							<span class="required">*</span>
+						</w2:label>
+					</w2:textbox>
+					<xf:input id="tenant_input" ref="data:signup_dma.subDomain" placeholder="서비스 URL에 사용될 영문ID"></xf:input>
+				</xf:group>
+
+				<xf:group class="terms-section" id="grp_agree">
+					<w2:textbox class="terms-title" label="개인정보 수집 및 이용 동의" tagname="div"></w2:textbox>
+					<xf:group class="terms-list" tagname="ol">
+						<w2:textbox tagname="li" label="수집하는 개인정보 항목 : 이름, 연락처, 이메일 등"></w2:textbox>
+						<w2:textbox tagname="li" label="개인정보의 수집 및 이용목적 : 회원관리, 서비스 제공, 고객상담"></w2:textbox>
+						<w2:textbox tagname="li" label="개인정보의 보유 및 이용기간 : 회원 탈퇴 시까지"></w2:textbox>
+						<w2:textbox tagname="li" label="동의를 거부할 권리가 있으며, 동의 거부 시 서비스 가입이 제한될 수 있습니다."></w2:textbox>
+					</xf:group>
+					<xf:group class="terms-checkbox">
+						<input type="checkbox" id="chk_agree_html" onchange="htmlCheckbox_onchange(this)" />
+						<span>
+							<span style='color:#e53e3e;font-weight:bold;'>*</span>
+							개인정보 수집 및 이용약관에 동의합니다.
+						</span>
+					</xf:group>
+				</xf:group>
+
+				<xf:trigger id="trigger1" class="btn-check" type="button" ev:onclick="scwin.trigger1_onclick" style="width:450px;">
+					<xf:label>회원가입</xf:label>
+				</xf:trigger>
 			</xf:group>
 		</xf:group>
 	</body>
-</html> 
+
+</html>
