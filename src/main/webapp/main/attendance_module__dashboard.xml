@@ -66,7 +66,8 @@
 
 			body {
 			font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
-			background: linear-gradient(135deg, #f8f9fc 0%, #e3e7f3 100%);
+			background:
+			linear-gradient(135deg, #f8f9fc 0%, #e3e7f3 100%);
 			margin: 0;
 			padding: 0;
 			color: #2c3e50;
@@ -82,7 +83,8 @@
 			}
 
 			.pgt_tit {
-			font-size: 1.5rem !important;
+			font-size: 1.5rem
+			!important;
 			font-weight: 600 !important;
 			color: #495057 !important;
 			margin: 0 !important;
@@ -131,7 +133,8 @@
 			}
 
 			.schbox:hover {
-			box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+			box-shadow: 0 6px 25px
+			rgba(0, 0, 0, 0.12);
 			transform: translateY(-2px);
 			}
 
@@ -150,7 +153,8 @@
 			}
 
 			.schbox_inner w2\\:textbox {
-			font-weight: 600 !important;
+			font-weight: 600
+			!important;
 			color: #2c3e50 !important;
 			font-size: 0.95rem !important;
 			min-width: 90px !important;
@@ -173,7 +177,8 @@
 			outline: none !important;
 			}
 
-			/* Button Styling - Fixed */
+			/* Button Styling -
+			Fixed */
 			.btn_schbox {
 			display: flex;
 			gap: 12px;
@@ -183,16 +188,19 @@
 			}
 
 			.btn_cm {
-			padding: 10px 16px !important;
+			padding: 10px 16px
+			!important;
 			border: none !important;
 			border-radius: 6px !important;
 			font-weight: 500 !important;
 			font-size: 0.875rem !important;
-			cursor: pointer !important;
+			cursor:
+			pointer !important;
 			transition: all 0.2s ease !important;
 			min-width: 100px !important;
 			height: 36px !important;
-			display: inline-flex !important;
+			display: inline-flex
+			!important;
 			align-items: center !important;
 			justify-content: center !important;
 			vertical-align: middle !important;
@@ -202,7 +210,8 @@
 
 			.btn_cm:hover {
 			transform: translateY(-1px) !important;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15)
+			!important;
 			}
 
 			.btn_cm.sch {
@@ -229,7 +238,8 @@
 			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 			border: 1px solid #e3e6f0;
 			margin-bottom: 25px;
-			transition: all 0.3s ease;
+			transition:
+			all 0.3s ease;
 			}
 
 			.gvwbox:hover {
@@ -248,22 +258,26 @@
 			}
 
 			.contbox > div > div {
-			background: white !important;
+			background:
+			white !important;
 			border-radius: 12px !important;
 			padding: 25px !important;
 			text-align: center !important;
-			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+			box-shadow: 0 4px 15px rgba(0, 0,
+			0, 0.08) !important;
 			border: 1px solid #e3e6f0 !important;
 			transition: all 0.3s ease !important;
 			position: relative !important;
 			}
 
-			.contbox > div > div:hover {
+			.contbox >
+			div > div:hover {
 			transform: translateY(-5px) !important;
 			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
 			}
 
-			.contbox > div > div::before {
+			.contbox > div >
+			div::before {
 			content: '';
 			position: absolute;
 			top: 0;
@@ -273,7 +287,8 @@
 			border-radius: 2px 0 0 2px;
 			}
 
-			.contbox > div > div:nth-child(1)::before {
+			.contbox > div >
+			div:nth-child(1)::before {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			}
 
@@ -282,11 +297,13 @@
 			}
 
 			.contbox > div > div:nth-child(3)::before {
-			background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+			background:
+			linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
 			}
 
 			.contbox > div > div:nth-child(4)::before {
-			background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+			background: linear-gradient(135deg, #fa709a
+			0%, #fee140 100%);
 			}
 
 			.contbox w2\\:textbox {
@@ -300,7 +317,8 @@
 			color: #667eea !important;
 			}
 
-			.contbox > div > div:nth-child(2) w2\\:textbox {
+			.contbox > div > div:nth-child(2)
+			w2\\:textbox {
 			color: #4facfe !important;
 			}
 
@@ -308,7 +326,8 @@
 			color: #ff758c !important;
 			}
 
-			.contbox > div > div:nth-child(4) w2\\:textbox {
+			.contbox > div >
+			div:nth-child(4) w2\\:textbox {
 			color: #fa709a !important;
 			}
 
@@ -326,7 +345,8 @@
 			border-radius: 12px;
 			padding: 20px;
 			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-			display: flex !important;
+			display:
+			flex !important;
 			justify-content: space-between !important;
 			align-items: center !important;
 			flex-wrap: wrap !important;
@@ -337,7 +357,8 @@
 			display: flex !important;
 			gap: 12px !important;
 			flex-wrap: wrap !important;
-			align-items: center !important;
+			align-items: center
+			!important;
 			}
 
 			/* Session Header */
@@ -348,7 +369,8 @@
 			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 			display: flex !important;
 			justify-content: space-between !important;
-			align-items: center !important;
+			align-items: center
+			!important;
 			flex-wrap: wrap !important;
 			gap: 15px !important;
 			}
@@ -359,14 +381,17 @@
 			gap: 12px !important;
 			}
 
-			.contbox[style*="justify-content:space-between"] w2\\:textbox[style*="color:#007bff"] {
+			.contbox[style*="justify-content:space-between"]
+			w2\\:textbox[style*="color:#007bff"] {
 			font-size: 1.2rem !important;
 			font-weight: 700 !important;
 			color: #667eea !important;
-			padding: 8px 16px !important;
+			padding: 8px
+			16px !important;
 			background: rgba(102, 126, 234, 0.1) !important;
 			border-radius: 25px !important;
-			border: 2px solid rgba(102, 126, 234, 0.2) !important;
+			border: 2px solid rgba(102, 126, 234, 0.2)
+			!important;
 			}
 
 			/* Grid Styling */
@@ -384,12 +409,14 @@
 
 			.w2gridview .w2grid_row:hover {
 			background: rgba(102, 126, 234, 0.05) !important;
-			transform: scale(1.005) !important;
+			transform: scale(1.005)
+			!important;
 			transition: all 0.2s ease !important;
 			}
 
 			.w2gridview .w2grid_row:nth-child(even) {
-			background: rgba(102, 126, 234, 0.02) !important;
+			background: rgba(102, 126, 234, 0.02)
+			!important;
 			}
 
 			/* Responsive Design */
@@ -487,28 +514,28 @@ scwin.createPopupLayer = function () {
             </div>
         </div>`;
     document.body.insertAdjacentHTML('beforeend', popupHtml);
-    
+
     // 버튼 호버 효과 추가
     var confirmBtn = document.getElementById('popupConfirm');
     var cancelBtn = document.getElementById('popupCancel');
-    
+
     if (confirmBtn) {
-        confirmBtn.addEventListener('mouseenter', function() {
+        confirmBtn.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-2px)';
             this.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
         });
-        confirmBtn.addEventListener('mouseleave', function() {
+        confirmBtn.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0)';
             this.style.boxShadow = 'none';
         });
     }
-    
+
     if (cancelBtn) {
-        cancelBtn.addEventListener('mouseenter', function() {
+        cancelBtn.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-2px)';
             this.style.backgroundColor = '#5a6268';
         });
-        cancelBtn.addEventListener('mouseleave', function() {
+        cancelBtn.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0)';
             this.style.backgroundColor = '#6c757d';
         });
@@ -559,7 +586,7 @@ scwin.onpageload = function () {
     console.log("출석 모듈 페이지 로드 완료");
 };
 // 세션 목록으로 돌아가는 함수
-scwin.showSessionList = function() {
+scwin.showSessionList = function () {
     scwin.ui.detailView.hide();
     scwin.ui.sessionListView.show();
     attendanceList.removeAll();
@@ -567,13 +594,28 @@ scwin.showSessionList = function() {
 };
 
 // 모든 출석 데이터를 로드하여 세션별로 요약하는 함수
-scwin.loadSessionList = function() {
+scwin.loadSessionList = function () {
     console.log("세션 요약 목록 조회를 시작합니다.");
+
+    // 테넌트 ID 가져오기
+    const tenantId = $p.getParameter("tenant");
+    if (!tenantId) {
+        scwin.showPopup("테넌트 정보를 찾을 수 없습니다. URL에 tenant 파라미터를 확인해주세요.");
+        return;
+    }
+
+    console.log("테넌트 ID:", tenantId);
 
     var searchOptions = {
         attendanceVo: {
-            scSessionId: "", scName: "", scEmail: "", scJoinTime: "",
-            pageSize: "9999", pageIndex: "1", sortOrder: "DESC"
+            scTenantId: tenantId,  // 테넌트 ID 추가
+            scSessionId: "",
+            scName: "",
+            scEmail: "",
+            scJoinTime: "",
+            pageSize: "9999",
+            pageIndex: "1",
+            sortOrder: "DESC"
         }
     };
 
@@ -584,6 +626,8 @@ scwin.loadSessionList = function() {
         data: JSON.stringify(searchOptions),
         timeout: 10000,
         success: function (response) {
+            console.log("서버 응답:", response);
+
             var allData = [];
             if (response && response.elData && response.elData.attendanceVoList) {
                 allData = response.elData.attendanceVoList;
@@ -592,13 +636,12 @@ scwin.loadSessionList = function() {
             } else {
                 console.error("attendanceVoList를 찾을 수 없습니다. 응답 데이터 구조를 확인하세요:", response);
             }
-            
-            if (!allData || allData.length === 0) {
-                scwin.showPopup("조회할 출석 데이터가 없습니다.");
+
+           if (!allData || allData.length === 0) {
+                // scwin.showPopup("해당 테넌트의 출석 데이터가 없습니다."); // 데이터가 없을 때 팝업을 표시하지 않도록 주석 처리
                 dlt_sessionSummaryList.removeAll();
                 return;
             }
-            
             scwin.allAttendanceData = allData;
 
             const sessionSummary = allData.reduce((acc, item) => {
@@ -627,19 +670,20 @@ scwin.loadSessionList = function() {
 
             dlt_sessionSummaryList.setJSON(summaryListData);
             console.log("세션 요약 정보 생성 완료", summaryListData);
-            
+
             scwin.showSessionList();
 
         },
-        error: function (xhr) {
-            scwin.showPopup("서버에서 데이터를 가져오는데 실패했습니다: " + xhr.status);
+        error: function (xhr, status, error) {
+            console.error("AJAX 오류:", xhr, status, error);
+            scwin.showPopup("서버에서 데이터를 가져오는데 실패했습니다: " + xhr.status + " - " + error);
             dlt_sessionSummaryList.removeAll();
         }
     });
 };
 
 // 세션 그리드 클릭 이벤트
-scwin.grd_sessions_oncellclick = function(row, col) {
+scwin.grd_sessions_oncellclick = function (row, col) {
     const selectedSessionId = dlt_sessionSummaryList.getCellData(row, "sessionId");
     if (!selectedSessionId) return;
 
@@ -652,7 +696,7 @@ scwin.grd_sessions_oncellclick = function(row, col) {
 
     attendanceList.setJSON(sessionDetails);
     scwin.updateStats(sessionDetails);
-    
+
     ipt_searchName.setValue("");
     ipt_searchEmail.setValue("");
     ipt_searchDate.setValue("");
@@ -664,42 +708,80 @@ scwin.grd_sessions_oncellclick = function(row, col) {
 // 상세 검색 버튼 클릭
 scwin.btn_search_onclick = function () {
     const selectedSessionId = dm_search.get("scSessionId");
-    const searchName = ipt_searchName.getValue().toLowerCase();
-    const searchEmail = ipt_searchEmail.getValue().toLowerCase();
+    const searchName = ipt_searchName.getValue();
+    const searchEmail = ipt_searchEmail.getValue();
     const searchDate = ipt_searchDate.getValue();
+    const tenantId = $p.getParameter("tenant");
 
     if (!selectedSessionId) {
         scwin.showPopup("세션이 선택되지 않았습니다.");
         return;
     }
 
-    const filteredData = scwin.allAttendanceData.filter(item => {
-        const itemSessionId = item.sessionId || 'N/A_Session';
-        if (itemSessionId !== selectedSessionId) {
-            return false;
-        }
+    if (!tenantId) {
+        scwin.showPopup("테넌트 정보를 찾을 수 없습니다.");
+        return;
+    }
 
-        const nameMatch = !searchName || (item.name && item.name.toLowerCase().includes(searchName));
-        const emailMatch = !searchEmail || (item.email && item.email.toLowerCase().includes(searchEmail));
-        const dateMatch = !searchDate || (item.joinTime && item.joinTime.substring(0, 10).replace(/-/g, '') === searchDate);
-
-        return nameMatch && emailMatch && dateMatch;
+    console.log("검색 조건:", {
+        tenantId: tenantId,
+        sessionId: selectedSessionId,
+        name: searchName,
+        email: searchEmail,
+        date: searchDate
     });
 
-    attendanceList.setJSON(filteredData);
-    scwin.updateStats(filteredData);
-    
-    if(filteredData.length === 0) {
-        scwin.showPopup("조건에 맞는 데이터가 없습니다.");
-    }
+    // 서버에서 직접 검색하는 방식으로 변경
+    var searchOptions = {
+        attendanceVo: {
+            scTenantId: tenantId,
+            scSessionId: selectedSessionId,
+            scName: searchName.trim() || "",
+            scEmail: searchEmail.trim() || "",
+            scJoinTime: searchDate || "",
+            pageSize: "9999",
+            pageIndex: "1",
+            sortOrder: "DESC"
+        }
+    };
+
+    $.ajax({
+        url: '/InsWebApp/AttendanceList.pwkjson',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify(searchOptions),
+        timeout: 10000,
+        success: function (response) {
+            var filteredData = [];
+            if (response && response.elData && response.elData.attendanceVoList) {
+                filteredData = response.elData.attendanceVoList;
+            } else if (response && response.attendanceListVo && response.attendanceListVo.attendanceVoList) {
+                filteredData = response.attendanceListVo.attendanceVoList;
+            }
+
+            attendanceList.setJSON(filteredData);
+            scwin.updateStats(filteredData);
+
+            if (filteredData.length === 0) {
+                // scwin.showPopup("조건에 맞는 데이터가 없습니다."); 
+                console.log("조건에 맞는 데이터가 없습니다.");
+            } else {
+                console.log(`검색 결과: ${filteredData.length}건`);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("검색 중 오류:", xhr, status, error);
+            scwin.showPopup("검색 중 오류가 발생했습니다: " + xhr.status + " - " + error);
+        }
+    });
 };
 
 // 상세 검색 조건 초기화
-scwin.btn_reset_onclick = function() {
+scwin.btn_reset_onclick = function () {
     ipt_searchName.setValue("");
     ipt_searchEmail.setValue("");
     ipt_searchDate.setValue("");
-    
+
     const selectedSessionId = dm_search.get("scSessionId");
     const sessionDetails = scwin.allAttendanceData.filter(item => (item.sessionId || 'N/A_Session') === selectedSessionId);
     attendanceList.setJSON(sessionDetails);
@@ -712,7 +794,7 @@ scwin.btn_reset_onclick = function() {
 scwin.setSortOrder_onclick = function (order) {
     dm_search.set("sortOrder", order);
     var currentData = attendanceList.getAllJSON();
-    currentData.sort(function(a, b) {
+    currentData.sort(function (a, b) {
         var timeA = new Date(a.joinTime).getTime();
         var timeB = new Date(b.joinTime).getTime();
         return order === 'ASC' ? timeA - timeB : timeB - timeA;
@@ -778,12 +860,13 @@ scwin.btn_downloadCSV_onclick = function () {
         var sessionId = dm_search.get("scSessionId").replace(/[^a-zA-Z0-9]/g, '_') || "선택세션";
         var now = new Date();
         var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
-        link.setAttribute('download', '출석현황_' + sessionId + '_' + dateStr + '.csv');
-        
+        const tenantId = $p.getParameter("tenant") || "unknown";
+        link.setAttribute('download', '출석현황_' + tenantId + '_' + sessionId + '_' + dateStr + '.csv');
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         scwin.showPopup("CSV 파일이 다운로드되었습니다.");
     } catch (error) {
         console.error("CSV 다운로드 중 오류:", error);
@@ -791,7 +874,7 @@ scwin.btn_downloadCSV_onclick = function () {
     }
 };
 
-scwin.checkAttendanceSubscription = function() {
+scwin.checkAttendanceSubscription = function () {
     console.log("출석 모듈 구독 상태를 확인합니다.");
     try {
         const tenantId = $p.getParameter("tenant");
@@ -828,7 +911,7 @@ scwin.checkAttendanceSubscription = function() {
         console.error("구독 상태 확인 중 오류가 발생했습니다.", e);
         const downloadBtn = $p.getComponentById("btn_downloadCSV");
         if (downloadBtn) {
-           downloadBtn.setStyle("display", "none"); // 오류 발생 시에도 숨김 처리
+            downloadBtn.setStyle("display", "none"); // 오류 발생 시에도 숨김 처리
         }
     }
 };]]>

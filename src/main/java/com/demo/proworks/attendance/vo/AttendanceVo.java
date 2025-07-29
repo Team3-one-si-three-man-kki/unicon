@@ -64,6 +64,12 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "sortOrder", physicalName = "sortOrder", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String sortOrder;
 
+    @ElDtoField(logicalName = "tenantId", physicalName = "tenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String tenantId;
+
+    @ElDtoField(logicalName = "scTenantId", physicalName = "scTenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String scTenantId;
+
     @ElVoField(physicalName = "recordId")
     public String getRecordId(){
         String ret = this.recordId;
@@ -250,6 +256,28 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.sortOrder = sortOrder;
     }
 
+    @ElVoField(physicalName = "tenantId")
+    public String getTenantId(){
+        String ret = this.tenantId;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "tenantId")
+    public void setTenantId(String tenantId){
+        this.tenantId = tenantId;
+    }
+
+    @ElVoField(physicalName = "scTenantId")
+    public String getScTenantId(){
+        String ret = this.scTenantId;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "scTenantId")
+    public void setScTenantId(String scTenantId){
+        this.scTenantId = scTenantId;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -270,7 +298,9 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("cud").append("=").append(cud).append(",");
         sb.append("rowStatus").append("=").append(rowStatus).append(",");
         sb.append("startRow ").append("=").append(startRow ).append(",");
-        sb.append("sortOrder").append("=").append(sortOrder);
+        sb.append("sortOrder").append("=").append(sortOrder).append(",");
+        sb.append("tenantId").append("=").append(tenantId).append(",");
+        sb.append("scTenantId").append("=").append(scTenantId);
         sb.append("]");
         return sb.toString();
 

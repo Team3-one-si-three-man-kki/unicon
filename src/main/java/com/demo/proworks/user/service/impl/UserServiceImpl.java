@@ -134,39 +134,40 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional // 전체 처리를 하나의 트랜잭션으로
 	public void saveUserList(List<UserVo> userList) throws Exception {
-		// 1. C/U/D 상태에 따라 리스트 분리
 		List<UserVo> insertList = new ArrayList<>();
 		List<UserVo> updateList = new ArrayList<>();
 		List<UserVo> deleteList = new ArrayList<>();
-
+		
 		for (UserVo user : userList) {
-			switch (user.getRowStatus()) {
-			case "C": // 생성
-				insertList.add(user);
-				break;
-			case "U": // 수정
-				updateList.add(user);
-				break;
-			case "D": // 삭제
+			String userId = user.getUserId();
+			String rowStatus = user.getRowStatus();
+
+			if ("D".equals(rowStatus)) {
 				deleteList.add(user);
-				break;
+			} else if (userId == null || userId.trim().isEmpty()) {
+				System.out.println("INSERT 대상으로 판단 (userId 없음): " + user.getName());
+				insertList.add(user);
+			} else {
+				System.out.println("UPDATE 대상으로 판단 (userId: " + userId + "): " + user.getName());
+				updateList.add(user);
 			}
 		}
 
 		if (!insertList.isEmpty()) {
+			System.out.println("INSERT 실행: " + insertList.size() + "건");
 			userDAO.insertUserBatch(insertList);
 		}
 
-		// [수정] updateList 처리 로직 위치 변경 (아래 설명 참조)
 		if (!updateList.isEmpty()) {
+			System.out.println("UPDATE 실행: " + updateList.size() + "건");
 			for (UserVo userToUpdate : updateList) {
 				userDAO.updateUser(userToUpdate);
 			}
 		}
 
 		if (!deleteList.isEmpty()) {
-			// [수정] 사용자 삭제 전, 관련 세션 데이터 먼저 삭제
-			userDAO.deleteSessionsByUserBatch(deleteList); // 👈 이 부분 추가
+			System.out.println("DELETE 실행: " + deleteList.size() + "건");
+			userDAO.deleteSessionsByUserBatch(deleteList);
 			userDAO.deleteUserBatch(deleteList);
 		}
 	}

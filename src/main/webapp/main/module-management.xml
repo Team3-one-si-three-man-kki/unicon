@@ -366,8 +366,67 @@ scwin.onpageload = function () {
     grp_module_detail.hide();
 };
 ]]></script>
-		<style type="text/css"><![CDATA[
-            /* 전체 페이지 스타일 */
+		<style type="text/css"><![CDATA[/* 기본 글꼴 설정 - 사용자 관리와 동일하게 */
+.marketplace-wrapper {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 12px;
+    color: #333;
+    line-height: 1.4;
+}
+
+/* 페이지 타이틀 박스 스타일 - 사용자 관리와 동일하게 */
+.pgtbox {
+    margin-top: 17px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.pgt_tit {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+}
+
+.breadcrumb ul {
+    display: flex;
+    list-style: none;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.breadcrumb li {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 12px;
+    color: #6c757d;
+    position: relative;
+}
+
+.breadcrumb li:not(:last-child)::after {
+    content: '>';
+    margin-left: 8px;
+    color: #adb5bd;
+    font-weight: normal;
+}
+
+.breadcrumb a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+    color: #3674B5;
+}
+
+/* 전체 페이지 스타일 */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background-color: #f8f9fa;
@@ -377,23 +436,23 @@ body {
 }
 
 /* 페이지 헤더 */
-.page-header { 
+.page-header {
     border: none;
-    padding: 30px 0; 
+    padding: 30px 0;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.page-title { 
-    font-size: 28px; 
-    font-weight: 700; 
-    color: black; 
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: black;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.page-subtitle { 
-    font-size: 16px; 
+.page-subtitle {
+    font-size: 16px;
     color: black;
     margin-top: 8px;
     font-weight: 300;
@@ -409,9 +468,12 @@ body {
 /* 콘텐츠 헤더 */
 .content-header {
     margin-bottom: 20px;
-    display: flex; /* 자식 요소들을 가로로 배치 */
-    justify-content: space-between; /* 양쪽 끝으로 요소를 분산 배치 */
-    align-items: center; /* 세로 중앙 정렬 */
+    display: flex;
+    /* 자식 요소들을 가로로 배치 */
+    justify-content: space-between;
+    /* 양쪽 끝으로 요소를 분산 배치 */
+    align-items: center;
+    /* 세로 중앙 정렬 */
 }
 
 .content-header-title {
@@ -427,7 +489,7 @@ body {
 }
 
 /* 툴바 개선 - 조회 버튼 하나만 중앙 정렬 */
-.toolbar { 
+.toolbar {
     padding: 20px;
     border: none;
     background: white;
@@ -439,7 +501,7 @@ body {
 }
 
 /* 버튼 스타일 개선 */
-.btn { 
+.btn {
     padding: 12px 30px;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -452,12 +514,12 @@ body {
     display: inline-block;
 }
 
-.btn:hover { 
+.btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.btn-primary { 
+.btn-primary {
     background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
     color: white;
     border-color: transparent;
@@ -469,7 +531,8 @@ body {
 }
 
 /* 패널 스타일 */
-.module-list-panel, .module-detail-panel {
+.module-list-panel,
+.module-detail-panel {
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -654,24 +717,25 @@ body {
     .main-container {
         padding: 0 10px;
     }
-    
-    .module-list-panel, .module-detail-panel {
+
+    .module-list-panel,
+    .module-detail-panel {
         width: 100% !important;
         float: none !important;
         margin-bottom: 20px;
     }
-    
+
     .card-container {
         grid-template-columns: 1fr;
         gap: 15px;
         padding: 15px;
     }
-    
+
     .module-card {
         padding: 20px;
         min-height: 250px;
     }
-    
+
     .toolbar {
         padding: 15px;
     }
@@ -681,11 +745,11 @@ body {
     .page-title {
         font-size: 24px;
     }
-    
+
     .page-subtitle {
         font-size: 14px;
     }
-    
+
     .module-card {
         min-height: 220px;
     }
@@ -724,26 +788,44 @@ body {
     0% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
+
     100% {
         opacity: 1;
     }
-}
-
-        ]]></style>
+}]]></style>
 	</head>
 	<body ev:onpageload="scwin.onpageload">
-		<xf:group id="grp_header" class="page-header" tagname="div">
-			<w2:textbox id="txt_title" class="page-title" label="모듈 관리 시스템" style="padding-left: 10px;" />
-			<w2:textbox id="txt_subtitle" class="page-subtitle" label="마켓플레이스에서 구매한 모듈들을 관리합니다" style="padding-left: 20px;" />
+		<xf:group class="pgtbox" id="" style="">
+			<w2:textbox class="pgt_tit" id="" label="모듈 관리" style="" tagname=""></w2:textbox>
+			<xf:group class="breadcrumb" id="" style="">
+				<xf:group id="" style="" tagname="ul">
+					<xf:group id="" style="" tagname="li">
+						<w2:anchor outerDiv="false">
+							<xf:label>Home</xf:label>
+						</w2:anchor>
+					</xf:group>
+					<xf:group id="" style="" tagname="li">
+						<w2:anchor outerDiv="false">
+							<xf:label>모듈</xf:label>
+						</w2:anchor>
+					</xf:group>
+					<xf:group id="" style="" tagname="li">
+						<w2:anchor outerDiv="false">
+							<xf:label>모듈 구매</xf:label>
+						</w2:anchor>
+					</xf:group>
+				</xf:group>
+			</xf:group>
 		</xf:group>
 		<xf:group id="grp_main_container" class="main-container" tagname="div">
 			<xf:group id="grp_module_list" class="module-list-panel" tagname="div"
 				style="width: 50%; float: left; padding: 10px; box-sizing: border-box;">
 				<xf:group class="content-header" tagname="div">
-					<w2:textbox class="content-header-title" label="보유 모듈 목록" style="padding-left: 5px"/>
+					<w2:textbox class="content-header-title" label="보유 모듈 목록" style="padding-left: 5px" />
 				</xf:group>
 				<xf:group class="card-container" id="gen_modules_container" tagname="div">
 					<!-- 이곳에 JS 로 카드들이 동적으로 추가됩니다 -->
@@ -762,9 +844,10 @@ body {
 						style="margin-top:0; margin-bottom:20px;">
 						<w2:displayFormatter><![CDATA[value + " 회"]]></w2:displayFormatter>
 					</w2:textbox>
-					<w2:textbox label="사용한 미팅룸 목록" tagname="p" style="font-size:14px; color:#666; border-top:1px solid #eee; padding-top:20px;" />
-					<w2:gridView id="grd_meetingRooms" style="width:100%; height: 700px;" dataList="data:dlt_meetingRooms" autoFit="lastColumn"
-						rowNumVisible="true">
+					<w2:textbox label="사용한 미팅룸 목록" tagname="p"
+						style="font-size:14px; color:#666; border-top:1px solid #eee; padding-top:20px;" />
+					<w2:gridView id="grd_meetingRooms" style="width:100%; height: 700px;" dataList="data:dlt_meetingRooms"
+						autoFit="lastColumn" rowNumVisible="true">
 						<w2:caption value="미팅룸 목록" />
 						<w2:header>
 							<w2:row>
@@ -775,7 +858,8 @@ body {
 						<w2:gBody>
 							<w2:row>
 								<w2:column width="200" inputType="text" id="roomName" displayMode="label"></w2:column>
-								<w2:column dataType="date" width="150" displayFormat="yyyy-MM-dd" inputType="text" id="lastUsed" displayMode="label">
+								<w2:column dataType="date" width="150" displayFormat="yyyy-MM-dd" inputType="text" id="lastUsed"
+									displayMode="label">
 								</w2:column>
 							</w2:row>
 						</w2:gBody>
