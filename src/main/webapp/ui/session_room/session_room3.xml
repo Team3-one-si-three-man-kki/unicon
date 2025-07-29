@@ -34,6 +34,13 @@
 		<style type="text/css"><![CDATA[
 /* --- 기본 구조 --- */
 
+.sub_contentss{
+    height: 95vh;
+    position: relative;
+    margin-top: 20px;
+}
+
+
 /* ✅ 상태 아이콘 관련 스타일 */
 .status-indicator-container {
     position: absolute;
@@ -157,6 +164,10 @@ div.video-paused::after {
     color: #fff;
     pointer-events: none; 
     z-index: 10;
+}
+
+.main-stage-video {
+    height: 725px !important;
 }
 
 /* --- 레이어 스타일 --- */
@@ -307,6 +318,28 @@ div.video-paused::after {
     text-align: center !important;
     display: block !important;
 }
+
+.neon-leave-btn {
+            width: 120px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff4757 0%, #c44569 100%);
+            border: 2px solid #ff6b7a;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 20px rgba(255, 71, 87, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
 
 /* --- 가로 스크롤바 스타일 (선택사항) --- */
 .bottom-modules::-webkit-scrollbar {
@@ -811,6 +844,7 @@ scwin.onpageload = async function () {
 
         const elementWrapper = document.createElement('div');
         elementWrapper.id = `peer-container-${scwin.myPeerId}`; // ID 명확화
+        elementWrapper.style.height = '725px';
 
 
         // WebSquare 영역에 직접 삽입되도록 보장
@@ -1924,20 +1958,20 @@ window.addEventListener('load', () => {
 		</script>
 	</head>
 	<body class="" ev:onpageload="scwin.onpageload">
-		<xf:group class="sub_contents" id="" style="">
+		<xf:group class="sub_contentss" id="" style="height: 95vh;">
 			<xf:group style="" id="grp_waiting">
 				<w2:wframe src="/InsWebApp/ui/client/meeting_waiting_room_ykw.xml" style="" id="waiting_room_frame"></w2:wframe>
 			</xf:group>
-			<xf:group id="group1" style="width:100%;height:858px;display:flex;overflow:hidden;">
+			<xf:group id="group1" style="width:100%;height:910px;display:flex;overflow:hidden;">
 				<xf:group class="workspace-container" id="group2" style="flex: 1;">
 					<xf:group class="workspace-header" id="grp_session_title">
 						<w2:span class="workspace-title" id="" label="-세션 이름-"></w2:span>
 					</xf:group>
-					<xf:group class="glass-container" id="group4" style="margin: 5px 15px 0 15px; flex: 1; display: flex; flex-direction: column;">
+					<xf:group class="glass-container" id="group4" style="margin: 5px 15px 0 15px; flex: 1; display: flex; flex-direction: column;    justify-content: center">
 						<xf:group class="video-layout" id="group5">
 							<xf:group class="main-video-area" id="group9">
 								<xf:group class="drop-zone neon-border" id="grp_video_area"
-									style="height: 700px; position: relative; background-color: #202020; border-radius: 8px; overflow: hidden;">
+									style="height: 761px; position: relative; background-color: #202020; border-radius: 8px; overflow: hidden;">
 									<w2:span class="drop-zone-label" id="span1" label="메인 화상회의 영역(고정)"
 										style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;">
 									</w2:span>
@@ -1990,9 +2024,8 @@ window.addEventListener('load', () => {
 									</xf:group>
 									<xf:group class="drop-zone neon-border" id="group27_leave" style="order: 999; padding: 0; overflow: hidden;"
 										ev:onclick="scwin.handleLeaveSession">
-										<w2:image id="leave_img" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-											src="/InsWebApp/images/icons/btn_leave.png" alt="나가기 버튼">
-										</w2:image>
+									
+										<w2:span class="neon-leave-btn" id="span17" label="나가기"></w2:span>
 									</xf:group>
 								</xf:group>
 							</xf:group>

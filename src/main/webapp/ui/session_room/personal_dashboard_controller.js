@@ -307,10 +307,10 @@ window.PersonalDashboardController = {
         
         const dashboardHTML = `
             <div id="personalDashboardSlide" style="
-                position: fixed; top: 0; right: -350px; width: 320px; height: 100vh;
+                position: fixed; top: 0; left: -350px; width: 320px; height: 100vh;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                box-shadow: -4px 0 20px rgba(0,0,0,0.15); z-index: 1000;
-                transition: right 0.3s ease-in-out; overflow: hidden;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.15); z-index: 1000;
+                transition: left 0.3s ease-in-out; overflow: hidden;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 display: flex; flex-direction: column; padding: 1rem;
             ">
@@ -460,7 +460,7 @@ window.PersonalDashboardController = {
             this.init(this.currentUserId);
         }
         
-        this.dashboardElement.style.right = '0';
+        this.dashboardElement.style.left = '0';
         this.isOpen = true;
         
         // 초기 화면 업데이트
@@ -476,7 +476,7 @@ window.PersonalDashboardController = {
     
     close: function() {
         if (this.dashboardElement) {
-            this.dashboardElement.style.right = '-350px';
+            this.dashboardElement.style.left = '-350px';
         }
         this.isOpen = false;
         
