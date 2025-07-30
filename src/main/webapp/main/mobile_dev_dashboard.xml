@@ -86,7 +86,7 @@
 			</xf:submission>
 
 			<!-- 서버 통계 조회 -->
-			<xf:submission id="sbm_serverStats" action="https://13.125.229.206:3000/api/admin/server-stats" method="get"
+			<xf:submission id="sbm_serverStats" action="https://unify-conference.store/ws/api/admin/server-stats" method="get"
 				mediatype="application/json" replace="none" mode="asynchronous" ev:submitdone="scwin.sbm_serverStats_submitdone"
 				ev:submiterror="scwin.sbm_serverStats_submiterror" processMsg="서버 상태 조회중...">
 				<xf:request>
