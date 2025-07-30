@@ -35,7 +35,7 @@ scwin.localState = {
 
 // 1) 카메라·마이크 초기 스트림 요청
 scwin.initCamera = function () {
-    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: true })
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         .then(function (stream) {
             scwin.mediaStream = stream;
             var webcamElement = document.getElementById("webcam");
@@ -205,9 +205,6 @@ scwin.onEnterMeeting = function () {
     scwin.saveToDataMap();
 
     console.log("입장 정보 저장 완료:", scwin.localState);
-
-    // 실제 미팅룸으로 이동하는 로직
-    alert("미팅룸 입장 준비 완료!");
 
     // 부모 페이지의 대기방 숨기기 함수 호출
     $p.parent().scwin.hideWaitingRoom();
