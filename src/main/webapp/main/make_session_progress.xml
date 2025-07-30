@@ -35,12 +35,12 @@
 			<w2:workflowCollection />
 			<xf:submission id="sbm_createSession" action="/InsWebApp/TNU0001SessionIns.pwkjson" method="post"
 				mediatype="application/json" ref='data:json,{"id":"dma_sessionData","key":"sessionVo"}' target="" encoding="UTF-8" instance=""
-				replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="세션을 생성중입니다." ev:submit=""
 				ev:submitdone="scwin.sbm_createSession_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
 			<xf:submission id="sbm_createSessionModules" action="/InsWebApp/TNU0001SessionModuleListIns.pwkjson" method="post"
 				mediatype="application/json" ref='data:json,{"id":"dlt_sessionModules","key":"sessionModuleVoList.sessionModuleVoList"}' target=""
-				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="" ev:submit=""
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="모듈생성중입니다." ev:submit=""
 				ev:submitdone="scwin.sbm_createSessionModules_submitdone" ev:submiterror="scwin.sbm_createSessionModules_submiterror" abortTrigger="">
 			</xf:submission>
 			<xf:submission id="sbm_updateInviteLink" action="/InsWebApp/TNU0002SessionUpd.pwkjson" method="post"
