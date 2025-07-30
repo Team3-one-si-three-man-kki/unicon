@@ -55,11 +55,11 @@
 
 			<xf:submission id="loadCustom" action="/InsWebApp/LCP0001List.pwkjson" method="post" mediatype="application/json"
 				ref='data:json,{"id":"dm_subdomain","key":"tenant"}' target='data:json,{"id":"loginCustomInfo","key":"loginCustomInfo"}'
-				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="loading...." ev:submit=""
+				encoding="UTF-8" instance="" replace="" errorHandler="" customHandler="" mode="asynchronous" processMsg="로그인페이지로딩중" ev:submit=""
 				ev:submitdone="scwin.loadCustom_submitdone" ev:submiterror="" abortTrigger="">
 			</xf:submission>
 			<xf:submission id="kakao_login" action="/InsWebApp/TNU0000KL.pwkjson?service=TNU0000KC" method="post"
-				mediatype="application/json" ref="" target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
+				mediatype="application/json" ref='data:json,{"id":"dm_subdomain","key":"elData"}' target="" encoding="UTF-8" instance="" replace="" errorHandler="" customHandler=""
 				mode="asynchronous" processMsg="카카오 로그인 중입니다." ev:submit="" ev:submitdone="scwin.kakao_login_submitdone" ev:submiterror=""
 				abortTrigger="">
 			</xf:submission>

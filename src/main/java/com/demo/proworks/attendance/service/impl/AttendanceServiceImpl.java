@@ -177,20 +177,20 @@ public class AttendanceServiceImpl implements AttendanceService {
 		StringBuilder csvContent = new StringBuilder();
 
 		// CSV 헤더 (한글)
-		csvContent.append("번호,세션ID,참여자명,이메일,접속IP,입장시간,퇴장시간,참여시간(분),상태\n");
+		csvContent.append("번호,세션명,참여자명,이메일,접속IP,입장시간,퇴장시간,참여시간(분),상태\n");
 
-		// 데이터 행들
+		// 데이터 행들 - 헤더 순서와 맞춤
 		int rowNumber = 1;
 		for (AttendanceVo attendance : attendanceList) {
 			csvContent.append(rowNumber++).append(",");
-			csvContent.append(escapeCSV(attendance.getSessionId())).append(",");
-			csvContent.append(escapeCSV(attendance.getName())).append(",");
-			csvContent.append(escapeCSV(attendance.getEmail())).append(",");
-			csvContent.append(escapeCSV(attendance.getIpAddress())).append(",");
-			csvContent.append(escapeCSV(attendance.getJoinTime())).append(",");
-			csvContent.append(escapeCSV(attendance.getLeaveTime())).append(",");
-			csvContent.append(escapeCSV(attendance.getParticipationMinutes())).append(",");
-			csvContent.append(escapeCSV(attendance.getStatus()));
+			csvContent.append(escapeCSV(attendance.getSessionName())).append(","); // 세션명
+			csvContent.append(escapeCSV(attendance.getName())).append(","); // 참여자명
+			csvContent.append(escapeCSV(attendance.getEmail())).append(","); // 이메일 ✅ 순서 수정
+			csvContent.append(escapeCSV(attendance.getIpAddress())).append(","); // 접속IP
+			csvContent.append(escapeCSV(attendance.getJoinTime())).append(","); // 입장시간
+			csvContent.append(escapeCSV(attendance.getLeaveTime())).append(","); // 퇴장시간
+			csvContent.append(escapeCSV(attendance.getParticipationMinutes())).append(","); // 참여시간
+			csvContent.append(escapeCSV(attendance.getStatus())); // 상태
 			csvContent.append("\n");
 		}
 

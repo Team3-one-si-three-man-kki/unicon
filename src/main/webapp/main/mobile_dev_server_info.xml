@@ -193,7 +193,7 @@ scwin.testConnection = function () {
     console.log("네트워크 연결 테스트 중...");
 
     try {
-        fetch('https://13.125.229.206:3000/api/admin/server-stats', {
+        fetch('https://unify-conference.store/ws/api/admin/server-stats', {
             method: 'GET',
             headers: {
                 'Authorization': scwin.getApiToken(),
@@ -228,7 +228,7 @@ scwin.fallbackToXMLHttpRequest = function () {
     console.log("XMLHttpRequest 사용하여 API 호출...");
 
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://13.125.229.206:3000/api/admin/server-stats', true);
+    xhr.open('GET', 'https://unify-conference.store/ws/api/admin/server-stats', true);
 
     xhr.setRequestHeader('Authorization', 'Bearer ' + scwin.getApiToken());
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -502,7 +502,7 @@ scwin.loadTenantData = function (tenantId) {
     }
 
     console.log(`테넌트 ${tenantId} 데이터 로드 시도`);
-    const url = `https://13.125.229.206:3000/api/admin/tenant-stats?tenantId=${tenantId}`;
+    const url = `https://unify-conference.store/ws/api/admin/tenant-stats?tenantId=${tenantId}`;
     scwin.updateTenantStats({ sessions: "로딩중...", users: "로딩중..." });
 
     fetch(url, {
@@ -539,7 +539,7 @@ scwin.loadTenantDataXHR = function (tenantId) {
     console.log("XMLHttpRequest로 테넌트 데이터 재시도...");
 
     const xhr = new XMLHttpRequest();
-    const url = `https://13.125.229.206:3000/api/admin/tenant-stats?tenantId=${tenantId}`;
+    const url = `https://unify-conference.store/ws/api/admin/tenant-stats?tenantId=${tenantId}`;
 
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Authorization', 'Bearer ' + scwin.getApiToken());
@@ -589,7 +589,7 @@ scwin.loadTenantDataXHR = function (tenantId) {
 scwin.loadSessionInfo = function (roomId) {
     console.log(`${roomId} 세션의 상세 정보를 요청합니다.`);
 
-    const url = `https://13.125.229.206:3000/api/admin/session-info?roomId=${roomId}`;
+    const url = `https://unify-conference.store/ws/api/admin/session-info?roomId=${roomId}`;
 
     fetch(url, {
         method: 'GET',

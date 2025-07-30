@@ -128,9 +128,7 @@ public class AttendanceDAO extends com.demo.proworks.cmmn.dao.ProworksDefaultAbs
 		return (AttendanceVo) selectByPk("com.demo.proworks.attendance.selectAttendanceStatsByTenant", vo);
 	}
 
-	public long selectListCountAttendance(AttendanceVo attendanceVo) {
-		// TODO Auto-generated method stub
-		return 0;
+	public long selectListCountAttendance(AttendanceVo attendanceVo) throws ElException {
+		return (Long) selectByPk("com.demo.proworks.attendance.selectListCountAttendance", attendanceVo);
 	}
-
 }

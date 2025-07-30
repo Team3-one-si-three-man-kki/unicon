@@ -70,6 +70,24 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
     @ElDtoField(logicalName = "scTenantId", physicalName = "scTenantId", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
     private String scTenantId;
 
+    @ElDtoField(logicalName = "sessionName", physicalName = "sessionName", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String sessionName;
+
+    @ElDtoField(logicalName = "sessionDept", physicalName = "sessionDept", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String sessionDept;
+
+    @ElDtoField(logicalName = "sessionStartTime", physicalName = "sessionStartTime", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String sessionStartTime;
+
+    @ElDtoField(logicalName = "sessionInviteLink", physicalName = "sessionInviteLink", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String sessionInviteLink;
+
+    @ElDtoField(logicalName = "sessionLinkExpiry", physicalName = "sessionLinkExpiry", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String sessionLinkExpiry;
+
+    @ElDtoField(logicalName = "scDept", physicalName = "scDept", type = "String", typeKind = "", fldYn = "", delimeterYn = "", cryptoGbn = "", cryptoKind = "", length = 0, dotLen = 0, baseValue = "", desc = "", attr = "")
+    private String scDept;
+
     @ElVoField(physicalName = "recordId")
     public String getRecordId(){
         String ret = this.recordId;
@@ -278,6 +296,72 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
         this.scTenantId = scTenantId;
     }
 
+    @ElVoField(physicalName = "sessionName")
+    public String getSessionName(){
+        String ret = this.sessionName;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "sessionName")
+    public void setSessionName(String sessionName){
+        this.sessionName = sessionName;
+    }
+
+    @ElVoField(physicalName = "sessionDept")
+    public String getSessionDept(){
+        String ret = this.sessionDept;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "sessionDept")
+    public void setSessionDept(String sessionDept){
+        this.sessionDept = sessionDept;
+    }
+
+    @ElVoField(physicalName = "sessionStartTime")
+    public String getSessionStartTime(){
+        String ret = this.sessionStartTime;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "sessionStartTime")
+    public void setSessionStartTime(String sessionStartTime){
+        this.sessionStartTime = sessionStartTime;
+    }
+
+    @ElVoField(physicalName = "sessionInviteLink")
+    public String getSessionInviteLink(){
+        String ret = this.sessionInviteLink;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "sessionInviteLink")
+    public void setSessionInviteLink(String sessionInviteLink){
+        this.sessionInviteLink = sessionInviteLink;
+    }
+
+    @ElVoField(physicalName = "sessionLinkExpiry")
+    public String getSessionLinkExpiry(){
+        String ret = this.sessionLinkExpiry;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "sessionLinkExpiry")
+    public void setSessionLinkExpiry(String sessionLinkExpiry){
+        this.sessionLinkExpiry = sessionLinkExpiry;
+    }
+
+    @ElVoField(physicalName = "scDept")
+    public String getScDept(){
+        String ret = this.scDept;
+        return ret;
+    }
+
+    @ElVoField(physicalName = "scDept")
+    public void setScDept(String scDept){
+        this.scDept = scDept;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -300,7 +384,13 @@ public class AttendanceVo extends com.demo.proworks.cmmn.ProworksCommVO {
         sb.append("startRow ").append("=").append(startRow ).append(",");
         sb.append("sortOrder").append("=").append(sortOrder).append(",");
         sb.append("tenantId").append("=").append(tenantId).append(",");
-        sb.append("scTenantId").append("=").append(scTenantId);
+        sb.append("scTenantId").append("=").append(scTenantId).append(",");
+        sb.append("sessionName").append("=").append(sessionName).append(",");
+        sb.append("sessionDept").append("=").append(sessionDept).append(",");
+        sb.append("sessionStartTime").append("=").append(sessionStartTime).append(",");
+        sb.append("sessionInviteLink").append("=").append(sessionInviteLink).append(",");
+        sb.append("sessionLinkExpiry").append("=").append(sessionLinkExpiry).append(",");
+        sb.append("scDept").append("=").append(scDept);
         sb.append("]");
         return sb.toString();
 
