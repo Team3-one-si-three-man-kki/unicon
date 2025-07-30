@@ -610,11 +610,6 @@ scwin.btn_upload_onclick = function (e) {
         // 업로드 실행
         grid.advancedExcelUpload(options);
 
-        // 단순한 모니터링 로직으로 변경
-        setTimeout(function() {
-            scwin.processUploadedData();
-        }, 1000);
-
     } catch (err) {
         console.error("업로드 중 에러:", err);
         scwin.showPopup("업로드 중 오류가 발생했습니다: " + err.message);
@@ -622,58 +617,55 @@ scwin.btn_upload_onclick = function (e) {
 };
 
 
-
+// START: 이 함수를 교체하거나 확인하세요
 scwin.grd_onexcelupload = function (e) {
     console.log("=== Excel 업로드 후 데이터 병합 처리 시작 ===");
-    console.log("이벤트 타입:", e ? e.type : "unknown");
 
     try {
-        var currentDataCount = userList.getTotalRow();
-        var originalCount = scwin.originalDataCount || 0;
-
-        if (currentDataCount <= originalCount) {
-            console.log("새로운 데이터가 추가되지 않았습니다.");
+        // 1. 현재 userList에 있는 데이터는 엑셀에서 새로 업로드된 데이터입니다.
+        const newData = userList.getAllJSON();
+        if (!newData || newData.length === 0) {
             scwin.showPopup("업로드된 데이터가 없습니다.");
+            if (scwin.originalDataBackup) {
+                userList.setJSON(scwin.originalDataBackup); // 업로드 실패 시 원본 데이터로 복원
+            }
             return;
         }
+        console.log("새로 업로드된 데이터:", newData.length + "개");
 
-        console.log(`업로드 처리: 기존 ${originalCount}개, 현재 ${currentDataCount}개`);
+        // 2. 이전에 백업해둔 원본 데이터를 가져옵니다.
+        const originalData = scwin.originalDataBackup || [];
+        console.log("백업된 기존 데이터:", originalData.length + "개");
 
-        // 새로 추가된 행들만 처리
+        // 3. 기존 데이터와 새로운 데이터를 병합합니다.
+        const combinedData = originalData.concat(newData);
+        
+        // 4. 병합된 데이터로 그리드를 다시 설정합니다.
+        userList.setJSON(combinedData);
+        
+        const originalCount = originalData.length;
+        const currentDataCount = combinedData.length;
+
+        console.log(`병합 완료: 기존 ${originalCount}개, 신규 ${newData.length}개, 총 ${currentDataCount}개`);
+
+        // 5. 새로 추가된 행들에 대해서만 후처리(테넌트 ID, 역할 매핑 등)를 실행합니다.
         for (var i = originalCount; i < currentDataCount; i++) {
-            // 테넌트 ID 우선 설정 (가장 중요)
             const tenantId = $p.getParameter("tenant");
-            if (tenantId && tenantId.trim() !== "") {
+            if (tenantId) {
                 userList.setCellData(i, "tenantId", tenantId);
-                console.log(`행 ${i}: tenantId 설정 = ${tenantId}`);
-            } else {
-                console.error("테넌트 ID를 찾을 수 없습니다. 업로드를 중단합니다.");
-                scwin.showPopup("테넌트 정보가 없어 업로드를 완료할 수 없습니다.");
-                return;
             }
             
-            // 새 행의 기본 설정
             userList.setCellData(i, "passwordChanged", "Y");
-            
             var currentPassword = userList.getCellData(i, "password");
             userList.setCellData(i, "originalPassword", currentPassword || "");
-            
             if (!currentPassword || currentPassword.trim() === "") {
                 userList.setCellData(i, "password", "");
             }
-            
-            console.log(`행 ${i} 초기화 완료:`, {
-                tenantId: userList.getCellData(i, "tenantId"),
-                name: userList.getCellData(i, "name"),
-                email: userList.getCellData(i, "email"),
-                role: userList.getCellData(i, "role")
-            });
         }
 
         scwin.fixRoleMappingForNewData(originalCount);
         
-        console.log("새로 추가된 " + (currentDataCount - originalCount) + "개 행 처리 완료");
-
+        // 6. 업로드된 데이터에 대한 중복 검사를 시작합니다.
         setTimeout(function () {
             console.log("업로드된 데이터 중복 검사 시작...");
             scwin.checkUploadedEmailDuplicates(originalCount);
@@ -682,9 +674,12 @@ scwin.grd_onexcelupload = function (e) {
     } catch (err) {
         console.error("업로드 후처리 중 에러:", err);
         scwin.showPopup("업로드 후 처리 중 오류가 발생했습니다: " + err.message);
+        if (scwin.originalDataBackup) {
+            userList.setJSON(scwin.originalDataBackup); // 오류 발생 시 원본 데이터로 복원
+        }
     }
 };
-
+// END: 이 함수를 교체하거나 확인하세요
 
 
 scwin.fixRoleMappingForNewData = function (startIndex) {
