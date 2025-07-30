@@ -57,7 +57,7 @@
 			</xf:submission>
 			<xf:submission id="sbm_saveUserList" action="/InsWebApp/saveUserList.pwkjson" method="post" mediatype="application/json"
 				ref='data:json,{"id":"userList","key":"saveDataList"}' target="" encoding="UTF-8" instance="" replace="" errorHandler=""
-				customHandler="" mode="asynchronous" processMsg="데이터를 저장하는 중입니다." ev:submit="" ev:submitdone="scwin.sbm_saveUserList_submitdone"
+				customHandler="" mode="asynchronous" processMsg="사용자 정보를 저장합니다." ev:submit="" ev:submitdone="scwin.sbm_saveUserList_submitdone"
 				ev:submiterror="" abortTrigger="">
 			</xf:submission>
 		</xf:model>
