@@ -38,277 +38,125 @@ var currentLoginType = "normal";
 var isKakaoAuthenticated = false;
 
 scwin.onpageload = function () {
-    var mode = $p.getParameter("mode");
-    var email = $p.getParameter("email");
+    var mode     = $p.getParameter("mode");
+    var email    = $p.getParameter("email");
     var nickname = $p.getParameter("nickname");
+    var success  = $p.getParameter("success");
 
-    // 체크박스 초기화
+    console.log("페이지 로드 파라미터:", { mode, email, nickname, success });
+
+    /* 체크박스 초기화 */
     var chk = document.getElementById("chk_agree_html");
-    if (chk) {
-        chk.checked = (signup_dma.get("agreeTerms") === "Y");
-    }
+    if (chk) chk.checked = (signup_dma.get("agreeTerms") === "Y");
 
+    /* 팝업 정중앙 유지 */
     top.window.onresize = scwin.throttle(function () {
         scwin.centerPopup("signUpCompletePopup", 0);
     }, 200);
 
-    console.log("onpageload - mode:", mode);
+    // 팝업 레이어 먼저 생성
+    scwin.createPopupLayer();
 
-    if (mode === "kakao" && email && nickname) {
+    /* 카카오 리다이렉트 파라미터 처리 */
+    if (mode === "kakao" && email && nickname && success === "true") {
+        console.log("=== 카카오 인증 완료 모드 진입 ===");
+        console.log("원본 이메일:", email, "원본 닉네임:", nickname);
+        
+        // 즉시 상태 변경
         currentLoginType = "kakao";
         isKakaoAuthenticated = true;
 
         var decodedEmail = decodeURIComponent(email);
         var decodedNickname = decodeURIComponent(nickname);
 
-        // 데이터맵 설정
+        console.log("디코딩된 이메일:", decodedEmail, "디코딩된 닉네임:", decodedNickname);
+
+        // 데이터 먼저 설정
+        signup_dma.set("loginType", "kakao");
         signup_dma.set("userName", decodedNickname);
         signup_dma.set("email", decodedEmail);
 
-        // 직접 input 값도 설정 (강제)
+        // WebSquare 컴포넌트 초기화 대기 후 처리
         setTimeout(function () {
-            name_input.setValue(decodedNickname);
-            email_input.setValue(decodedEmail);
-            loginTypeSelect.setValue("kakao");
-            scwin.refreshUI();
-        }, 100);
+            try {
+                console.log("1단계: 라디오 버튼 설정 시작");
+                
+                // 라디오 버튼을 카카오로 강제 설정
+                if (loginTypeSelect && typeof loginTypeSelect.setValue === 'function') {
+                    loginTypeSelect.setValue("kakao");
+                    console.log("라디오 버튼 설정 완료:", loginTypeSelect.getValue());
+                } else {
+                    console.error("loginTypeSelect 객체를 찾을 수 없습니다");
+                }
+                
+                // UI 새로고침
+                console.log("2단계: UI 새로고침");
+                scwin.refreshUI();
+                
+                // 추가 지연 후 입력 필드 값 설정
+                setTimeout(function () {
+                    console.log("3단계: 입력 필드 값 설정 시작");
+                    
+                    try {
+                        // 이름 필드 설정
+                        if (name_input && typeof name_input.setValue === 'function') {
+                            name_input.setValue(decodedNickname);
+                            console.log("이름 필드 설정 완료:", name_input.getValue());
+                        } else {
+                            console.error("name_input 객체를 찾을 수 없습니다");
+                        }
+                        
+                        // 이메일 필드 설정
+                        if (email_input && typeof email_input.setValue === 'function') {
+                            email_input.setValue(decodedEmail);
+                            console.log("이메일 필드 설정 완료:", email_input.getValue());
+                        } else {
+                            console.error("email_input 객체를 찾을 수 없습니다");
+                        }
+                        
+                        // 최종 상태 확인
+                        setTimeout(function() {
+                            console.log("=== 최종 상태 확인 ===");
+                            console.log("현재 로그인 타입:", currentLoginType);
+                            console.log("카카오 인증 상태:", isKakaoAuthenticated);
+                            console.log("라디오 버튼 값:", loginTypeSelect ? loginTypeSelect.getValue() : "undefined");
+                            console.log("이름 필드 값:", name_input ? name_input.getValue() : "undefined");
+                            console.log("이메일 필드 값:", email_input ? email_input.getValue() : "undefined");
+                            console.log("이름 필드 읽기전용:", name_input ? name_input.getReadOnly() : "undefined");
+                            console.log("이메일 필드 읽기전용:", email_input ? email_input.getReadOnly() : "undefined");
+                        }, 100);
+                        
+                    } catch (innerError) {
+                        console.error("입력 필드 설정 중 오류:", innerError);
+                    }
+                    
+                }, 300); // 300ms 지연으로 증가
+                
+            } catch (e) {
+                console.error("카카오 파라미터 처리 중 오류:", e);
+            }
+        }, 200); // 200ms 지연으로 증가
+        
     } else {
+        console.log("=== 일반 모드 진입 ===");
+        // 일반 모드로 명확히 설정
         currentLoginType = "normal";
         isKakaoAuthenticated = false;
-    }
-    
-    // 커스텀 팝업 레이어 생성
-    scwin.createPopupLayer();
-    scwin.refreshUI();
-    
-    // 개선된 스타일 적용 로직
-    setTimeout(scwin.forceApplyStyles, 300);
-    setTimeout(scwin.enhancedStyleForcing, 500);
-    setTimeout(scwin.enhancedStyleForcing, 1000);
-    setTimeout(scwin.forceKakaoButtonStyle, 100);
-    setTimeout(scwin.forceKakaoButtonStyle, 500);
-    setTimeout(scwin.forceKakaoButtonStyle, 1000);
-    
-    // 스타일 감시자 설정
-    scwin.setupStyleObserver();
-    
-    // 주기적 스타일 재적용 (더 강력하게)
-    setInterval(scwin.enhancedStyleForcing, 3000);
-    setInterval(scwin.forceKakaoButtonStyle, 2000);
-};
-
-// 강화된 카카오 버튼 스타일 적용 함수
-scwin.forceKakaoButtonStyle = function() {
-    var kakaoBtn = document.getElementById('btn_kakao_auth');
-    if (kakaoBtn) {
-        // 모든 클래스 제거
-        kakaoBtn.className = '';
+        signup_dma.set("loginType", "normal");
         
-        // 인라인 스타일로 강제 적용
-        kakaoBtn.style.cssText = `
-            width: 100% !important;
-            height: 52px !important;
-            background: #FEE500 !important;
-            background-color: #FEE500 !important;
-            background-image: none !important;
-            color: #1a1a1a !important;
-            border: 2px solid #F9CC00 !important;
-            padding: 14px 24px !important;
-            border-radius: 12px !important;
-            font-size: 16px !important;
-            font-weight: 800 !important;
-            cursor: pointer !important;
-            box-sizing: border-box !important;
-            display: block !important;
-        `;
-        
-        // 하위 요소들도 강제 적용
-        var allElements = kakaoBtn.querySelectorAll('*');
-        for (var i = 0; i < allElements.length; i++) {
-            allElements[i].style.cssText = `
-                color: #1a1a1a !important;
-                background: transparent !important;
-                font-weight: 800 !important;
-            `;
-        }
-    }
-};
-
-// 기존 forceApplyStyles 함수 개선
-scwin.forceApplyStyles = function() {
-    console.log("Force apply styles started");
-    
-    // 카카오 버튼 스타일 강제 적용
-    var kakaoBtn = document.getElementById('btn_kakao_auth');
-    if (kakaoBtn) {
-        kakaoBtn.style.setProperty('background', '#FEE500', 'important');
-        kakaoBtn.style.setProperty('background-color', '#FEE500', 'important');
-        kakaoBtn.style.setProperty('background-image', 'none', 'important');
-        kakaoBtn.style.setProperty('color', '#1a1a1a', 'important');
-        kakaoBtn.style.setProperty('border', '2px solid #F9CC00', 'important');
-        kakaoBtn.style.setProperty('border-color', '#F9CC00', 'important');
-        
-        // 내부 텍스트 요소들도 강제 적용
-        var kakaoLabels = kakaoBtn.querySelectorAll('*');
-        for (var i = 0; i < kakaoLabels.length; i++) {
-            kakaoLabels[i].style.setProperty('color', '#1a1a1a', 'important');
-            kakaoLabels[i].style.setProperty('background', 'transparent', 'important');
-        }
-    }
-    
-    // 회원가입 버튼 스타일 강제 적용
-    var signupBtn = document.getElementById('trigger1');
-    if (signupBtn) {
-        signupBtn.style.setProperty('width', '100%', 'important');
-        signupBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
-        signupBtn.style.setProperty('background-color', 'rgb(54, 116, 181)', 'important');
-        signupBtn.style.setProperty('color', '#ffffff', 'important');
-        signupBtn.style.setProperty('border', 'none', 'important');
-        
-        // 내부 텍스트 요소들도 강제 적용
-        var signupLabels = signupBtn.querySelectorAll('*');
-        for (var j = 0; j < signupLabels.length; j++) {
-            signupLabels[j].style.setProperty('color', '#ffffff', 'important');
-            signupLabels[j].style.setProperty('background', 'transparent', 'important');
-        }
-    }
-    
-    // 중복검사 버튼 스타일 강제 적용
-    var checkBtn = document.getElementById('btn_check');
-    if (checkBtn) {
-        checkBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
-        checkBtn.style.setProperty('color', '#ffffff', 'important');
-        
-        // 내부 텍스트 요소들도 강제 적용
-        var checkLabels = checkBtn.querySelectorAll('*');
-        for (var k = 0; k < checkLabels.length; k++) {
-            checkLabels[k].style.setProperty('color', '#ffffff', 'important');
-            checkLabels[k].style.setProperty('background', 'transparent', 'important');
-        }
-    }
-    
-    console.log("Force apply styles completed");
-};
-
-// 새로 추가된 강화된 스타일 강제 적용 함수
-scwin.enhancedStyleForcing = function() {
-    console.log("Enhanced style forcing started");
-    
-    // 카카오 버튼 스타일 강제 적용 - 모든 가능한 속성
-    var kakaoBtn = document.getElementById('btn_kakao_auth');
-    if (kakaoBtn) {
-        // 모든 배경 관련 속성 강제 설정
-        kakaoBtn.style.setProperty('background', '#FEE500', 'important');
-        kakaoBtn.style.setProperty('background-color', '#FEE500', 'important');
-        kakaoBtn.style.setProperty('background-image', 'none', 'important');
-        kakaoBtn.style.setProperty('color', '#1a1a1a', 'important');
-        kakaoBtn.style.setProperty('border', '2px solid #F9CC00', 'important');
-        kakaoBtn.style.setProperty('border-color', '#F9CC00', 'important');
-        kakaoBtn.style.setProperty('width', '100%', 'important');
-        
-        // 웹스퀘어 프레임워크 기본 클래스 제거 시도
-        if (kakaoBtn.className) {
-            kakaoBtn.className = kakaoBtn.className.replace(/w2-btn[^\s]*/g, '');
-            kakaoBtn.className = kakaoBtn.className.replace(/w2-trigger[^\s]*/g, '');
-        }
-        
-        // 모든 하위 요소에도 적용
-        var allKakaoElements = kakaoBtn.querySelectorAll('*');
-        for (var i = 0; i < allKakaoElements.length; i++) {
-            allKakaoElements[i].style.setProperty('color', '#1a1a1a', 'important');
-            allKakaoElements[i].style.setProperty('background', 'transparent', 'important');
-            allKakaoElements[i].style.setProperty('background-color', 'transparent', 'important');
-        }
-        
-        console.log("Enhanced kakao button style applied");
-    }
-    
-    // 회원가입 버튼 스타일 강제 적용
-    var signupBtn = document.getElementById('trigger1');
-    if (signupBtn) {
-        signupBtn.style.setProperty('width', '100%', 'important');
-        signupBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
-        signupBtn.style.setProperty('background-color', 'rgb(54, 116, 181)', 'important');
-        signupBtn.style.setProperty('color', '#ffffff', 'important');
-        signupBtn.style.setProperty('border', 'none', 'important');
-        signupBtn.style.setProperty('border-color', 'transparent', 'important');
-        
-        // 웹스퀘어 프레임워크 기본 클래스 제거 시도
-        if (signupBtn.className) {
-            signupBtn.className = signupBtn.className.replace(/w2-btn[^\s]*/g, '');
-            signupBtn.className = signupBtn.className.replace(/w2-trigger[^\s]*/g, '');
-        }
-        
-        // 모든 하위 요소에도 적용
-        var allSignupElements = signupBtn.querySelectorAll('*');
-        for (var j = 0; j < allSignupElements.length; j++) {
-            allSignupElements[j].style.setProperty('color', '#ffffff', 'important');
-            allSignupElements[j].style.setProperty('background', 'transparent', 'important');
-            allSignupElements[j].style.setProperty('background-color', 'transparent', 'important');
-        }
-        
-        console.log("Enhanced signup button style applied");
-    }
-    
-    // 중복검사 버튼도 함께 처리
-    var checkBtn = document.getElementById('btn_check');
-    if (checkBtn) {
-        checkBtn.style.setProperty('background', 'linear-gradient(135deg, rgb(54, 116, 181) 0%, rgb(87, 143, 202) 50%, rgb(74, 144, 226) 100%)', 'important');
-        checkBtn.style.setProperty('color', '#ffffff', 'important');
-        checkBtn.style.setProperty('border', 'none', 'important');
-        
-        if (checkBtn.className) {
-            checkBtn.className = checkBtn.className.replace(/w2-btn[^\s]*/g, '');
-            checkBtn.className = checkBtn.className.replace(/w2-trigger[^\s]*/g, '');
-        }
-        
-        var allCheckElements = checkBtn.querySelectorAll('*');
-        for (var k = 0; k < allCheckElements.length; k++) {
-            allCheckElements[k].style.setProperty('color', '#ffffff', 'important');
-            allCheckElements[k].style.setProperty('background', 'transparent', 'important');
-            allCheckElements[k].style.setProperty('background-color', 'transparent', 'important');
-        }
-        
-        console.log("Enhanced check button style applied");
-    }
-    
-    console.log("Enhanced style forcing completed");
-};
-
-// DOM 변경 감지 및 자동 스타일 재적용
-scwin.setupStyleObserver = function() {
-    if (typeof MutationObserver !== 'undefined') {
-        var observer = new MutationObserver(function(mutations) {
-            var needsStyleUpdate = false;
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && 
-                    (mutation.target.id === 'btn_kakao_auth' || 
-                     mutation.target.id === 'trigger1' || 
-                     mutation.target.id === 'btn_check')) {
-                    needsStyleUpdate = true;
-                }
-            });
-            
-            if (needsStyleUpdate) {
-                setTimeout(scwin.enhancedStyleForcing, 50);
-                setTimeout(scwin.forceKakaoButtonStyle, 50);
-            }
-        });
-        
-        // 버튼들 감시 시작
+        // WebSquare 컴포넌트 초기화 후 라디오 버튼 설정
         setTimeout(function() {
-            var kakaoBtn = document.getElementById('btn_kakao_auth');
-            var signupBtn = document.getElementById('trigger1');
-            var checkBtn = document.getElementById('btn_check');
-            
-            if (kakaoBtn) observer.observe(kakaoBtn, { attributes: true, attributeFilter: ['class', 'style'] });
-            if (signupBtn) observer.observe(signupBtn, { attributes: true, attributeFilter: ['class', 'style'] });
-            if (checkBtn) observer.observe(checkBtn, { attributes: true, attributeFilter: ['class', 'style'] });
-            
-            console.log("Style observer setup completed");
-        }, 1000);
+            if (loginTypeSelect && typeof loginTypeSelect.setValue === 'function') {
+                loginTypeSelect.setValue("normal");
+                console.log("일반 모드 라디오 버튼 설정 완료");
+            }
+            // UI 새로고침
+            scwin.refreshUI();
+        }, 100);
     }
 };
+
+
 
 // HTML 체크박스 상태 변경 핸들러 - 전역 함수로 등록
 window.htmlCheckbox_onchange = function(checkbox) {
@@ -384,65 +232,52 @@ scwin.showPopup = function (message, isConfirm, callback) {
 };
 
 scwin.loginTypeSelect_onchange = function () {
-    currentLoginType = loginTypeSelect.getValue();
-    isKakaoAuthenticated = false;
+    currentLoginType       = loginTypeSelect.getValue();
+    isKakaoAuthenticated   = false;
 
     if (currentLoginType === "kakao") {
         signup_dma.set("userName", "");
-        signup_dma.set("email", "");
+        signup_dma.set("email"   , "");
         signup_dma.set("password", "");
         signup_dma.set("passwordConfirm", "");
     }
 
     scwin.refreshUI();
-    // UI 변경 후 강화된 스타일 재적용
-    setTimeout(function() {
-        scwin.forceApplyStyles();
-        scwin.enhancedStyleForcing();
-        scwin.forceKakaoButtonStyle();
-    }, 100);
 };
 
 scwin.refreshUI = function () {
-    console.log("refreshUI - currentLoginType:", currentLoginType);
-
-    // 라디오 버튼 강제 설정
-    loginTypeSelect.setValue(currentLoginType);
-
     var isNormal = (currentLoginType === "normal");
+    
+    console.log("refreshUI 호출 - currentLoginType:", currentLoginType, "isNormal:", isNormal, "isKakaoAuthenticated:", isKakaoAuthenticated);
 
-    // UI 표시/숨김
     grp_kakao_info.setStyle("display", isNormal ? "none" : "block");
     grp_kakao_auth.setStyle("display", (!isNormal && !isKakaoAuthenticated) ? "block" : "none");
     grp_kakao_user_info.setStyle("display", (!isNormal && isKakaoAuthenticated) ? "block" : "none");
 
-    // 읽기전용 설정 - 다시 한번 강제 적용
-    setTimeout(function () {
+    // 읽기 전용 설정을 즉시 처리
+    if (name_input && typeof name_input.setReadOnly === 'function') {
         name_input.setReadOnly(!isNormal);
+        console.log("이름 필드 읽기전용 설정:", !isNormal);
+    }
+    
+    if (email_input && typeof email_input.setReadOnly === 'function') {
         email_input.setReadOnly(!isNormal);
-    }, 50);
+        console.log("이메일 필드 읽기전용 설정:", !isNormal);
+    }
 
     btn_check.setStyle("display", isNormal ? "inline-block" : "none");
     grp_pwd.setStyle("display", isNormal ? "block" : "none");
     grp_pwd_confirm.setStyle("display", isNormal ? "block" : "none");
     grp_agree.setStyle("display", isNormal ? "block" : "none");
 
-    if (isNormal) {
-        trigger1.setLabel("회원가입");
-    } else {
-        trigger1.setLabel("카카오 회원가입");
-    }
-    
-    // UI 변경 후 강화된 스타일 재적용
-    setTimeout(function() {
-        scwin.enhancedStyleForcing();
-        scwin.forceKakaoButtonStyle();
-    }, 200);
+    trigger1.setLabel(isNormal ? "회원가입" : "카카오 회원가입");
 };
+
 
 scwin.btn_kakao_auth_onclick = function () {
     $c.sbm.execute(kakaoAuthProcess);
 };
+
 
 scwin.kakaoAuthProcess_submitdone = function (e) {
     if (e.responseStatusCode === 200 && e.responseJSON.success && e.responseJSON.loginUrl) {
@@ -569,15 +404,15 @@ scwin.signupProcess_submitdone = function (e) {
 };
 
 scwin.throttle = function (callback, delay) {
-    var lastCall = 0;
+    var last = 0;
     return function () {
         var now = new Date().getTime();
-        if (now - lastCall >= delay) {
-            lastCall = now;
+        if (now - last >= delay) {
+            last = now;
             callback();
         }
     };
-}
+};
 
 scwin.centerPopup = function (popupId, offsetY) {
     if (typeof offsetY === 'undefined') offsetY = 0;
@@ -784,92 +619,70 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
                     color: inherit !important;
                 }
 
-                /* 3. 카카오 인증 버튼 노란색 강제 적용 - CSS 충돌 해결 */
-                /* ID 기반 최고 우선순위 스타일 */
-                #btn_kakao_auth,
-                xf\:trigger#btn_kakao_auth,
-                html body #btn_kakao_auth,
-                html body xf\:trigger#btn_kakao_auth,
-                html body .form-container #btn_kakao_auth,
-                html body .form-container xf\:trigger#btn_kakao_auth,
-                [id="btn_kakao_auth"] {
-                    width: 100% !important;
-                    height: 52px !important;
-                    background: #FEE500 !important;
-                    background-color: #FEE500 !important;
-                    background-image: none !important;
-                    color: #1a1a1a !important;
-                    border: 2px solid #F9CC00 !important;
-                    border-color: #F9CC00 !important;
-                    padding: 14px 24px !important;
-                    border-radius: 12px !important;
-                    font-size: 16px !important;
-                    font-weight: 800 !important;
-                    cursor: pointer !important;
-                    transition: all 0.2s ease !important;
-                    white-space: nowrap !important;
-                    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4) !important;
-                    pointer-events: auto !important;
-                    text-shadow: none !important;
-                    display: block !important;
-                    box-sizing: border-box !important;
-                }
+             /* 카카오 인증 버튼 전용 클래스 */
+.btn-kakao {
+    width: 100% !important;
+    height: 52px !important;
+    background: #FEE500 !important;
+    background-color: #FEE500 !important;
+    color: #1a1a1a !important;
+    border: 2px solid #F9CC00 !important;
+    padding: 14px 24px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4) !important;
+    text-align: center !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    
+    /* 웹스퀘어 기본 스타일 제거 */
+    background-image: none !important;
+    text-shadow: none !important;
+    outline: none !important;
+}
 
-                /* 카카오 버튼 호버 상태 */
-                #btn_kakao_auth:hover,
-                xf\:trigger#btn_kakao_auth:hover,
-                html body #btn_kakao_auth:hover,
-                [id="btn_kakao_auth"]:hover {
-                    background: #FFEB3B !important;
-                    background-color: #FFEB3B !important;
-                    background-image: none !important;
-                    color: #1a1a1a !important;
-                    transform: translateY(-2px) !important;
-                    box-shadow: 0 6px 20px rgba(255, 235, 59, 0.6) !important;
-                    border: 2px solid #F57F17 !important;
-                    border-color: #F57F17 !important;
-                }
+.btn-kakao:hover {
+    background: #FFEB3B !important;
+    background-color: #FFEB3B !important;
+    border: 2px solid #F57F17 !important;
+    color: #1a1a1a !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(255, 235, 59, 0.6) !important;
+}
 
-                /* 카카오 버튼 내부 텍스트 강제 스타일 */
-                #btn_kakao_auth *,
-                #btn_kakao_auth xf\:label,
-                #btn_kakao_auth .w2-trigger-label,
-                #btn_kakao_auth label,
-                #btn_kakao_auth span,
-                xf\:trigger#btn_kakao_auth *,
-                xf\:trigger#btn_kakao_auth xf\:label,
-                xf\:trigger#btn_kakao_auth .w2-trigger-label,
-                xf\:trigger#btn_kakao_auth label,
-                xf\:trigger#btn_kakao_auth span {
-                    color: #1a1a1a !important;
-                    font-weight: 800 !important;
-                    text-shadow: none !important;
-                    background: none !important;
-                    background-color: transparent !important;
-                    background-image: none !important;
-                }
+.btn-kakao:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(254, 229, 0, 0.3) !important;
+}
 
-                /* 클래스 기반 스타일 덮어쓰기 (충돌 방지) */
-                .btn-check#btn_kakao_auth,
-                .w2-btn#btn_kakao_auth,
-                .w2-trigger#btn_kakao_auth {
-                    background: #FEE500 !important;
-                    background-color: #FEE500 !important;
-                    background-image: none !important;
-                    color: #1a1a1a !important;
-                    border: 2px solid #F9CC00 !important;
-                }
+/* 카카오 버튼 내부 텍스트 스타일 */
+.btn-kakao *,
+.btn-kakao xf\:label,
+.btn-kakao .w2-trigger-label,
+.btn-kakao label,
+.btn-kakao span {
+    color: #1a1a1a !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;}
 
-                /* 웹스퀘어 프레임워크 기본 스타일 강제 제거 */
-                #btn_kakao_auth.w2-btn,
-                #btn_kakao_auth.w2-trigger,
-                #btn_kakao_auth.btn-check {
-                    background: #FEE500 !important;
-                    background-color: #FEE500 !important;
-                    background-image: none !important;
-                    color: #1a1a1a !important;
-                    border: 2px solid #F9CC00 !important;
-                }
+    /* 웹스퀘어 트리거 요소에 대한 추가 스타일 */
+xf\:trigger.btn-kakao {
+    background: #FEE500 !important;
+    background-color: #FEE500 !important;
+    background-image: none !important;
+    color: #1a1a1a !important;
+    border: 2px solid #F9CC00 !important;
+}
+
+
+
 
                 /* 일반 버튼 스타일 (중복검사, 회원가입) - 최고 우선순위 */
                 html body .form-container .btn-check,
@@ -1333,6 +1146,45 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
                     border-color: #38a169 !important;
                     box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1) !important;
                 }
+
+                #btn_kakao_auth,
+xf\:trigger#btn_kakao_auth {
+    width: 100% !important;
+    height: 52px !important;
+    background-color: #FEE500 !important;
+    background-image: none !important; /* 그라데이션 제거 */
+    background: #FEE500 !important; /* 배경색 최종 확인 */
+    color: #1a1a1a !important;
+    border: 2px solid #F9CC00 !important;
+    padding: 14px 24px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4) !important;
+    text-align: center !important;
+    display: block !important;
+    box-sizing: border-box !important;
+}
+
+   font-size: 16px !important;
+ btn_kakao_auth: 800 !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: block !important;
+    box-sizing: border-box !important;
+
+    /* 배경색 및 테두리 설정 */
+    background: #FEE500 !important; /* ID와 Class를 함께 사용하여 우선순위 확보 */
+    background-color: #FEE500 !important;
+    background-image: none !important; /* 그라데이션 강제 제거 */
+    border: 2px solid #F9CC00 !important;
+    color: #1a1a1a !important;
+    box-shadow: 0 4px 15px rgba(254, 229, 0, 0.4) !important;
+}
             ]]>
 		</style>
 	</head>
@@ -1352,7 +1204,7 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
 						</w2:label>
 					</w2:textbox>
 					<xf:select1 id="loginTypeSelect" renderType="radiogroup" class="radio-group" ref="data:signup_dma.loginType"
-						ev:onchange="scwin.loginTypeSelect_onchange" selectedIndex="0">
+						ev:onchange="scwin.loginTypeSelect_onchange">
 						<xf:choices>
 							<xf:item class="radio-option">
 								<xf:label>일반 회원</xf:label>
@@ -1370,12 +1222,7 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
 					<w2:textbox class="help-text" label="카카오 인증 후 이름과 이메일이 자동으로 입력됩니다. 회사명과 테넌트ID를 입력해주세요."></w2:textbox>
 				</xf:group>
 				<xf:group id="grp_kakao_auth" class="form-group" style="display:none;">
-					<xf:trigger id="btn_kakao_auth" class="btn-check" ev:onclick="scwin.btn_kakao_auth_onclick"
-						style="background-color:yellow;width:450px;">
-						<w2:attributes>
-							<w2:summary></w2:summary>
-							<w2:style backgroundColor="#FEE500" borderColor="#F9CC00" color="#1a1a1a" width="100%" height="52px"></w2:style>
-						</w2:attributes>
+					<xf:trigger id="btn_kakao_auth" class="btn-kakao" ev:onclick="scwin.btn_kakao_auth_onclick">
 						<xf:label>카카오 인증하기</xf:label>
 					</xf:trigger>
 				</xf:group>
@@ -1384,22 +1231,12 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
 				</xf:group>
 
 				<xf:group class="form-group">
-					<w2:textbox tagname="p" escape="false">
-						<w2:label>
-							이름
-							<span class="required">*</span>
-						</w2:label>
-					</w2:textbox>
+					<w2:textbox tagname="label" label="이름 *" escape="false"></w2:textbox>
 					<xf:input id="name_input" ref="data:signup_dma.userName" placeholder="이름을 입력해주세요"></xf:input>
 				</xf:group>
 
 				<xf:group class="form-group">
-					<w2:textbox tagname="p" escape="false">
-						<w2:label>
-							이메일
-							<span class="required">*</span>
-						</w2:label>
-					</w2:textbox>
+					<w2:textbox tagname="label" label="이메일 *" escape="false"></w2:textbox>
 					<xf:group class="input-group">
 						<xf:input id="email_input" ref="data:signup_dma.email" placeholder="이메일을 입력해주세요"></xf:input>
 						<xf:trigger id="btn_check" class="btn-check" ev:onclick="scwin.btn_check_onclick" style="color: white;">
@@ -1410,43 +1247,23 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
 				</xf:group>
 
 				<xf:group class="form-group">
-					<w2:textbox tagname="p" escape="false">
-						<w2:label>
-							회사명
-							<span class="required">*</span>
-						</w2:label>
-					</w2:textbox>
+					<w2:textbox tagname="label" label="회사명 *" escape="false"></w2:textbox>
 					<xf:input id="company_input" ref="data:signup_dma.tenantName" placeholder="회사명을 입력해주세요"></xf:input>
 				</xf:group>
 
 				<xf:group id="grp_pwd" class="form-group">
-					<w2:textbox tagname="p" escape="false">
-						<w2:label>
-							비밀번호
-							<span class="required">*</span>
-						</w2:label>
-					</w2:textbox>
+					<w2:textbox tagname="label" label="비밀번호 *" escape="false"></w2:textbox>
 					<xf:input id="password_input" ref="data:signup_dma.password" placeholder="8자 이상의 비밀번호를 입력해주세요" type="password"></xf:input>
 					<w2:textbox class="help-text" label="영문, 숫자, 특수문자 포함 8자 이상" tagname="div"></w2:textbox>
 				</xf:group>
 
 				<xf:group id="grp_pwd_confirm" class="form-group">
-					<w2:textbox tagname="p" escape="false">
-						<w2:label>
-							비밀번호 확인
-							<span class="required">*</span>
-						</w2:label>
-					</w2:textbox>
+					<w2:textbox tagname="label" label="비밀번호 확인 *" escape="false"></w2:textbox>
 					<xf:input id="password_chk_input" ref="data:signup_dma.passwordConfirm" placeholder="비밀번호를 다시 입력해주세요" type="password"></xf:input>
 				</xf:group>
 
 				<xf:group class="form-group">
-					<w2:textbox tagname="p" escape="false">
-						<w2:label>
-							테넌트ID
-							<span class="required">*</span>
-						</w2:label>
-					</w2:textbox>
+					<w2:textbox tagname="label" label="서브도메인 *" escape="false"></w2:textbox>
 					<xf:input id="tenant_input" ref="data:signup_dma.subDomain" placeholder="서비스 URL에 사용될 영문ID"></xf:input>
 				</xf:group>
 
