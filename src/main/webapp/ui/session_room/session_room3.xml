@@ -1725,21 +1725,25 @@ scwin.openChatModule = async function (moduleInfo) {
             bottom: 20px;
             right: 20px;
             width: 360px;
-            height: 500px;
+            height: 80.7%;
             background-color: white;
             z-index: 999;
             box-shadow: 0 4px 20px rgba(0,0,0,0.25);
             border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 80px;
+            margin-bottom: 70px;
         `;
 
         document.body.appendChild(container);
 
         // ChatModule 인스턴스 생성
+        // const chatModule = new ChatModule(container, {
+        //     roomId: scwin.currentSessionId || "default-room",
+        //     currentUser: "사용자"
+        // });
         const chatModule = new ChatModule(container, {
             roomId: scwin.currentSessionId || "default-room",
-            currentUser: "사용자"
+            currentUser: meetingSettings.get("participantName") || "사용자"
         });
 
         // 채팅 닫기 이벤트 처리
