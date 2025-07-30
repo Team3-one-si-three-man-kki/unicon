@@ -679,51 +679,51 @@
         this.headerSection = document.createElement("div");
         this.headerSection.className = "header-section";
         this.headerSection.style.cssText = `
-	           display: flex !important;
-	           justify-content: space-between !important;
-	           align-items: center !important;
-	           padding: 12px 24px !important;
-	           background: rgba(255, 255, 255, 0.95) !important;
-	           backdrop-filter: blur(10px) !important;
-	           border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
-	           box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
-	           z-index: 1000 !important;
-	           width: 100% !important;
-	           height: 60px !important;
-	           box-sizing: border-box !important;
-	           position: relative !important;
-	       `;
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: 12px 24px !important;
+              background: rgba(255, 255, 255, 0.95) !important;
+              backdrop-filter: blur(10px) !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+              box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+              z-index: 1000 !important;
+              width: 100% !important;
+              height: 60px !important;
+              box-sizing: border-box !important;
+              position: relative !important;
+          `;
 
         // Room info
         const roomInfo = document.createElement("div");
         roomInfo.className = "room-info";
         roomInfo.style.cssText = `
-	           display: flex;
-	           align-items: center;
-	           gap: 12px;
-	           color: #333;
-	       `;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              color: #333;
+          `;
 
         const roomTitle = document.createElement("h2");
         roomTitle.textContent = "ModuLink 화상회의";
         roomTitle.style.cssText = `
-	           margin: 0;
-	           font-size: 18px;
-	           font-weight: 600;
-	           color: #2c3e50;
-	       `;
+              margin: 0;
+              font-size: 18px;
+              font-weight: 600;
+              color: #2c3e50;
+          `;
 
         const participantCount = document.createElement("span");
         participantCount.className = "participant-count";
         participantCount.textContent = "참가자 1명";
         participantCount.style.cssText = `
-	           background: #e8f4f8;
-	           color: #2980b9;
-	           padding: 4px 12px;
-	           border-radius: 16px;
-	           font-size: 12px;
-	           font-weight: 500;
-	       `;
+              background: #e8f4f8;
+              color: #2980b9;
+              padding: 4px 12px;
+              border-radius: 16px;
+              font-size: 12px;
+              font-weight: 500;
+          `;
 
         roomInfo.appendChild(roomTitle);
         roomInfo.appendChild(participantCount);
@@ -732,10 +732,10 @@
         const headerControls = document.createElement("div");
         headerControls.className = "header-controls";
         headerControls.style.cssText = `
-	           display: flex;
-	           gap: 8px;
-	           align-items: center;
-	       `;
+              display: flex;
+              gap: 8px;
+              align-items: center;
+          `;
 
         // Fullscreen button
         this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
@@ -767,47 +767,47 @@
         this.headerSection = document.createElement("div");
         this.headerSection.className = "header-section";
         this.headerSection.style.cssText = `
-	           display: flex;
-	           justify-content: space-between;
-	           align-items: center;
-	           padding: 12px 24px;
-	           background: rgba(255, 255, 255, 0.95);
-	           backdrop-filter: blur(10px);
-	           border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-	           box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-	           z-index: 1000;
-	       `;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 12px 24px;
+              background: rgba(255, 255, 255, 0.95);
+              backdrop-filter: blur(10px);
+              border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+              box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+              z-index: 1000;
+          `;
 
         // Room info
         const roomInfo = document.createElement("div");
         roomInfo.className = "room-info";
         roomInfo.style.cssText = `
-	           display: flex;
-	           align-items: center;
-	           gap: 12px;
-	           color: #333;
-	       `;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              color: #333;
+          `;
 
         const roomTitle = document.createElement("h2");
         roomTitle.textContent = "화상회의";
         roomTitle.style.cssText = `
-	           margin: 0;
-	           font-size: 18px;
-	           font-weight: 600;
-	           color: #2c3e50;
-	       `;
+              margin: 0;
+              font-size: 18px;
+              font-weight: 600;
+              color: #2c3e50;
+          `;
 
         const participantCount = document.createElement("span");
         participantCount.className = "participant-count";
         participantCount.textContent = "참가자 1명";
         participantCount.style.cssText = `
-	           background: #e8f4f8;
-	           color: #2980b9;
-	           padding: 4px 12px;
-	           border-radius: 16px;
-	           font-size: 12px;
-	           font-weight: 500;
-	       `;
+              background: #e8f4f8;
+              color: #2980b9;
+              padding: 4px 12px;
+              border-radius: 16px;
+              font-size: 12px;
+              font-weight: 500;
+          `;
 
         roomInfo.appendChild(roomTitle);
         roomInfo.appendChild(participantCount);
@@ -816,10 +816,10 @@
         const headerControls = document.createElement("div");
         headerControls.className = "header-controls";
         headerControls.style.cssText = `
-	           display: flex;
-	           gap: 8px;
-	           align-items: center;
-	       `;
+              display: flex;
+              gap: 8px;
+              align-items: center;
+          `;
 
         // Fullscreen button
         this.fullscreenButton = this.createHeaderButton("⛶", "전체화면", () => {
@@ -891,18 +891,18 @@
         this.mainContentArea = document.createElement("div");
         this.mainContentArea.className = "main-content";
         this.mainContentArea.style.cssText = `
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		width: 100%;
-		height: 100%;
-		display: flex;
-		gap: 16px;
-		padding: 16px;
-		overflow: hidden;
-		box-sizing: border-box;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      overflow: hidden;
+      box-sizing: border-box;
         `;
 
         // 기존 label 숨기기
@@ -929,13 +929,13 @@
       this.mainStageContainer = document.createElement("div");
       this.mainStageContainer.id = "mainStageContainer";
       this.mainStageContainer.style.cssText = `
-	  flex: 1;
-	  position: relative;
-	  background: #1a1a1a;
-	  border-radius: 16px;
-	  overflow: hidden;
-	  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-	  border: 2px solid rgba(255, 255, 255, 0.1);
+     flex: 1;
+     position: relative;
+     background: #1a1a1a;
+     border-radius: 16px;
+     overflow: hidden;
+     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+     border: 2px solid rgba(255, 255, 255, 0.1);
       `;
 
 
@@ -943,7 +943,7 @@
       this.sidebarContainer = document.createElement("div");
       this.sidebarContainer.id = "sidebarContainer";
       this.sidebarContainer.style.cssText = `
-        width: 280px;
+        width: 240px;
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -1006,7 +1006,7 @@
         //  if (firstButton) {
         //    firstButton.innerHTML = '';
         //    this.createControlButtons(firstButton);
-        //	firstButton.style.display = 'none';
+        //   firstButton.style.display = 'none';
         return;
         //  }
         //}
@@ -1151,33 +1151,33 @@
 
     applyStyles() {
       const globalStyles = `
-	  /* 웹스퀘어 영역 내의 동적 컨텐츠 스타일 */
-	  #mf_grp_video_area {
-	      position: relative !important;
-	      overflow: hidden !important;
-	  }
+     /* 웹스퀘어 영역 내의 동적 컨텐츠 스타일 */
+     #mf_grp_video_area {
+         position: relative !important;
+         overflow: hidden !important;
+     }
 
-	  #mf_grp_video_area .main-content {
-	      position: absolute !important;
-	      top: 0 !important;
-	      left: 0 !important;
-		  right: 0 !important;
-		  bottom: 0 !important;
+     #mf_grp_video_area .main-content {
+         position: absolute !important;
+         top: 0 !important;
+         left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
 
-		  
-	      /*width: 1152px !important;
-	      height: 600px !important;*/
-		  
-		  width: 100% !important;
-		  height: 100% !important;
-		  
-	      z-index: 100 !important;
-	  }
+        
+         /*width: 1152px !important;
+         height: 600px !important;*/
+        
+        width: 100% !important;
+        height: 100% !important;
+        
+         z-index: 100 !important;
+     }
 
-	  #mf_grp_video_area .drop-zone-label {
-	      display: none !important;
-	  }
-	  
+     #mf_grp_video_area .drop-zone-label {
+         display: none !important;
+     }
+     
       .video-conference-app * {
         box-sizing: border-box;
       }
