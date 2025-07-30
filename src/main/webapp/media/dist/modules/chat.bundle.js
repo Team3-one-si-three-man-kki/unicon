@@ -170,7 +170,7 @@ var ChatModule = (function (exports) {
           background: #e9ecef;
         }
         .chat-module-contents { 
-          flex: 1; 
+          flex: 2; 
           position: relative; 
           overflow: hidden; 
         }
