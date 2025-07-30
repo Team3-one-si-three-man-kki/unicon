@@ -933,67 +933,71 @@ scwin.onpageload = async function () {
 
     scwin.loadAIModule = function () {
         try {
-            scwin.loadModule(
-                "/InsWebApp/media/dist/modules/mediapipe.bundle.js",
-                "MediaPipeModule"
-            ).then(MediaPipeModule => {
-                if (MediaPipeModule && !MediaPipeModule.prototype) {
-                    MediaPipeModule = MediaPipeModule.MediaPipeModule || MediaPipeModule.default;
-                }
-                aiModule = new MediaPipeModule(scwin.videoElement, MEDIA_PIPE_WORKER_URL);
-                console.log("AI Module will be initialized.");
-
-                if (aiModule) aiModule.start();
-
-                aiModule.on("landmarksUpdate", (landmarks) => {
-                    scwin.uiManager.drawFaceMesh(landmarks);
-                });
-
-
-                aiModule.on("drowsinessDetected", (data) => {
-                    console.log("Event: drowsinessUpdate -> Sending status to server.");
-                    scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml", 400, 425);
-                    scwin.roomClient.sendPeerStatus(data);
-
-                    // 개인 대시보드에 직접 알림
-                    if (window.PersonalDashboardController) {
-                        window.PersonalDashboardController.handleDrowsinessDetected();
+            if (!scwin.isAdmin) {
+                scwin.loadModule(
+                    "/InsWebApp/media/dist/modules/mediapipe.bundle.js",
+                    "MediaPipeModule"
+                ).then(MediaPipeModule => {
+                    if (MediaPipeModule && !MediaPipeModule.prototype) {
+                        MediaPipeModule = MediaPipeModule.MediaPipeModule || MediaPipeModule.default;
                     }
-                });
-                aiModule.on("drowsinessResolved", (data) => {
-                    console.log("Event: drowsinessUpdate -> Sending status to server.");
-                    scwin.roomClient.sendPeerStatus(data);
+                    aiModule = new MediaPipeModule(scwin.videoElement, MEDIA_PIPE_WORKER_URL);
+                    console.log("AI Module will be initialized.");
 
-                    // 개인 대시보드에 직접 알림
-                    if (window.PersonalDashboardController) {
-                        window.PersonalDashboardController.handleDrowsinessResolved();
-                    }
-                });
+                    if (aiModule) aiModule.start();
 
-                aiModule.on("absenceStarted", (data) => {
-                    console.log(" Event: absenceStarted -> Sending status to server.");
-                    scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
-                    scwin.roomClient.sendPeerStatus(data);
+                    aiModule.on("landmarksUpdate", (landmarks) => {
+                        scwin.uiManager.drawFaceMesh(landmarks);
+                    });
 
-                    // 개인 대시보드에 직접 알림
-                    if (window.PersonalDashboardController) {
-                        window.PersonalDashboardController.handleAbsenceDetected();
-                    }
-                });
-                aiModule.on("absenceEnded", (data) => {
-                    console.log(" Event: absenceEnded -> Sending status to server.");
-                    scwin.roomClient.sendPeerStatus(data);
 
-                    // 개인 대시보드에 직접 알림
-                    if (window.PersonalDashboardController) {
-                        window.PersonalDashboardController.handleAbsenceResolved();
-                    }
-                });
+                    aiModule.on("drowsinessDetected", (data) => {
+                        if (!scwin.isAdmin) {
+                            console.log("Event: drowsinessUpdate -> Sending status to server.");
+                            scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml", 400, 425);
+                            scwin.roomClient.sendPeerStatus(data);
 
-                aiModule.on("error", (error) => {
-                    console.error(" AI Module Error:", error);
+                            // 개인 대시보드에 직접 알림
+                            if (window.PersonalDashboardController) {
+                                window.PersonalDashboardController.handleDrowsinessDetected();
+                            }
+                        }
+                    });
+                    aiModule.on("drowsinessResolved", (data) => {
+                        console.log("Event: drowsinessUpdate -> Sending status to server.");
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleDrowsinessResolved();
+                        }
+                    });
+
+                    aiModule.on("absenceStarted", (data) => {
+                        console.log(" Event: absenceStarted -> Sending status to server.");
+                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleAbsenceDetected();
+                        }
+                    });
+                    aiModule.on("absenceEnded", (data) => {
+                        console.log(" Event: absenceEnded -> Sending status to server.");
+                        scwin.roomClient.sendPeerStatus(data);
+
+                        // 개인 대시보드에 직접 알림
+                        if (window.PersonalDashboardController) {
+                            window.PersonalDashboardController.handleAbsenceResolved();
+                        }
+                    });
+
+                    aiModule.on("error", (error) => {
+                        console.error(" AI Module Error:", error);
+                    });
                 });
-            });
+            }
         } catch (error) {
             console.error("Failed to load MediaPipeModule:", error);
         }
@@ -1621,14 +1625,14 @@ scwin.handleScreenShare = function (moduleInfo) {
 
 // 세션 나가기 -- 일단 임시로 구현해놓음.... -> 재원님꺼랑 합치면됨. -> 모듈을 만들거나 아니면 기본 버튼
 scwin.handleLeaveSession = function (moduleInfo) {
-        var jsnPopupData = {
-            "type": "json",
-            "name": "popup_param",
-            "data": {
-                "roomClient" : scwin.roomClient
-            }
+    var jsnPopupData = {
+        "type": "json",
+        "name": "popup_param",
+        "data": {
+            "roomClient": scwin.roomClient
         }
-        scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/main/check_out_pop_up.xml", 400, 300);
+    }
+    scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/main/check_out_pop_up.xml", 400, 300);
 };
 
 // 버튼 상태 업데이트 함수

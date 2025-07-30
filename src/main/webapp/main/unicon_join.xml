@@ -644,8 +644,17 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
 ]]></script>
 
 		<style type="text/css">
-            <![CDATA[
-                /* 기본 리셋 및 글로벌 스타일 */
+            <![CDATA[                #mf_signUpCompletePopup_header {display :none}
+                #mf_signUpCompletePopup_body {top : -1px}
+                * { 
+                    margin: 0; 
+                    padding: 0; 
+                    box-sizing: border-box; 
+                }
+                mf_signUpCompletePopup ::-webkit-scrollbar {
+                    display: none; /* Chrome, Safari */
+                }
+                
                 * { 
                     margin: 0; 
                     padding: 0; 

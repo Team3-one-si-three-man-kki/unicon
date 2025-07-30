@@ -62,9 +62,9 @@
       // 이렇게 하면 서버 주소가 변경되어도 클라이언트 코드를 수정할 필요가 없습니다.
       // 포트는 3000으로 고정합니다.
       //const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
-	  const wsUrl = `wss://${"unify-conference.store"}/ws?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;      console.log(`Connecting to WebSocket: ${wsUrl}`);
+      const wsUrl = `wss://${"unify-conference.store"}/ws?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
 
-	  console.log(`Connecting to WebSocket: ${wsUrl}`);
+      console.log(`Connecting to WebSocket: ${wsUrl}`);
       this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
         console.log("   WebSocket connected");
@@ -212,7 +212,7 @@
         videoElement.autoplay = true;
         videoElement.playsInline = true;
         videoElement.style.cssText = "height: 100%; width: 100%; object-fit: cover;";
-		//videoElement.style.cssText = "width: 100%; height: 100%; object-fit: contain; margin: auto;";
+        //videoElement.style.cssText = "width: 100%; height: 100%; object-fit: contain; margin: auto;";
         videoElement.srcObject = this.localStream;
 
         // 2. 생성된 video 요소와 peerId를 UI 로직으로 전달
@@ -637,7 +637,7 @@
       if (webSquareContainer) {
         // 웹스퀘어 모드: 기존 UI 생성하지 않음
         console.log("UIManager: Using WebSquare container mode");
-		this.createHeader();
+        this.createHeader();
         //this.createMainContent();
         //this.createControls();
       } else {
@@ -1351,8 +1351,8 @@
     // Getters
     getMainStageContainer() {
       //return this.mainStageContainer;
-	  return document.getElementById('mf_grp_video_area');
-	  //return this.webSquareContainer;
+      return document.getElementById('mf_grp_video_area');
+      //return this.webSquareContainer;
     }
 
     getSidebarContainer() {
