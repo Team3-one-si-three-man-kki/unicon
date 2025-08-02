@@ -61,25 +61,18 @@
         <script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
 };
-// scwin.dm_loginCustomInfo = dm_loginCustomInfo;
 
-// 데이터 업데이트 함수
 scwin.updateCustomData = function (key, value) {
-    // 1. 메인 페이지의 DataMap 데이터 변경
     dm_customData.set(key, value);
 
-    // 2. PageFrame에 로드된 페이지의 DataMap을 직접 제어
     var previewFrame = $p.getFrame("loginPage");
     console.log(previewFrame)
     if (previewFrame) {
-        // 자식 페이지의 DataMap(예: dm_loginInfo)에 직접 값을 설정
         previewFrame.loginCustomInfo.set(key, value);
     }
 };
 
 scwin.loginPage_onpageframeload = function () {
-    // 이 함수는 loginPage의 로딩이 '완료'되었을 때 확실하게 호출됩니다.
-    console.log("자식 페이지(loginPage) 로딩 완료.");
     scwin.params = new URLSearchParams(window.location.search);
     dm_subdomain.set("subDomain", scwin.params.get("tenant"))
     dm_subdomain.set("mode", "custom")
@@ -87,15 +80,7 @@ scwin.loginPage_onpageframeload = function () {
 };
 
 scwin.loadPreview_submitdone = function (e) {
-    // var elHeader = e.responseJSON.elHeader;
-    // if (elHeader == null || elHeader == "" || elHeader == "undefiend" || elHeader.resSuc == false) {
-    //     $c.win.alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-    //     return false;
-    // }
-
     let elData = e.responseJSON
-    
-    console.log("여기다여기", elData)
 
     if (Object.keys(elData).length === 1) {
         elData = scwin.defaultData(elData.tenantName);
@@ -108,7 +93,6 @@ scwin.loadPreview_submitdone = function (e) {
 };
 
 scwin.dm_loginCustomInfo_onmodelchange = function (info) {
-    // 변경된 전체 데이터를 미리보기 페이지에 전달(Push)
     var previewWindow = loginPage.getWindow();
     if (previewWindow && typeof previewWindow.scwin.applyCustomization === "function") {
         previewWindow.scwin.applyCustomization(dm_loginCustomInfo.getJSON());
@@ -116,22 +100,17 @@ scwin.dm_loginCustomInfo_onmodelchange = function (info) {
 };
 
 scwin.btn_save_onclick = function (e) {
-    // 1. 현재 화면의 설정값이 바인딩된 dataMap에서 'vo' 객체를 가져옵니다.
-    // (현재 데이터맵 ID를 'dma_loginCustom_view'라고 가정)
     var styleData = dm_loginCustomInfo.getJSON();
 
-    // 2. 이 JavaScript 객체를 JSON 문자열로 변환합니다.
     var configJsonString = JSON.stringify(styleData);
 
     dm_loginPage_request.set("configJson", configJsonString);
     dm_loginPage_request.set("tenantId", scwin.params.get("tenant"));
 
-    // 5. 전송용 데이터맵을 사용하는 submission을 실행합니다.
     $p.executeSubmission("sbm_saveConfig");
 };
 
 scwin.sbm_saveConfig_submitdone = function (e) {
-    console.log(e);
 };
 
 scwin.defaultData = function (name) {
@@ -157,8 +136,6 @@ scwin.defaultData = function (name) {
         accentColor: '#6366f1',
         tenantName : name
     }
-    // 부모의 데이터맵에도 세팅? -> 부모가 있는경우 
-    // 현재 loginCustom시 datamap에 데이터 매핑이 안되어있어서 하나만 바꿔도 제대로 인식 못하는 문제 있음 -> 해결 필요
     return data;
 }]]></script>
     </head>

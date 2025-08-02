@@ -15,8 +15,6 @@
 		<w2:publicInfo method="" />
 		<script lazy="false" type="text/javascript"><![CDATA[
 scwin.onpageload = function () {
-
-
 };
 
 scwin.setDataAndRender = function () {
@@ -41,8 +39,6 @@ scwin.addUpload = function () {
     fileInput.style.display = 'none'; // input 자체는 숨기기 (label 클릭으로 대체)
     bgImgGroup.appendChild(fileInput);
 
-
-    // 2. 업로드 아이콘(w2:anchor) 클릭 이벤트 연결
     fileNameDisplay.bind("onclick", function () {
         fileInput.click();
     });
@@ -54,18 +50,16 @@ scwin.addUpload = function () {
             return;
         }
 
-        // 3-1. WebSquare 인풋에 파일 이름 표시
         fileNameDisplay.setValue(file.name);
 
         var reader = new FileReader();
         reader.onload = function (e) {
-            // 파일 내용을 Data URL로 변환하여 데이터맵에 저장
             scwin.loginCustomInfo.set("backgroundImage", e.target.result);
         };
 
         reader.readAsDataURL(file);
 
-        // 예: 선택 직후 서버로 전송하려면 FormData 사용
+        // 선택 직후 서버로 전송하려면 FormData 사용
         // var formData = new FormData();
         // Array.from(files).forEach(f => formData.append('files', f));
         // fetch('/upload/api', { method: 'POST', body: formData })
@@ -76,8 +70,6 @@ scwin.addUpload = function () {
 }
 
 scwin.addSlider = function (opacity) {
-    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
-
     // input 엘리먼트 생성
     var slider = document.createElement("input");
     slider.type = "range";
@@ -88,7 +80,7 @@ scwin.addSlider = function (opacity) {
     slider.step = "1";
     slider.style.width = "100%";
 
-    // 이벤트 바인딩 예시
+    // 이벤트 바인딩
     slider.addEventListener("input", function () {
         scwin.loginCustomInfo.set("overlayOpacity", slider.value);
         opacity_text.setValue("오버레이 투명도 : " + slider.value + "%");
@@ -100,8 +92,6 @@ scwin.addSlider = function (opacity) {
 }
 
 scwin.addColor = function (id, colorGroup, color1) {
-    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
-    console.log(id, color1);
 
     // input 엘리먼트 생성
     var color = document.createElement("input");
@@ -111,10 +101,9 @@ scwin.addColor = function (id, colorGroup, color1) {
     color.id = id;
     color.value = color1
 
-    // 이벤트 바인딩 예시
+    // 이벤트 바인딩
     color.addEventListener("input", function () {
         scwin.loginCustomInfo.set("overlayColor", color.value);
-        console.log("123", color.value);
     });
 
     // DOM에 추가

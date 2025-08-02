@@ -16,14 +16,12 @@
         <w2:publicInfo method=""/>
         <script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
     scwin.loginCustomInfo = aliasDataMap1.getObj();
-    console.log(scwin.loginCustomInfo)
+
     scwin.addColor("primaryColor", main_brand_color_group, scwin.loginCustomInfo.get("primaryColor"));
     scwin.addColor("accentColor", accent_color_group, scwin.loginCustomInfo.get("accentColor"));
 };
 
 scwin.addColor = function (id, obj, color1) {
-    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
-    console.log(id,color1);
 
     // input 엘리먼트 생성
     var color = document.createElement("input");
@@ -33,9 +31,8 @@ scwin.addColor = function (id, obj, color1) {
     color.id = id;
     color.value = color1;
 
-    // 이벤트 바인딩 예시
+    // 이벤트 바인딩
     color.addEventListener("input", function () {
-        console.log("현재 값:", color.value);
         scwin.loginCustomInfo.set(color.id, color.value);
     });
 
