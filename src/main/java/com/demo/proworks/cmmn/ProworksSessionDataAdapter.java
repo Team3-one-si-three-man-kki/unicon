@@ -76,12 +76,6 @@ public class ProworksSessionDataAdapter extends SessionDataAdapter {
                 throw new AdapterException("EL.ERROR.LOGIN.0004", new String[]{id});
             }
 
-            // 2) 세션 헤더에 추가 정보 설정
-            //userHeader.setTenantId(resUserVo.getTenantId());
-            //userHeader.setRole(resUserVo.getRole());
-            //userHeader.setIsActive(resUserVo.isIsActive());
-
-            AppLog.debug("세션 헤더 설정 완료 - " + userHeader);
 
         } catch (ElException e) {
             AppLog.error("setSessionData Error1", e);
