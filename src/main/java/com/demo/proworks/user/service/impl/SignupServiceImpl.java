@@ -28,11 +28,12 @@ import com.demo.proworks.tenant.service.TenantService;
 public class SignupServiceImpl implements SignupService {
     
     
-    @Autowired
-    private UserService userService; // 인터페이스로 주입
     
     @Autowired
-    private TenantService tenantService; // 인터페이스로 주입
+    private UserService userService; 
+    
+    @Autowired
+    private TenantService tenantService; 
     
     @Autowired
     private LoginPageService loginPageService;
@@ -101,13 +102,10 @@ public class SignupServiceImpl implements SignupService {
     
     try {
         UserVo existingUser = userService.getUserByEmail(email);
-        System.out.println("이메일 사용가능여부 검사: " + existingUser);
-        
         return existingUser == null;
         
     } catch (Exception e) {
-        System.err.println("이메일 중복 검사 중 오류: " + e.getMessage());
-        return false; // 오류 시 안전하게 false 반환
+        return false; 
     }
 }
     
@@ -129,7 +127,6 @@ public class SignupServiceImpl implements SignupService {
             return existingTenants == null || existingTenants.isEmpty();
             
         } catch (Exception e) {
-            System.err.println("서브도메인 중복 검사 중 오류: " + e.getMessage());
             return false; // 오류 시 안전하게 false 반환
         }
     }
@@ -142,7 +139,7 @@ public class SignupServiceImpl implements SignupService {
     if (signupRequest == null) {
         throw new IllegalArgumentException("회원가입 요청 정보가 없습니다.");
     }
-    // 공통 필수 검증
+ 
     if (isEmpty(signupRequest.getTenantName())) {
         throw new IllegalArgumentException("테넌트명은 필수입니다.");
     }
@@ -201,15 +198,12 @@ public class SignupServiceImpl implements SignupService {
      */
     private UserVo createUserInfo(UserSignupVo signupRequest, String tenantId) {
         UserVo user = new UserVo();
-        user.setTenantId(tenantId); // AUTO_INCREMENT로 생성된 tenant_id 설정
+        user.setTenantId(tenantId); 
         user.setName(signupRequest.getUserName());
         user.setEmail(signupRequest.getEmail());
         
-        // 비밀번호 암호화
-        //String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
         user.setPassword(signupRequest.getPassword());
         
-        // 역할 설정 (기본값 또는 요청값)
         user.setRole("manager");
         
         user.setCreatedAt(getCurrentDateTimeString());

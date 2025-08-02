@@ -31,8 +31,7 @@ public class PasswordEncryptUtil {
         }
         
         String encryptedPassword = passwordEncoder.encode(plainPassword);
-        System.out.println("패스워드 암호화 완료 - 길이: " + encryptedPassword.length() + "자");
-        
+       
         return encryptedPassword;
     }
     
@@ -49,8 +48,6 @@ public class PasswordEncryptUtil {
         }
         
         boolean isMatch = passwordEncoder.matches(plainPassword, encryptedPassword);
-        System.out.println("패스워드 검증 결과: " + (isMatch ? "성공" : "실패"));
-        
         return isMatch;
     }
     

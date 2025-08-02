@@ -78,7 +78,6 @@ public class JwtUtil {
                 .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            AppLog.debug("JWT 토큰 검증 실패: " + e.getMessage());
             return false;
         }
     }
@@ -112,7 +111,7 @@ public class JwtUtil {
     }
     
     public long getRefreshTokenExpiration() {
-    return this.refreshTokenExpiration; // millisecond
+    return this.refreshTokenExpiration; 
 }
 
 public long getTokenRemainingTime(String token) {

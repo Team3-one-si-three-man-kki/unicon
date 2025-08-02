@@ -80,10 +80,7 @@ public class KakaoAuthService {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-		System.out.println("headers = " + headers);
-		System.out.println("access토큰 가져오기 코드로" + params);
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-		System.out.println("request==========" + request);
 		ResponseEntity<Map> response = restTemplate.postForEntity(kakaoTokenUrl, request, Map.class);
 
 		if (response.getStatusCode() == HttpStatus.OK) {
@@ -100,7 +97,6 @@ public class KakaoAuthService {
 	 * 카카오 액세스 토큰 획득
 	 */
 	public String getKakaoAccessToken(String code, String serviceCode) {
-		System.out.println("서비스 받아온 코드" + code);
 		String token = exchangeCodeForAccessToken(code, serviceCode);
 		if (token == null) {
 			throw new RuntimeException("카카오 토큰 교환에 실패했습니다.");
@@ -115,7 +111,6 @@ public class KakaoAuthService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(accessToken);
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-		System.out.println("headers=====" + headers);
 		HttpEntity<Void> request = new HttpEntity<>(headers);
 		ResponseEntity<Map> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, request, Map.class);
 
@@ -150,54 +145,6 @@ public class KakaoAuthService {
 	/**
 	 * 카카오 로그인 처리 (로그인 또는 회원가입)
 	 */
-//    public Map<String, Object> processKakaoLogin(String code) throws Exception {
-//        Map<String, Object> result = new HashMap<>();
-//        try {
-//            // 1. 액세스 토큰
-//            String kakaoAccessToken = getKakaoAccessToken(code);
-//            AppLog.debug("카카오 액세스 토큰 획득 성공");
-//
-//            // 2. 사용자 정보
-//            KakaoUserInfoVo userInfo = getKakaoUserInfo(kakaoAccessToken);
-//            AppLog.debug("카카오 사용자 정보 조회 성공: " + userInfo.getEmail());
-//
-//            // 3. 기존 회원 조회
-//            UserVo existing = userService.getUserByEmail(userInfo.getEmail());
-//
-//            UserVo user;
-//            boolean isNewUser = false;
-//            if (existing == null) {
-//                user = createNewKakaoUser(userInfo);
-//                userService.insertUser(user);
-//                isNewUser = true;
-//                AppLog.debug("신규 카카오 사용자 생성: " + user.getEmail());
-//            } else {
-//                user = updateKakaoUserInfo(existing, userInfo);
-//                userService.updateUser(user);
-//                AppLog.debug("기존 사용자 정보 업데이트: " + user.getEmail());
-//            }
-//
-//            // 4. JWT 생성
-//            String accessToken  = jwtUtil.generateAccessToken(
-//                user.getEmail(), user.getTenantId(), user.getRole(), user.isIsActive());
-//            String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
-//
-//            // 5. 결과
-//            result.put("success",      true);
-//            result.put("accessToken",  accessToken);
-//            result.put("refreshToken", refreshToken);
-//            result.put("user",         user);
-//            result.put("isNewUser",    isNewUser);
-//            result.put("message",      isNewUser ? "카카오 회원가입 완료" : "카카오 로그인 완료");
-//
-//        } catch (Exception e) {
-//            AppLog.error("카카오 로그인 처리 중 오류: " + e.getMessage(), e);
-//            result.put("success", false);
-//            result.put("message", "카카오 로그인 처리 중 오류가 발생했습니다.");
-//            throw e;
-//        }
-//        return result;
-//    }
 
 	private UserVo createNewKakaoUser(KakaoUserInfoVo info) {
 		UserVo user = new UserVo();
@@ -209,8 +156,5 @@ public class KakaoAuthService {
 		return user;
 	}
 
-	private UserVo updateKakaoUserInfo(UserVo existing, KakaoUserInfoVo info) {
-		// 필요 시 필드 업데이트 로직 추가
-		return existing;
-	}
+	
 }

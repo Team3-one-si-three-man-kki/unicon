@@ -30,7 +30,6 @@ public class JwtAuthenticationFilter extends ElServletFilter {
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		super.init(filterConfig); // 부모 클래스의 초기화 호출
-		AppLog.debug("JWT Authentication Filter 초기화");
 	}
 
 	@Override
@@ -38,9 +37,7 @@ public class JwtAuthenticationFilter extends ElServletFilter {
 			throws IOException, ServletException {
 
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
-		AppLog.debug("=== JWT HttpServletRequest 진입: " + request);
-		AppLog.debug("=== JWT Filter 진입: " + httpRequest.getRequestURI());
-
+	
 		// 나머지 JWT 인증 로직...
 		String token = extractToken(httpRequest);
 
@@ -48,7 +45,6 @@ public class JwtAuthenticationFilter extends ElServletFilter {
 		if (token != null && !token.isEmpty()) {
 			// 1. 블랙리스트 확인
 			if (tokenBlacklistService.isBlacklisted(token)) {
-				AppLog.debug("토큰이 블랙리스트에 등록됨: " + token);
 				httpRequest.setAttribute("jwtAuthenticated", false);
 				chain.doFilter(request, response);
 				return;
@@ -69,9 +65,7 @@ public class JwtAuthenticationFilter extends ElServletFilter {
 					httpRequest.setAttribute("userRole", userRole);
 					httpRequest.setAttribute("isActive", isActive);
 
-					AppLog.debug("JWT 인증 성공 - userId: " + userId);
 				} catch (Exception e) {
-					AppLog.error("JWT 토큰 처리 중 오류: " + e.getMessage(), e);
 					httpRequest.setAttribute("jwtAuthenticated", false);
 				}
 			} else {
@@ -84,44 +78,11 @@ public class JwtAuthenticationFilter extends ElServletFilter {
 		chain.doFilter(request, response);
 	}
 
-	private boolean isGuestService(HttpServletRequest request) {
-		String requestURI = request.getRequestURI();
-		String contextPath = request.getContextPath();
-
-		// Context Path 제거
-		String svcPath = requestURI.substring(contextPath.length());
-
-		// 확장자 제거하여 서비스 ID 추출
-		String svcId = svcPath;
-		if (svcPath.contains(".")) {
-			svcId = svcPath.substring(0, svcPath.lastIndexOf("."));
-		}
-		if (svcId.startsWith("/")) {
-			svcId = svcId.substring(1);
-		}
-
-		// GUEST 서비스 판단 로직 (ProworksAuthProcess와 동일한 로직 사용)
-		String requiredRole = getRequiredRoleForService(svcId);
-		return "GUEST".equals(requiredRole);
-	}
-
-	private String getRequiredRoleForService(String svcId) {
-		// ProworksAuthProcess의 getRequiredRoleForProWorksService와 동일한 로직
-		if (svcId.startsWith("TNU0003"))
-			return "ADMIN";
-		if (svcId.startsWith("TNU0002"))
-			return "MANAGER";
-		if (svcId.startsWith("TNU0001"))
-			return "USER";
-		return "GUEST";
-	}
 
 	private String extractToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
-		AppLog.debug("Authorization Header: " + bearerToken); // 추가
 		if (bearerToken != null && !bearerToken.isEmpty() && bearerToken.startsWith("Bearer ")) {
 			String token = bearerToken.substring(7);
-			AppLog.debug("Extracted Token: " + token); // 추가
 			return token;
 		}
 		return null;
