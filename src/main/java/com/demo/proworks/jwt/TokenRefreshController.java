@@ -72,11 +72,9 @@ public class TokenRefreshController {
 			// 8. JSON 문자열로 결과 반환
 			String successJson = String.format(
 					"{\"success\":true,\"message\":\"토큰이 성공적으로 재발급되었습니다.\",\"accessToken\":\"%s\"}", newAccessToken);
-			System.out.println(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(successJson));
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(successJson);
 
 		} catch (Exception e) {
-			AppLog.error("토큰 재발급 중 오류: " + e.getMessage(), e);
 			String errorJson = "{\"success\":false,\"message\":\"토큰 재발급 중 오류가 발생했습니다.\"}";
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON)
 					.body(errorJson);
@@ -104,9 +102,9 @@ public class TokenRefreshController {
 	private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
 		Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
 		refreshCookie.setHttpOnly(false);
-		refreshCookie.setSecure(false); // 개발 시에는 false
+		refreshCookie.setSecure(false);
 		refreshCookie.setPath("/");
-		refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
+		refreshCookie.setMaxAge(7 * 24 * 60 * 60); 
 		response.addCookie(refreshCookie);
 	}
 

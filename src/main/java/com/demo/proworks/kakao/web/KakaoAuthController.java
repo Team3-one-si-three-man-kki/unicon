@@ -61,19 +61,16 @@ public class KakaoAuthController {
 	@RequestMapping(value = "TNU0000KL")
 	@ElDescription(sub = "카카오 로그인 URL 조회", desc = "카카오 로그인 URL을 조회합니다.")
 	public ResponseEntity<String> getKakaoLoginUrl(@RequestParam(value = "service") String serviceCode,
-	@RequestParam(value = "tenant", required = false, defaultValue = "default") String tenant,
+			@RequestParam(value = "tenant", required = false, defaultValue = "default") String tenant,
 			HttpServletRequest request, HttpServletResponse response) {
-		System.out.println("TNU0000KL 진입 서비스코드는= " + serviceCode);
 		try {
-			String kakaoLoginUrl = kakaoAuthService.getKakaoLoginUrl(serviceCode,tenant);
-			System.out.println("가져온 로그인 url은?==" + kakaoLoginUrl);
+			String kakaoLoginUrl = kakaoAuthService.getKakaoLoginUrl(serviceCode, tenant);
 			Map<String, Object> result = new HashMap<>();
 			result.put("success", true);
 			result.put("loginUrl", kakaoLoginUrl);
 			result.put("message", "카카오 로그인 URL 조회 성공");
 
 			String resultJson = objectMapper.writeValueAsString(result);
-			System.out.println("resultJson===" + resultJson);
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resultJson);
 
 		} catch (Exception e) {
@@ -107,7 +104,6 @@ public class KakaoAuthController {
 			@RequestParam(value = "error_description", required = false) String error_description,
 			@RequestParam(value = "state", required = false) String state, HttpServletRequest request,
 			HttpServletResponse response) throws UnsupportedEncodingException {
-		System.out.println("TNU0000KC진입, 인증코드는 = " + code);
 		try {
 			// 1. 오류 파라미터 확인
 			if (error != null) {
@@ -130,7 +126,6 @@ public class KakaoAuthController {
 				errorResult.put("message", "인증 코드가 없습니다.");
 
 				String errorJson = objectMapper.writeValueAsString(errorResult);
-				System.out.println(errorJson);
 				return createJsonResponse(HttpStatus.BAD_REQUEST, errorJson);
 			}
 
@@ -147,8 +142,7 @@ public class KakaoAuthController {
 				String errorJson = objectMapper.writeValueAsString(errorResult);
 				return createJsonResponse(HttpStatus.UNAUTHORIZED, errorJson);
 			}
-			System.out.println("받아온 access 토큰=============" + accessToken);
-
+			
 			// 4. 카카오 사용자 정보 조회 (VO 반환)
 			KakaoUserInfoVo kakaoUserInfo = kakaoAuthService.getKakaoUserInfo(accessToken);
 			Map<String, Object> accessresult = new HashMap<>();
@@ -164,7 +158,6 @@ public class KakaoAuthController {
 				String subDoamin = existingUser.getSubDomain();
 				String logintenantId = existingUser.getTenantId();
 				String name = existingUser.getName();
-				System.out.println("카카오 로그인 시도 유저VO == " + existingUser);
 				LoginInfo info = loginProcess.processLogin(request, email, null, subDoamin, true);
 				AppLog.debug("로그인 처리 결과: " + info);
 
@@ -173,13 +166,6 @@ public class KakaoAuthController {
 					throw new LoginException("EL.ERROR.LOGIN.0001");
 				}
 
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("success", true);
-//				result.put("userId", existingUser.getUserId());
-//				result.put("tenantId", existingUser.getTenantId());
-//				result.put("role", existingUser.getRole());
-//				result.put("isActive", existingUser.isIsActive());
-//				String json = objectMapper.writeValueAsString(result);
 				String redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml"
 						+ "&tenant=" + logintenantId;
 
@@ -187,20 +173,10 @@ public class KakaoAuthController {
 				return null;
 
 			} else {
-				// 6. 신규 유저: 추가 정보 입력 페이지로 안내
-				// 세션에 Kakao 정보 보관
-//				request.getSession().setAttribute("email", accessresult.get("email"));
-//				request.getSession().setAttribute("name", accessresult.get("nickname"));
-//				// 클라이언트는 이 URL로 리다이렉트하여 테넌트 정보 입력 후 별도 API 호출
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("success", true);
-//				result.put("message", "/signup/kakao-additional");
-//				String json = objectMapper.writeValueAsString(result);
-//				return ResponseEntity.ok().header("Content-Type", "application/json; charset=UTF-8").body(json);
-
+				
 				// 6. 신규 유저(등록되지 않은 사용자): 안내 후 로그인 페이지로 이동
 				AppLog.info("등록되지 않은 카카오 사용자 로그인 시도: " + accessresult.get("email"));
-				 String tenant = (state != null && !state.isEmpty()) ? state : "default";
+				String tenant = (state != null && !state.isEmpty()) ? state : "default";
 				String redirectUrl = "/InsWebApp/websquare/websquare.html"
 						+ "?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml" + "&tenant="
 						+ URLEncoder.encode(tenant, "UTF-8") + "&error=true&errorType=unregistered" + "&email="
@@ -271,8 +247,6 @@ public class KakaoAuthController {
 				return;
 			}
 
-			System.out.println("카카오 회원가입용 Access Token: " + accessToken);
-
 			// 4. 카카오 사용자 정보 조회 (VO 반환)
 			KakaoUserInfoVo kakaoUserInfo = kakaoAuthService.getKakaoUserInfo(accessToken);
 
@@ -332,7 +306,6 @@ public class KakaoAuthController {
 			err.put("message", message);
 			String json = objectMapper.writeValueAsString(err);
 
-			// >>> 변경된 부분: Content-Type 헤더 일관성 유지
 			return ResponseEntity.status(status).header("Content-Type", "application/json; charset=UTF-8").body(json);
 
 		} catch (Exception ex) {
@@ -350,7 +323,6 @@ public class KakaoAuthController {
 	@ElDescription(sub = "카카오 로그인 상태 확인", desc = "현재 카카오 로그인 상태를 확인합니다.")
 	public ResponseEntity<String> checkKakaoLoginStatus(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			// JWT 인증 상태 확인
 			Boolean isAuthenticated = (Boolean) request.getAttribute("jwtAuthenticated");
 			String userId = (String) request.getAttribute("userId");
 
@@ -442,43 +414,10 @@ public class KakaoAuthController {
 	 */
 	private Map<String, Object> processSystemLogin(Map<String, Object> kakaoUserInfo) {
 
-		System.out.println("시스템로그인 함수 + ====" + kakaoUserInfo);
 		String kakaoId = String.valueOf(kakaoUserInfo.get("kakaoId"));
 		String email = (String) kakaoUserInfo.get("email");
 		String nickname = (String) kakaoUserInfo.get("nickname");
 
-		// 기존 회원 조회 또는 신규 회원 생성
-		// 여기서는 예시로 간단히 처리
-//			Map<String, Object> userInfo = findOrCreateUser(kakaoId, email, nickname);
-//
-//			if (userInfo != null) {
-//				// JWT 토큰 생성
-//				String accessToken = generateJwtToken(userInfo);
-//				String refreshToken = generateRefreshToken(userInfo);
-//
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("success", true);
-//				result.put("message", "카카오 로그인 성공");
-//				result.put("accessToken", accessToken);
-//				result.put("refreshToken", refreshToken);
-//				result.put("userInfo", userInfo);
-//
-//				return result;
-//			} else {
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("success", false);
-//				result.put("message", "사용자 정보 처리 실패");
-//				return result;
-//			}
-//
-//		} catch (Exception e) {
-//			AppLog.error("시스템 로그인 처리 중 오류: " + e.getMessage(), e);
-//
-//			Map<String, Object> result = new HashMap<>();
-//			result.put("success", false);
-//			result.put("message", "로그인 처리 중 오류가 발생했습니다.");
-//			return result;
-//		}
 		return null;
 	}
 

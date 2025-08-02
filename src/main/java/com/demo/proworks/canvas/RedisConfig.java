@@ -18,7 +18,8 @@ public class RedisConfig {
 
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
-		return new LettuceConnectionFactory("localhost", 6380);
+//		return new LettuceConnectionFactory("cluster1.zlp9yi.ng.0001.apn2.cache.amazonaws.com", 6380);
+		 return new LettuceConnectionFactory("localhost", 6380);
 	}
 
 	

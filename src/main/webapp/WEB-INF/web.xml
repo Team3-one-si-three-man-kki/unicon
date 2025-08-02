@@ -150,12 +150,8 @@
 		</servlet-mapping -->
 
 
-	<!-- <welcome-file-list>
-		<welcome-file>index.jsp</welcome-file>
-		</welcome-file-list> -->
-
 	<welcome-file-list>
-		<welcome-file>websquare/websquare.html</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 
 	<!-- WebSocket 지원을 위한 servlet-mapping 추가 -->
@@ -180,14 +176,15 @@
 		<error-code>500</error-code>
 		<location>/InsWebApp/common/error.jsp</location>
 	</error-page>
-
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>HTTPS only</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
+     
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>HTTPS only</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+     
 </web-app>

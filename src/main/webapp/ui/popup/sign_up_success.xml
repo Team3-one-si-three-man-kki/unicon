@@ -59,11 +59,19 @@ scwin.onpageload = function () {
     dma_managerInfo.setJSON(initialData);
     welcomeText.setValue(dma_managerInfo.get("adminName")+"님, 회원가입을 환영합니다.");
 
-    const origin = window.location.origin;
+  //  const origin = window.location.hostname;
+  	  const origin = window.location.origin;
+	
+//    const tenantUrl = dma_managerInfo.get("tenant") +"."+origin
     const tenantUrl = origin+"/"+"tenant/"+dma_managerInfo.get("tenant")
+    
     tbx_adminUrl.setValue(tenantUrl)
     tenantServiceUrl.setValue(tenantUrl)
 
+    //scwin.url = "https://" + tenantUrl;
+    //hiddenUrl.setValue(tenantUrl)
+    
+    
     scwin.url = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/unicon_tenant_login_page.xml&tenant="+dma_managerInfo.get("tenant");
     hiddenUrl.setValue(origin + scwin.url)
 
