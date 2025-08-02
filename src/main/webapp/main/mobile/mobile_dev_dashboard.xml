@@ -108,36 +108,28 @@
 };
 
 scwin.onpageload = function () {
-    console.log("=== 통합 대시보드 로드 시작 ===");
     scwin.initializeDashboard();
     scwin.loadAllData();
 };
 
 scwin.initializeDashboard = function () {
-    // 로딩 상태 표시
     scwin.showLoadingState(true);
     scwin.resetDashboardUI();
 };
 
 scwin.loadAllData = function () {
-    console.log("모든 데이터 소스 로드 시작");
 
-    // 데이터 로드 카운터 초기화
     dashboardData.loadedCount = 0;
 
-    // 각 데이터 소스 순차적 로드
     setTimeout(() => {
-        console.log("1. 테넌트 데이터 로드 시작");
         $p.executeSubmission("sbm_selectTenantList");
     }, 100);
 
     setTimeout(() => {
-        console.log("2. 모듈 데이터 로드 시작");
         $p.executeSubmission("sbm_selectModuleList");
     }, 300);
 
     setTimeout(() => {
-        console.log("3. 서버 통계 데이터 로드 시작");
         $p.executeSubmission("sbm_serverStats");
     }, 500);
 };
@@ -147,81 +139,64 @@ scwin.getApiToken = function () {
 };
 
 scwin.sbm_tenantList_submitdone = function (e) {
-    console.log("=== 테넌트 데이터 수신 완료 ===");
 
     try {
         const responseData = e.responseJSON;
         if (responseData && responseData.elData && responseData.elData.tenantVoList) {
             dashboardData.tenants = responseData.elData.tenantVoList;
-            console.log(`테넌트 데이터 로드 성공: ${dashboardData.tenants.length}개`);
 
             // 테넌트 통계 계산
             const tenantStats = scwin.calculateTenantStats(dashboardData.tenants);
             scwin.updateTenantUI(tenantStats);
 
         } else {
-            console.warn("테넌트 데이터 구조가 예상과 다릅니다:", responseData);
         }
     } catch (error) {
-        console.error("테넌트 데이터 처리 오류:", error);
     }
 
     scwin.onDataLoaded();
 };
 
 scwin.sbm_tenantList_submiterror = function (e) {
-    console.error("테넌트 데이터 로드 실패:", e);
     scwin.onDataLoaded();
 };
 
 scwin.sbm_moduleList_submitdone = function (e) {
-    console.log("=== 모듈 데이터 수신 완료 ===");
-
     try {
         const responseData = e.responseJSON;
         if (responseData && responseData.moduleVoList) {
             dashboardData.modules = responseData.moduleVoList;
-            console.log(`모듈 데이터 로드 성공: ${dashboardData.modules.length}개`);
 
-            // 모듈 통계 계산
             const moduleStats = scwin.calculateModuleStats(dashboardData.modules);
             scwin.updateModuleUI(moduleStats);
             
-            // 고가 모듈 UI 업데이트
             scwin.updateHighPriceModules(dashboardData.modules);
 
         } else {
-            console.warn("모듈 데이터 구조가 예상과 다릅니다:", responseData);
         }
     } catch (error) {
-        console.error("모듈 데이터 처리 오류:", error);
     }
 
     scwin.onDataLoaded();
 };
 
 scwin.sbm_moduleList_submiterror = function (e) {
-    console.error("모듈 데이터 로드 실패:", e);
     scwin.onDataLoaded();
 };
 
 scwin.sbm_serverStats_submitdone = function (e) {
-    console.log("=== 서버 통계 수신 완료 ===");
 
     try {
         const responseData = e.responseJSON || JSON.parse(e.responseText);
         if (responseData && responseData.summary) {
             dashboardData.serverStats = responseData;
-            console.log("서버 통계 로드 성공:", responseData.summary);
 
             scwin.updateServerStatsUI(responseData);
 
         } else {
-            console.warn("서버 통계 데이터 구조가 예상과 다릅니다:", responseData);
             scwin.updateServerStatsUI(null);
         }
     } catch (error) {
-        console.error("서버 통계 처리 오류:", error);
         scwin.updateServerStatsUI(null);
     }
 
@@ -229,17 +204,14 @@ scwin.sbm_serverStats_submitdone = function (e) {
 };
 
 scwin.sbm_serverStats_submiterror = function (e) {
-    console.error("서버 통계 로드 실패:", e);
     scwin.updateServerStatsUI(null);
     scwin.onDataLoaded();
 };
 
 scwin.onDataLoaded = function () {
     dashboardData.loadedCount++;
-    console.log(`데이터 로드 진행률: ${dashboardData.loadedCount}/${dashboardData.totalLoadCount}`);
 
     if (dashboardData.loadedCount >= dashboardData.totalLoadCount) {
-        console.log("=== 모든 데이터 로드 완료 ===");
         scwin.showLoadingState(false);
         scwin.updateRecentActivity(); 
     }
@@ -287,10 +259,8 @@ scwin.updateTenantUI = function (stats) {
         if (totalTenantsComp) totalTenantsComp.setValue(stats.total);
         if (activeTenantsComp) activeTenantsComp.setValue(stats.active);
 
-        console.log(`테넌트 UI 업데이트: 총 ${stats.total}개, 활성 ${stats.active}개`);
 
     } catch (error) {
-        console.error("테넌트 UI 업데이트 오류:", error);
     }
 };
 
@@ -304,10 +274,8 @@ scwin.updateModuleUI = function (stats) {
         if (freeModulesComp) freeModulesComp.setValue(stats.free);
         if (avgPriceComp) avgPriceComp.setValue(`₩${stats.avgPrice.toLocaleString()}`);
 
-        console.log(`모듈 UI 업데이트: 총 ${stats.total}개, 무료 ${stats.free}개`);
 
     } catch (error) {
-        console.error("모듈 UI 업데이트 오류:", error);
     }
 };
 
@@ -329,7 +297,6 @@ scwin.updateServerStatsUI = function (serverData) {
                 serverStatusComp.addClass("status-badge");
             }
 
-            console.log(`서버 통계 UI 업데이트: 접속자 ${connectedUsers}명, 세션 ${activeSessions}개`);
         } else {
             if (connectedUsersComp) connectedUsersComp.setValue(0);
             if (activeSessionsComp) activeSessionsComp.setValue(0);
@@ -340,7 +307,6 @@ scwin.updateServerStatsUI = function (serverData) {
             }
         }
     } catch (error) {
-        console.error("서버 통계 UI 업데이트 오류:", error);
     }
 };
 
@@ -376,9 +342,7 @@ scwin.updateHighPriceModules = function(modules) {
             `;
         });
         container.innerHTML = html;
-        console.log("고가 모듈 TOP 3 UI 업데이트 완료");
     } catch (error) {
-        console.error("고가 모듈 UI 업데이트 오류:", error);
         container.innerHTML = '<div class="realtime-item-empty">오류가 발생했습니다.</div>';
     }
 };
@@ -414,9 +378,7 @@ scwin.updateRecentActivity = function() {
             `;
         });
         container.innerHTML = html;
-        console.log("최근 테넌트 활동 UI 업데이트 완료");
     } catch (error) {
-        console.error("최근 테넌트 활동 UI 업데이트 오류:", error);
         container.innerHTML = '<div class="realtime-item-empty">오류가 발생했습니다.</div>';
     }
 };
@@ -437,7 +399,6 @@ scwin.showLoadingState = function (isLoading) {
             }
         });
     } catch (error) {
-        console.error("로딩 상태 표시 오류:", error);
     }
 };
 
@@ -456,7 +417,6 @@ scwin.resetDashboardUI = function () {
             }
         });
         
-        // 동적 컨텐츠 영역도 초기화
         const popularModulesContainer = document.getElementById('popular_modules_container');
         if (popularModulesContainer) {
             popularModulesContainer.innerHTML = '<div class="realtime-item-empty">모듈 데이터를 불러오는 중...</div>';
@@ -467,18 +427,15 @@ scwin.resetDashboardUI = function () {
         }
 
     } catch (error) {
-        console.error("대시보드 UI 초기화 오류:", error);
     }
 };
 
 scwin.refreshDashboard = function () {
-    console.log("대시보드 새로고침");
     scwin.initializeDashboard();
     scwin.loadAllData();
 };
 
 scwin.btn_home_onclick = function () {
-    console.log("현재 홈(대시보드) 페이지입니다.");
     scwin.refreshDashboard();
 };
 
@@ -827,7 +784,6 @@ scwin.btn_stats_onclick = function () {
 				</xf:trigger>
 			</xf:group>
 
-			<!-- 로딩 인디케이터 -->
 			<xf:group class="loading-indicator">
 				<w2:textbox label="실시간 데이터를 불러오는 중..."></w2:textbox>
 			</xf:group>
@@ -852,7 +808,6 @@ scwin.btn_stats_onclick = function () {
 				</xf:group>
 			</xf:group>
 
-			<!-- 추가 통계 섹션 -->
 			<xf:group class="stats-grid">
 				<xf:group class="stat-card">
 					<w2:textbox label="총 테넌트" class="stat-label"></w2:textbox>

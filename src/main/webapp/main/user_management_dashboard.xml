@@ -62,12 +62,11 @@
 			</xf:submission>
 		</xf:model>
 		<w2:publicInfo></w2:publicInfo>
-		<script type="text/javascript" lazy="false"><![CDATA[// 기존 JavaScript 코드 유지
+		<script type="text/javascript" lazy="false"><![CDATA[
 
 scwin.onpageload = function () {
     if (!window.userList) {
         window.userList = window.mf_contentFrame_userList;
-        console.log("userList 컴포넌트 설정 완료");
     }
 
     scwin.btn_search_onclick();
@@ -75,15 +74,10 @@ scwin.onpageload = function () {
 };
 
 scwin.mergeUploadedData = function() {
-    console.log("=== 업로드된 데이터 병합 시작 ===");
     
     try {
-        // 현재 업로드된 데이터 가져오기
         var uploadedData = userList.getAllJSON();
-        console.log("업로드된 데이터:", uploadedData);
-        console.log("백업된 원본 데이터:", scwin.originalDataBackup);
         
-        // 업로드된 데이터가 기존 데이터와 같은지 확인
         if (scwin.originalDataBackup && scwin.originalDataBackup.length > 0 && 
             uploadedData && uploadedData.length > 0) {
             
@@ -101,33 +95,26 @@ scwin.mergeUploadedData = function() {
             }
             
             if (isSameData) {
-                console.log("업로드된 데이터가 기존 데이터와 동일합니다. 실제 Excel 파일을 업로드해주세요.");
                 scwin.showPopup("Excel 파일이 제대로 업로드되지 않았습니다.\\n다른 Excel 파일을 선택하여 다시 업로드해주세요.");
                 
-                // 기존 데이터로 복원
                 userList.setJSON(scwin.originalDataBackup);
                 return;
             }
         }
         
-        // **수정된 부분: 기존 데이터 + 새 데이터 분리 처리**
         var finalData = [];
         const tenantId = $p.getParameter("tenant");
         
-        // 1. 기존 데이터 먼저 추가
         if (scwin.originalDataBackup && scwin.originalDataBackup.length > 0) {
             scwin.originalDataBackup.forEach(function(item) {
                 finalData.push(item);
             });
-            console.log("기존 데이터 추가 완료:", scwin.originalDataBackup.length, "개");
         }
         
-        // 2. 새로운 업로드 데이터만 처리 (기존 데이터 제외)
         if (uploadedData && uploadedData.length > scwin.originalDataCount) {
             var newDataOnly = uploadedData.slice(scwin.originalDataCount);
             
             newDataOnly.forEach(function(item, index) {
-                // 새 데이터 기본 설정
                 item.tenantId = tenantId;
                 item.passwordChanged = "Y";
                 item.originalPassword = item.password || "0000";
@@ -142,33 +129,23 @@ scwin.mergeUploadedData = function() {
                     password: item.password
                 });
             });
-            console.log("새로운 Excel 데이터 추가 완료:", newDataOnly.length, "개");
         }
         
-        // 3. **중요: 한 번만 데이터 설정하고 insertRow는 사용하지 않음**
         userList.setJSON(finalData);
-        
-        console.log("데이터 병합 완료. 총 행 수:", userList.getTotalRow());
-        console.log("기존:", scwin.originalDataCount, "새로 추가:", finalData.length - scwin.originalDataCount);
-        
-        // 4. 역할 매핑 처리 (새로 추가된 데이터만)
+                
         scwin.fixRoleMappingForNewData(scwin.originalDataCount);
         
-        // 5. 중복 검사 시작
         setTimeout(function () {
-            console.log("새로 추가된 Excel 데이터 중복 검사 시작...");
             scwin.checkUploadedEmailDuplicates(scwin.originalDataCount);
         }, 500);
         
     } catch (err) {
-        console.error("데이터 병합 중 오류:", err);
         scwin.showPopup("데이터 병합 중 오류가 발생했습니다: " + err.message);
     }
 };
 
 
 
-// 팝업 레이어 생성 함수
 scwin.createPopupLayer = function () {
     if (document.getElementById('customAlertPopup')) return;
 
@@ -186,7 +163,6 @@ scwin.createPopupLayer = function () {
     document.body.insertAdjacentHTML('beforeend', popupHtml);
 };
 
-// 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
     var popup = document.getElementById('customAlertPopup');
     if (!popup) {
@@ -234,7 +210,6 @@ scwin.btn_insert_onclick = function (e) {
     userList.setCellData(_rowIdx, "password", "0000"); // 기본 비밀번호 0000
     userList.setCellData(_rowIdx, "originalPassword", "0000");
     
-    console.log(`새 행 추가 완료 - 행: ${_rowIdx}, tenantId: ${tenantId}, 기본 비밀번호: 0000`);
 };
 
 scwin.btn_delete_onclick = function (e) {
@@ -289,7 +264,6 @@ scwin.btn_search_onclick = function (e) {
         return;
     }
 
-    console.log("사용자 목록 조회 실행. 테넌트ID:", tenantIdFromUrl, "검색어:", searchKeywordValue);
     $p.executeSubmission("sbm_selectUserList");
 };
 
@@ -319,7 +293,6 @@ scwin.processAndSaveUserData = function () {
         var modifiedIndices = userList.getModifiedIndex();
         var processedData = [];
         
-        // 그리드 컴포넌트 참조 방법 수정
         var grid = null;
         try {
             grid = $p.getComponentById("grd") || window.mf_contentFrame_grd || grd;
@@ -327,7 +300,6 @@ scwin.processAndSaveUserData = function () {
             console.log("그리드 참조 시도 중 오류:", e);
         }
 
-        // 유효성 검사 (그리드 포커스 없이)
         for (let i = 0; i < modifiedIndices.length; i++) {
             const index = modifiedIndices[i];
             const rowData = userList.getRowJSON(index);
@@ -346,7 +318,6 @@ scwin.processAndSaveUserData = function () {
                 return;
             }
             
-            // 새 행인 경우 비밀번호 필수 체크 (0000도 유효한 비밀번호로 인정)
             const rowStatus = userList.getRowStatus(index);
             if (rowStatus === "C" && (!rowData.password || rowData.password.trim() === "" || rowData.password === "******")) {
                 scwin.showPopup(`[${rowNum}행] 새 사용자는 비밀번호를 입력해야 합니다.`);
@@ -354,12 +325,9 @@ scwin.processAndSaveUserData = function () {
             }
         }
 
-        console.log("=== 클라이언트 전용 데이터 처리 시작 ===");
 
-        // 테넌트 ID 유효성 검사 추가
         const tenantId = $p.getParameter("tenant");
         if (!tenantId || tenantId.trim() === "") {
-            console.error("테넌트 ID가 유효하지 않습니다:", tenantId);
             scwin.showPopup("테넌트 정보가 없어 저장할 수 없습니다. 페이지를 새로고침해주세요.");
             return;
         }
@@ -368,20 +336,15 @@ scwin.processAndSaveUserData = function () {
             var rowData = userList.getRowJSON(index);
             var rowStatus = userList.getRowStatus(index);
             
-            // tenantId 강제 설정 및 검증
             if (!rowData.tenantId || rowData.tenantId.trim() === "") {
                 rowData.tenantId = tenantId;
-                console.log(`행 ${index}: tenantId 강제 설정 = ${tenantId}`);
             }
             
-            // tenantId가 여전히 비어있으면 오류
             if (!rowData.tenantId || rowData.tenantId.trim() === "") {
-                console.error(`행 ${index}: tenantId가 비어있음`, rowData);
                 scwin.showPopup(`[${index + 1}행] 테넌트 정보가 없어 저장할 수 없습니다.`);
                 return;
             }
             
-            // 비밀번호 처리 로직 개선
             if (rowStatus === "U") {
                 if (rowData.passwordChanged === "Y") {
                     if (!rowData.password || rowData.password === "" || rowData.password === "******") {
@@ -391,16 +354,14 @@ scwin.processAndSaveUserData = function () {
                     delete rowData.password;
                 }
             } else if (rowStatus === "C") {
-                // 새 행의 경우 비밀번호가 필수이므로 비어있으면 오류
                 if (!rowData.password || rowData.password === "******") {
                     console.error("새 사용자의 비밀번호가 비어있습니다:", rowData);
                 }
             }
             
-            // 불필요한 필드 제거
             delete rowData.originalPassword;
             delete rowData.passwordChanged;
-            delete rowData.chk; // 체크박스 필드 제거
+            delete rowData.chk; 
             
             rowData.rowStatus = rowStatus;
             processedData.push(rowData);
@@ -410,15 +371,12 @@ scwin.processAndSaveUserData = function () {
             saveDataList: processedData
         };
 
-        console.log("서버로 전송할 데이터:", requestData);
-
         $.ajax({
             url: '/InsWebApp/saveUserList.pwkjson',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(requestData),
             success: function (response) {
-                console.log("저장 성공:", response);
                 scwin.showPopup("저장이 완료되었습니다.", false, function () {
                     scwin.btn_search_onclick();
                 });
@@ -445,7 +403,6 @@ scwin.processAndSaveUserData = function () {
         });
 
     } catch (err) {
-        console.error("데이터 처리 중 오류:", err);
         scwin.showPopup("데이터 처리 중 오류가 발생했습니다: " + err.message);
     }
 };
@@ -453,14 +410,12 @@ scwin.processAndSaveUserData = function () {
 
 
 scwin.validateAndSave = function () {
-    console.log("=== 저장 시 이메일 중복 검사 시작 ===");
     const tenantId = $p.getParameter("tenant");
     const modifiedIndices = userList.getModifiedIndex();
 
     let emailsToCheck = [];
     let clientSideEmails = {};
 
-    // 변경된 행에서 이메일 수집 및 클라이언트 자체 중복 검사
     for (let i = 0; i < modifiedIndices.length; i++) {
         const index = modifiedIndices[i];
         const email = userList.getCellData(index, "email").trim();
@@ -479,7 +434,6 @@ scwin.validateAndSave = function () {
         return;
     }
 
-    // 서버에 중복 검사 요청
     let checkedCount = 0;
     let duplicateResults = [];
 
@@ -511,7 +465,6 @@ scwin.validateAndSave = function () {
                         });
                         scwin.showPopup(message);
                     } else {
-                        console.log("이메일 중복 없음. 실제 저장을 진행합니다.");
                         scwin.processAndSaveUserData();
                     }
                 }
@@ -521,7 +474,6 @@ scwin.validateAndSave = function () {
 };
 
 scwin.sbm_saveUserList_onsubmit = function (e) {
-    console.log("기존 submission 이벤트 - 무시됨");
     return false;
 };
 
@@ -529,12 +481,10 @@ scwin.sbm_selectUserList_submitdone = function (e) {
     var responseData = e.responseJSON;
     if (!responseData || !responseData.userListVo || !Array.isArray(responseData.userListVo.userVoList)) {
         userList.removeAll();
-        console.error("서버로부터 유효한 사용자 목록을 받지 못했습니다.");
         return;
     }
 
     var userArray = responseData.userListVo.userVoList;
-    console.log("=== 원본 데이터 백업 시작 ===");
 
     userArray.forEach(function (user, index) {
         console.log(`사용자 ${index + 1} 원본 백업:`, {
@@ -548,7 +498,7 @@ scwin.sbm_selectUserList_submitdone = function (e) {
     });
 
     userList.setJSON(userArray);
-    console.log("사용자 목록 로딩 완료, 총", userArray.length, "개");
+
 
     setTimeout(function () {
         scwin.debugPasswordData();
@@ -556,7 +506,6 @@ scwin.sbm_selectUserList_submitdone = function (e) {
 };
 
 scwin.sbm_saveUserList_onsubmit = function (e) {
-    console.log("기존 submission 이벤트 - 무시됨");
     return false;
 };
 scwin.sbm_saveUserList_submitdone = function (e) {
@@ -572,30 +521,21 @@ scwin.sbm_saveUserList_submitdone = function (e) {
 };
 
 scwin.btn_upload_onclick = function (e) {
-    console.log("=== Excel 업로드 시작 ===");
-    console.log("현재 데이터 행 수:", userList.getTotalRow());
 
-    // 원본 데이터 백업 (깊은 복사)
     scwin.originalDataCount = userList.getTotalRow();
     scwin.originalDataBackup = JSON.parse(JSON.stringify(userList.getAllJSON()));
     
-    // 중복 실행 방지 플래그 추가
     scwin.uploadProcessing = false;
-
-    console.log("백업 완료 - 원본 행 수:", scwin.originalDataCount);
-    console.log("백업된 데이터:", scwin.originalDataBackup);
 
     try {
         var grid = $p.getComponentById("grd");
         if (!grid) {
-            console.error("그리드를 찾을 수 없습니다.");
             return;
         }
 
-        // **중요: type을 "1"로 변경하여 기존 데이터 유지하면서 새 데이터 추가**
         var options = {
             headerExist: "1",
-            type: "1", // 기존 데이터 유지하면서 새 데이터 추가
+            type: "1",
             status: "C",
             mapping: [
                 { "excelCol": "성명", "gridCol": "name" },
@@ -604,25 +544,18 @@ scwin.btn_upload_onclick = function (e) {
                 { "excelCol": "역할", "gridCol": "role" }
             ]
         };
-
-        console.log("업로드 옵션:", options);
         
-        // 업로드 실행
         grid.advancedExcelUpload(options);
 
     } catch (err) {
-        console.error("업로드 중 에러:", err);
         scwin.showPopup("업로드 중 오류가 발생했습니다: " + err.message);
     }
 };
 
 
-// START: 이 함수를 교체하거나 확인하세요
 scwin.grd_onexcelupload = function (e) {
-    console.log("=== Excel 업로드 후 데이터 병합 처리 시작 ===");
 
     try {
-        // 1. 현재 userList에 있는 데이터는 엑셀에서 새로 업로드된 데이터입니다.
         const newData = userList.getAllJSON();
         if (!newData || newData.length === 0) {
             scwin.showPopup("업로드된 데이터가 없습니다.");
@@ -631,24 +564,15 @@ scwin.grd_onexcelupload = function (e) {
             }
             return;
         }
-        console.log("새로 업로드된 데이터:", newData.length + "개");
-
-        // 2. 이전에 백업해둔 원본 데이터를 가져옵니다.
         const originalData = scwin.originalDataBackup || [];
-        console.log("백업된 기존 데이터:", originalData.length + "개");
-
-        // 3. 기존 데이터와 새로운 데이터를 병합합니다.
         const combinedData = originalData.concat(newData);
         
-        // 4. 병합된 데이터로 그리드를 다시 설정합니다.
         userList.setJSON(combinedData);
         
         const originalCount = originalData.length;
         const currentDataCount = combinedData.length;
 
-        console.log(`병합 완료: 기존 ${originalCount}개, 신규 ${newData.length}개, 총 ${currentDataCount}개`);
 
-        // 5. 새로 추가된 행들에 대해서만 후처리(테넌트 ID, 역할 매핑 등)를 실행합니다.
         for (var i = originalCount; i < currentDataCount; i++) {
             const tenantId = $p.getParameter("tenant");
             if (tenantId) {
@@ -665,22 +589,17 @@ scwin.grd_onexcelupload = function (e) {
 
         scwin.fixRoleMappingForNewData(originalCount);
         
-        // 6. 업로드된 데이터에 대한 중복 검사를 시작합니다.
         setTimeout(function () {
-            console.log("업로드된 데이터 중복 검사 시작...");
             scwin.checkUploadedEmailDuplicates(originalCount);
         }, 500);
 
     } catch (err) {
-        console.error("업로드 후처리 중 에러:", err);
         scwin.showPopup("업로드 후 처리 중 오류가 발생했습니다: " + err.message);
         if (scwin.originalDataBackup) {
             userList.setJSON(scwin.originalDataBackup); // 오류 발생 시 원본 데이터로 복원
         }
     }
 };
-// END: 이 함수를 교체하거나 확인하세요
-
 
 scwin.fixRoleMappingForNewData = function (startIndex) {
     var roleMapping = {
@@ -694,19 +613,16 @@ scwin.fixRoleMappingForNewData = function (startIndex) {
         var currentRole = userList.getCellData(i, "role");
         if (currentRole && roleMapping[currentRole]) {
             userList.setCellData(i, "role", roleMapping[currentRole]);
-            console.log(`행 ${i} 역할 매핑: ${currentRole} -> ${roleMapping[currentRole]}`);
         }
     }
 };
 
 scwin.checkUploadedEmailDuplicates = function (startIndex) {
-    console.log("=== 업로드된 데이터 이메일 중복 검사 시작 ===");
 
     try {
         var totalRows = userList.getTotalRow();
         var newUploadedEmails = [];
 
-        // 새로 업로드된 데이터의 이메일만 수집
         for (var i = startIndex; i < totalRows; i++) {
             var email = userList.getCellData(i, "email");
             var name = userList.getCellData(i, "name") || "이름없음";
@@ -720,25 +636,20 @@ scwin.checkUploadedEmailDuplicates = function (startIndex) {
             }
         }
 
-        console.log("새로 업로드된 이메일 수:", newUploadedEmails.length);
-
         if (newUploadedEmails.length === 0) {
             scwin.showPopup("업로드된 데이터에 이메일이 없습니다.\\n이메일을 입력한 후 다시 저장해주세요.");
             return;
         }
 
-        // 클라이언트 내부 중복 검사 먼저 수행
         var clientDuplicates = scwin.findClientSideDuplicates(newUploadedEmails, startIndex);
         
         if (clientDuplicates.length > 0) {
             scwin.showClientDuplicateOptions(clientDuplicates, startIndex);
         } else {
-            // 클라이언트 중복이 없으면 서버 중복 검사
             scwin.checkServerEmailDuplicates(newUploadedEmails, startIndex);
         }
 
     } catch (e) {
-        console.error("중복 검사 중 에러 발생:", e);
         scwin.showPopup("중복 검사 중 오류가 발생했습니다: " + e.message);
     }
 };
@@ -747,7 +658,6 @@ scwin.findClientSideDuplicates = function(newEmails, startIndex) {
     var allEmails = {};
     var duplicates = [];
     
-    // 기존 데이터의 이메일 수집
     for (var i = 0; i < startIndex; i++) {
         var email = userList.getCellData(i, "email");
         if (email && email.trim()) {
@@ -755,7 +665,6 @@ scwin.findClientSideDuplicates = function(newEmails, startIndex) {
         }
     }
     
-    // 새 데이터와 비교
     newEmails.forEach(function(emailData) {
         if (allEmails[emailData.email]) {
             duplicates.push({
@@ -792,7 +701,6 @@ scwin.showClientDuplicateOptions = function (duplicates, startIndex) {
 };
 
 scwin.removeDuplicateRows = function (indicesToRemove) {
-    // 역순으로 정렬하여 인덱스 변경 문제 방지
     indicesToRemove.sort(function (a, b) { return b - a; });
 
     indicesToRemove.forEach(function (index) {
@@ -822,7 +730,6 @@ scwin.removeDuplicateRows = function (indicesToRemove) {
 };
 
 
-// 역할 매핑 처리
 scwin.fixRoleMappingForAllData = function () {
     var roleMapping = {
         "매니저": "manager",
@@ -838,7 +745,6 @@ scwin.fixRoleMappingForAllData = function () {
     }
 };
 
-// tenantId 설정
 scwin.setTenantIdForAllData = function () {
     const tenantId = $p.getParameter("tenant");
     if (!tenantId) return;
@@ -852,26 +758,19 @@ scwin.setTenantIdForAllData = function () {
     }
 };
 
-// 업로드된 데이터의 서버 중복검사를 위한 수정된 함수
 scwin.checkAllEmailDuplicates = function () {
-    console.log("=== 이메일 중복 검사 시작 ===");
 
     try {
         var allData = userList.getAllJSON();
         var originalCount = scwin.originalDataCount || 0;
 
-        console.log("전체 데이터 수:", allData.length);
-        console.log("원본 데이터 수:", originalCount);
-
         if (allData.length <= originalCount) {
-            console.log("새로운 데이터가 없어 중복 검사를 건너뜁니다.");
             scwin.showPopup("업로드된 새 데이터가 없습니다.");
             return;
         }
 
         var newUploadedEmails = [];
 
-        // 새로 업로드된 데이터의 이메일만 수집 (강화된 로깅)
         for (var i = originalCount; i < allData.length; i++) {
             var email = userList.getCellData(i, "email");
             var name = userList.getCellData(i, "name") || "이름없음";
@@ -888,27 +787,19 @@ scwin.checkAllEmailDuplicates = function () {
                     index: i,
                     name: name
                 });
-                console.log(`이메일 추가됨: ${email} (${name})`);
             } else {
                 console.log(`행 ${i}: 이메일이 비어있음`);
             }
         }
 
-        console.log("수집된 이메일 수:", newUploadedEmails.length);
-        console.log("수집된 이메일 목록:", newUploadedEmails.map(e => e.email));
-
         if (newUploadedEmails.length === 0) {
-            console.log("검사할 이메일이 없습니다.");
             scwin.showPopup("업로드된 데이터에 이메일이 없습니다.\\n이메일을 입력한 후 다시 저장해주세요.");
             return;
         }
 
-        // 서버와 중복검사 실행
-        console.log("서버 중복검사 시작...");
         scwin.checkServerEmailDuplicates(newUploadedEmails);
 
     } catch (e) {
-        console.error("중복 검사 중 에러 발생:", e);
         scwin.showPopup("중복 검사 중 오류가 발생했습니다: " + e.message);
     }
 };
@@ -923,8 +814,6 @@ scwin.checkServerEmailDuplicates = function (emailList, startIndex) {
     var duplicateResults = [];
     var checkedCount = 0;
     var totalCount = emailList.length;
-
-    console.log("서버 중복검사 시작. 검사할 이메일:", totalCount);
 
     emailList.forEach(function (emailData) {
         $.ajax({
@@ -958,7 +847,6 @@ scwin.checkServerEmailDuplicates = function (emailList, startIndex) {
 };
 
 scwin.processUploadDuplicateResults = function (duplicateResults, startIndex) {
-    console.log("업로드 중복검사 결과:", duplicateResults.length);
 
     if (duplicateResults.length > 0) {
         var message = "업로드된 데이터에 서버에 이미 존재하는 이메일이 발견되었습니다:\\n\\n";
@@ -991,15 +879,9 @@ scwin.processUploadDuplicateResults = function (duplicateResults, startIndex) {
 };
 
 
-// 중복검사 결과 처리 함수
 scwin.processDuplicateResults = function (duplicateResults, totalCount) {
-    console.log("=== 서버 중복검사 결과 처리 ===");
-    console.log("전체 검사 수:", totalCount);
-    console.log("중복된 이메일 수:", duplicateResults.length);
-    console.log("중복 목록:", duplicateResults);
 
     if (duplicateResults.length > 0) {
-        // 중복된 이메일 목록 표시
         var message = "업로드된 데이터에 중복된 이메일이 발견되었습니다:\\n\\n";
 
         duplicateResults.forEach(function (duplicate, index) {
@@ -1011,24 +893,18 @@ scwin.processDuplicateResults = function (duplicateResults, totalCount) {
         message += "확인: 화면에서 직접 수정\\n";
         message += "취소: 중복 데이터 삭제";
 
-        console.log("중복 처리 팝업 표시");
         scwin.showPopup(message, true, function (result) {
             if (result) {
-                // 화면에서 직접 수정하도록 안내
                 scwin.showPopup("중복된 데이터를 화면에서 직접 수정하신 후 저장 버튼을 눌러주세요.");
             } else {
-                // 중복 데이터 삭제
-                console.log("중복 데이터 삭제 진행");
                 scwin.removeDuplicateUploadedData(duplicateResults);
             }
         });
     } else {
-        // 중복이 없는 경우
         var addedCount = totalCount;
         var message = `업로드 완료! 이메일 중복이 없습니다.\\n`;
         message += `추가된 새 데이터: ${addedCount}개\\n\\n저장하시겠습니까?`;
 
-        console.log("중복 없음 - 저장 확인 팝업 표시");
         scwin.showPopup(message, true, function (result) {
             if (result) {
                 scwin.btn_save_onclick();
@@ -1036,13 +912,12 @@ scwin.processDuplicateResults = function (duplicateResults, totalCount) {
         });
     }
 };
-// 중복된 업로드 데이터 제거 함수
+
 scwin.removeDuplicateUploadedData = function (duplicateResults) {
     var indicesToRemove = duplicateResults.map(function (item) {
         return item.index;
-    }).sort(function (a, b) { return b - a; }); // 역순 정렬
+    }).sort(function (a, b) { return b - a; }); 
 
-    // 중복 데이터 삭제
     indicesToRemove.forEach(function (index) {
         userList.removeRow(index);
     });
@@ -1069,7 +944,6 @@ scwin.removeDuplicateUploadedData = function (duplicateResults) {
     }
 };
 
-// 중복 이메일 옵션 표시
 scwin.showDuplicateEmailOptions = function (duplicateEmails) {
     var message = "업로드된 데이터에 중복된 이메일이 있습니다:\\n\\n";
     var totalDuplicates = 0;
@@ -1094,7 +968,6 @@ scwin.showDuplicateEmailOptions = function (duplicateEmails) {
     });
 };
 
-// 중복 데이터 제거
 scwin.removeDuplicateNewData = function (duplicateEmails) {
     var indicesToRemove = [];
 
@@ -1131,7 +1004,6 @@ scwin.grd_oncellindexchange = function (newRowIndex, newColIndex, oldRowIndex, o
     try {
         const grid = $p.getComponentById("grd");
         if (!grid) {
-            console.log("그리드 컴포넌트를 찾을 수 없습니다.");
             return;
         }
 
@@ -1142,7 +1014,6 @@ scwin.grd_oncellindexchange = function (newRowIndex, newColIndex, oldRowIndex, o
 
             if (passwordValue && passwordValue !== "" && passwordValue !== "******") {
                 userList.setCellData(oldRowIndex, "passwordChanged", "Y");
-                console.log(`행 ${oldRowIndex}: 비밀번호 입력됨, 변경 플래그 설정`);
             }
         }
 
@@ -1183,17 +1054,14 @@ scwin.grd_oncellclick = function (row, col) {
         if (currentValue === "******") {
             userList.setCellData(row, "password", "");
             userList.setCellData(row, "passwordChanged", "Y");
-            console.log("비밀번호 변경 모드로 전환 - 행:", row);
         }
     }
 };
 
-// 이메일 중복 확인
 scwin.checkEmailDuplicate = function (email, rowIndex) {
     const tenantId = $p.getParameter("tenant");
 
     if (!tenantId) {
-        console.error("테넌트 ID를 찾을 수 없어 이메일 중복 검사를 중단합니다.");
         return;
     }
 
@@ -1246,13 +1114,11 @@ scwin.grd_oncellclick = function (row, col) {
         if (currentValue === "******") {
             userList.setCellData(row, "password", "");
             userList.setCellData(row, "passwordChanged", "Y");
-            console.log("비밀번호 변경 모드로 전환 - 행:", row);
         }
     }
 };
 
 scwin.debugPasswordData = function () {
-    console.log("=== 현재 비밀번호 데이터 상태 ===");
 
     var totalRows = userList.getTotalRow();
     for (var i = 0; i < totalRows; i++) {

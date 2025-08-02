@@ -84,7 +84,6 @@ public class AttendanceController {
 		System.out.println("최종 pageIndex: " + attendanceVo.getPageIndex());
 		System.out.println("최종 startRow: " + attendanceVo.getStartRow());
 
-		// 데이터 조회
 		List<AttendanceVo> attendanceList = attendanceService.selectListAttendance(attendanceVo);
 		long totalCount = attendanceService.selectListCountAttendance(attendanceVo);
 
@@ -146,7 +145,6 @@ public class AttendanceController {
 	@ElValidator(errUrl = "/attendance/attendanceRegister", errContinue = true)
 	@ElDescription(sub = "출석모듈 갱신처리", desc = "출석모듈를 갱신 처리 한다.")
 	public void updateAttendance(AttendanceVo attendanceVo) throws Exception {
-
 		attendanceService.updateAttendance(attendanceVo);
 	}
 

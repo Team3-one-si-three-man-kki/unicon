@@ -40,7 +40,6 @@
 			</xf:submission>
 		</xf:model>
 		<script type="text/javascript"><![CDATA[scwin.onpageload = function () {
-    console.log("테넌트 관리 페이지 로드");
     scwin.loadTenantData();
 };
 
@@ -60,7 +59,6 @@ scwin.sbm_tenantList_submitdone = function (e) {
         return false;
     }
 
-    console.log("테넌트 데이터 로드 완료:", elData);
 
     if (elData && elData.tenantVoList) {
         var filteredData = scwin.applyClientSideFilter(elData.tenantVoList);
@@ -87,7 +85,6 @@ scwin.applyClientSideFilter = function (dataList) {
             filteredList.push(item);
         }
     }
-    console.log("필터링 결과:", filterStatus + " 상태로 필터링하여 " + filteredList.length + "개 / " + dataList.length + "개");
     return filteredList;
 };
 
@@ -106,12 +103,10 @@ scwin.updateTenantDisplay = function () {
         }
 
         var rowCount = dlt_tenantVoList.getRowCount();
-        console.log("총 테넌트 개수:", rowCount);
 
         scwin.createAllTenantItems(rowCount);
 
     } catch (e) {
-        console.error("테넌트 목록 표시 중 오류:", e);
     }
 };
 
@@ -127,12 +122,10 @@ scwin.findContainerElement = function() {
     for (var i = 0; i < possibleSelectors.length; i++) {
         var element = document.querySelector(possibleSelectors[i]);
         if (element) {
-            console.log("컨테이너 찾음:", possibleSelectors[i], element);
             return element;
         }
     }
     
-    console.error("컨테이너를 찾을 수 없습니다!");
     return null;
 };
 
@@ -140,7 +133,6 @@ scwin.createAllTenantItems = function (totalCount) {
     try {
         var containerElement = scwin.findContainerElement();
         if (!containerElement) {
-            console.error("컨테이너 요소를 찾을 수 없습니다.");
             return;
         }
 
@@ -154,7 +146,6 @@ scwin.createAllTenantItems = function (totalCount) {
                 var tenantData = dlt_tenantVoList.getRowJSON(i);
                 scwin.createTenantItemWithDOM(containerElement, tenantData, i);
             }
-            console.log(totalCount + "개 테넌트 아이템 생성 완료");
             
             // 생성 완료 후 컨테이너 높이 재조정
             setTimeout(function() {
@@ -164,7 +155,6 @@ scwin.createAllTenantItems = function (totalCount) {
             scwin.showNoDataMessage(containerElement);
         }
     } catch (e) {
-        console.error("테넌트 아이템 생성 중 오류:", e);
     }
 };
 
@@ -183,10 +173,8 @@ scwin.adjustContainerHeight = function(containerElement) {
             var finalHeight = Math.max(totalHeight + 20, 200); // 20px 여백 추가
             containerElement.style.height = finalHeight + 'px';
             
-            console.log("컨테이너 높이 조정:", finalHeight + 'px');
         }
     } catch (e) {
-        console.error("높이 조정 중 오류:", e);
     }
 };
 
@@ -239,10 +227,8 @@ scwin.createTenantItemWithDOM = function (containerElement, tenantData, index) {
         `;
         
         containerElement.appendChild(tenantDiv);
-        console.log("아이템 생성 성공:", index, tenantData.name, "사용자:", userCount, "모듈:", moduleCount);
 
     } catch (e) {
-        console.error(`DOM 테넌트 아이템 생성 중 오류 발생 (index: ${index})`, e);
     }
 };
 
@@ -253,10 +239,8 @@ scwin.clearDynamicItems = function (containerElement) {
             for (var i = 0; i < dynamicItems.length; i++) {
                 dynamicItems[i].remove();
             }
-            console.log("동적 요소 제거 완료:", dynamicItems.length + "개");
         }
     } catch (e) {
-        console.error("동적 요소 제거 중 오류:", e);
     }
 };
 
@@ -269,7 +253,6 @@ scwin.showNoDataMessage = function (containerElement) {
         if (containerElement) {
             var existingNoData = containerElement.querySelector('#no_data_item, .no-data-message');
             if (existingNoData) {
-                console.log("이미 '데이터 없음' 메시지가 표시되어 있습니다.");
                 return;
             }
             
@@ -288,14 +271,11 @@ scwin.showNoDataMessage = function (containerElement) {
             
             containerElement.appendChild(noDataDiv);
             
-            // 컨테이너 높이 조정
             containerElement.style.height = 'auto';
             containerElement.style.minHeight = '200px';
             
-            console.log("'데이터 없음' 메시지 표시됨");
         }
     } catch (e) {
-        console.error("데이터 없음 메시지 표시 중 오류:", e);
     }
 };
 
@@ -349,14 +329,10 @@ scwin.updateFilterButtons = function (activeFilter) {
     }
 };
 
-// 네비게이션 이벤트들
 scwin.btn_home_onclick = function () {
     location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
 };
 
-scwin.btn_tenant_onclick = function () {
-    console.log("현재 테넌트 페이지");
-};
 
 scwin.btn_module_onclick = function () {
     location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";

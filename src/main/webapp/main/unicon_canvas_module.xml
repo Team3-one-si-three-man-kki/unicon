@@ -55,7 +55,6 @@
             }
         }, 30000); 
 
-        // signal 함수는 이제 데이터를 압축하지 않고 워커에게 보내기만 합니다.
         function signal(data) {
             if (ws.readyState === WebSocket.OPEN) {
                 data.sender = senderId;
@@ -335,33 +334,27 @@
             signal({ type: 'object-modified', object: obj });
         });
         
-        // 웹소켓 메시지 수신 시 압축 해제를 하지 않고 워커에게 보냅니다.
         ws.onmessage = async ({ data }) => {
             if (typeof data === 'string' && data.includes('ping')) return;
             worker.postMessage({ type: 'decompress', data: data });
         };
 
-        // 워커로부터 메시지를 받아 최종 처리하는 핸들러입니다.
         worker.onmessage = (event) => {
             const { type, result, message } = event.data;
 
             if (type === 'error') {
-                console.error("웹 워커 오류:", message);
                 return;
             }
             
             if (type === 'compressed') {
-                // 압축된 결과는 웹소켓으로 전송합니다.
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(result);
                 }
             } else if (type === 'decompressed') {
-                // 압축 해제된 결과는 화면에 렌더링합니다.
                 handleCanvasMessage(result);
             }
         };
 
-        // 실제 메시지 처리 로직을 별도 함수로 분리했습니다.
         function handleCanvasMessage(m) {
             if (m.sender === senderId) return;
           

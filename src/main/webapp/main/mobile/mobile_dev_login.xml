@@ -33,7 +33,6 @@
 		<w2:publicInfo method="" />
 
 		<script lazy="false" type="text/javascript"><![CDATA[
-// 모바일 팝업 생성 함수
 scwin.createPopupLayer = function () {
     if (document.getElementById('mobileAlertPopup')) return;
 
@@ -51,7 +50,6 @@ scwin.createPopupLayer = function () {
     document.body.insertAdjacentHTML('beforeend', popupHtml);
 };
 
-// 모바일 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
     var popup = document.getElementById('mobileAlertPopup');
     if (!popup) {
@@ -86,7 +84,6 @@ scwin.showPopup = function (message, isConfirm, callback) {
     popup.style.display = 'flex';
 };
 
-// JWT 파싱 함수
 scwin.parseJwt = function (token) {
     try {
         const base64Url = token.split('.')[1];
@@ -96,23 +93,18 @@ scwin.parseJwt = function (token) {
         }).join(''));
         return JSON.parse(jsonPayload);
     } catch (e) {
-        console.error("JWT 파싱 오류:", e);
         return null;
     }
 };
 
 scwin.onpageload = function () {
-    // 모바일 팝업 레이어 생성
+
     scwin.createPopupLayer();
-
-    // 저장된 아이디 로드
     scwin.loadSavedUserId();
-
-    // 엔터키 이벤트 바인딩
     scwin.bindEnterKeyEvents();
+    
 };
 
-// 저장된 아이디 로드
 scwin.loadSavedUserId = function () {
     try {
         var savedUserId = localStorage.getItem("savedUserId");
@@ -121,13 +113,10 @@ scwin.loadSavedUserId = function () {
             chk_remember.setChecked(true);
         }
     } catch (e) {
-        console.warn("로컬 스토리지 접근 실패:", e);
     }
 };
 
-// 엔터키 이벤트 바인딩
 scwin.bindEnterKeyEvents = function () {
-    // 아이디 입력 필드에서 엔터키
     inp_userId.bind("keypress", function (e) {
         if (e.keyCode === 13) {
             e.preventDefault();
@@ -135,7 +124,6 @@ scwin.bindEnterKeyEvents = function () {
         }
     });
 
-    // 비밀번호 입력 필드에서 엔터키
     inp_password.bind("keypress", function (e) {
         if (e.keyCode === 13) {
             e.preventDefault();
@@ -149,19 +137,15 @@ scwin.login = function () {
     var userId = inp_userId.getValue();
     var password = inp_password.getValue();
 
-    // 입력값 검증
     if (!scwin.validateLogin(userId, password)) {
         return;
     }
 
-    // 로그인 버튼 상태 변경
     scwin.setLoginButtonState(true);
 
-    // 서버 통신
     $c.sbm.execute(login);
 };
 
-// 입력값 검증
 scwin.validateLogin = function (userId, password) {
     if (!userId || userId.trim() === "") {
         scwin.showPopup("아이디를 입력해주세요.", false, function () {
@@ -187,7 +171,6 @@ scwin.validateLogin = function (userId, password) {
     return true;
 };
 
-// 로그인 버튼 상태 변경
 scwin.setLoginButtonState = function (isLoading) {
     if (isLoading) {
         btn_login.setDisabled(true);
@@ -206,22 +189,18 @@ scwin.onLoginSuccess = function () {
     var rememberMe = chk_remember.getChecked();
 
     try {
-        // 아이디 저장 처리
         if (rememberMe) {
             localStorage.setItem("savedUserId", userId);
         } else {
             localStorage.removeItem("savedUserId");
         }
 
-        // 사용자 정보 저장
         sessionStorage.setItem("loggedInUser", userId);
 
     } catch (e) {
-        console.warn("스토리지 저장 실패:", e);
     }
 
     scwin.showPopup("로그인되었습니다.", false, function () {
-        // 성공 시 모바일 대시보드로 이동하도록 수정
         scwin.redirectToMobileDashboard();
     });
 };
@@ -240,14 +219,11 @@ scwin.onLoginFailure = function () {
 scwin.redirectToMobileDashboard = function () {
     try {
         // 모바일 대시보드로 이동
-        console.log("모바일 대시보드로 이동합니다.");
         // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_tenant_dashboard.xml";
     } catch (e) {
-        console.log("모바일 대시보드 이동 처리");
     }
 };
 
-// 비밀번호 보기/숨기기 토글
 scwin.togglePasswordVisibility = function () {
     if (inp_password.getInputType() === "password") {
         inp_password.setInputType("text");
@@ -258,26 +234,20 @@ scwin.togglePasswordVisibility = function () {
     }
 };
 
-// 로그인 응답 처리
 scwin.login_submitdone = function (e) {
-    console.log("모바일 로그인 응답:", e);
     var responseData = e.responseJSON;
     var elHeader = e.responseJSON.elHeader;
 
     if (elHeader && elHeader.resSuc === true) {
-        console.log("Response Headers:", e.responseHeadersJSON);
         var headers = {};
         try {
             headers = JSON.parse(e.responseHeadersJSON);
         } catch (err) {
-            console.error("헤더 JSON 파싱 오류:", err);
         }
 
-        // 토큰 추출 및 저장
         var accessToken = headers.authorization;
         var refreshToken = headers["refresh-token"];
-        console.log("Access Token:", accessToken);
-        console.log("Refresh Token:", refreshToken);
+
 
         if (accessToken) {
             sessionStorage.setItem('accessToken', accessToken);
@@ -296,10 +266,8 @@ scwin.login_submitdone = function (e) {
             }
         }
 
-        console.log("추출된 테넌트 ID:", tenantId);
 
         if (tenantId) {
-            // 테넌트 ID와 함께 모바일 대시보드 페이지로 이동
             location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
         } else {
             scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
@@ -432,7 +400,6 @@ html, body {
     background: rgba(102, 126, 234, 0.1);
 }
 
-/* ========== 기억하기 체크박스 ========== */
 .mobile-remember-group {
     display: flex;
     align-items: center;
@@ -497,7 +464,7 @@ html, body {
     
     .mobile-input {
         padding: 14px 16px;
-        font-size: 16px; /* iOS에서 줌 방지 */
+        font-size: 16px;
     }
     
     .mobile-password-toggle {
@@ -516,7 +483,6 @@ html, body {
     }
 }
 
-/* ========== 접근성 및 포커스 개선 ========== */
 .mobile-input:focus,
 .mobile-login-button:focus,
 .mobile-password-toggle:focus {
@@ -524,7 +490,6 @@ html, body {
     outline-offset: 2px;
 }
 
-/* ========== 터치 인터랙션 개선 ========== */
 .mobile-login-button,
 .mobile-password-toggle,
 .mobile-remember-label {
@@ -532,7 +497,6 @@ html, body {
     touch-action: manipulation;
 }
 
-/* ========== 로딩 애니메이션 ========== */
 .mobile-login-button.loading {
     position: relative;
     color: transparent;
@@ -558,7 +522,6 @@ html, body {
     100% { transform: rotate(360deg); }
 }
 
-/* ========== 배경 장식 ========== */
 .mobile-login-wrapper::before {
     content: '';
     position: absolute;

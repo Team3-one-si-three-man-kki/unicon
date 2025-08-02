@@ -1,4 +1,4 @@
-export default {
+癤울뼁癤울뼁export default {
   "WebSquare": {
     "dataPrefix": {
       "@value": "true"

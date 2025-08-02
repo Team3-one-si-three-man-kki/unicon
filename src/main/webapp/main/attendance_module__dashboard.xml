@@ -70,7 +70,8 @@
 
 			html, body {
 			height: 100%;
-			font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+			font-family: 'Segoe UI', 'Malgun Gothic',
+			sans-serif;
 			background: #f8f9fa;
 			color: #2c3e50;
 			line-height: 1.6;
@@ -127,7 +128,6 @@
 			content: '';
 			}
 
-			/* 검색박스 영역 */
 			.schbox {
 			background: white;
 			padding: 15px 20px;
@@ -150,7 +150,8 @@
 			}
 
 			.schbox_inner w2\\:textbox {
-			font-weight: 600 !important;
+			font-weight: 600
+			!important;
 			color: #2c3e50 !important;
 			font-size: 0.95rem !important;
 			min-width: 80px !important;
@@ -162,7 +163,8 @@
 			border: 1px solid #ced4da !important;
 			border-radius: 4px !important;
 			font-size: 0.9rem !important;
-			transition: border-color 0.15s ease-in-out !important;
+			transition:
+			border-color 0.15s ease-in-out !important;
 			}
 
 			.w2input:focus, .w2calendar:focus {
@@ -183,16 +185,19 @@
 			.btn_cm {
 			padding: 8px 16px !important;
 			border: 1px solid #ced4da !important;
-			border-radius: 4px !important;
+			border-radius: 4px
+			!important;
 			font-weight: 500 !important;
 			font-size: 0.875rem !important;
 			cursor: pointer !important;
-			transition: all 0.15s ease-in-out !important;
+			transition: all 0.15s ease-in-out
+			!important;
 			background: #fff !important;
 			color: #495057 !important;
 			min-width: 80px !important;
 			height: 34px !important;
-			display: inline-flex !important;
+			display: inline-flex
+			!important;
 			align-items: center !important;
 			justify-content: center !important;
 			line-height: 1 !important;
@@ -203,7 +208,8 @@
 
 			.btn_cm:hover {
 			background: #e9ecef !important;
-			border-color: #adb5bd !important;
+			border-color: #adb5bd
+			!important;
 			}
 
 			.btn_cm.sch {
@@ -217,25 +223,25 @@
 			border-color: #2c5d94 !important;
 			}
 
-			/* 메인 콘텐츠 영역 - 남은 공간 모두 사용 */
+
 			.main-content {
 			flex: 1;
 			display: flex;
 			flex-direction: column;
-			overflow: hidden;
+			overflow:
+			hidden;
 			padding: 20px;
 			gap: 15px;
 			}
 
-			/* 상세보기에서 flex 레이아웃 적용 */
 			#grp_detailView {
 			display: flex !important;
 			flex-direction: column !important;
 			flex: 1 !important;
-			overflow: hidden !important;
+			overflow:
+			hidden !important;
 			}
 
-			/* 그리드 박스 - 공간 최대 활용 */
 			.gvwbox {
 			background: white;
 			border-radius: 4px;
@@ -247,7 +253,6 @@
 			overflow: hidden;
 			}
 
-			/* 통계 카드 영역 */
 			.contbox {
 			margin-bottom: 20px;
 			flex-shrink: 0;
@@ -261,11 +266,14 @@
 
 			.contbox > div > div {
 			background: white !important;
-			border-radius: 4px !important;
+			border-radius:
+			4px !important;
 			padding: 20px !important;
-			text-align: center !important;
+			text-align: center
+			!important;
 			border: 1px solid #dee2e6 !important;
-			border-left: 4px solid #3674B5 !important;
+			border-left: 4px solid #3674B5
+			!important;
 			}
 
 			.contbox > div > div:nth-child(2) {
@@ -276,7 +284,8 @@
 			border-left-color: #dc3545 !important;
 			}
 
-			.contbox > div > div:nth-child(4) {
+			.contbox > div >
+			div:nth-child(4) {
 			border-left-color: #6f42c1 !important;
 			}
 
@@ -293,83 +302,97 @@
 			}
 
 			.contbox > div > div:nth-child(3) w2\\:textbox {
-			color: #dc3545 !important;
+			color:
+			#dc3545 !important;
 			}
 
-			.contbox > div > div:nth-child(4) w2\\:textbox {
+			.contbox > div > div:nth-child(4)
+			w2\\:textbox {
 			color: #6f42c1 !important;
 			}
 
 			.contbox span {
 			color: #6c757d !important;
 			font-size: 0.9rem !important;
-			font-weight: 500 !important;
+			font-weight: 500
+			!important;
 			}
 
-			/* 액션 바 */
 			.contbox[style*="display:flex"],
 			.contbox[style*="justify-content:space-between"] {
 			background: white;
-			border-radius: 4px;
+			border-radius:
+			4px;
 			padding: 15px;
 			border: 1px solid #dee2e6;
-			display: flex !important;
+			display:
+			flex !important;
 			justify-content: space-between !important;
-			align-items: center !important;
+			align-items: center
+			!important;
 			flex-wrap: wrap !important;
 			gap: 15px !important;
 			margin-bottom: 15px;
 			}
 
-			.contbox[style*="justify-content:space-between"] div[style*="gap:8px"] {
+			.contbox[style*="justify-content:space-between"]
+			div[style*="gap:8px"] {
 			display: flex !important;
-			align-items: center !important;
+			align-items: center
+			!important;
 			gap: 12px !important;
 			}
 
 			.contbox[style*="justify-content:space-between"] w2\\:textbox[style*="color:#007bff"] {
-			font-size: 1.1rem !important;
-			font-weight: 600 !important;
+			font-size: 1.1rem
+			!important;
+			font-weight: 600
+			!important;
 			color: #3674B5 !important;
 			padding: 6px 12px !important;
-			background: rgba(54, 116, 181, 0.1) !important;
-			border-radius: 4px !important;
+			background: rgba(54, 116, 181, 0.1)
+			!important;
+			border-radius: 4px
+			!important;
 			}
 
-			/* 그리드 스타일 */
 			.w2gridview {
 			border: 1px solid #dee2e6 !important;
 			border-radius: 4px !important;
-			overflow: hidden !important;
+			overflow: hidden
+			!important;
 			flex: 1 !important;
 			height: auto !important;
 			}
 
 			.w2gridview .w2grid_header {
 			background: #f8f9fa !important;
-			color: #495057 !important;
+			color: #495057
+			!important;
 			font-weight: 600 !important;
 			border-bottom: 2px solid #dee2e6 !important;
 			}
 
 			.w2gridview .w2grid_row:hover {
-			background: #f8f9fa !important;
+			background: #f8f9fa
+			!important;
 			}
 
 			.w2gridview .w2grid_row:nth-child(even) {
 			background: #fdfdfd !important;
 			}
 
-			/* 세션 헤더 스타일 */
 			.session-header {
 			background: white;
-			border-radius: 4px;
+			border-radius:
+			4px;
 			padding: 15px;
 			border: 1px solid #dee2e6;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			flex-wrap: wrap;
+			flex-wrap:
+			wrap;
 			gap: 15px;
 			margin-bottom: 15px;
 			}
@@ -381,7 +404,8 @@
 			min-height: 100vh;
 			}
 
-			.main-content {
+			.main-content
+			{
 			padding: 15px;
 			}
 
@@ -421,7 +445,6 @@
 			}
 			}
 
-			/* 스크롤바 스타일 */
 			::-webkit-scrollbar {
 			width: 8px;
 			height: 8px;
@@ -441,10 +464,8 @@
 			}
 		</style>
 		<script lazy="false" type="text/javascript"><![CDATA[
-// 전역 변수로 모든 출석 데이터 저장
 scwin.allAttendanceData = [];
 
-// 팝업 레이어 생성 함수
 scwin.createPopupLayer = function () {
     var existingPopup = document.getElementById('customAlertPopup');
     if (existingPopup) {
@@ -462,7 +483,6 @@ scwin.createPopupLayer = function () {
         </div>`;
     document.body.insertAdjacentHTML('beforeend', popupHtml);
 
-    // 버튼 호버 효과 추가
     var confirmBtn = document.getElementById('popupConfirm');
     var cancelBtn = document.getElementById('popupCancel');
 
@@ -489,7 +509,6 @@ scwin.createPopupLayer = function () {
     }
 };
 
-// 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
     var popup = document.getElementById('customAlertPopup');
     if (!popup) {
@@ -516,9 +535,7 @@ scwin.showPopup = function (message, isConfirm, callback) {
     popup.style.display = 'block';
 };
 
-// 페이지 로드 함수
 scwin.onpageload = function () {
-    console.log("출석 모듈 페이지 로드 시작");
     scwin.createPopupLayer();
 
     scwin.ui = {
@@ -531,45 +548,34 @@ scwin.onpageload = function () {
 
     scwin.checkAttendanceSubscription();
     scwin.loadSessionList();
-    console.log("출석 모듈 페이지 로드 완료");
 };
 
 scwin.initHistoryManagement = function () {
-    // 현재 상태를 세션 목록으로 설정
     scwin.currentView = 'sessionList';
 
-    // 초기 히스토리 상태 추가
     if (window.history.pushState) {
         window.history.replaceState({ view: 'sessionList' }, '세션 목록', window.location.href);
 
-        // popstate 이벤트 리스너 추가 (뒤로가기 버튼 감지)
         window.addEventListener('popstate', scwin.handlePopState);
 
     }
 };
 
 scwin.handlePopState = function (event) {
-    console.log("뒤로가기 감지:", event.state);
 
     if (event.state) {
         if (event.state.view === 'sessionList') {
-            // 세션 목록으로 돌아가기
             scwin.showSessionList();
         } else if (event.state.view === 'detail') {
-            // 상세 보기로 돌아가기 (필요한 경우)
-            // 여기서는 처리하지 않음
         }
     } else {
-        // 상태가 없으면 세션 목록으로
         scwin.showSessionList();
     }
 
-    // 추가 뒤로가기 방지를 위해 다시 히스토리 추가
     window.history.pushState({ view: scwin.currentView }, '', window.location.href);
 };
 
 
-// 세션 목록으로 돌아가는 함수
 scwin.showSessionList = function () {
     scwin.ui.detailView.hide();
     scwin.ui.sessionListView.show();
@@ -588,7 +594,6 @@ scwin.grd_sessions_oncellclick = function (row, col) {
     const selectedSessionId = dlt_sessionSummaryList.getCellData(row, "sessionId");
     if (!selectedSessionId) return;
 
-    // sessionName이 있으면 사용하고, 없으면 sessionId를 사용
     let selectedSessionName;
     try {
         selectedSessionName = dlt_sessionSummaryList.getCellData(row, "sessionName");
@@ -596,11 +601,8 @@ scwin.grd_sessions_oncellclick = function (row, col) {
             selectedSessionName = selectedSessionId;
         }
     } catch (e) {
-        console.log("sessionName 컬럼이 없습니다. sessionId를 사용합니다.");
         selectedSessionName = selectedSessionId;
     }
-
-    console.log(`'${selectedSessionName}' 세션의 상세 정보를 표시합니다.`);
 
     dm_search.set("scSessionId", selectedSessionId);
     scwin.ui.selectedSessionText.setValue(selectedSessionName);
@@ -614,14 +616,11 @@ scwin.grd_sessions_oncellclick = function (row, col) {
     ipt_searchEmail.setValue("");
     ipt_searchDate.setValue("");
 
-    // 상세 보기로 전환
     scwin.ui.sessionListView.hide();
     scwin.ui.detailView.show();
 
-    // 현재 상태 업데이트
     scwin.currentView = 'detail';
 
-    // 히스토리에 상세 보기 상태 추가
     if (window.history.pushState) {
         window.history.pushState({
             view: 'detail',
@@ -636,17 +635,13 @@ scwin.btn_backToList_onclick = function () {
     scwin.showSessionList();
 };
 
-// 세션 목록 로드 함수도 수정 - sessionName 처리 개선
 scwin.loadSessionList = function () {
-    console.log("세션 요약 목록 조회를 시작합니다.");
 
     const tenantId = $p.getParameter("tenant");
     if (!tenantId) {
         scwin.showPopup("테넌트 정보를 찾을 수 없습니다. URL에 tenant 파라미터를 확인해주세요.");
         return;
     }
-
-    console.log("테넌트 ID:", tenantId);
 
     var searchOptions = {
         attendanceVo: {
@@ -668,16 +663,13 @@ scwin.loadSessionList = function () {
         data: JSON.stringify(searchOptions),
         timeout: 10000,
         success: function (response) {
-            console.log("서버 응답:", response);
 
             var allData = [];
             if (response && response.elData && response.elData.attendanceVoList) {
                 allData = response.elData.attendanceVoList;
             } else if (response && response.attendanceListVo && response.attendanceListVo.attendanceVoList) {
                 allData = response.attendanceListVo.attendanceVoList;
-            } else {
-                console.error("attendanceVoList를 찾을 수 없습니다. 응답 데이터 구조를 확인하세요:", response);
-            }
+            } 
 
             if (!allData || allData.length === 0) {
                 dlt_sessionSummaryList.removeAll();
@@ -693,13 +685,12 @@ scwin.loadSessionList = function () {
                 if (!acc[sessionId]) {
                     acc[sessionId] = {
                         sessionName: sessionName,
-                        sessionDept: item.sessionDept || '미지정',  // 여기서 실제 데이터 사용
-                        sessionStartTime: item.sessionStartTime || '', // 여기서 실제 데이터 사용
+                        sessionDept: item.sessionDept || '미지정', 
+                        sessionStartTime: item.sessionStartTime || '',
                         participants: [],
                         totalMinutes: 0
                     };
                 } else {
-                    // 이미 있는 세션이면 sessionDept와 sessionStartTime 정보 업데이트
                     if (item.sessionDept && !acc[sessionId].sessionDept) {
                         acc[sessionId].sessionDept = item.sessionDept;
                     }
@@ -721,12 +712,6 @@ scwin.loadSessionList = function () {
                 const validTimeEntries = summary.participants.filter(p => p.participationMinutes && !isNaN(p.participationMinutes)).length;
                 const avgMinutes = validTimeEntries > 0 ? Math.round(summary.totalMinutes / validTimeEntries) : 0;
                 
-                console.log(`세션 ${id} 정보:`, {
-                    sessionName: summary.sessionName,
-                    sessionDept: summary.sessionDept,
-                    sessionStartTime: summary.sessionStartTime
-                });
-                
                 return {
                     sessionId: id,
                     sessionName: summary.sessionName,
@@ -738,12 +723,9 @@ scwin.loadSessionList = function () {
             });
 
             dlt_sessionSummaryList.setJSON(summaryListData);
-            console.log("세션 요약 정보 생성 완료", summaryListData);
-
             scwin.showSessionList();
         },
         error: function (xhr, status, error) {
-            console.error("AJAX 오류:", xhr, status, error);
             scwin.showPopup("서버에서 데이터를 가져오는데 실패했습니다: " + xhr.status + " - " + error);
             dlt_sessionSummaryList.removeAll();
         }
@@ -755,7 +737,7 @@ scwin.grd_sessions_oncellclick = function (row, col) {
     const selectedSessionId = dlt_sessionSummaryList.getCellData(row, "sessionId");
     if (!selectedSessionId) return;
 
-    // sessionName이 있으면 사용하고, 없으면 sessionId를 사용
+    // sessionName이 있으면 사용하고 없으면 sessionId를 사용
     let selectedSessionName;
     try {
         selectedSessionName = dlt_sessionSummaryList.getCellData(row, "sessionName");
@@ -763,11 +745,8 @@ scwin.grd_sessions_oncellclick = function (row, col) {
             selectedSessionName = selectedSessionId; // sessionName이 없으면 sessionId 사용
         }
     } catch (e) {
-        console.log("sessionName 컬럼이 없습니다. sessionId를 사용합니다.");
         selectedSessionName = selectedSessionId;
     }
-
-    console.log(`'${selectedSessionName}' 세션의 상세 정보를 표시합니다.`);
 
     dm_search.set("scSessionId", selectedSessionId);
     scwin.ui.selectedSessionText.setValue(selectedSessionName);
@@ -803,15 +782,6 @@ scwin.btn_search_onclick = function () {
         return;
     }
 
-    console.log("검색 조건:", {
-        tenantId: tenantId,
-        sessionId: selectedSessionId,
-        name: searchName,
-        email: searchEmail,
-        date: searchDate
-    });
-
-    // 서버에서 직접 검색하는 방식으로 변경
     var searchOptions = {
         attendanceVo: {
             scTenantId: tenantId,
@@ -842,15 +812,8 @@ scwin.btn_search_onclick = function () {
             attendanceList.setJSON(filteredData);
             scwin.updateStats(filteredData);
 
-            if (filteredData.length === 0) {
-                // scwin.showPopup("조건에 맞는 데이터가 없습니다."); 
-                console.log("조건에 맞는 데이터가 없습니다.");
-            } else {
-                console.log(`검색 결과: ${filteredData.length}건`);
-            }
         },
         error: function (xhr, status, error) {
-            console.error("검색 중 오류:", xhr, status, error);
             scwin.showPopup("검색 중 오류가 발생했습니다: " + xhr.status + " - " + error);
         }
     });
@@ -949,26 +912,20 @@ scwin.btn_downloadCSV_onclick = function () {
 
         scwin.showPopup("CSV 파일이 다운로드되었습니다.");
     } catch (error) {
-        console.error("CSV 다운로드 중 오류:", error);
         scwin.showPopup("CSV 다운로드 중 오류가 발생했습니다: " + error.message);
     }
 };
 
 scwin.checkAttendanceSubscription = function () {
-    console.log("출석 모듈 구독 상태를 확인합니다.");
     try {
         const tenantId = $p.getParameter("tenant");
         const downloadBtn = $p.getComponentById("btn_downloadCSV");
 
-        // 컴포넌트를 찾지 못한 경우를 대비한 방어 코드
         if (!downloadBtn) {
-            console.error("다운로드 버튼 컴포넌트(btn_downloadCSV)를 찾을 수 없습니다.");
             return;
         }
 
-        // 테넌트 ID가 없으면 버튼을 숨기고 함수 종료
         if (!tenantId) {
-            console.log("테넌트 ID가 없어 다운로드 버튼을 숨깁니다.");
             downloadBtn.setStyle("display", "none"); // setStyle 메서드를 사용하여 숨김
             return;
         }
@@ -976,22 +933,17 @@ scwin.checkAttendanceSubscription = function () {
         const subscribedModulesKey = `subscribedModules_${tenantId}`;
         const subscribedModules = JSON.parse(localStorage.getItem(subscribedModulesKey) || '[]');
 
-        console.log(`테넌트 [${tenantId}]의 구독 모듈:`, subscribedModules);
-
         const isSubscribed = subscribedModules.includes('ATTENDANCE');
 
         if (isSubscribed) {
-            console.log("출석 모듈 구독 확인. 다운로드 버튼을 표시합니다.");
             downloadBtn.setStyle("display", ""); // display 속성을 초기화하여 브라우저 기본값으로 다시 표시
         } else {
-            console.log("출석 모듈 미구독 확인. 다운로드 버튼을 숨깁니다.");
             downloadBtn.setStyle("display", "none"); // setStyle을 사용하여 display: none으로 설정
         }
     } catch (e) {
-        console.error("구독 상태 확인 중 오류가 발생했습니다.", e);
         const downloadBtn = $p.getComponentById("btn_downloadCSV");
         if (downloadBtn) {
-            downloadBtn.setStyle("display", "none"); // 오류 발생 시에도 숨김 처리
+            downloadBtn.setStyle("display", "none"); 
         }
     }
 };]]>

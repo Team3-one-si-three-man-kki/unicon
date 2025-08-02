@@ -114,10 +114,8 @@ scwin.getApiToken = function () {
 };
 
 scwin.onpageload = function () {
-    console.log("향상된 서버 현황 페이지 로드");
     scwin.showDefaultData();
     scwin.loadTenantList();
-    // scwin.testConnection();
 
     setTimeout(function () {
         scwin.loadServerData();
@@ -135,14 +133,12 @@ scwin.onpageunload = function () {
 };
 
 scwin.loadTenantList = function () {
-    console.log("=== 테넌트 목록 로드 시작 ===");
     $p.hideProcessMessage();
     $p.executeSubmission("sbm_selectTenantVoList");
 };
 
 scwin.sbm_selectTenantVoList_submitdone = function (e) {
     $p.hideProcessMessage();
-    console.log("=== 테넌트 목록 조회 성공 ===");
 
     const totalCount = e.responseJSON.elData.totalCount || 0;
     dmp_tenantVo.set("totalRowCount", totalCount);
@@ -174,8 +170,6 @@ scwin.sbm_selectTenantVoList_submitdone = function (e) {
 };
 
 scwin.formatActiveStatus = function (data) {
-    console.log("상태 포맷팅:", data, typeof data);
-
     if (data === true || data === 'true' || data === 1 || data === '1' || data === 'Y' || data === 'y') {
         return "활성";
     } else if (data === false || data === 'false' || data === 0 || data === '0' || data === 'N' || data === 'n') {
@@ -185,12 +179,8 @@ scwin.formatActiveStatus = function (data) {
     return "비활성";
 };
 
-scwin.sbm_selectTenantVoList_submiterror = function (e) {
-    console.error("=== 테넌트 목록 조회 실패 ===", e);
-};
 
 scwin.testConnection = function () {
-    console.log("네트워크 연결 테스트 중...");
 
     try {
         fetch('https://unify-conference.store/ws/api/admin/server-stats', {
@@ -204,28 +194,23 @@ scwin.testConnection = function () {
             timeout: 10000
         })
             .then(response => {
-                console.log("연결 테스트 응답:", response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log("연결 테스트 성공:", data);
                 scwin.handleApiSuccess(data);
             })
             .catch(error => {
-                console.error("연결 테스트 실패:", error);
                 scwin.handleConnectionError(error);
             });
     } catch (error) {
-        console.error("Fetch 지원 불가:", error);
         scwin.fallbackToXMLHttpRequest();
     }
 };
 
 scwin.fallbackToXMLHttpRequest = function () {
-    console.log("XMLHttpRequest 사용하여 API 호출...");
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://unify-conference.store/ws/api/admin/server-stats', true);
@@ -241,33 +226,27 @@ scwin.fallbackToXMLHttpRequest = function () {
             if (xhr.status === 200) {
                 try {
                     const data = JSON.parse(xhr.responseText);
-                    console.log("XMLHttpRequest 성공:", data);
                     scwin.handleApiSuccess(data);
                 } catch (parseError) {
-                    console.error("JSON 파싱 오류:", parseError);
                     scwin.handleApiError("응답 데이터 파싱 실패");
                 }
             } else {
-                console.error("XMLHttpRequest 오류:", xhr.status, xhr.statusText);
                 scwin.handleHttpError(xhr.status, xhr.statusText);
             }
         }
     };
 
     xhr.onerror = function () {
-        console.error("XMLHttpRequest 네트워크 오류");
         scwin.handleApiError("네트워크 연결 오류");
     };
 
     xhr.ontimeout = function () {
-        console.error("XMLHttpRequest 타임아웃");
         scwin.handleApiError("요청 시간 초과");
     };
 
     try {
         xhr.send();
     } catch (sendError) {
-        console.error("XMLHttpRequest 전송 오류:", sendError);
         scwin.handleApiError("요청 전송 실패");
     }
 };
@@ -286,7 +265,6 @@ scwin.handleConnectionError = function (error) {
     }
 
     scwin.handleApiError(errorMessage);
-    console.log("Fetch 실패, XMLHttpRequest로 재시도...");
     setTimeout(scwin.fallbackToXMLHttpRequest, 1000);
 };
 
@@ -323,8 +301,6 @@ scwin.handleHttpError = function (status, statusText) {
 };
 
 scwin.handleApiSuccess = function (data) {
-    console.log("=== API 응답 성공 ===");
-    console.log("실제 API 데이터:", data);
 
     try {
         if (!data || !data.summary) {
@@ -365,7 +341,6 @@ scwin.handleApiSuccess = function (data) {
             totalConsumers: data.summary.totalConsumers || 0
         };
 
-        console.log("UI에 맞게 변환된 데이터:", formattedData);
 
         scwin.updateServerStats(formattedData);
         scwin.updatePerformanceIndicators(formattedData);
@@ -374,10 +349,8 @@ scwin.handleApiSuccess = function (data) {
         scwin.updateLiveSessions(formattedData.sessions);
 
         scwin.showLoading(false);
-        console.log("=== 실제 데이터로 UI 업데이트 완료 ===");
 
     } catch (error) {
-        console.error("데이터 처리 오류:", error);
         scwin.handleApiError("데이터 처리 중 오류가 발생했습니다: " + error.message);
     }
 };
@@ -412,23 +385,9 @@ scwin.calculateNetworkFromActivity = function (summary) {
     return Math.min(transportLoad + producerLoad + consumerLoad, 100);
 };
 
-scwin.updateSystemInfo = function (data) {
-    try {
-        console.log("시스템 정보 업데이트:", data);
-        console.log(`시스템 메모리: ${data.systemMemoryMB}MB`);
-        console.log(`프로세스 메모리: ${data.processMemoryMB}MB`);
-        console.log(`메모리 사용률: ${data.memoryUsage}%`);
-        console.log(`총 Transport: ${data.totalTransports}`);
-        console.log(`총 Producer: ${data.totalProducers}`);
-        console.log(`총 Consumer: ${data.totalConsumers}`);
-    } catch (error) {
-        console.error("시스템 정보 업데이트 오류:", error);
-    }
-};
 
 scwin.updateWorkerProcesses = function (workers) {
     try {
-        console.log("Worker 프로세스 업데이트:", workers);
 
         const workerSection = document.getElementById("worker_process_section");
         if (workerSection) {
@@ -464,12 +423,11 @@ scwin.updateWorkerProcesses = function (workers) {
             }
         }
     } catch (error) {
-        console.error("Worker 프로세스 UI 업데이트 오류:", error);
+
     }
 };
 
 scwin.showDefaultData = function () {
-    console.log("기본 데이터 표시");
     const defaultData = {
         activeSessions: 0,
         connectedUsers: 0,
@@ -490,7 +448,6 @@ scwin.showDefaultData = function () {
 };
 
 scwin.loadServerData = function () {
-    console.log("서버 데이터 로드 시도...");
     scwin.showLoading(true);
     scwin.testConnection();
 };
@@ -501,7 +458,6 @@ scwin.loadTenantData = function (tenantId) {
         return;
     }
 
-    console.log(`테넌트 ${tenantId} 데이터 로드 시도`);
     const url = `https://unify-conference.store/ws/api/admin/tenant-stats?tenantId=${tenantId}`;
     scwin.updateTenantStats({ sessions: "로딩중...", users: "로딩중..." });
 
@@ -519,7 +475,6 @@ scwin.loadTenantData = function (tenantId) {
             return response.json();
         })
         .then(data => {
-            console.log("테넌트 데이터 로드 성공:", data);
 
             const tenantData = {
                 sessions: data.activeRooms || 0,
@@ -529,14 +484,12 @@ scwin.loadTenantData = function (tenantId) {
             scwin.updateTenantStats(tenantData);
         })
         .catch(error => {
-            console.error("테넌트 데이터 로드 실패:", error);
             scwin.updateTenantStats({ sessions: "오류", users: "오류" });
             scwin.loadTenantDataXHR(tenantId);
         });
 };
 
 scwin.loadTenantDataXHR = function (tenantId) {
-    console.log("XMLHttpRequest로 테넌트 데이터 재시도...");
 
     const xhr = new XMLHttpRequest();
     const url = `https://unify-conference.store/ws/api/admin/tenant-stats?tenantId=${tenantId}`;
@@ -551,43 +504,36 @@ scwin.loadTenantDataXHR = function (tenantId) {
             if (xhr.status === 200) {
                 try {
                     const data = JSON.parse(xhr.responseText);
-                    console.log("테넌트 XHR 성공:", data);
                     const tenantData = {
                         sessions: data.activeSessions || data.summary?.activeRoomCount || 0,
                         users: data.connectedUsers || data.summary?.totalConnectedPeers || 0
                     };
                     scwin.updateTenantStats(tenantData);
                 } catch (parseError) {
-                    console.error("테넌트 데이터 파싱 오류:", parseError);
                     scwin.updateTenantStats({ sessions: "파싱오류", users: "파싱오류" });
                 }
             } else {
-                console.error("테넌트 XHR 오류:", xhr.status, xhr.statusText);
                 scwin.updateTenantStats({ sessions: `HTTP ${xhr.status}`, users: "오류" });
             }
         }
     };
 
     xhr.onerror = function () {
-        console.error("테넌트 XHR 네트워크 오류");
         scwin.updateTenantStats({ sessions: "네트워크오류", users: "네트워크오류" });
     };
 
     xhr.ontimeout = function () {
-        console.error("테넌트 XHR 타임아웃");
         scwin.updateTenantStats({ sessions: "타임아웃", users: "타임아웃" });
     };
 
     try {
         xhr.send();
     } catch (sendError) {
-        console.error("테넌트 XHR 전송 오류:", sendError);
         scwin.updateTenantStats({ sessions: "전송오류", users: "전송오류" });
     }
 };
 
 scwin.loadSessionInfo = function (roomId) {
-    console.log(`${roomId} 세션의 상세 정보를 요청합니다.`);
 
     const url = `https://unify-conference.store/ws/api/admin/session-info?roomId=${roomId}`;
 
@@ -605,38 +551,33 @@ scwin.loadSessionInfo = function (roomId) {
             return response.json();
         })
         .then(data => {
-            console.log("세션 상세 정보:", data);
             const detailInfo = `세션 상세 정보:
-룸 ID: ${data.roomId || roomId}
-참여자 수: ${data.participants || 0}명
-지속 시간: ${data.duration || 'N/A'}
-상태: ${data.status || '활성'}
-품질 지표: ${data.quality || '정상'}
-비트레이트: ${data.bitrate || 'N/A'} kbps
-패킷 손실률: ${data.packetLoss || 'N/A'}%`;
+                                룸 ID: ${data.roomId || roomId}
+                                참여자 수: ${data.participants || 0}명
+                                지속 시간: ${data.duration || 'N/A'}
+                                상태: ${data.status || '활성'}
+                                품질 지표: ${data.quality || '정상'}
+                                비트레이트: ${data.bitrate || 'N/A'} kbps
+                                패킷 손실률: ${data.packetLoss || 'N/A'}%`;
 
             alert(detailInfo);
         })
         .catch(error => {
-            console.error("세션 정보 로드 실패:", error);
             alert("세션 정보를 불러올 수 없습니다: " + error.message);
         });
 };
 
 scwin.updateServerStats = function (data) {
     try {
-        console.log("서버 통계 업데이트:", data);
 
         setTimeout(() => {
             const statNumbers = document.querySelectorAll('.stat-number');
-            console.log("stat-number 요소들:", statNumbers.length);
 
             if (statNumbers.length >= 4) {
                 statNumbers[0].textContent = data.activeSessions || "0";
                 statNumbers[1].textContent = data.connectedUsers || "0";
                 statNumbers[2].textContent = data.activeWorkers || "0";
                 statNumbers[3].textContent = scwin.formatUptime(data.uptime);
-                console.log("클래스 선택자로 서버 통계 업데이트 성공");
             }
 
             const statusTextEl = document.querySelector('.status-text');
@@ -653,48 +594,38 @@ scwin.updateServerStats = function (data) {
         }, 50);
 
     } catch (error) {
-        console.error("서버 통계 UI 업데이트 오류:", error);
     }
 };
 
 scwin.updatePerformanceIndicators = function (data) {
     try {
-        console.log("성능 지표 업데이트:", data);
 
         const cpuUsage = Math.round(data.cpuUsage || 0);
         const memoryUsage = Math.round(data.memoryUsage || 0);
         const networkUsage = Math.round(data.networkUsage || 0);
 
-        console.log(`계산된 값들 - CPU: ${cpuUsage}%, 메모리: ${memoryUsage}%, 네트워크: ${networkUsage}%`);
-
         try {
             const cpuTextComp = $p.getComponentById("cpuText");
             if (cpuTextComp) {
                 cpuTextComp.setValue(cpuUsage + '%');
-                console.log("CPU 텍스트 웹스퀘어 컴포넌트 업데이트 성공:", cpuUsage + '%');
             }
         } catch (e) {
-            console.log("CPU 텍스트 웹스퀘어 컴포넌트 접근 실패:", e);
         }
 
         try {
             const memoryTextComp = $p.getComponentById("memoryText");
             if (memoryTextComp) {
                 memoryTextComp.setValue(memoryUsage + '%');
-                console.log("메모리 텍스트 웹스퀘어 컴포넌트 업데이트 성공:", memoryUsage + '%');
             }
         } catch (e) {
-            console.log("메모리 텍스트 웹스퀘어 컴포넌트 접근 실패:", e);
         }
 
         try {
             const networkTextComp = $p.getComponentById("networkText");
             if (networkTextComp) {
                 networkTextComp.setValue(networkUsage + '%');
-                console.log("네트워크 텍스트 웹스퀘어 컴포넌트 업데이트 성공:", networkUsage + '%');
             }
         } catch (e) {
-            console.log("네트워크 텍스트 웹스퀘어 컴포넌트 접근 실패:", e);
         }
 
         setTimeout(() => {
@@ -705,29 +636,23 @@ scwin.updatePerformanceIndicators = function (data) {
 
                 if (cpuBar) {
                     cpuBar.style.width = cpuUsage + '%';
-                    console.log("CPU 바 직접 업데이트 성공");
                 }
                 if (memoryBar) {
                     memoryBar.style.width = memoryUsage + '%';
-                    console.log("메모리 바 직접 업데이트 성공");
                 }
                 if (networkBar) {
                     networkBar.style.width = networkUsage + '%';
-                    console.log("네트워크 바 직접 업데이트 성공");
                 }
 
                 const performanceTexts = document.querySelectorAll('.performance-text');
-                console.log("performance-text 요소들:", performanceTexts.length);
 
                 if (performanceTexts.length >= 3) {
                     performanceTexts[0].textContent = cpuUsage + '%';
                     performanceTexts[1].textContent = memoryUsage + '%';
                     performanceTexts[2].textContent = networkUsage + '%';
-                    console.log("클래스 선택자로 텍스트 업데이트 성공");
                 }
 
             } catch (domError) {
-                console.error("DOM 직접 접근 오류:", domError);
             }
         }, 100);
 
@@ -740,19 +665,15 @@ scwin.updatePerformanceIndicators = function (data) {
             if (totalProducersComp) totalProducersComp.setValue(data.totalProducers || 0);
             if (totalConsumersComp) totalConsumersComp.setValue(data.totalConsumers || 0);
 
-            console.log("시스템 정보 웹스퀘어 컴포넌트 업데이트 완료");
         } catch (e) {
-            console.log("시스템 정보 웹스퀘어 컴포넌트 접근 실패:", e);
         }
 
     } catch (error) {
-        console.error("성능 지표 업데이트 오류:", error);
     }
 };
 
 scwin.updateTenantStats = function (data) {
     try {
-        console.log("테넌트 통계 업데이트:", data);
 
         const sessionValue = data.activeSessions || data.sessions || "0";
         const userValue = data.connectedUsers || data.users || "0";
@@ -761,20 +682,17 @@ scwin.updateTenantStats = function (data) {
             const sessionsComp = $p.getComponentById('tenantSessions');
             if (sessionsComp) {
                 sessionsComp.setValue(sessionValue);
-                console.log("테넌트 세션 웹스퀘어 컴포넌트 업데이트:", sessionValue);
             }
         } catch (e) {
-            console.log("테넌트 세션 웹스퀘어 컴포넌트 접근 실패:", e);
         }
 
         try {
             const usersComp = $p.getComponentById('tenantUsers');
             if (usersComp) {
                 usersComp.setValue(userValue);
-                console.log("테넌트 사용자 웹스퀘어 컴포넌트 업데이트:", userValue);
             }
         } catch (e) {
-            console.log("테넌트 사용자 웹스퀘어 컴포넌트 접근 실패:", e);
+
         }
 
         setTimeout(() => {
@@ -782,12 +700,10 @@ scwin.updateTenantStats = function (data) {
             if (tenantStatNumbers.length >= 2) {
                 tenantStatNumbers[0].textContent = sessionValue;
                 tenantStatNumbers[1].textContent = userValue;
-                console.log("클래스 선택자로 테넌트 통계 업데이트 성공");
             }
         }, 50);
 
     } catch (error) {
-        console.error("테넌트 통계 업데이트 오류:", error);
     }
 };
 
@@ -824,7 +740,6 @@ scwin.updateLiveSessions = function (sessions) {
             });
         }
     } catch (error) {
-        console.error("라이브 세션 UI 업데이트 오류:", error);
     }
 };
 
@@ -832,7 +747,6 @@ scwin.onTenantSelectChange = function (row, col) {
     const tenantId = dlt_tenantVoList.getCellData(row, "tenantId");
 
     if (tenantId && tenantId === scwin.selectedTenantId) {
-        console.log(`동일 테넌트(${tenantId}) 재클릭: 상세 정보 숨김`);
         scwin.hideTenantDetailInfo();    
         scwin.selectedTenantId = null;  
         grd_tenantList.setFocusedCell(-1, -1);
@@ -847,17 +761,14 @@ scwin.onTenantSelectChange = function (row, col) {
         isActive: dlt_tenantVoList.getCellData(row, "isActive")
     };
 
-    console.log(`=== GridView 행 클릭: ${row}번째 행, tenantId: ${tenantId} ===`);
-
     if (tenantId) {
         scwin.selectedTenantId = tenantId;
 
         scwin.updateTenantDetailInfo(tenantData);
         scwin.loadTenantData(tenantId);
     } else {
-        console.error("클릭된 행의 tenantId를 찾을 수 없습니다.");
         scwin.hideTenantDetailInfo();
-        scwin.selectedTenantId = null; // 선택 상태 초기화
+        scwin.selectedTenantId = null; 
     }
 };
 
@@ -890,10 +801,7 @@ scwin.updateTenantDetailInfo = function (tenantData) {
 
         }
 
-        console.log("테넌트 상세 정보 업데이트 완료:", tenantData);
-
     } catch (error) {
-        console.error("테넌트 상세 정보 업데이트 오류:", error);
     }
 };
 
@@ -918,7 +826,6 @@ scwin.formatDateTime = function (dateTimeString) {
 
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     } catch (error) {
-        console.error("날짜 포맷팅 오류:", error);
         return dateTimeString;
     }
 };
@@ -975,12 +882,10 @@ scwin.showLoading = function (show) {
             else card.classList.remove('loading');
         });
     } catch (error) {
-        console.error("로딩 상태 표시 오류:", error);
     }
 };
 
 scwin.handleApiError = function (message) {
-    console.error("API 오류:", message);
     scwin.showLoading(false);
 
     const statusEl = document.querySelector('.status-text');
@@ -992,60 +897,48 @@ scwin.handleApiError = function (message) {
 };
 
 scwin.serverStatsSuccess = function (e) {
-    console.log("WebSquare submission 성공:", e);
     try {
         const realData = e.responseJSON || JSON.parse(e.responseText);
         scwin.handleApiSuccess(realData);
     } catch (error) {
-        console.error("WebSquare submission 데이터 처리 오류:", error);
         scwin.handleApiError("WebSquare submission 데이터 처리 실패");
     }
 };
 
 scwin.tenantStatsSuccess = function (e) {
-    console.log("테넌트 통계 WebSquare submission 성공:", e);
     try {
         const data = e.responseJSON || JSON.parse(e.responseText);
         scwin.updateTenantStats(data);
     } catch (error) {
-        console.error("테넌트 통계 데이터 처리 오류:", error);
     }
 };
 
 scwin.sessionInfoSuccess = function (e) {
-    console.log("세션 정보 WebSquare submission 성공:", e);
     try {
         const data = e.responseJSON || JSON.parse(e.responseText);
         alert("세션 상세 정보:\n" + JSON.stringify(data, null, 2));
     } catch (error) {
-        console.error("세션 정보 데이터 처리 오류:", error);
     }
 };
 
 scwin.submissionError = function (e) {
-    console.error("=== WebSquare Submission 오류 ===", e);
     scwin.handleHttpError(e.status || 0, e.statusText || 'Unknown Error');
 };
 
 scwin.testAllAPIs = function () {
-    console.log("=== 모든 API 엔드포인트 테스트 ===");
 
-    console.log("1. 서버 통계 API 테스트");
     scwin.testConnection();
 
     setTimeout(() => {
-        console.log("2. 테넌트 통계 API 테스트");
         scwin.loadTenantData("2");
     }, 2000);
 
     setTimeout(() => {
-        console.log("3. 세션 정보 API 테스트");
         scwin.loadSessionInfo("test-room");
     }, 4000);
 };
 
 scwin.testUIUpdate = function () {
-    console.log("=== UI 업데이트 수동 테스트 ===");
 
     const testData = {
         cpuUsage: 36,
@@ -1060,7 +953,6 @@ scwin.testUIUpdate = function () {
 };
 
 scwin.refreshServerData = function () {
-    console.log("서버 데이터 수동 새로고침");
     scwin.loadServerData();
 };
 
@@ -1077,11 +969,9 @@ scwin.btn_module_onclick = function () {
 };
 
 scwin.btn_stats_onclick = function () {
-    console.log("현재 서버현황 페이지입니다.");
 };
 
 scwin.searchTenants = function () {
-    console.log("테넌트 검색 실행");
     dmp_tenantVo.set("pageIndex", 1);
     scwin.loadTenantList();
 };
