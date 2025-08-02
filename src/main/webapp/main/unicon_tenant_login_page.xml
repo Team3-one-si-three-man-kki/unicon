@@ -138,7 +138,6 @@ scwin.parseJwt = function (token) {
 // 페이지 로드 시 초기화
 scwin.onpageload = function () {
     var mode = $p.getParameter("mode");
-    console.log("mode", mode);
     if (mode !== "preview") {
         const subDomain = scwin.getQueryParam('tenant');
 
@@ -174,7 +173,6 @@ scwin.loadCustomization = function (c) {
     // 테넌트 이름을 전역 변수에 저장
     if (c.tenantName) {
         scwin.lastLoadedTenantName = c.tenantName;
-        console.log("loadCustomization에서 테넌트 이름 저장:", c.tenantName);
     }
 
     if(scwin.containKorean(c.tenantName)){
@@ -245,7 +243,6 @@ scwin.loadSavedUserId = function () {
     try {
         var savedUserId = localStorage.getItem("savedUserId");
         if (savedUserId) {
-            // 데이터 바인딩을 통해 값 설정
             $p.setValueByID("data:loginInfo.userId", savedUserId);
             $p.setValueByID("data:loginInfo.rememberMe", "Y");
         }
@@ -254,9 +251,7 @@ scwin.loadSavedUserId = function () {
     }
 };
 
-// 엔터키 이벤트 바인딩
 scwin.bindEnterKeyEvents = function () {
-    // 아이디 입력 필드에서 엔터키
     inp_userId.bind("keypress", function (e) {
         if (e.keyCode === 13) {
             e.preventDefault();
@@ -264,7 +259,6 @@ scwin.bindEnterKeyEvents = function () {
         }
     });
 
-    // 비밀번호 입력 필드에서 엔터키
     inp_password.bind("keypress", function (e) {
         if (e.keyCode === 13) {
             e.preventDefault();
@@ -273,9 +267,6 @@ scwin.bindEnterKeyEvents = function () {
     });
 };
 
-
-
-// 입력값 검증
 scwin.validateLogin = function (userId, password) {
     if (!userId || userId.trim() === "") {
         $p.alert("아이디를 입력해주세요.", function () {
@@ -306,7 +297,6 @@ scwin.getQueryParam = function (name) {
 };
 
 
-// 로그인 성공 처리
 scwin.onLoginSuccess = function () {
     scwin.setLoginButtonState(false);
 
@@ -314,14 +304,12 @@ scwin.onLoginSuccess = function () {
     var rememberMe = $p.getValueByID("data:loginInfo.rememberMe");
 
     try {
-        // 아이디 저장 처리
         if (rememberMe === "Y") {
             localStorage.setItem("savedUserId", userId);
         } else {
             localStorage.removeItem("savedUserId");
         }
 
-        // 사용자 정보 저장
         sessionStorage.setItem("loggedInUser", userId);
 
     } catch (e) {
@@ -333,7 +321,6 @@ scwin.onLoginSuccess = function () {
     });
 };
 
-// 로그인 실패 처리
 scwin.onLoginFailure = function () {
     scwin.setLoginButtonState(false);
 
@@ -343,9 +330,7 @@ scwin.onLoginFailure = function () {
     });
 };
 
-// 로그인 버튼 상태 변경
 scwin.setLoginButtonState = function (isLoading) {
-    // var btn_login = $p.getComponentById("btn_login");
     if (isLoading) {
         btn_login.setDisabled(true);
         btn_login.setText("로그인 중...");
@@ -355,17 +340,14 @@ scwin.setLoginButtonState = function (isLoading) {
     }
 };
 
-// 메인 페이지로 리다이렉트
 scwin.redirectToMainPage = function () {
     try {
         if (parent && parent.scwin && parent.scwin.goToMain) {
             parent.scwin.goToMain();
         } else {
-            console.log("메인 페이지로 이동합니다.");
             // window.location.href = "/main.xml";
         }
     } catch (e) {
-        console.log("메인 페이지 이동 처리");
     }
 };
 
@@ -381,7 +363,6 @@ scwin.loginSubmitHandler = function (e) {
 
 scwin.loadCustom_submitdone = function (e) {
     var elData = e.responseJSON;
-    console.log("받아온데이터입니다", elData);
     if (elData?.code === "E001") {
         location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/error/404tenant.xml";
     }else if (Object.keys(elData).length === 1) {
@@ -397,12 +378,10 @@ scwin.login = function (e) {
 
 // 로그인 응답 처리
 scwin.login_submitdone = function (e) {
-    console.log("응답 전체:", e);
     var responseData = e.responseJSON;
     var elHeader = e.responseJSON.elHeader;
 
     if (elHeader && elHeader.resSuc === true) {
-        console.log("Response Headers:", e.responseHeadersJSON);
         var headers = {};
         try {
             headers = JSON.parse(e.responseHeadersJSON);
@@ -412,8 +391,6 @@ scwin.login_submitdone = function (e) {
 
         var accessToken = headers.authorization;
         var refreshToken = headers["refresh-token"];
-        console.log("Access Token:", accessToken);
-        console.log("Refresh Token:", refreshToken);
 
         if (accessToken) {
             sessionStorage.setItem('accessToken', accessToken);
@@ -432,8 +409,6 @@ scwin.login_submitdone = function (e) {
             }
         }
 
-        console.log("추출된 테넌트 ID:", tenantId);
-
         // 현재 테넌트 이름 추출 - 여러 방법으로 시도
         var currentTenantName = null;
         
@@ -441,38 +416,30 @@ scwin.login_submitdone = function (e) {
         const urlTenant = scwin.getQueryParam('tenant');
         if (urlTenant) {
             currentTenantName = urlTenant;
-            console.log("URL에서 테넌트 이름 추출:", currentTenantName);
         }
         
         // 방법 2: 전역 변수에서 확인
         if (!currentTenantName && window.currentTenantName) {
             currentTenantName = window.currentTenantName;
-            console.log("전역변수에서 테넌트 이름 추출:", currentTenantName);
         }
         
         // 방법 3: loadCustomization에서 사용된 tenantName 확인
         if (!currentTenantName && scwin.lastLoadedTenantName) {
             currentTenantName = scwin.lastLoadedTenantName;
-            console.log("마지막 로드된 테넌트 이름 사용:", currentTenantName);
         }
-
-        console.log("최종 현재 테넌트 이름:", currentTenantName);
 
         // 테넌트 이름을 sessionStorage에 저장 (강화된 저장)
         if (currentTenantName) {
             sessionStorage.setItem('currentTenantName', currentTenantName);
-            console.log("SessionStorage에 테넌트 이름 저장 완료:", currentTenantName);
-            
             // 확인
+
             const saved = sessionStorage.getItem('currentTenantName');
-            console.log("저장 확인:", saved);
         } else {
             console.warn("저장할 테넌트 이름이 없습니다!");
         }
 
         if (tenantId) {
             var dashboardUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
-            console.log("대시보드 이동 URL:", dashboardUrl);
             location.href = dashboardUrl;
         } else {
             scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
@@ -487,7 +454,7 @@ scwin.login_submitdone = function (e) {
 scwin.btn_kakao_onclick = function (e) {
    // 3.1 URL 파라미터에서 tenant 추출
     var tenant = $p.getParameter("tenant");
-    console.log(tenant);
+
     // 3.2 서비스 코드 정의
     var service = "TNU0000KC";
     // 3.3 동적으로 action URL 생성 (중괄호 없이)
@@ -495,15 +462,12 @@ scwin.btn_kakao_onclick = function (e) {
               + service 
               + "&tenant=" + encodeURIComponent(tenant);
     // 3.4 submission에 action 설정
-    console.log(url);
-
+    
     var subObj = $p.getSubmission("kakao_login");
-    console.log(subObj);
 
   subObj.action = url;
 
   $p.executeSubmission("kakao_login");
-    
 };
 
 scwin.kakao_login_submitdone = function (e) {
@@ -529,7 +493,7 @@ scwin.togglePassword_onclick = function (e) {
 
 scwin.defaultData = function (name) {
     const data = {
-        backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop', // 깔끔한 오피스 이미지
+        backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
         logo: '',
         logoSize: 60,
         mainTitle: '비즈니스의 새로운 시작을 환영합니다.',
@@ -550,8 +514,6 @@ scwin.defaultData = function (name) {
         accentColor: '#6366f1',
         tenantName: name,
     }
-    // 부모의 데이터맵에도 세팅? -> 부모가 있는경우 
-    // 현재 loginCustom시 datamap에 데이터 매핑이 안되어있어서 하나만 바꿔도 제대로 인식 못하는 문제 있음 -> 해결 필요
     return data;
 }]]></script>
 
@@ -677,20 +639,6 @@ scwin.defaultData = function (name) {
                                     style="position: absolute; right: 16px; top:50%;transform: translateY(-50%); width: 18px;height: 18px;" id="togglePassword" ev:onclick="scwin.togglePassword_onclick"></xf:image>
 								</xf:group>
 
-								<!-- Remember me (현재 기능 미구현이므로 주석 처리) -->
-								<!--
-									<xf:group class="grp_password" id=""
-									style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
-									<xf:select appearance="full" cols="" id="" ref="" rows="" selectedindex="-1" style="">
-									<xf:choices>
-									<xf:item>
-									<xf:label><![CDATA[Remember me]]></xf:label>
-									<xf:value><![CDATA[]]></xf:value>
-									</xf:item>
-									</xf:choices>
-									</xf:select>
-									</xf:group>
-								-->
 							</xf:group>
 						</xf:group>
 
