@@ -582,7 +582,7 @@ scwin.popup_closeAction = function (argRuntimeID, argJsnInfo) {
                     box-sizing: border-box !important;
                 }
 
-                .w2-input:focus, 
+                .w2-input:focus,
                 .w2-secret:focus,
                 xf\:input:focus,
                 input:focus { 
@@ -885,7 +885,7 @@ xf\:trigger.btn-kakao {
                     color: #2d3748 !important; 
                 }
 
-                .terms-list { 
+                .terms-list {  
                     list-style: none !important; 
                     padding: 0 !important; 
                     counter-reset: item !important; 
@@ -1273,9 +1273,14 @@ xf\:trigger#btn_kakao_auth {
 
 				<xf:group class="form-group">
 					<w2:textbox tagname="label" label="서브도메인 *" escape="false"></w2:textbox>
-					<xf:input id="tenant_input" ref="data:signup_dma.subDomain" placeholder="서비스 URL에 사용될 영문ID"></xf:input>
+					<xf:group id="">
+						<xf:group id="">
+							<w2:textbox tagname="label" style="" label="www." escape="false"></w2:textbox>
+							<xf:input ref="data:signup_dma.subDomain" id="tenant_input" placeholder="서비스 URL에 사용될 영문ID"></xf:input>
+							<w2:textbox tagname="label" style="" label="unify-conference.store" escape="false"></w2:textbox>
+						</xf:group>
+					</xf:group>
 				</xf:group>
-
 				<xf:group class="terms-section" id="grp_agree">
 					<w2:textbox class="terms-title" label="개인정보 수집 및 이용 동의" tagname="div"></w2:textbox>
 					<xf:group class="terms-list" tagname="ol">
