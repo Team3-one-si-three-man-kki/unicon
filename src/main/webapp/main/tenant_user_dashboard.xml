@@ -853,7 +853,10 @@ scwin.updateHeaderWithRoleInfo = function () {
 };
 
 scwin.btn_kakao_onclick = function (e) {
-    var tenant = $p.getParameter("tenant") || scwin.getQueryParam('tenant');
+    // var tenant = $p.getParameter("tenant") || scwin.getQueryParam('tenant');
+    const host = window.location.hostname; // 'basic.unify-conference.store'
+    const tenant = host.split('.')[0]; // 'basic'
+    
     console.log("카카오 로그인 - 테넌트:", tenant);
 
     if (!tenant) {

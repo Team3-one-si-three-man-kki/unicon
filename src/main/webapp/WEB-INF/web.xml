@@ -176,7 +176,7 @@
 		<error-code>500</error-code>
 		<location>/InsWebApp/common/error.jsp</location>
 	</error-page>
-    
+     
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>HTTPS only</web-resource-name>
@@ -186,4 +186,5 @@
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
+     
 </web-app>
