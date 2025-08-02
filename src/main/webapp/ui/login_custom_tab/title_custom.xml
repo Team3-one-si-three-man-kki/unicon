@@ -16,16 +16,12 @@
 		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function() {
     scwin.loginCustomInfo = aliasDataMap1.getObj();
 	scwin.addColor();
-    // mainTitleSize.setValue(scwinlloginCustomInfo.get("mainTitleSize"));
-
-    console.log(scwin.loginCustomInfo)
 };
 
 scwin.addColor = function(){
     const arrid = ["main","sub","extra"]
     const arrObj = [main_color_group, sub_color_group, extra_color_group]
 
-    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
     // input 엘리먼트 생성
     
     for (let i = 0; i < arrid.length; i++){
@@ -35,11 +31,9 @@ scwin.addColor = function(){
         color.id = arrid[i];
         color.value = scwin.loginCustomInfo.get(arrid[i]+"TitleColor");
 
-        // 이벤트 바인딩 예시
+        // 이벤트 바인딩
         color.addEventListener("input", function() {
             scwin.loginCustomInfo.set(this.id+"TitleColor", this.value);
-            console.log("현재 값:", this.id);
-            console.log("color",this.value);
         });
 
         // DOM에 추가
@@ -48,7 +42,6 @@ scwin.addColor = function(){
 }
 
 scwin.mainTitle_onkeyup = function (e) {
-    console.log(mainTitle.getValue());
     scwin.loginCustomInfo.set("mainTitle", mainTitle.getValue());
 };
 
@@ -73,7 +66,6 @@ scwin.extraTitleSize_onviewchange = function (info) {
 };
 
 scwin.mainTitleFont_onchange = function (info) {
-    console.log(info)
     scwin.loginCustomInfo.set("mainTitleFont", info.newValue);
 };
 

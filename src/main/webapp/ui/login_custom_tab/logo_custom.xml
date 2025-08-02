@@ -28,7 +28,6 @@ scwin.addUpload = function () {
     fileInput.style.display = 'none'; // input 자체는 숨기기 (label 클릭으로 대체)
     logoGroup.appendChild(fileInput);
 
-    // 2. 업로드 아이콘(w2:anchor) 클릭 이벤트 연결
     fileNameDisplay.bind("onclick", function () {
         fileInput.click();
     });
@@ -40,7 +39,6 @@ scwin.addUpload = function () {
             return;
         }
 
-        // 3-1. WebSquare 인풋에 파일 이름 표시
         fileNameDisplay.setValue(file.name);
 
         var reader = new FileReader();
@@ -50,7 +48,7 @@ scwin.addUpload = function () {
         };
         reader.readAsDataURL(file);
 
-        // 예: 선택 직후 서버로 전송하려면 FormData 사용
+        // 선택 직후 서버로 전송하려면 FormData 사용
         // var formData = new FormData();
         // Array.from(files).forEach(f => formData.append('files', f));
         // fetch('/upload/api', { method: 'POST', body: formData })
@@ -61,8 +59,6 @@ scwin.addUpload = function () {
 }
 
 scwin.addSlider = function (size) {
-    // 부모 DOM 요소 선택 (WebSquare 컴포넌트 아님)
-
     // input 엘리먼트 생성
     var slider = document.createElement("input");
     slider.type = "range";
@@ -73,9 +69,8 @@ scwin.addSlider = function (size) {
     slider.value = size;
     slider.style.width = "100%";
 
-    // 이벤트 바인딩 예시
+    // 이벤트 바인딩
     slider.addEventListener("input", function () {
-        console.log("현재 값:", slider.value);
         logo_size_text.setValue("로고 크기: " + slider.value + "px")
         scwin.loginCustomInfo.set("logoSize", slider.value)
     });
