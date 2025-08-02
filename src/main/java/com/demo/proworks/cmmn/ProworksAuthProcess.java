@@ -23,7 +23,6 @@ public class ProworksAuthProcess {
     }
 
     // JWT 인증만 허용 (세션 기반 인증 완전 제거)
-    System.out.println("일단 권한프로세스는 된거");
     Boolean jwtAuthenticated = (Boolean) request.getAttribute("jwtAuthenticated");
     if (jwtAuthenticated == null || !jwtAuthenticated) {
         throw new UserException("ERR.USER.0002"); // 인증 정보가 없습니다.
