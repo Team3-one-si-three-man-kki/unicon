@@ -31,7 +31,6 @@
 					</sessionInfo>
 				</data>
 			</xf:instance>
-
 			<xf:submission id="serverStatsSubmission" action="https://13.125.229.206:3000/api/admin/server-stats" method="get"
 				mediatype="application/json" replace="none" mode="asynchronous" instance="data" ref="/data/serverStats"
 				ev:errorHandler="scwin.submissionError">
@@ -183,7 +182,7 @@ scwin.formatActiveStatus = function (data) {
 scwin.testConnection = function () {
 
     try {
-        fetch('https://unify-conference.store/ws/api/admin/server-stats', {
+        fetch('https://13.125.229.206:3000/api/admin/server-stats', {
             method: 'GET',
             headers: {
                 'Authorization': scwin.getApiToken(),
@@ -213,7 +212,7 @@ scwin.testConnection = function () {
 scwin.fallbackToXMLHttpRequest = function () {
 
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://unify-conference.store/ws/api/admin/server-stats', true);
+    xhr.open('GET', 'https://13.125.229.206:3000/api/admin/server-stats', true);
 
     xhr.setRequestHeader('Authorization', 'Bearer ' + scwin.getApiToken());
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -344,7 +343,7 @@ scwin.handleApiSuccess = function (data) {
 
         scwin.updateServerStats(formattedData);
         scwin.updatePerformanceIndicators(formattedData);
-        scwin.updateSystemInfo(formattedData);
+        //scwin.updateSystemInfo(formattedData);
         scwin.updateWorkerProcesses(formattedData.workers);
         scwin.updateLiveSessions(formattedData.sessions);
 
@@ -458,7 +457,7 @@ scwin.loadTenantData = function (tenantId) {
         return;
     }
 
-    const url = `https://unify-conference.store/ws/api/admin/tenant-stats?tenantId=${tenantId}`;
+    const url = `https://13.125.229.206:3000/api/admin/tenant-stats?tenantId=${tenantId}`;
     scwin.updateTenantStats({ sessions: "로딩중...", users: "로딩중..." });
 
     fetch(url, {
@@ -492,7 +491,7 @@ scwin.loadTenantData = function (tenantId) {
 scwin.loadTenantDataXHR = function (tenantId) {
 
     const xhr = new XMLHttpRequest();
-    const url = `https://unify-conference.store/ws/api/admin/tenant-stats?tenantId=${tenantId}`;
+    const url = `https://13.125.229.206:3000/api/admin/tenant-stats?tenantId=${tenantId}`;
 
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Authorization', 'Bearer ' + scwin.getApiToken());
@@ -535,7 +534,7 @@ scwin.loadTenantDataXHR = function (tenantId) {
 
 scwin.loadSessionInfo = function (roomId) {
 
-    const url = `https://unify-conference.store/ws/api/admin/session-info?roomId=${roomId}`;
+    const url = `https://13.125.229.206:3000/api/admin/session-info?roomId=${roomId}`;
 
     fetch(url, {
         method: 'GET',
@@ -957,15 +956,15 @@ scwin.refreshServerData = function () {
 };
 
 scwin.btn_home_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_dashboard.xml";
 };
 
 scwin.btn_tenant_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_tenant.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_tenant.xml";
 };
 
 scwin.btn_module_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_module.xml";
 };
 
 scwin.btn_stats_onclick = function () {

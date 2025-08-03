@@ -86,7 +86,7 @@
 			</xf:submission>
 
 			<!-- 서버 통계 조회 -->
-			<xf:submission id="sbm_serverStats" action="https://unify-conference.store/ws/api/admin/server-stats" method="get"
+			<xf:submission id="sbm_serverStats" action="https://13.125.229.206:3000/api/admin/server-stats" method="get"
 				mediatype="application/json" replace="none" mode="asynchronous" ev:submitdone="scwin.sbm_serverStats_submitdone"
 				ev:submiterror="scwin.sbm_serverStats_submiterror" processMsg="서버 상태 조회중...">
 				<xf:request>
@@ -440,15 +440,15 @@ scwin.btn_home_onclick = function () {
 };
 
 scwin.btn_tenant_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_tenant.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_tenant.xml";
 };
 
 scwin.btn_module_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_module.xml";
 };
 
 scwin.btn_stats_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_server_info.xml";
 };]]>
 		</script>
 

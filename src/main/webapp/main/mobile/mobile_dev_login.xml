@@ -33,6 +33,7 @@
 		<w2:publicInfo method="" />
 
 		<script lazy="false" type="text/javascript"><![CDATA[
+// 모바일 팝업 생성 함수
 scwin.createPopupLayer = function () {
     if (document.getElementById('mobileAlertPopup')) return;
 
@@ -50,7 +51,10 @@ scwin.createPopupLayer = function () {
     document.body.insertAdjacentHTML('beforeend', popupHtml);
 };
 
+// 모바일 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
+    console.log("showPopup 호출:", message, "콜백 존재:", !!callback);
+    
     var popup = document.getElementById('mobileAlertPopup');
     if (!popup) {
         scwin.createPopupLayer();
@@ -63,27 +67,80 @@ scwin.showPopup = function (message, isConfirm, callback) {
 
     messageEl.innerHTML = message.replace(/\\n/g, '<br>');
 
+    // 기존 이벤트 핸들러 제거 (중복 방지)
+    confirmBtn.onclick = null;
+    cancelBtn.onclick = null;
+
     if (isConfirm) {
         cancelBtn.style.display = 'inline-block';
-        confirmBtn.onclick = function () {
+        
+        confirmBtn.onclick = function (e) {
+            console.log("확인 버튼 클릭됨");
+            e.preventDefault();
+            e.stopPropagation();
+            
             popup.style.display = 'none';
-            if (callback) callback(true);
+            
+            // 안전한 콜백 실행 (지연 처리)
+            if (callback) {
+                setTimeout(function() {
+                    console.log("확인 콜백 실행");
+                    callback(true);
+                }, 100); // 팝업이 완전히 숨겨진 후 실행
+            }
         };
-        cancelBtn.onclick = function () {
+        
+        cancelBtn.onclick = function (e) {
+            console.log("취소 버튼 클릭됨");
+            e.preventDefault();
+            e.stopPropagation();
+            
             popup.style.display = 'none';
-            if (callback) callback(false);
+            
+            if (callback) {
+                setTimeout(function() {
+                    console.log("취소 콜백 실행");
+                    callback(false);
+                }, 100);
+            }
         };
+        
     } else {
         cancelBtn.style.display = 'none';
-        confirmBtn.onclick = function () {
+        
+        confirmBtn.onclick = function (e) {
+            console.log("확인 버튼 클릭됨 (단일)");
+            e.preventDefault();
+            e.stopPropagation();
+            
             popup.style.display = 'none';
-            if (callback) callback();
+            
+            // 핵심: 콜백을 지연 실행
+            if (callback) {
+                setTimeout(function() {
+                    console.log("콜백 실행 중...");
+                    try {
+                        callback();
+                        console.log("콜백 실행 완료");
+                    } catch (error) {
+                        console.error("콜백 실행 오류:", error);
+                    }
+                }, 150); // 충분한 지연 시간
+            }
         };
     }
 
     popup.style.display = 'flex';
+    
+    // 포커스 설정 (키보드 접근성)
+    setTimeout(function() {
+        if (confirmBtn) {
+            confirmBtn.focus();
+        }
+    }, 50);
 };
 
+// JWT 파싱 함수
 scwin.parseJwt = function (token) {
     try {
         const base64Url = token.split('.')[1];
@@ -93,18 +150,23 @@ scwin.parseJwt = function (token) {
         }).join(''));
         return JSON.parse(jsonPayload);
     } catch (e) {
+        console.error("JWT 파싱 오류:", e);
         return null;
     }
 };
 
 scwin.onpageload = function () {
-
+    // 모바일 팝업 레이어 생성
     scwin.createPopupLayer();
+
+    // 저장된 아이디 로드
     scwin.loadSavedUserId();
+
+    // 엔터키 이벤트 바인딩
     scwin.bindEnterKeyEvents();
-    
 };
 
+// 저장된 아이디 로드
 scwin.loadSavedUserId = function () {
     try {
         var savedUserId = localStorage.getItem("savedUserId");
@@ -113,6 +175,7 @@ scwin.loadSavedUserId = function () {
             chk_remember.setChecked(true);
         }
     } catch (e) {
+        console.warn("로컬 스토리지 접근 실패:", e);
     }
 };
 
@@ -134,6 +197,8 @@ scwin.bindEnterKeyEvents = function () {
 
 // 로그인 함수
 scwin.login = function () {
+    console.log("=== 로그인 시작 ===");
+
     var userId = inp_userId.getValue();
     var password = inp_password.getValue();
 
@@ -141,11 +206,22 @@ scwin.login = function () {
         return;
     }
 
+    dma_login.set("email", userId);
+    dma_login.set("password", password);
+    dma_login.set("subDomain", "admin");
+
     scwin.setLoginButtonState(true);
 
-    $c.sbm.execute(login);
+
+    try {
+        $p.executeSubmission("login");
+    } catch (e) {
+        scwin.setLoginButtonState(false);
+        scwin.showPopup("로그인 요청 중 오류가 발생했습니다.", false);
+    }
 };
 
+// 입력값 검증
 scwin.validateLogin = function (userId, password) {
     if (!userId || userId.trim() === "") {
         scwin.showPopup("아이디를 입력해주세요.", false, function () {
@@ -171,6 +247,7 @@ scwin.validateLogin = function (userId, password) {
     return true;
 };
 
+// 로그인 버튼 상태 변경
 scwin.setLoginButtonState = function (isLoading) {
     if (isLoading) {
         btn_login.setDisabled(true);
@@ -189,6 +266,7 @@ scwin.onLoginSuccess = function () {
     var rememberMe = chk_remember.getChecked();
 
     try {
+        // 아이디 저장 처리
         if (rememberMe) {
             localStorage.setItem("savedUserId", userId);
         } else {
@@ -221,9 +299,11 @@ scwin.redirectToMobileDashboard = function () {
         // 모바일 대시보드로 이동
         // location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_tenant_dashboard.xml";
     } catch (e) {
+        console.log("모바일 대시보드 이동 처리");
     }
 };
 
+// 비밀번호 보기/숨기기 토글
 scwin.togglePasswordVisibility = function () {
     if (inp_password.getInputType() === "password") {
         inp_password.setInputType("text");
@@ -234,21 +314,33 @@ scwin.togglePasswordVisibility = function () {
     }
 };
 
+// 로그인 응답 처리
 scwin.login_submitdone = function (e) {
+    console.log("=== 로그인 응답 수신 ===");
+    
     var responseData = e.responseJSON;
-    var elHeader = e.responseJSON.elHeader;
-
+    if (!responseData) {
+        console.error("응답 데이터가 없습니다!");
+        scwin.setLoginButtonState(false);
+        scwin.showPopup("서버 응답이 없습니다. 네트워크를 확인해주세요.", false);
+        return;
+    }
+    
+    var elHeader = responseData.elHeader;
+    
     if (elHeader && elHeader.resSuc === true) {
+        console.log("✅ 로그인 성공!");
+        
         var headers = {};
         try {
-            headers = JSON.parse(e.responseHeadersJSON);
+            headers = JSON.parse(e.responseHeadersJSON || "{}");
         } catch (err) {
+            console.error("헤더 JSON 파싱 오류:", err);
         }
 
         var accessToken = headers.authorization;
         var refreshToken = headers["refresh-token"];
-
-
+        
         if (accessToken) {
             sessionStorage.setItem('accessToken', accessToken);
         }
@@ -266,17 +358,36 @@ scwin.login_submitdone = function (e) {
             }
         }
 
+        scwin.setLoginButtonState(false);
 
         if (tenantId) {
-            location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+            var redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+            console.log("리다이렉트 URL 준비:", redirectUrl);
+            
+            // 팝업 사용 버전
+            scwin.showPopup("로그인되었습니다!", false, function() {
+                console.log("팝업 콜백에서 리다이렉트 실행");
+                console.log("이동할 URL:", redirectUrl);
+                
+                try {
+                    location.href = redirectUrl;
+                } catch (error) {
+                    console.error("리다이렉트 오류:", error);
+                    // 오류 시 강제 이동
+                    window.location.replace(redirectUrl);
+                }
+            });
+            
         } else {
-            scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
+            scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다.", false);
         }
 
     } else {
+        console.log("❌ 로그인 실패");
         scwin.onLoginFailure();
     }
 };
+
 ]]></script>
 
 		<style><![CDATA[
@@ -400,6 +511,7 @@ html, body {
     background: rgba(102, 126, 234, 0.1);
 }
 
+/* ========== 기억하기 체크박스 ========== */
 .mobile-remember-group {
     display: flex;
     align-items: center;
@@ -464,7 +576,7 @@ html, body {
     
     .mobile-input {
         padding: 14px 16px;
-        font-size: 16px;
+        font-size: 16px; /* iOS에서 줌 방지 */
     }
     
     .mobile-password-toggle {
@@ -483,6 +595,7 @@ html, body {
     }
 }
 
+/* ========== 접근성 및 포커스 개선 ========== */
 .mobile-input:focus,
 .mobile-login-button:focus,
 .mobile-password-toggle:focus {
@@ -490,6 +603,7 @@ html, body {
     outline-offset: 2px;
 }
 
+/* ========== 터치 인터랙션 개선 ========== */
 .mobile-login-button,
 .mobile-password-toggle,
 .mobile-remember-label {
@@ -497,6 +611,7 @@ html, body {
     touch-action: manipulation;
 }
 
+/* ========== 로딩 애니메이션 ========== */
 .mobile-login-button.loading {
     position: relative;
     color: transparent;
@@ -522,6 +637,7 @@ html, body {
     100% { transform: rotate(360deg); }
 }
 
+/* ========== 배경 장식 ========== */
 .mobile-login-wrapper::before {
     content: '';
     position: absolute;

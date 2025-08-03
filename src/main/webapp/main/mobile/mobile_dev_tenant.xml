@@ -72,7 +72,7 @@ scwin.sbm_tenantList_submitdone = function (e) {
 scwin.applyClientSideFilter = function (dataList) {
     var filterStatus = dmp_tenantVo.get("scStatus");
     if (!filterStatus || filterStatus === "") {
-        return dataList; 
+        return dataList;
     }
 
     var filteredList = [];
@@ -110,22 +110,22 @@ scwin.updateTenantDisplay = function () {
     }
 };
 
-scwin.findContainerElement = function() {
+scwin.findContainerElement = function () {
     var possibleSelectors = [
         '#tenant_list_container',
-        '#mf_tenant_list_container', 
+        '#mf_tenant_list_container',
         '[id$="tenant_list_container"]',
         '.tenant-list',
         '[class*="tenant-list"]'
     ];
-    
+
     for (var i = 0; i < possibleSelectors.length; i++) {
         var element = document.querySelector(possibleSelectors[i]);
         if (element) {
             return element;
         }
     }
-    
+
     return null;
 };
 
@@ -146,9 +146,9 @@ scwin.createAllTenantItems = function (totalCount) {
                 var tenantData = dlt_tenantVoList.getRowJSON(i);
                 scwin.createTenantItemWithDOM(containerElement, tenantData, i);
             }
-            
+
             // 생성 완료 후 컨테이너 높이 재조정
-            setTimeout(function() {
+            setTimeout(function () {
                 scwin.adjustContainerHeight(containerElement);
             }, 100);
         } else {
@@ -158,21 +158,21 @@ scwin.createAllTenantItems = function (totalCount) {
     }
 };
 
-scwin.adjustContainerHeight = function(containerElement) {
+scwin.adjustContainerHeight = function (containerElement) {
     try {
         if (containerElement) {
             var totalHeight = 0;
             var children = containerElement.children;
-            
+
             for (var i = 0; i < children.length; i++) {
                 if (children[i].offsetHeight) {
                     totalHeight += children[i].offsetHeight;
                 }
             }
-            
+
             var finalHeight = Math.max(totalHeight + 20, 200); // 20px 여백 추가
             containerElement.style.height = finalHeight + 'px';
-            
+
         }
     } catch (e) {
     }
@@ -191,17 +191,17 @@ scwin.createTenantItemWithDOM = function (containerElement, tenantData, index) {
         }
 
         var createdDate = tenantData.createdAt ? tenantData.createdAt.split(' ')[0] : "";
-        
+
         var userCount = tenantData.userCount || 0;
         var moduleCount = tenantData.moduleCount || 0;
-        
+
         if (isNaN(userCount)) userCount = 0;
         if (isNaN(moduleCount)) moduleCount = 0;
 
         var tenantDiv = document.createElement('div');
         tenantDiv.className = 'tenant-item';
         tenantDiv.id = 'dynamic_tenant_' + index;
-        
+
         tenantDiv.style.cssText = `
             padding: 16px 20px;
             border-bottom: 1px solid #f8f8f8;
@@ -210,7 +210,7 @@ scwin.createTenantItemWithDOM = function (containerElement, tenantData, index) {
             background: white;
             margin-bottom: 2px;
         `;
-        
+
         tenantDiv.innerHTML = `
             <div class="tenant-name" style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 8px;">
                 ${tenantData.name || 'Unknown'}
@@ -225,7 +225,7 @@ scwin.createTenantItemWithDOM = function (containerElement, tenantData, index) {
                 ${statusText}
             </div>
         `;
-        
+
         containerElement.appendChild(tenantDiv);
 
     } catch (e) {
@@ -249,13 +249,13 @@ scwin.showNoDataMessage = function (containerElement) {
         if (!containerElement) {
             containerElement = scwin.findContainerElement();
         }
-        
+
         if (containerElement) {
             var existingNoData = containerElement.querySelector('#no_data_item, .no-data-message');
             if (existingNoData) {
                 return;
             }
-            
+
             var noDataDiv = document.createElement('div');
             noDataDiv.className = 'tenant-item no-data-message';
             noDataDiv.id = 'no_data_item';
@@ -268,12 +268,12 @@ scwin.showNoDataMessage = function (containerElement) {
                 visibility: visible;
             `;
             noDataDiv.innerHTML = '<div class="tenant-name">조회된 테넌트가 없습니다.</div>';
-            
+
             containerElement.appendChild(noDataDiv);
-            
+
             containerElement.style.height = 'auto';
             containerElement.style.minHeight = '200px';
-            
+
         }
     } catch (e) {
     }
@@ -330,16 +330,16 @@ scwin.updateFilterButtons = function (activeFilter) {
 };
 
 scwin.btn_home_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_dashboard.xml";
 };
 
 
 scwin.btn_module_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_module.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_module.xml";
 };
 
 scwin.btn_stats_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_server_info.xml";
 };
 
 // 새로고침 기능

@@ -426,11 +426,11 @@ scwin.showErrorMessage = function (message) {
 };
 
 scwin.btn_home_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_dashboard.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_dashboard.xml";
 };
 
 scwin.btn_tenant_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_tenant.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_tenant.xml";
 };
 
 scwin.btn_module_onclick = function () {
@@ -438,7 +438,7 @@ scwin.btn_module_onclick = function () {
 };
 
 scwin.btn_stats_onclick = function () {
-    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile_dev_server_info.xml";
+    location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_server_info.xml";
 };
 
 scwin.refreshData = function () {
