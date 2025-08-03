@@ -53,7 +53,6 @@ scwin.createPopupLayer = function () {
 
 // 모바일 팝업 표시 함수
 scwin.showPopup = function (message, isConfirm, callback) {
-    console.log("showPopup 호출:", message, "콜백 존재:", !!callback);
     
     var popup = document.getElementById('mobileAlertPopup');
     if (!popup) {
@@ -67,7 +66,6 @@ scwin.showPopup = function (message, isConfirm, callback) {
 
     messageEl.innerHTML = message.replace(/\\n/g, '<br>');
 
-    // 기존 이벤트 핸들러 제거 (중복 방지)
     confirmBtn.onclick = null;
     cancelBtn.onclick = null;
 
@@ -75,23 +73,19 @@ scwin.showPopup = function (message, isConfirm, callback) {
         cancelBtn.style.display = 'inline-block';
         
         confirmBtn.onclick = function (e) {
-            console.log("확인 버튼 클릭됨");
             e.preventDefault();
             e.stopPropagation();
             
             popup.style.display = 'none';
             
-            // 안전한 콜백 실행 (지연 처리)
             if (callback) {
                 setTimeout(function() {
-                    console.log("확인 콜백 실행");
                     callback(true);
-                }, 100); // 팝업이 완전히 숨겨진 후 실행
+                }, 100); 
             }
         };
         
         cancelBtn.onclick = function (e) {
-            console.log("취소 버튼 클릭됨");
             e.preventDefault();
             e.stopPropagation();
             
@@ -99,7 +93,6 @@ scwin.showPopup = function (message, isConfirm, callback) {
             
             if (callback) {
                 setTimeout(function() {
-                    console.log("취소 콜백 실행");
                     callback(false);
                 }, 100);
             }
@@ -109,30 +102,25 @@ scwin.showPopup = function (message, isConfirm, callback) {
         cancelBtn.style.display = 'none';
         
         confirmBtn.onclick = function (e) {
-            console.log("확인 버튼 클릭됨 (단일)");
             e.preventDefault();
             e.stopPropagation();
             
             popup.style.display = 'none';
             
-            // 핵심: 콜백을 지연 실행
             if (callback) {
                 setTimeout(function() {
-                    console.log("콜백 실행 중...");
                     try {
                         callback();
-                        console.log("콜백 실행 완료");
                     } catch (error) {
                         console.error("콜백 실행 오류:", error);
                     }
-                }, 150); // 충분한 지연 시간
+                }, 150); 
             }
         };
     }
 
     popup.style.display = 'flex';
     
-    // 포커스 설정 (키보드 접근성)
     setTimeout(function() {
         if (confirmBtn) {
             confirmBtn.focus();
@@ -150,23 +138,16 @@ scwin.parseJwt = function (token) {
         }).join(''));
         return JSON.parse(jsonPayload);
     } catch (e) {
-        console.error("JWT 파싱 오류:", e);
         return null;
     }
 };
 
 scwin.onpageload = function () {
-    // 모바일 팝업 레이어 생성
     scwin.createPopupLayer();
-
-    // 저장된 아이디 로드
     scwin.loadSavedUserId();
-
-    // 엔터키 이벤트 바인딩
     scwin.bindEnterKeyEvents();
 };
 
-// 저장된 아이디 로드
 scwin.loadSavedUserId = function () {
     try {
         var savedUserId = localStorage.getItem("savedUserId");
@@ -197,7 +178,6 @@ scwin.bindEnterKeyEvents = function () {
 
 // 로그인 함수
 scwin.login = function () {
-    console.log("=== 로그인 시작 ===");
 
     var userId = inp_userId.getValue();
     var password = inp_password.getValue();
@@ -316,11 +296,10 @@ scwin.togglePasswordVisibility = function () {
 
 // 로그인 응답 처리
 scwin.login_submitdone = function (e) {
-    console.log("=== 로그인 응답 수신 ===");
     
     var responseData = e.responseJSON;
     if (!responseData) {
-        console.error("응답 데이터가 없습니다!");
+
         scwin.setLoginButtonState(false);
         scwin.showPopup("서버 응답이 없습니다. 네트워크를 확인해주세요.", false);
         return;
@@ -329,7 +308,6 @@ scwin.login_submitdone = function (e) {
     var elHeader = responseData.elHeader;
     
     if (elHeader && elHeader.resSuc === true) {
-        console.log("✅ 로그인 성공!");
         
         var headers = {};
         try {
@@ -362,18 +340,12 @@ scwin.login_submitdone = function (e) {
 
         if (tenantId) {
             var redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/mobile/mobile_dev_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
-            console.log("리다이렉트 URL 준비:", redirectUrl);
             
-            // 팝업 사용 버전
             scwin.showPopup("로그인되었습니다!", false, function() {
-                console.log("팝업 콜백에서 리다이렉트 실행");
-                console.log("이동할 URL:", redirectUrl);
                 
                 try {
                     location.href = redirectUrl;
                 } catch (error) {
-                    console.error("리다이렉트 오류:", error);
-                    // 오류 시 강제 이동
                     window.location.replace(redirectUrl);
                 }
             });
@@ -383,7 +355,6 @@ scwin.login_submitdone = function (e) {
         }
 
     } else {
-        console.log("❌ 로그인 실패");
         scwin.onLoginFailure();
     }
 };
