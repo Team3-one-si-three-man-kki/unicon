@@ -79,7 +79,7 @@ scwin.btn_checkout_onclick = function (e) {
         scwin.roomClient.ws.close();
     }
     $p.closePopup();
-    $p.url("/InsWebApp/ui/session_room/session_room3.xml");
+    $p.url("/InsWebApp/main/session_room/session_room3.xml");
 };
 
 scwin.btn_cancel_onclick = function (e) {

@@ -374,9 +374,9 @@ div.video-paused::after {
 		<script src="/InsWebApp/media/mediasoup-client.browser.js" />
 		<script src="/InsWebApp/media/dist/app.bundle.js" />
 		<script src="/InsWebApp/media/dist/modules/chat.bundle.js" />
-		<script src="ai_monitoring_stats.js" />
-		<script src="ai_dashboard_controller.js" />
-		<script src="personal_dashboard_controller.js" />
+		<script src="/InsWebApp/js/ai_dashboard/ai_monitoring_stats.js" />
+		<script src="/InsWebApp/js/ai_dashboard/ai_dashboard_controller.js" />
+		<script src="/InsWebApp/js/ai_dashboard/personal_dashboard_controller.js" />
 
 		<script lazy="false" type="text/javascript"><![CDATA[// 로드시간 측정을 위한 로그
 console.log(`페이지 로딩 시작: ${performance.now().toFixed(2)}ms`);
@@ -623,7 +623,7 @@ scwin.onpageload = async function () {
             } // 실제 전달할 데이터
         };
 
-        scwin.createPopUp("checkIn", " ", jsnPopupData, "/InsWebApp/main/attendance_confirmation_pop_up.xml", 400, 350);
+        scwin.createPopUp("checkIn", " ", jsnPopupData, "/InsWebApp/ui/popup/attendance_confirmation_pop_up.xml", 400, 350);
         //입장시 출석 완료
 
         if (scwin.userHasChatModule) {
@@ -953,7 +953,7 @@ scwin.onpageload = async function () {
                     aiModule.on("drowsinessDetected", (data) => {
                         if (!scwin.isAdmin) {
                             console.log("Event: drowsinessUpdate -> Sending status to server.");
-                            scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/drowsiness_pop_up.xml", 400, 425);
+                            scwin.createPopUp("drowsinessPopUp", "Warning !!", null, "/InsWebApp/ui/popup/drowsiness_pop_up.xml", 400, 425);
                             scwin.roomClient.sendPeerStatus(data);
 
                             // 개인 대시보드에 직접 알림
@@ -974,7 +974,7 @@ scwin.onpageload = async function () {
 
                     aiModule.on("absenceStarted", (data) => {
                         console.log(" Event: absenceStarted -> Sending status to server.");
-                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/media_pipe_pop_up/afd_pop_up.xml", 400, 475);
+                        scwin.createPopUp("adfPopUp", "Warning !!", null, "/InsWebApp/ui/popup/afd_pop_up.xml", 400, 475);
                         scwin.roomClient.sendPeerStatus(data);
 
                         // 개인 대시보드에 직접 알림
@@ -1631,7 +1631,7 @@ scwin.handleLeaveSession = function (moduleInfo) {
             "roomClient": scwin.roomClient
         }
     }
-    scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/main/check_out_pop_up.xml", 400, 300);
+    scwin.createPopUp("checkout", " ", jsnPopupData, "/InsWebApp/ui/popup/check_out_pop_up.xml", 400, 300);
 };
 
 // 버튼 상태 업데이트 함수
@@ -1963,7 +1963,7 @@ window.addEventListener('load', () => {
 	<body class="" ev:onpageload="scwin.onpageload">
 		<xf:group class="sub_contentss" id="" style="height: 95vh;">
 			<xf:group style="" id="grp_waiting">
-				<w2:wframe src="/InsWebApp/ui/client/meeting_waiting_room_ykw.xml" style="" id="waiting_room_frame"></w2:wframe>
+				<w2:wframe src="/InsWebApp/main/session_room/meeting_waiting_room_ykw.xml" style="" id="waiting_room_frame"></w2:wframe>
 			</xf:group>
 			<xf:group id="group1" style="width:100%;height:910px;display:flex;overflow:hidden;">
 				<xf:group class="workspace-container" id="group2" style="flex: 1;">

@@ -1,27 +1,22 @@
 package com.demo.proworks.jwt;
 
-import com.demo.proworks.jwt.JwtUtil;
+
 import com.demo.proworks.user.service.UserService;
 import com.demo.proworks.user.vo.UserVo;
 import com.inswave.elfw.annotation.ElService;
-import com.inswave.elfw.log.AppLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+
 import com.inswave.elfw.annotation.ElDescription;
-import com.inswave.elfw.annotation.ElValidator;
 
 @Controller
 public class TokenRefreshController {
@@ -46,28 +41,39 @@ public class TokenRefreshController {
 						.body(errJson);
 			}
 
-			// 2. Refresh Token 유효성 검증
+			// 2. JWT에서 userId 추출 (레디스 확인을 위해)
+			String userId = jwtUtil.getUserIdFromToken(refreshToken);
+			if (userId == null || userId.isEmpty()) {
+				String errJson = "{\"success\":false,\"message\":\"Refresh Token에서 사용자 정보를 추출할 수 없습니다.\"}";
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON)
+						.body(errJson);
+			}
+
+			// 3. 레디스에서 Refresh Token 존재 여부 확인
+			if (!jwtUtil.isRefreshTokenExistsInRedis(userId, refreshToken)) {
+				String errJson = "{\"success\":false,\"message\":\"유효하지 않은 Refresh Token입니다.\"}";
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON)
+						.body(errJson);
+			}
+
+			// 4. Refresh Token 유효성 검증
 			if (!jwtUtil.validateToken(refreshToken)) {
 				String errJson = "{\"success\":false,\"message\":\"Refresh Token이 유효하지 않습니다.\"}";
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON)
 						.body(errJson);
 			}
 
-			// 3. Refresh Token에서 사용자 정보 추출
-			String userId = jwtUtil.getUserIdFromToken(refreshToken);
+			// 5. Refresh Token에서 사용자 정보 추출
+			userId = jwtUtil.getUserIdFromToken(refreshToken);
 			UserVo user = userService.getUserByEmail(userId);
 
-			// 4. 새로운 Access Token 생성
+			// 6. 새로운 Access Token 생성
 			String newAccessToken = jwtUtil.generateAccessToken(userId, user.getTenantId(), user.getRole(),
 					user.isIsActive());
-			// 5. 새로운 Refresh Token 생성 (선택)
-			String newRefreshToken = jwtUtil.generateRefreshToken(userId);
 
-			// 6. 응답 헤더에 새로운 Access Token 설정
+			// 7. 응답 헤더에 새로운 Access Token 설정
 			response.setHeader("Authorization", "Bearer " + newAccessToken);
 			response.setHeader("Access-Control-Expose-Headers", "Authorization");
-			// 7. 쿠키에 Refresh Token 설정
-			setRefreshTokenCookie(response, newRefreshToken);
 
 			// 8. JSON 문자열로 결과 반환
 			String successJson = String.format(
@@ -94,18 +100,6 @@ public class TokenRefreshController {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Refresh Token 쿠키 설정
-	 */
-	private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-		Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-		refreshCookie.setHttpOnly(false);
-		refreshCookie.setSecure(false);
-		refreshCookie.setPath("/");
-		refreshCookie.setMaxAge(7 * 24 * 60 * 60); 
-		response.addCookie(refreshCookie);
 	}
 
 }

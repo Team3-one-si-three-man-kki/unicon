@@ -44,28 +44,35 @@
 };
 
 scwin.loadTenantData = function () {
-    dmp_tenantVo.set("pageIndex", "1");
-    dmp_tenantVo.set("pageSize", "50");
+    try {
+        dmp_tenantVo.set("pageIndex", "1");
+        dmp_tenantVo.set("pageSize", "50");
 
-    $c.sbm.execute($p, sbm_selectTenantVoList);
+        scwin.safeExecute("sbm_selectTenantVoList");
+    } catch (error) {
+        alert('테넌트 데이터를 불러올 수 없습니다.');
+    }
 };
 
 scwin.sbm_tenantList_submitdone = function (e) {
-    var elData = e.responseJSON.elData;
-    var elHeader = e.responseJSON.elHeader;
+    try {
+        var elData = e.responseJSON.elData;
+        var elHeader = e.responseJSON.elHeader;
 
-    if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
-        alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
-        return false;
-    }
+        if (elHeader == null || elHeader == "" || elHeader == "undefined" || elHeader.resSuc == false) {
+            alert(`에러코드 : ${elHeader.resCode}\n에러메시지 : ${elHeader.resMsg}`);
+            return false;
+        }
 
-
-    if (elData && elData.tenantVoList) {
-        var filteredData = scwin.applyClientSideFilter(elData.tenantVoList);
-        dlt_tenantVoList.setJSON(filteredData);
-        var totalCount = filteredData.length;
-        scwin.updateTenantCount(totalCount);
-        scwin.updateTenantDisplay();
+        if (elData && elData.tenantVoList) {
+            var filteredData = scwin.applyClientSideFilter(elData.tenantVoList);
+            dlt_tenantVoList.setJSON(filteredData);
+            var totalCount = filteredData.length;
+            scwin.updateTenantCount(totalCount);
+            scwin.updateTenantDisplay();
+        }
+    } catch (error) {
+        alert('데이터 처리 중 오류가 발생했습니다.');
     }
 };
 
@@ -89,9 +96,13 @@ scwin.applyClientSideFilter = function (dataList) {
 };
 
 scwin.updateTenantCount = function (count) {
-    var countElement = $p.getComponentById("tenant_count");
-    if (countElement) {
-        countElement.setLabel("테넌트 목록 (" + count + "개)");
+    try {
+        var countElement = $p.getComponentById("tenant_count");
+        if (countElement) {
+            countElement.setLabel("테넌트 목록 (" + count + "개)");
+        }
+    } catch (error) {
+        console.error('updateTenantCount 오류:', error);
     }
 };
 
@@ -103,7 +114,6 @@ scwin.updateTenantDisplay = function () {
         }
 
         var rowCount = dlt_tenantVoList.getRowCount();
-
         scwin.createAllTenantItems(rowCount);
 
     } catch (e) {
@@ -147,7 +157,6 @@ scwin.createAllTenantItems = function (totalCount) {
                 scwin.createTenantItemWithDOM(containerElement, tenantData, i);
             }
 
-            // 생성 완료 후 컨테이너 높이 재조정
             setTimeout(function () {
                 scwin.adjustContainerHeight(containerElement);
             }, 100);
@@ -345,6 +354,21 @@ scwin.btn_stats_onclick = function () {
 // 새로고침 기능
 scwin.refreshData = function () {
     scwin.loadTenantData();
+};
+
+scwin.safeExecute = function(submission) {
+    try {
+        if (typeof $p !== 'undefined' && typeof $p.executeSubmission === 'function') {
+            $p.executeSubmission(submission);
+        } else if (typeof $c !== 'undefined' && typeof $c.sbm !== 'undefined' && typeof $c.sbm.execute === 'function') {
+            $c.sbm.execute($p, submission);
+        } else {
+            alert('데이터를 불러올 수 없습니다. 페이지를 새로고침해 주세요.');
+        }
+    } catch (error) {
+        console.error('submission 실행 오류:', error);
+        alert('데이터를 불러오는 중 오류가 발생했습니다.');
+    }
 };]]></script>
 		<style type="text/css">
 			/* CSS 스타일은 이전과 동일하게 유지됩니다. */
