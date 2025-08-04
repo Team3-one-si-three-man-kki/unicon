@@ -163,24 +163,24 @@ scwin.applyCustomization = function (data) {
 // 커스터마이징 적용 함수
 scwin.overlayElement = null;
 
-scwin.containKorean = function(text){
-  return /^[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
+scwin.containKorean = function (text) {
+    return /^[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
 }
 
 scwin.loadCustomization = function (c) {
-   if (!c) return;
+    if (!c) return;
 
     // 테넌트 이름을 전역 변수에 저장
     if (c.tenantName) {
         scwin.lastLoadedTenantName = c.tenantName;
     }
 
-    if(scwin.containKorean(c.tenantName)){
-        loginGuideTxt.setValue(c.tenantName+"에 로그인하세요")
-    }else{
-        loginGuideTxt.setValue("SIGN IN TO "+  c.tenantName.toUpperCase());
+    if (scwin.containKorean(c.tenantName)) {
+        loginGuideTxt.setValue(c.tenantName + "에 로그인하세요")
+    } else {
+        loginGuideTxt.setValue("SIGN IN TO " + c.tenantName.toUpperCase());
     }
-    
+
     // 나머지 커스터마이징 로직은 그대로...
     if (leftPreview && c.backgroundImage) {
         leftPreview.setStyle("backgroundImage", "url(" + c.backgroundImage + ")");
@@ -203,7 +203,7 @@ scwin.loadCustomization = function (c) {
 
     const setLabelStyle = function (id, text, color, size, weight) {
         if (!id) return;
-        
+
         if (text) id.setLabel(text);
         if (color) id.setStyle("color", color);
         if (weight) id.setStyle("fontWeight", weight);
@@ -365,7 +365,7 @@ scwin.loadCustom_submitdone = function (e) {
     var elData = e.responseJSON;
     if (elData?.code === "E001") {
         location.href = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/error/404tenant.xml";
-    }else if (Object.keys(elData).length === 1) {
+    } else if (Object.keys(elData).length === 1) {
         elData = scwin.defaultData(elData.tenantName);
     }
     scwin.loadCustomization(elData);
@@ -411,18 +411,18 @@ scwin.login_submitdone = function (e) {
 
         // 현재 테넌트 이름 추출 - 여러 방법으로 시도
         var currentTenantName = null;
-        
+
         // 방법 1: URL 파라미터에서 추출
         const urlTenant = scwin.getQueryParam('tenant');
         if (urlTenant) {
             currentTenantName = urlTenant;
         }
-        
+
         // 방법 2: 전역 변수에서 확인
         if (!currentTenantName && window.currentTenantName) {
             currentTenantName = window.currentTenantName;
         }
-        
+
         // 방법 3: loadCustomization에서 사용된 tenantName 확인
         if (!currentTenantName && scwin.lastLoadedTenantName) {
             currentTenantName = scwin.lastLoadedTenantName;
@@ -452,27 +452,95 @@ scwin.login_submitdone = function (e) {
 
 // 카카오 로그인 함수들
 scwin.btn_kakao_onclick = function (e) {
-   // 3.1 URL 파라미터에서 tenant 추출
+    // 3.1 URL 파라미터에서 tenant 추출
     var tenant = $p.getParameter("tenant");
 
     // 3.2 서비스 코드 정의
     var service = "TNU0000KC";
     // 3.3 동적으로 action URL 생성 (중괄호 없이)
-    var url = "/InsWebApp/TNU0000KL.pwkjson?service=" 
-              + service 
-              + "&tenant=" + encodeURIComponent(tenant);
+    var url = "/InsWebApp/TNU0000KL.pwkjson?service="
+        + service
+        + "&tenant=" + encodeURIComponent(tenant);
     // 3.4 submission에 action 설정
-    
+
     var subObj = $p.getSubmission("kakao_login");
 
-  subObj.action = url;
+    subObj.action = url;
 
-  $p.executeSubmission("kakao_login");
+    $p.executeSubmission("kakao_login");
 };
 
 scwin.kakao_login_submitdone = function (e) {
     if (e.responseStatusCode == 200 && e.responseJSON.success === true && e.responseJSON.loginUrl) {
+
+        // ===== 테넌트 이름 저장 로직 추가 =====
+        var currentTenantName = null;
+
+        // 방법 1: 카카오 로그인 버튼 클릭 시 저장된 테넌트 정보
+        if (window.kakaoLoginTenant) {
+            currentTenantName = window.kakaoLoginTenant;
+        }
+
+        // 방법 2: URL 파라미터에서 추출
+        const urlTenant = scwin.getQueryParam('tenant');
+        if (!currentTenantName && urlTenant) {
+            currentTenantName = urlTenant;
+        }
+
+        // 방법 3: 도메인에서 추출 (카카오 로그인 버튼 클릭 시 사용된 방식)
+        if (!currentTenantName) {
+            try {
+                const host = window.location.hostname;
+                const domainTenant = host.split('.')[0];
+                if (domainTenant && domainTenant !== 'www' && domainTenant !== host) {
+                    currentTenantName = domainTenant;
+
+                }
+            } catch (error) {
+                console.warn("도메인에서 테넌트 추출 실패:", error);
+            }
+        }
+
+        // 방법 4: 전역 변수에서 확인
+        if (!currentTenantName && window.currentTenantName) {
+            currentTenantName = window.currentTenantName;
+            
+        }
+
+        // 방법 5: loadCustomization에서 사용된 tenantName 확인
+        if (!currentTenantName && scwin.lastLoadedTenantName) {
+            currentTenantName = scwin.lastLoadedTenantName;
+            
+        }
+
+        // 방법 6: 응답 데이터에서 테넌트 정보 확인 (서버에서 제공하는 경우)
+        if (!currentTenantName && e.responseJSON.tenantName) {
+            currentTenantName = e.responseJSON.tenantName;
+           
+        }
+
+        // 테넌트 이름을 sessionStorage에 저장
+        if (currentTenantName) {
+            sessionStorage.setItem('currentTenantName', currentTenantName);
+            
+
+            // 저장 확인
+            const saved = sessionStorage.getItem('currentTenantName');
+            if (saved !== currentTenantName) {
+                console.warn("테넌트 이름 저장 실패! 저장하려던 값:", currentTenantName, "실제 저장된 값:", saved);
+            }
+        } else {
+            console.warn("카카오 로그인 - 저장할 테넌트 이름이 없습니다!");
+            
+        }
+        
         location.href = e.responseJSON.loginUrl;
+
+        
+        if (window.kakaoLoginTenant) {
+            delete window.kakaoLoginTenant;
+        }
+
     } else {
         scwin.showPopup(e.responseJSON.message || "카카오 로그인 URL 호출 실패");
     }

@@ -166,7 +166,7 @@ public class KakaoAuthController {
 					throw new LoginException("EL.ERROR.LOGIN.0001");
 				}
 
-				String redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml"
+				String redirectUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_dashboard/tenant_user_dashboard.xml"
 						+ "&tenant=" + logintenantId;
 
 				response.sendRedirect(redirectUrl);
@@ -299,21 +299,7 @@ public class KakaoAuthController {
 		}
 	}
 
-	private ResponseEntity<String> createErrorResponse(HttpStatus status, String message) {
-		try {
-			Map<String, Object> err = new HashMap<>();
-			err.put("success", false);
-			err.put("message", message);
-			String json = objectMapper.writeValueAsString(err);
 
-			return ResponseEntity.status(status).header("Content-Type", "application/json; charset=UTF-8").body(json);
-
-		} catch (Exception ex) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.header("Content-Type", "application/json; charset=UTF-8")
-					.body("{\"success\":false,\"message\":\"알 수 없는 오류\"}");
-		}
-	}
 
 	/**
 	 * 카카오 로그인 상태 확인

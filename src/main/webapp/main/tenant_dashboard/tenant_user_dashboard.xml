@@ -24,15 +24,15 @@
 // 역할별 탭 접근 권한 정의 
 scwin.rolePermissions = {
     'ADMIN': {
-        tabs: ['user', 'module', 'login', 'meeting', 'history', 'attenance', 'moduleManagement'],
+        tabs: ['user', 'module', 'login', 'meeting', 'attenance', 'moduleManagement'],
         description: '모든 기능에 접근 가능'
     },
     'MANAGER': {
-        tabs: ['user', 'module', 'login', 'meeting', 'history', 'attenance', 'moduleManagement'],
+        tabs: ['user', 'module', 'login', 'meeting', 'attenance', 'moduleManagement'],
         description: '모든 기능에 접근 가능'
     },
     'USER': {
-        tabs: ['meeting', 'history', 'attenance'],
+        tabs: ['meeting', 'attenance'],
         description: '미팅 관련 기능만 접근 가능'
     }
 };
@@ -484,7 +484,7 @@ scwin.fetchTenantInfo = function (tenantId) {
 
 scwin.applyTabPermissions = function () {
 
-    const allTabs = ['user', 'module', 'login', 'meeting', 'history', 'attenance', 'moduleManagement'];
+    const allTabs = ['user', 'module', 'login', 'meeting', 'attenance', 'moduleManagement'];
     let visibleTabCount = 0;
     let firstVisibleTab = null;
 
@@ -682,8 +682,6 @@ scwin.showPanel = function (panelType) {
         pageUrl = "attendance_module__dashboard.xml" + tenantParam;
     } else if (panelType === 'moduleManagement') {
         pageUrl = "module-management.xml" + tenantParam;
-    }else if (panelType === 'history') {
-        pageUrl = "layout-designer-dashboard.xml" + tenantParam;
     } else {
         return;
     }
@@ -1024,12 +1022,16 @@ scwin.testLogoutProcess = function () {
                 background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z"/></svg>');
             }
 
-            .tab-button[data-tab="history"]::before {
-                background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>');
+            .tab-button[data-tab="attenance"]::before {
+                background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>');
             }
 
             .tab-button[data-tab="report"]::before {
                 background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>');
+            }
+
+            .tab-button[data-tab="moduleManagement"]::before {
+                background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>');
             }
 
             /* ========== 반응형 처리 ========== */
@@ -1280,10 +1282,7 @@ scwin.testLogoutProcess = function () {
 						data-tab="meeting">
 						<xf:label><![CDATA[미팅 생성]]></xf:label>
 					</xf:trigger>
-					<xf:trigger class="tab-button" id="tab_history" type="button" ev:onclick="scwin.switchTabWithPermission('history')"
-						data-tab="history">
-						<xf:label><![CDATA[이전 미팅 관리]]></xf:label>
-					</xf:trigger>
+
 
 					<xf:trigger class="tab-button" data-tab="attenance" ev:onclick="scwin.switchTabWithPermission('attenance')"
 						id="tab-attenance" type="button">

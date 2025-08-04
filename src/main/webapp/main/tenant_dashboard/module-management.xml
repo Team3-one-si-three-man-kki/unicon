@@ -72,29 +72,24 @@ scwin.parseJwt = function (token) {
         }).join(''));
 
         const payload = JSON.parse(jsonPayload);
-        console.log("파싱된 JWT 페이로드:", payload);
         return payload;
     } catch (error) {
-        console.error("JWT 파싱 오류:", error);
         return null;
     }
 };
 
 
 scwin.loadModuleData = function (tenantId) {
-    console.log("모듈 데이터 로드 시작 - tenantId:", tenantId);
-
-    console.log("설정 전 dma_moduleRequest:", dma_moduleRequest.getJSON());
+    
 
     dma_moduleRequest.set("tenantId", tenantId);
 
-    console.log("설정 후 dma_moduleRequest:", dma_moduleRequest.getJSON());
 
     $p.executeSubmission("sbm_getModuleList");
 };
 
 scwin.btn_refresh_onclick = function () {
-    console.log("새로고침 버튼 클릭");
+   
     const accessToken = sessionStorage.getItem('accessToken');
     if (accessToken) {
         const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
@@ -109,13 +104,11 @@ scwin.btn_refresh_onclick = function () {
 };
 
 scwin.createModuleCards = function(moduleData) {
-    console.log("createModuleCards 시작:", moduleData);
 
     try {
         // 1) 컨테이너 DOM 요소 조회 (WebSquare 내 렌더된 div)
         var container = document.querySelector(".card-container");
         if (!container) {
-            console.error("gen_modules_container를 찾을 수 없습니다.");
             return;
         }
 
@@ -124,7 +117,7 @@ scwin.createModuleCards = function(moduleData) {
 
         // 3) 데이터 순회하며 카드 생성
         moduleData.forEach(function(item, idx) {
-            console.log("카드 생성:", idx, item.name);
+            
 
             // 카드 래퍼
             var card = document.createElement("div");
@@ -179,7 +172,7 @@ scwin.createModuleCards = function(moduleData) {
             container.appendChild(card);
         });
 
-        console.log("카드 렌더링 완료. 총 개수:", moduleData.length);
+       
 
     } catch (err) {
         console.error("createModuleCards 오류:", err, err.stack);
@@ -187,12 +180,11 @@ scwin.createModuleCards = function(moduleData) {
 };
 
 scwin.filterByStatus = function (status) {
-    console.log("필터링 시작:", status);
-    
+ 
     try {
         var dataListComponent = dlt_modules || $p.getComponentById("dlt_modules");
         if (!dataListComponent) {
-            console.error("DataList 컴포넌트를 찾을 수 없습니다.");
+
             return;
         }
         
@@ -206,7 +198,6 @@ scwin.filterByStatus = function (status) {
 
 
 scwin.showModuleDetails = function (moduleId) {
-    console.log("선택된 모듈 ID:", moduleId);
     dma_moduleId.set("moduleId",moduleId);
     $p.executeSubmission("sbm_getSessionList");
     grp_module_detail.show();
@@ -243,7 +234,6 @@ scwin.deactivateModule = function (moduleId) {
     var rowIndex = dlt_modules.getMatchedIndex("moduleId", moduleId)[0];
     var moduleName = dlt_modules.getCellData(rowIndex, "name");
     if (confirm("'" + moduleName + "' 모듈을 사용 중지하시겠습니까?")) {
-        console.log(moduleId + " 모듈 사용 중지 처리");
         dlt_modules.setCellData(rowIndex, "status", "inactive");
     }
 };
@@ -257,13 +247,10 @@ scwin.statusFormatter = function (status) {
 
 // 2. submitdone 함수 수정 (DataList 접근 방법 개선)
 scwin.sbm_getModuleList_submitdone = function (e) {
-      console.log("서브미션 이후 함수 실행됨.");
-    console.log("서버 응답 전체:", e.responseJSON);
 
     if (e.responseStatusCode === 200) {
         var actualList = e.responseJSON.tenantModuleDetailVoList.tenantModuleDetailVoList;
-        console.log("서버에서 받은 원본 데이터 (tenantModuleDetailVoList):", actualList);
-
+        
         if (actualList && Array.isArray(actualList)) {
             var transformedData = actualList.map(function (item) {
                 return {
@@ -277,34 +264,23 @@ scwin.sbm_getModuleList_submitdone = function (e) {
                 };
             });
 
-            console.log("변환된 데이터:", transformedData);
 
             var dataListComponent = null;
             if (typeof dlt_modules !== 'undefined') {
                 dataListComponent = dlt_modules;
-                console.log("Direct access to dlt_modules successful.");
+               
             } else if (typeof $p !== 'undefined' && $p.getComponentById) {
                 dataListComponent = $p.getComponentById("dlt_modules");
-                console.log("$p.getComponentById access to dlt_modules successful.");
+                
             } else if (typeof $p !== 'undefined' && $p.data) {
                 dataListComponent = $p.data.dlt_modules;
-                console.log("$p.data access to dlt_modules successful.");
+                
             }
 
             if (dataListComponent && typeof dataListComponent.setJSON === 'function') {
-                console.log("DataList 컴포넌트 찾음:", dataListComponent);
-
-                console.log("setJSON 호출 전 dlt_modules 행 개수:", dataListComponent.getRowCount());
-                console.log("setJSON 호출 전 dlt_modules 데이터:", dataListComponent.getAllJSON());
-
+            
                 dataListComponent.setJSON(transformedData);
-                console.log("데이터 설정 완료.");
-
-                console.log("setJSON 호출 후 dlt_modules 행 개수:", dataListComponent.getRowCount());
-                console.log("setJSON 호출 후 dlt_modules 데이터:", dataListComponent.getAllJSON());
-
-                // 카드 렌더링 - 직접 여기서 처리
-                console.log("카드 렌더링 시작");
+    
                 scwin.createModuleCards(transformedData);
             }
         }
@@ -336,24 +312,17 @@ scwin.sbm_getSessionList_submitdone = function (e) {
     var totalCount = dlt_meetingRooms.getRowCount();
     dma_selectedModule.set("totalUsage", totalCount);
     
-    // 디버깅용 로그
-    console.log("변환된 미팅룸 데이터:", meetingRoomsData);
-    console.log("DataList 행 개수:", dlt_meetingRooms.getRowCount());
-    console.log("DataList 전체 데이터:", dlt_meetingRooms.getAllJSON());
+   
 };
 
 scwin.onpageload = function () {
-    console.log("페이지 로드 시작");
     const accessToken = sessionStorage.getItem('accessToken');
-    console.log("토큰 조회:", accessToken);
-
     if (accessToken) {
         const tokenString = accessToken.startsWith('Bearer ') ? accessToken.substring(7) : accessToken;
         const tokenPayload = scwin.parseJwt(tokenString);
         const tokenTenant = tokenPayload ? tokenPayload.tenantId : null;
 
-        console.log("토큰에서 추출한 테넌트:", tokenTenant);
-
+    
         if (tokenTenant) {
             scwin.loadModuleData(tokenTenant);
         } else {
