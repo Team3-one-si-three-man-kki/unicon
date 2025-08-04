@@ -13,30 +13,24 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-	// Redis 채널 이름 정의
 	private static final String CANVAS_CHANNEL = "canvas-updates";
 
-	/**
-	 * Redis 연결을 위한 ConnectionFactory를 Bean으로 등록
-	 */
+
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
 //		return new LettuceConnectionFactory("cluster1.zlp9yi.ng.0001.apn2.cache.amazonaws.com", 6380);
 		 return new LettuceConnectionFactory("localhost", 6380);
 	}
 
-	/**
-	 * Redis에 메시지를 발행(publish)하기 위한 RedisTemplate 설정 (이제 redisConnectionFactory()
-	 * 메서드가 만든 Bean을 자동으로 주입받음)
-	 */
+	
 	@Bean
-	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) { // 매개변수 이름 변경
+	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
 		RedisTemplate<String, Object> template = new RedisTemplate<>();
 		template.setConnectionFactory(redisConnectionFactory);
 		template.setKeySerializer(new StringRedisSerializer());
 		template.setValueSerializer(new StringRedisSerializer());
-		template.setHashKeySerializer(new StringRedisSerializer()); // 추가
-		template.setHashValueSerializer(new StringRedisSerializer()); // 추가
+		template.setHashKeySerializer(new StringRedisSerializer());
+		template.setHashValueSerializer(new StringRedisSerializer()); 
 		return template;
 	}
 
@@ -45,7 +39,7 @@ public class RedisConfig {
 	 */
 	@Bean
 	public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory redisConnectionFactory,
-			MessageListenerAdapter listenerAdapter) { // 매개변수 이름 변경
+			MessageListenerAdapter listenerAdapter) { 
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(redisConnectionFactory);
 		container.addMessageListener(listenerAdapter, new ChannelTopic(CANVAS_CHANNEL));
