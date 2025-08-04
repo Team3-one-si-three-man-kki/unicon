@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -151,12 +152,15 @@ public class UserController {
 	public Map<String, Object> logout(HttpServletRequest request) throws Exception {
 
 		Map<String, Object> result = new HashMap<>();
+		String userId = null;
 
 		try {
 			// 1. Authorization 헤더에서 토큰 추출
 			String authHeader = request.getHeader("Authorization");
 			if (authHeader != null && authHeader.startsWith("Bearer ")) {
 				String token = authHeader.substring(7);
+				
+				 userId = jwtUtil.getUserIdFromToken(token);
 
 				// 2. 토큰을 블랙리스트에 추가
 				long remainingTime = tokenBlacklistService.getTokenRemainingTime(token);
@@ -168,6 +172,20 @@ public class UserController {
 
 			// 3. Refresh Token 쿠키 삭제
 			clearRefreshTokenCookie();
+			
+			// 4. 레디스에서 Refresh Token 삭제
+        if (userId != null && !userId.isEmpty()) {
+            jwtUtil.removeRefreshTokenFromRedis(userId);
+        } else {
+            // Access Token에서 userId를 못 가져온 경우, 세션에서 시도
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                String sessionUserId = (String) session.getAttribute("userId");
+                if (sessionUserId != null) {
+                    jwtUtil.removeRefreshTokenFromRedis(sessionUserId);
+                }
+            }
+        }
 
 			result.put("success", true);
 			result.put("message", "로그아웃이 성공했습니다.");
