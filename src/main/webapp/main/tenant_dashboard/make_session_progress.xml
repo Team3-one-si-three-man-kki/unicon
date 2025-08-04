@@ -113,25 +113,25 @@ scwin.setScreen = function (idx) {
         step2.removeClass("on");
         step3.removeClass("on");
         step4.removeClass("on");
-        fr_session_making_process.setSrc("/InsWebApp/main/session_info_input.xml");
+        fr_session_making_process.setSrc("/InsWebApp/main/session_process/session_info_input.xml");
     } else if (idx == 2) {
         step1.removeClass("on");
         step2.addClass("on");
         step3.removeClass("on");
         step4.removeClass("on");
-        fr_session_making_process.setSrc("/InsWebApp/main/layout-designer.xml");
+        fr_session_making_process.setSrc("/InsWebApp/main/session_process/layout-designer.xml");
     } else if (idx == 3) {
         step1.removeClass("on");
         step2.removeClass("on");
         step3.addClass("on");
         step4.removeClass("on");
-        fr_session_making_process.setSrc("/InsWebApp/main/session_invitation.xml");
+        fr_session_making_process.setSrc("/InsWebApp/main/session_process/session_invitation.xml");
     } else if (idx == 4) {
         step1.removeClass("on");
         step2.removeClass("on");
         step3.removeClass("on");
         step4.addClass("on");
-        fr_session_making_process.setSrc("/InsWebApp/main/make_session_complete.xml");
+        fr_session_making_process.setSrc("/InsWebApp/main/session_process/make_session_complete.xml");
     }
 };
 
@@ -170,54 +170,6 @@ scwin.setInviteInfo = function (inviteData) {
     scwin.sessionData.inviteInfo = inviteData;
 };
 
-// scwin.navigateToLayout = function (sessionId) {
-//     console.log("페이지 이동 시작. Session ID:", sessionId);
-    
-//     if (!sessionId) {
-//         console.error("Session ID가 제공되지 않았습니다.");
-//         alert("세션 ID가 없어서 페이지를 이동할 수 없습니다.");
-//         return;
-//     }
-    
-//     try {
-//         // localStorage에 sessionId 저장 (이중 보장)
-//         localStorage.setItem('currentSessionId', sessionId);
-        
-//         // 페이지 이동 시도
-//         if (typeof $p !== 'undefined' && typeof $p.url === 'function') {
-//             // WebSquare 표준 페이지 이동
-//             $p.url("/InsWebApp/ui/session_room/session_room3.xml");
-//             console.log("WebSquare 페이지 이동 성공");
-//             return;
-//         }
-        
-//         // WebSquare $p.url이 실패할 경우 대안
-//         if (typeof $p !== 'undefined' && typeof $p.openPopup === 'function') {
-//             // 새 창으로 세션 페이지 열기
-//             window.open("/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId, "_blank");
-//             console.log("새 창으로 세션 페이지 열기 성공");
-//             return;
-//         }
-        
-//         // 모든 방법이 실패한 경우
-//         throw new Error("페이지 이동 방법을 찾을 수 없습니다.");
-        
-//     } catch (error) {
-//         console.error("페이지 이동 실패:", error);
-        
-//         // 최종 대안: 사용자에게 수동 이동 안내
-//         var manualUrl = "https://unify-conference.store/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
-        
-//         if (confirm("자동 페이지 이동에 실패했습니다.\n\n수동으로 세션 페이지를 여시겠습니까?\n\n확인을 누르면 새 창에서 세션이 열립니다.")) {
-//             window.open(manualUrl, "_blank");
-//         } else {
-//             alert("세션이 생성되었습니다.\n\n다음 URL로 직접 접속하세요:\n" + manualUrl);
-//         }
-//     }
-// };
-
-
-
 scwin.navigateToLayout = function (sessionId) {
     console.log("새 창으로 세션 페이지 열기. Session ID:", sessionId);
     
@@ -230,7 +182,7 @@ scwin.navigateToLayout = function (sessionId) {
         localStorage.setItem('currentSessionId', sessionId);
         
         // 새 창 URL 구성
-        var sessionUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml";
+        var sessionUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/session_room/session_room3.xml";
         
         // 새 창 열기
         var popup = window.open(
@@ -318,8 +270,8 @@ scwin.sbm_createSession_submitdone = function (e) {
         if (sessionId) {
             // sessionId를 받은 후에 초대링크 생성 -> 트러블 슈팅
             scwin.sessionData.generatedInfo.inviteLink =
-               "https://unify-conference.store/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
-                //"https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
+               //"https://unify-conference.store/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
+                "https://localhost:19443/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/ui/session_room/session_room3.xml&sessionId=" + sessionId;
 
             console.log("inviteLink:", scwin.sessionData.generatedInfo.inviteLink);
             scwin.currentSessionId = sessionId;
@@ -381,7 +333,7 @@ scwin.sbm_createSessionModules_submitdone = function (e) {
             "sessionCompletePopUp",
             "세션 생성 완료", 
             popupData,
-            "/InsWebApp/main/session_complete_popup.xml",
+            "/InsWebApp/ui/popup/session_complete_popup.xml",
             700,
             700
         );
@@ -399,7 +351,7 @@ scwin.sbm_createSessionModules_submitdone = function (e) {
                 dataObject: popupData
             };
             
-            $p.openPopup("/InsWebApp/main/session_complete_popup.xml", options, popupData);
+            $p.openPopup("/InsWebApp/ui/popup/session_complete_popup.xml", options, popupData);
         } catch (error2) {
             console.error("직접 팝업 호출도 실패:", error2);
             alert("팝업을 열 수 없습니다. 세션은 생성되었습니다.\nSession ID: " + sessionId);
@@ -437,30 +389,6 @@ scwin.sbm_updateInviteLink_submiterror = function(e) {
     }
 };
 
-// 에서 가져온 팝업 생성 함수
-// scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
-//     if ($p.getPopup(_id)) {
-//         console.log(`Popup with ID '${_id}' already exists. Skipping creation.`);
-//         return;
-//     }
-//     var popupWidth = _popupWidth;
-//     var popupHeight = _popupHeight;
-//     var topPosition = (window.innerHeight - popupHeight) / 2;
-//     var leftPosition = (window.innerWidth - popupWidth) / 2;
-//     var options = {
-//         id: _id,
-//         type: "wframePopup",
-//         width: popupWidth + "px",
-//         height: popupHeight + "px",
-//         top: topPosition + "px",
-//         left: leftPosition + "px",
-//         popupName: _name,
-//         modal: true,
-//         closeAction: "scwin.popup_closeAction",
-//         dataObject: _jsnData
-//     };
-//     $p.openPopup(url, options);
-// }
 scwin.createPopUp = function (_id, _name, _jsnData, url, _popupWidth, _popupHeight) {
     console.log("=== createPopUp 함수 호출 ===");
     console.log("팝업 ID:", _id);

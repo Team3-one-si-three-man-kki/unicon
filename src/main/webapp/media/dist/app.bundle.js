@@ -61,8 +61,8 @@
       // WebSocket 접속 주소를 현재 페이지의 호스트 주소(IP 또는 도메인)를 동적으로 사용하도록 수정합니다.
       // 이렇게 하면 서버 주소가 변경되어도 클라이언트 코드를 수정할 필요가 없습니다.
       // 포트는 3000으로 고정합니다.
-      //const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
-      const wsUrl = `wss://${"unify-conference.store"}/ws?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
+      const wsUrl = `wss://${"13.125.229.206:3000"}/?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
+      //const wsUrl = `wss://${"unify-conference.store"}/ws?roomId=${roomId}&userName=${encodeURIComponent(userName)}&userEmail=${encodeURIComponent(userEmail)}&tenantId=${encodeURIComponent(tenantId)}`;
 
       console.log(`Connecting to WebSocket: ${wsUrl}`);
       this.ws = new WebSocket(wsUrl);

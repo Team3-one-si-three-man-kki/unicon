@@ -163,8 +163,7 @@ div.video-paused::after {
 		<script src="ai_dashboard_controller.js" />
 		<script src="personal_dashboard_controller.js" />
 
-		<script lazy="false" type="text/javascript"><![CDATA[
-scwin.updateCanvasBackground = function () {
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.updateCanvasBackground = function () {
     if (!scwin.isWhiteboardActive) return;
 
     const screenSharePeer = Array.from(scwin.remotePeers.values()).find(p => p.isScreenShare);
