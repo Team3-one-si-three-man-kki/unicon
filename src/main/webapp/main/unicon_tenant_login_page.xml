@@ -439,7 +439,7 @@ scwin.login_submitdone = function (e) {
         }
 
         if (tenantId) {
-            var dashboardUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
+            var dashboardUrl = "/InsWebApp/websquare/websquare.html?w2xPath=/InsWebApp/main/tenant_dashboard/tenant_user_dashboard.xml&tenant=" + encodeURIComponent(tenantId);
             location.href = dashboardUrl;
         } else {
             scwin.showPopup("로그인은 성공했으나, 토큰에서 테넌트 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
