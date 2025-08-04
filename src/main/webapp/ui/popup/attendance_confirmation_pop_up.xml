@@ -83,20 +83,20 @@ scwin.btn_confirm_onclick = function (e) {
         <!-- 팝업 내용 -->
         <w2:textbox style="clear:both;" id="txt_clear" label="" class=""></w2:textbox>
         <xf:group class="" id="grp_content" style="padding:0px 40px;text-align:center;background-color:white;min-height:200px;">
-        	<w2:textbox class="" id="spn_mainMsg"
-        		style="font-size:24px;color:#333;font-weight:bold;display:block;margin-bottom:30px;line-height:1.4;"
-        		label="김민수님 9:00에 출석체크되었습니다." />
-        	<w2:textbox class="" id="spn_date" ref="data:dma_attendance.checkDate"
-        		style="font-size:16px;color:#666;display:block;margin-bottom:20px;" label="2024년 6월 20일 오전 09:00" />
+           <w2:textbox class="" id="spn_mainMsg"
+              style="font-size:24px;color:#333;font-weight:bold;display:block;margin-bottom:30px;line-height:1.4;"
+              label="김민수님 9:00에 출석체크되었습니다." />
+           <w2:textbox class="" id="spn_date" ref="data:dma_attendance.checkDate"
+              style="font-size:16px;color:#666;display:block;margin-bottom:20px;" label="2024년 6월 20일 오전 09:00" />
 
-        	<!-- 확인 버튼 -->
-        	<w2:textbox ref="" style="display:block;width:60px;height:60px;background-color:white;border-radius:30px;text-align:center;line-height:50px;color:#4CAF50;font-weight:bolder;margin:auto;margin-bottom: 20px;font-size:40px;border: 1px solid black;" id="textbox1" label="✓" class="">
-        	</w2:textbox>
-        	<xf:trigger class="" id="btn_confirm"
-        		style="background-color:#2196F3;color:white;padding:12px 40px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;"
-        		type="button" ev:onclick="scwin.btn_confirm_onclick">
-        		<xf:label>확인</xf:label>
-        	</xf:trigger>
+           <!-- 확인 버튼 -->
+           <w2:textbox ref="" style="display:block;width:60px;height:60px;background-color:white;border-radius:30px;text-align:center;line-height:50px;color:#4CAF50;font-weight:bolder;margin:auto;margin-bottom: 20px;font-size:40px;border: 1px solid black;" id="textbox1" label="✓" class="">
+           </w2:textbox>
+           <xf:trigger class="" id="btn_confirm"
+              style="background-color:#2196F3;color:white;padding:12px 40px;border-radius:8px;font-size:16px;font-weight:bold;border:none;cursor:pointer;"
+              type="button" ev:onclick="scwin.btn_confirm_onclick">
+              <xf:label>확인</xf:label>
+           </xf:trigger>
         </xf:group>
     </body>
 </html>

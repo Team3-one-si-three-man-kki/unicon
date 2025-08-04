@@ -13,19 +13,17 @@
 		</xf:model>
 		<w2:layoutInfo />
 		<w2:publicInfo method="" />
-		<script lazy="false" type="text/javascript"><![CDATA[// 페이지 로드 시 초기화
-scwin.onpageload = function () {
+		<script lazy="false" type="text/javascript"><![CDATA[scwin.onpageload = function () {
     scwin.meetInfo = alias_meetingSettings.getObj();
     scwin.initCamera();
     scwin.initLocalState();
 };
 
-
 // MediaStream 전역 보관 변수
 scwin.mediaStream = null;
 scwin.currentSessionId = $p.parent().scwin.currentSessionId;
 
-// 로컬 상태 저장 변수 (확장)
+// 로컬 상태 저장 변수
 scwin.localState = {
     videoEnabled: true,
     audioEnabled: true,
@@ -35,40 +33,34 @@ scwin.localState = {
 
 // 1) 카메라·마이크 초기 스트림 요청
 scwin.initCamera = function () {
-    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: true })
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         .then(function (stream) {
             scwin.mediaStream = stream;
             var webcamElement = document.getElementById("webcam");
             if (webcamElement) {
                 webcamElement.srcObject = stream;
             }
-            console.log("카메라/마이크 접근 성공");
         })
         .catch(function (err) {
-            console.error("미디어 접근 오류:", err);
             alert("카메라/마이크 접근에 실패했습니다.");
         });
 };
 
-
 // 2) 로컬 상태 초기화 및 버튼 스타일 설정
 scwin.initLocalState = function () {
-    // AliasDataMap에서 초기 상태 읽어오기 (있다면)
-    //scwin.loadFromDataMap();
 
     // DOM 준비 대기 후 스타일 적용
     setTimeout(function () {
         scwin.updateButtonStyle("video", scwin.localState.videoEnabled);
         scwin.updateButtonStyle("audio", scwin.localState.audioEnabled);
-    }, 500); // 500ms 대기
+    });
 
     // 초기 미디어 트랙 상태 설정
     scwin.toggleTracks("video", scwin.localState.videoEnabled);
     scwin.toggleTracks("audio", scwin.localState.audioEnabled);
 };
 
-
-// 3) 버튼 스타일 업데이트 함수 (기존 로직 개선)
+// 3) 버튼 스타일 업데이트
 scwin.updateButtonStyle = function (type, enabled) {
     var btnElement;
     var className;
@@ -81,7 +73,7 @@ scwin.updateButtonStyle = function (type, enabled) {
         className = "btn_mic";
     }
 
-    // DOM 요소가 없으면 재시도  -> session_room.xml에 띄우니까 로드시간 차이가 생겨서 이미지가 안들어감.
+    // DOM 요소가 없으면 재시도  -> session_room.xml에 띄우니까 로드시간 차이가 생겨서 이미지가 직접 안들어가는 문제 발생
     if (!btnElement) {
         setTimeout(function () {
             scwin.updateButtonStyle(type, enabled);
@@ -98,14 +90,12 @@ scwin.updateButtonStyle = function (type, enabled) {
         if (!btnElement.classList.contains(className)) {
             btnElement.classList.add(className);
         }
-
-        // data-state 속성도 업데이트
+        // data-state 속성 업데이트
         btnElement.setAttribute("data-state", enabled ? "on" : "off");
     }
 };
 
-
-// 4) 미디어 트랙 활성화/비활성화 (개선된 버전)
+// 4) 미디어 트랙 활성 설정
 scwin.toggleTracks = function (type, enabled) {
     if (!scwin.mediaStream) return;
 
@@ -122,8 +112,7 @@ scwin.toggleTracks = function (type, enabled) {
     }
 };
 
-
-// 5) 비디오 버튼 클릭 이벤트 (실시간 데이터맵 저장 추가)
+// 5) 비디오 버튼 클릭 이벤트 (실시간 데이터맵 저장)
 scwin.onVideoButtonClick = function () {
     // 상태 토글
     scwin.localState.videoEnabled = !scwin.localState.videoEnabled;
@@ -141,7 +130,7 @@ scwin.onVideoButtonClick = function () {
 };
 
 
-// 6) 오디오 버튼 클릭 이벤트 (실시간 데이터맵 저장 추가)
+// 6) 오디오 버튼 클릭 이벤트 (실시간 데이터맵 저장)
 scwin.onAudioButtonClick = function () {
     // 상태 토글
     scwin.localState.audioEnabled = !scwin.localState.audioEnabled;
@@ -159,12 +148,10 @@ scwin.onAudioButtonClick = function () {
 };
 
 
-// 7) 입장하기 버튼 클릭 이벤트 (기존 로직 활용)
+// 7) 입장하기 버튼 클릭 이벤트
 scwin.onEnterMeeting = function () {
-    // 입력값 검증
     var nameElement = $p.getComponentById("participant_name");
     var emailElement = $p.getComponentById("participant_email");
-
 
     if (!nameElement || !emailElement) {
         alert("입력 필드를 찾을 수 없습니다.");
@@ -173,9 +160,6 @@ scwin.onEnterMeeting = function () {
 
     var name = nameElement.getValue().trim();
     var email = emailElement.getValue().trim();
-    console.log("사용자이름은" + name);
-    console.log("사용자 이메일은 " + email);
-
 
     if (!name) {
         alert("참여자 이름을 입력해주세요.");
@@ -230,10 +214,10 @@ scwin.saveStateToDataMap = function () {
 
 // 9) 전체 데이터맵에 저장 (기존 로직 개선)
 scwin.saveToDataMap = function () {
-    console.log("▶ saveToDataMap 진입");
+    console.log("saveToDataMap 진입");
     try {
 
-        console.log("★ meetInfo:", scwin.meetInfo);
+        console.log("meetInfo:", scwin.meetInfo);
         // AliasDataMap에 저장 시도
 
         console.log("데이터맵 저장처리");
@@ -245,23 +229,7 @@ scwin.saveToDataMap = function () {
 
         console.log("AliasDataMap 저장 성공");
 
-
-
-        // // 부모 창의 DataMap에 저장 시도
-        // if (window.parent &&
-        //     window.parent.dm_meetingSettings &&
-        //     typeof window.parent.dm_meetingSettings.set === 'function') {
-
-        //     window.parent.dm_meetingSettings.set("participantName", scwin.localState.participantName);
-        //     window.parent.dm_meetingSettings.set("participantEmail", scwin.localState.participantEmail);
-        //     window.parent.dm_meetingSettings.set("videoEnabled", scwin.localState.videoEnabled ? "on" : "off");
-        //     window.parent.dm_meetingSettings.set("audioEnabled", scwin.localState.audioEnabled ? "on" : "off");
-
-        //     console.log("부모 DataMap 저장 성공");
-        //     return;
-        // }
-
-        // WebSquare localStorage 저장 (추가 옵션)
+        // WebSquare localStorage 저장
         if (typeof WebSquare !== 'undefined' && WebSquare.localStorage) {
             WebSquare.localStorage.setItem("meetingSettings", JSON.stringify({
                 participantName: scwin.localState.participantName,
@@ -274,7 +242,7 @@ scwin.saveToDataMap = function () {
             return;
         }
 
-        // 전역 변수로 저장 (fallback)
+        // 전역 변수로 저장 
         window.meetingData = {
             participantName: scwin.localState.participantName,
             participantEmail: scwin.localState.participantEmail,

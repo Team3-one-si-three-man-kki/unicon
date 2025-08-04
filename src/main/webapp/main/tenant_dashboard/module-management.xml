@@ -391,6 +391,7 @@ scwin.onpageload = function () {
     font-weight: 600;
     color: #2c3e50;
     letter-spacing: -0.5px;
+    margin-left : 20px;
 }
 
 .breadcrumb ul {
@@ -801,7 +802,7 @@ body {
 	<body ev:onpageload="scwin.onpageload">
 		<xf:group class="pgtbox" id="" style="">
 			<w2:textbox class="pgt_tit" id="" label="모듈 관리" style="" tagname=""></w2:textbox>
-			<xf:group class="breadcrumb" id="" style="">
+			<xf:group class="breadcrumb" id="" style="margin-right:20px">
 				<xf:group id="" style="" tagname="ul">
 					<xf:group id="" style="" tagname="li">
 						<w2:anchor outerDiv="false">

@@ -709,7 +709,7 @@ scwin.onpageload = function () {
         console.error(`[보안] 비정상 접근 시도! URL 테넌트(${urlTenant})와 토큰 테넌트(${tokenTenant})가 다릅니다.`);
 
         scwin.showPopup("접근 권한이 없는 페이지입니다. 사용자의 대시보드로 이동합니다.", false, () => {
-            const correctPath = window.location.pathname + "?w2xPath=/InsWebApp/main/tenant_user_dashboard.xml&tenant=" + tokenTenant;
+            const correctPath = window.location.pathname + "?w2xPath=/InsWebApp/main/tenant_dashboard/tenant_user_dashboard.xml&tenant=" + tokenTenant;
             window.location.replace(correctPath);
         });
 
@@ -777,6 +777,8 @@ scwin.showPanel = function (panelType) {
         pageUrl = "attendance_module__dashboard.xml" + tenantParam;
     } else if (panelType === 'moduleManagement') {
         pageUrl = "module-management.xml" + tenantParam;
+    }else if (panelType === 'history') {
+        pageUrl = "layout-designer-dashboard.xml" + tenantParam;
     } else {
         return;
     }
